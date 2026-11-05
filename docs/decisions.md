@@ -1,5 +1,7 @@
 # Decisions
 
+2026-11-06 D010 (interrupted executor): preserve ctx_889b3c4a7838 and partial files after provider HTTP 403 ip_limit_reached. No fallback/retry while binding unchanged. User recovery via GATER /unbind or admin; never collect keys. Independent review reproduced named-account key substitution and nonfinite challenge timestamps; partial implementation rejected until fixes and focused regression tests. Historical green fixtures do not override adversarial failures. PostgreSQL cleanup remains unaccepted.
+
 2026-11-06 D009 (Codex acceptance): T00 executor cycle accepted from dispatch ctx_e156747936ca result and independent verification. T01 foundation partially reviewed; PostgreSQL helper scripts rejected pending safe ownership/stop checks and reproducible isolated execution. Begin T02 now without waiting for full UI or T01 completion; no live capability gate closed by bootstrap.
 
 2026-11-06 D006 (explicit user authorization): public repository and push only Codex-accepted/tested work. No user continuation prompt required. Supersedes D002 private default. Deployment, paid services and real assets remain gated.
