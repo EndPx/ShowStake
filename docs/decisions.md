@@ -1,5 +1,9 @@
 # Decisions
 
+2026-11-06 D006 (explicit user authorization): public repository and push only Codex-accepted/tested work. No user continuation prompt required. Supersedes D002 private default. Deployment, paid services and real assets remain gated.
+2026-11-06 D007 (user task accounting): T00 executor proof; foundation/schema/interfaces/PostgreSQL T01. Preserve worker and prioritize T02 immediately after executor review.
+2026-11-06 D008: use official PostgreSQL 18.6 apt package extracted in isolated WSL temporary cluster without system installation; Unix socket only, stopped after tests. Baseline apply is partial T01, not full application migration acceptance.
+
 2026-11-06 D001: ShowStake v2 packet is authoritative, preserved byte-for-byte. No v1 transfer semantics.
 2026-11-06 D002 (additional operational default): GitHub owner is authenticated EndPx; create ShowStake private because visibility unspecified. Source push remains separately gated.
 2026-11-06 D003 (additional operational default): sequential single executor while interfaces are unfrozen; no changes to Keyfolio capacity/config or services.
