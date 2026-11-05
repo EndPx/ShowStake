@@ -1,0 +1,95 @@
+{
+  "files_present": 9,
+  "unique_acceptance_tests": 65,
+  "tables": 22,
+  "contrast_checks": [
+    {
+      "foreground": "text",
+      "background": "canvas",
+      "ratio": 14.83,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "foreground": "muted",
+      "background": "canvas",
+      "ratio": 5.62,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "foreground": "text",
+      "background": "surface",
+      "ratio": 16.16,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "foreground": "muted",
+      "background": "surface",
+      "ratio": 6.12,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "foreground": "on-primary",
+      "background": "primary",
+      "ratio": 5.94,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "foreground": "on-primary",
+      "background": "primary-hover",
+      "ratio": 8.21,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "foreground": "success",
+      "background": "success-bg",
+      "ratio": 6.85,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "foreground": "warning",
+      "background": "warning-bg",
+      "ratio": 6.74,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "foreground": "error",
+      "background": "error-bg",
+      "ratio": 6.51,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "foreground": "control-border",
+      "background": "surface",
+      "ratio": 3.94,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "foreground": "control-border",
+      "background": "canvas",
+      "ratio": 3.62,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "foreground": "focus",
+      "background": "surface",
+      "ratio": 6.7,
+      "minimum": 3,
+      "pass": true
+    }
+  ],
+  "sql_runtime_validation": "NOT_RUN",
+  "application_tests": "NOT_RUN",
+  "sql_parser_statements": 34,
+  "sql_syntax_parser": "PASS"
+}

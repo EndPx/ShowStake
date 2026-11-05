@@ -1,0 +1,23 @@
+{
+  "date": "2026-11-06",
+  "classifier": "PASS_LOCAL",
+  "reviewer": "Codex",
+  "baseline_sha256": {
+    "00-START-HERE.md": "4d9a84c611bc4a832666c7815bff5ea413b9a68f14cf299803d8485871fb9f52",
+    "01-PRODUCT.md": "322c20c615d35b3352fc9ee7d84fc629cdaa8d17c1f6e9621bad402189aed013",
+    "02-ARCHITECTURE.md": "8cb2a31c485b72c060f7dd75da59a151c50093fece0c984afdd908af9f816f88",
+    "03-DATABASE.md": "3a83f2dd63534d40fe3952063c31ff4db37e65e95466dc28834ebefaa0494b3f",
+    "04-DESIGN-SYSTEM.md": "3d0cfc573d83f18a00c9217daad93c003fb2207cfc40ce488883105593b5d1c4",
+    "05-EXECUTION-AND-TESTS.md": "2ca7a6ad77da6bf19a1f52469ec5eb752b0e48607c51dc0789f92679f4a118b1",
+    "06-DECISIONS-AND-SOURCES.md": "34f37ee9370c2856bd08c46ea3c21e43ec9c43018359ee665c37d25220d6fe2a",
+    "schema.sql": "0e6afec55017ef15da3ab73f3a44ae23bca45c89856b268154a6cf45bc14c822",
+    "tokens.css": "c2e0f05d0378627b2d837acbb391127a53ea73c928cfcddfeaf0f8ecef414a72",
+    "VALIDATION.json": "c3394d37fb4ebb7dd6729d5159d3666dd1690dcaeedded9a582d17c794d448fb",
+    "verify_packet.py": "e84c58a19346432aa4c246517320d52934d172e17710e2c57aae571dc9e4cbfe"
+  },
+  "scope": "Packet copy integrity and local inventory only",
+  "executor_cycle": "NOT_RUN",
+  "postgresql_migration": "NOT_RUN",
+  "application_tests": "NOT_RUN",
+  "live_integrations": "NOT_RUN"
+}
