@@ -1,0 +1,72 @@
+{
+  "task_id": "task_9cacd2f5a0a7",
+  "label": "T00 foundation bootstrap (dispatch) — reclassified T01 foundation per Codex; legacy t00 filenames retained from the allowed-writes list",
+  "classifier": "PASS_LOCAL",
+  "reviewer": "Codex",
+  "date": "2026-11-06",
+  "base_commit": "0d0ccfd9885b4eb367ef9256defca96fd31009ae",
+  "head_at_finish": "32527312b764271bdf2ffc0a68e1a597785e5947",
+  "head_note": "Codex advanced HEAD with docs-only commit during the run; worker made no commit",
+  "environment": {
+    "os": "Windows (ShowStake checkout)",
+    "node": "v24.18.0",
+    "pnpm": "10.21.0",
+    "python": "3.12.10 (python), 3.13.0 (py)",
+    "docker_cli": "29.4.3",
+    "docker_engine": "DOWN (named pipe dockerDesktopLinuxEngine missing) -> BLOCKED_EXTERNAL",
+    "wsl": "Ubuntu-24.04 with PostgreSQL 18 binaries (used by Codex for baseline apply)",
+    "package_manager_pin": "pnpm@10.21.0",
+    "engines_node": ">=24.18.0 <25"
+  },
+  "runtime_identity": {
+    "agent": "dsh",
+    "launcher": "dsh 0.2.1-rc.5",
+    "profile": "dsh-tui (@deepseek-harness-tui/dsh-tui 0.18.0)",
+    "provider": "gater",
+    "model": "deepseek-v4.1-flash-1017-v2",
+    "base_url_redacted_domain": "https://api.gater.ai.id/v1",
+    "key_env_name_only": "GATER_API_KEY",
+    "note": "No secrets, env dumps, or credential file contents included"
+  },
+  "files_created": [
+    "package.json", "pnpm-workspace.yaml", "pnpm-lock.yaml", ".gitattributes", ".env.example",
+    "apps/web/README.md", "apps/api/README.md", "apps/worker/README.md",
+    "packages/domain/README.md", "packages/api-contract/README.md",
+    "packages/wallet-adapter/README.md", "packages/intents-adapter/README.md", "packages/ui/README.md",
+    "contracts/showstake/README.md",
+    "scripts/verify-packet.mjs", "scripts/verify-bootstrap.mjs", "scripts/run-packet-verifier.mjs",
+    "scripts/postgres-disposable/README.md", "scripts/postgres-disposable/setup.sh", "scripts/postgres-disposable/setup.ps1",
+    "docs/evidence/t00-executor.md", "docs/evidence/t00-validation.json"
+  ],
+  "tracked_diff": "empty (no baseline file modified)",
+  "verification": [
+    { "step": "verify-packet", "command": "node scripts/verify-packet.mjs", "expected": "11 baseline files match hashes", "observed": "11/11 OK, no byte drift", "exit": 0 },
+    { "step": "verify-bootstrap", "command": "node scripts/verify-bootstrap.mjs", "expected": "node>=24.18.0<25 and pnpm==10.21.0 and pins and files present", "observed": "PASS", "exit": 0 },
+    { "step": "packet-verifier-temp-copy", "command": "node scripts/run-packet-verifier.mjs", "expected": "verify_packet.py runs on temp copy; baseline VALIDATION.json preserved", "observed": "verifier exit 0; baseline byte-identical", "exit": 0 },
+    { "step": "lockfile", "command": "pnpm install --lockfile-only", "expected": "minimal zero-dependency lockfile", "observed": "lockfileVersion 9.0, root importer only", "exit": 0 }
+  ],
+  "baseline_validation_sha256_preserved": "c3394d37fb4ebb7dd6729d5159d3666dd1690dcaeedded9a582d17c794d448fb",
+  "temp_verifier_summary": {
+    "files_present": 9,
+    "unique_acceptance_tests": 65,
+    "tables": 22,
+    "contrast_checks_pass": 12,
+    "sql_syntax_parser": "NOT_RUN (pglast unavailable)"
+  },
+  "money_policy": {
+    "schema_money_type": "atomic_amount numeric domain",
+    "constraints": "CHECK(VALUE = trunc(VALUE) AND VALUE >= 0 AND VALUE <= 340282366920938463463374607431768211455)",
+    "float_or_real_columns": "none"
+  },
+  "postgresql": {
+    "docker_path": "BLOCKED_EXTERNAL (engine daemon down; Desktop not started)",
+    "wsl_path": "available; codex applied baseline (docs/evidence/t01-postgresql-baseline.json, partial D01/D02/D05)",
+    "worker_action": "provided disposable setup scripts/instructions only; did not claim migration PASS"
+  },
+  "limits_and_blockers": [
+    "T01-T11 not implemented; no ABI/API frozen; no app/provider code",
+    "No dependency, deployment, push, paid resource, transaction, or real asset performed",
+    "No git commit by this worker (changes left for Codex review -> tests -> commit)",
+    "B02 and T00 acceptance recorded by Codex, not claimed here"
+  ]
+}
