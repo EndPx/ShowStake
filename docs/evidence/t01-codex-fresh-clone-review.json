@@ -1,0 +1,26 @@
+{
+  "reviewer": "Codex",
+  "classifier": "FAILED",
+  "test_environment": "fresh local Git clone of committed repo with explicit candidate overlay, default Windows Git checkout, isolated path with spaces",
+  "candidate_clone": "D:\\Belajar\\Hackacton\\Hackacton yang masih jalan\\ShowStake\\.local\\t01-fresh-review-1793977739",
+  "install_exit": 0,
+  "static_exit": 1,
+  "postgres_suite_exit": 1,
+  "db_phase_checks": {
+    "checks": 49,
+    "failed": 0
+  },
+  "readiness": "Unix socket SELECT1 succeeded after one attempt",
+  "db_phase_result": "49/49 local DB checks passed on actual server, but NOT full acceptance",
+  "blockers": [
+    "Fresh checkout CRLF converted immutable baseline; candidate .gitattributes not committed at clone time. Git blob SHA equals originalLF baseline. Commit reviewed LF attributes and retest a clone that contains them. Never change historical hashes to hide drift.",
+    "static-baseline failure yields overall script exit1 but JSON summary stillPASS_LOCAL; aggregate must include static/orchestrator outcomes",
+    "D04 accepted total excludes withdrawn principal (4x5m accepted=20m, active15m, withdrawal5m retained as refund liability). Conservation must include withdrawn registrations; pending_payout must not stand for all escrow funds",
+    "OpenAPI route inventory hardcodes16 and omits baseline POST events/drafts + publish-intent and social/provider auth path; final interface not frozen"
+  ],
+  "source_evidence": {
+    "main_baseline_sha": "0e6afec55017ef15da3ab73f3a44ae23bca45c89856b268154a6cf45bc14c822",
+    "fresh_clone_crlf_sha": "0571dd09fc03d3882bd9eff0aa88c92f6cab1e0ab3d721ec3728fe96244c0f46"
+  },
+  "limits": "No main source mutation by reviewer; original/fresh clone artifacts retained. Failed acceptance is preserved despite DB-specific pass."
+}

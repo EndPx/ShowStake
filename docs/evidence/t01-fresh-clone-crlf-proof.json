@@ -1,0 +1,133 @@
+{
+  "id": "t01-fresh-clone-crlf-proof",
+  "reviewer": "Unreviewed worker evidence (Codex review pending)",
+  "classifier": "PASS_LOCAL",
+  "purpose": "Prove that the committed .gitattributes (LF rules for all text sources plus a narrow docs/planning/showstake-v2/VALIDATION.json text eol=crlf override) makes a fresh default Windows Git clone (core.autocrlf=true, path with spaces) check out ALL 11 packet files byte-for-byte equal to docs/evidence/bootstrap.json, and that pnpm verify passes in that clone. Two negative controls reproduce the exact prior drift.",
+  "extends": "t01-fresh-clone-lf-proof.json (previously proved schema.sql only)",
+  "method": [
+    "1. Confirmed effective Git setting core.autocrlf=true (system-level) — default Windows checkout.",
+    "2. POSITIVE: copy the full candidate tree (excl. .git/node_modules/.local), git add -A + commit with the reviewed .gitattributes (incl. VALIDATION.json eol=crlf), then git clone into a separate path with spaces; hash all 11 raw bytes; run pnpm verify.",
+    "3. NEGATIVE A: same tree but .gitattributes with the VALIDATION.json crlf override removed (old attr) -> VALIDATION.json checks out as the LF mismatch observed in t01-codex-52-review.json.",
+    "4. NEGATIVE B: the 11 packet files with NO .gitattributes (autocrlf=true) -> the 10 LF-recorded files drift to CRLF.",
+    "Stale GIT_CONFIG_* variables were cleared for every git invocation; only temp paths under .local/ were used; the worker does not commit or push."
+  ],
+  "observed": {
+    "positive": {
+      "clone_dir": "C:\\Users\\abaym\\AppData\\Local\\Temp\\showstake clone proof 1793997838403\\positive\\clone",
+      "core_autocrlf": "true (inherited system default)",
+      "all_11_match": true,
+      "files": {
+        "00-START-HERE.md": {
+          "sha256": "4d9a84c611bc4a832666c7815bff5ea413b9a68f14cf299803d8485871fb9f52",
+          "ok": true,
+          "cr": 0,
+          "lf": 39,
+          "expected": "4d9a84c611bc4a832666c7815bff5ea413b9a68f14cf299803d8485871fb9f52"
+        },
+        "01-PRODUCT.md": {
+          "sha256": "322c20c615d35b3352fc9ee7d84fc629cdaa8d17c1f6e9621bad402189aed013",
+          "ok": true,
+          "cr": 0,
+          "lf": 80,
+          "expected": "322c20c615d35b3352fc9ee7d84fc629cdaa8d17c1f6e9621bad402189aed013"
+        },
+        "02-ARCHITECTURE.md": {
+          "sha256": "8cb2a31c485b72c060f7dd75da59a151c50093fece0c984afdd908af9f816f88",
+          "ok": true,
+          "cr": 0,
+          "lf": 109,
+          "expected": "8cb2a31c485b72c060f7dd75da59a151c50093fece0c984afdd908af9f816f88"
+        },
+        "03-DATABASE.md": {
+          "sha256": "3a83f2dd63534d40fe3952063c31ff4db37e65e95466dc28834ebefaa0494b3f",
+          "ok": true,
+          "cr": 0,
+          "lf": 51,
+          "expected": "3a83f2dd63534d40fe3952063c31ff4db37e65e95466dc28834ebefaa0494b3f"
+        },
+        "04-DESIGN-SYSTEM.md": {
+          "sha256": "3d0cfc573d83f18a00c9217daad93c003fb2207cfc40ce488883105593b5d1c4",
+          "ok": true,
+          "cr": 0,
+          "lf": 87,
+          "expected": "3d0cfc573d83f18a00c9217daad93c003fb2207cfc40ce488883105593b5d1c4"
+        },
+        "05-EXECUTION-AND-TESTS.md": {
+          "sha256": "2ca7a6ad77da6bf19a1f52469ec5eb752b0e48607c51dc0789f92679f4a118b1",
+          "ok": true,
+          "cr": 0,
+          "lf": 104,
+          "expected": "2ca7a6ad77da6bf19a1f52469ec5eb752b0e48607c51dc0789f92679f4a118b1"
+        },
+        "06-DECISIONS-AND-SOURCES.md": {
+          "sha256": "34f37ee9370c2856bd08c46ea3c21e43ec9c43018359ee665c37d25220d6fe2a",
+          "ok": true,
+          "cr": 0,
+          "lf": 44,
+          "expected": "34f37ee9370c2856bd08c46ea3c21e43ec9c43018359ee665c37d25220d6fe2a"
+        },
+        "VALIDATION.json": {
+          "sha256": "c3394d37fb4ebb7dd6729d5159d3666dd1690dcaeedded9a582d17c794d448fb",
+          "ok": true,
+          "cr": 95,
+          "lf": 95,
+          "expected": "c3394d37fb4ebb7dd6729d5159d3666dd1690dcaeedded9a582d17c794d448fb"
+        },
+        "schema.sql": {
+          "sha256": "0e6afec55017ef15da3ab73f3a44ae23bca45c89856b268154a6cf45bc14c822",
+          "ok": true,
+          "cr": 0,
+          "lf": 141,
+          "expected": "0e6afec55017ef15da3ab73f3a44ae23bca45c89856b268154a6cf45bc14c822"
+        },
+        "tokens.css": {
+          "sha256": "c2e0f05d0378627b2d837acbb391127a53ea73c928cfcddfeaf0f8ecef414a72",
+          "ok": true,
+          "cr": 0,
+          "lf": 30,
+          "expected": "c2e0f05d0378627b2d837acbb391127a53ea73c928cfcddfeaf0f8ecef414a72"
+        },
+        "verify_packet.py": {
+          "sha256": "e84c58a19346432aa4c246517320d52934d172e17710e2c57aae571dc9e4cbfe",
+          "ok": true,
+          "cr": 0,
+          "lf": 35,
+          "expected": "e84c58a19346432aa4c246517320d52934d172e17710e2c57aae571dc9e4cbfe"
+        }
+      },
+      "pnpm_verify": {
+        "command": "pnpm verify",
+        "exit": 0,
+        "pass": true,
+        "tail": "OK   01-PRODUCT.md\nOK   02-ARCHITECTURE.md\nOK   03-DATABASE.md\nOK   04-DESIGN-SYSTEM.md\nOK   05-EXECUTION-AND-TESTS.md\nOK   06-DECISIONS-AND-SOURCES.md\nOK   VALIDATION.json\nOK   schema.sql\nOK   tokens.css\nOK   verify_packet.py\n\nChecked 11 baseline files (read-only).\nPASS: baseline packet integrity verified (no byte drift).\n"
+      }
+    },
+    "negative_a_no_crlf_override": {
+      "clone_dir": "C:\\Users\\abaym\\AppData\\Local\\Temp\\showstake clone proof 1793997838403\\negative-no-crlf-override\\clone",
+      "description": "VALIDATION.json should drift to the normalized-LF hash a42e7687...",
+      "VALIDATION_json_observed": "a42e7687333659de94bc266ebffaf0575117c6b0da60232e81bf9e1c88e698c4",
+      "VALIDATION_json_expected": "c3394d37fb4ebb7dd6729d5159d3666dd1690dcaeedded9a582d17c794d448fb",
+      "drifted": true
+    },
+    "negative_b_no_attributes": {
+      "clone_dir": "C:\\Users\\abaym\\AppData\\Local\\Temp\\showstake clone proof 1793997838403\\negative-no-attributes\\clone",
+      "description": "The 10 LF-recorded files should drift to CRLF; VALIDATION.json matches only coincidentally.",
+      "drifted_lf_files": [
+        "00-START-HERE.md",
+        "01-PRODUCT.md",
+        "02-ARCHITECTURE.md",
+        "03-DATABASE.md",
+        "04-DESIGN-SYSTEM.md",
+        "05-EXECUTION-AND-TESTS.md",
+        "06-DECISIONS-AND-SOURCES.md",
+        "schema.sql",
+        "tokens.css",
+        "verify_packet.py"
+      ],
+      "schema_sql_observed": "0571dd09fc03d3882bd9eff0aa88c92f6cab1e0ab3d721ec3728fe96244c0f46",
+      "VALIDATION_json_observed": "c3394d37fb4ebb7dd6729d5159d3666dd1690dcaeedded9a582d17c794d448fb"
+    }
+  },
+  "conclusion": "The committed .gitattributes (LF rules + VALIDATION.json eol=crlf) is the complete fix: a default Windows clone reproduces all 11 recorded bootstrap hashes and pnpm verify exits 0. Negative A reproduces the exact acceptance-blocking drift (VALIDATION.json a42e7687... LF) when the crlf override is absent; negative B shows the 10 LF files drift to CRLF without any attributes.",
+  "limits": "Local Git/checkout proof only; no main commit/push. No historical hash or baseline/handoff byte changed. Postgres 52-check proof untouched (no code change)."
+}

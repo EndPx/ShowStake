@@ -1,0 +1,30 @@
+{
+  "name": "showstake",
+  "version": "0.0.0",
+  "private": true,
+  "description": "ShowStake v2 — NEAR-centered event attendance commitment platform. T00/T01 database + bootstrap foundation only; wallet/intents/UI implementation is a separate, later acceptance (its commands live in each package's own manifest, not at the root).",
+  "packageManager": "pnpm@10.21.0",
+  "engines": {
+    "node": ">=24.18.0 <25",
+    "pnpm": ">=10.21.0 <11"
+  },
+  "scripts": {
+    "verify": "node scripts/verify-bootstrap.mjs && node scripts/verify-packet.mjs",
+    "verify:packet": "node scripts/verify-packet.mjs",
+    "verify:bootstrap": "node scripts/verify-bootstrap.mjs",
+    "verify:packet-verifier": "node scripts/run-packet-verifier.mjs",
+    "verify:domain": "node packages/domain/verify.mjs",
+    "verify:baseline": "node migrations/verify-baseline.mjs",
+    "verify:openapi": "node scripts/verify-openapi.mjs",
+    "verify:t01-aggregate": "node scripts/verify-t01-aggregate.mjs",
+    "verify:t01-static": "node packages/domain/verify.mjs && node migrations/verify-baseline.mjs && node scripts/verify-t01-aggregate.mjs && node scripts/verify-openapi.mjs",
+    "migrations:up": "node migrations/cli.mjs up",
+    "migrations:status": "node migrations/cli.mjs status",
+    "verify:t01": "wsl -d Ubuntu -- bash scripts/postgres-disposable/run-suite.sh"
+  },
+  "devDependencies": {
+    "js-yaml": "4.1.0",
+    "openapi-schema-validator": "12.1.3",
+    "pg": "8.23.1"
+  }
+}

@@ -8,3 +8,6 @@ target/
 *.log
 __pycache__/
 .local/
+
+# Per-run local database test output; reviewed evidence is in docs/evidence.
+migrations/artifacts/

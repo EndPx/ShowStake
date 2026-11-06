@@ -385,8 +385,12 @@ run() {
   EXPECTED_DELETE_ROOT=""
 }
 
-case "${1:-run}" in
-  selftest) selftest ;;
-  run) run ;;
-  *) die "unknown command: ${1:-} (use run|selftest)" ;;
-esac
+# Only dispatch when executed directly (not sourced), so run-suite.sh can reuse
+# these guards without triggering the one-shot `run`.
+if [ "${BASH_SOURCE[0]}" = "$0" ]; then
+  case "${1:-run}" in
+    selftest) selftest ;;
+    run) run ;;
+    *) die "unknown command: ${1:-} (use run|selftest)" ;;
+  esac
+fi

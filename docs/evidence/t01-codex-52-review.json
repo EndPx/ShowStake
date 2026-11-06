@@ -1,0 +1,20 @@
+{
+  "reviewer": "Codex",
+  "classification": "PASS_LOCAL",
+  "scope": "independent disposable PostgreSQL candidate review; NOT whole-foundation acceptance",
+  "candidate": "D:\\Belajar\\Hackacton\\Hackacton yang masih jalan\\ShowStake\\.local\\t01-codex-candidate-1793997146",
+  "run_id": "run-20261106T203257Z-18292",
+  "command": "pnpm verify:t01",
+  "exit": 0,
+  "database": "PostgreSQL 18.6 on WSL disposable server",
+  "checks": 52,
+  "stop_proven": true,
+  "cleanup_exit": 0,
+  "foundation_acceptance": "FAILED: verify:packet VALIDATION.json checkout bytes mismatch; immutable expected c3394d37..., observed a42e7687...",
+  "limits": [
+    "No wallet, testnet, live chain, deployment, or funded transaction tested",
+    "Candidate was a clean clone plus explicit DB/foundation overlay; no wallet/intents source included",
+    "No implementation commit or push until foundation checkout blocker fixed"
+  ],
+  "artifacts_directory": "D:\\Belajar\\Hackacton\\Hackacton yang masih jalan\\ShowStake\\.local\\t01-codex-candidate-1793997146\\migrations\\artifacts\\run-20261106T203257Z-18292"
+}

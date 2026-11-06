@@ -1,6 +1,19 @@
 # ShowStake
-Stake your spot. Show up.
 
-ShowStake v2 is a NEAR-centered event attendance commitment platform under implementation. The authoritative baseline is [the planning packet](docs/planning/showstake-v2/00-START-HERE.md).
+ShowStake is an event attendance commitment platform built around NEAR escrow. Participants commit a refundable deposit to an event; an account-bound, non-transferable pass represents registration. Organizers finalize attendance onchain before settlement and claims. The product addresses registrations that do not translate into attendance.
 
-No deployment or live escrow lifecycle is proven yet. See [status](docs/status.md), [decisions](docs/decisions.md), and [evidence](docs/evidence/).
+The current accepted increment is the local database foundation. There is no deployed application or proven live escrow lifecycle yet. Hackathon tracks: `open` and `nfts`; the custom pass does not currently claim NEP-171 or NEP-393 compliance.
+
+## Try the accepted foundation
+
+Prerequisites: Node 24.18.x, pnpm 10.21.0, Git. The PostgreSQL command below additionally requires Windows with WSL distribution `Ubuntu`, Bash, and access to download official PostgreSQL packages and the pinned Linux Node runtime. It creates an isolated temporary server and stops it after the run.
+
+1. Run `pnpm install --frozen-lockfile --ignore-scripts`. See the pinned database dependencies install without wallet or frontend dependencies.
+2. Run `pnpm verify`. See toolchain checks and all 11 preserved planning-packet hashes pass. This checks foundation integrity; it does not exercise a wallet or migration.
+3. Run `pnpm verify:t01-static`. See exact-money boundaries, SQL provenance, fail-closed evidence aggregation, and the 19-route OpenAPI contract validate. The OpenAPI file describes an interface; no HTTP server is implemented in this increment.
+4. Run `pnpm verify:t01`. See migrations execute against a real disposable PostgreSQL server, followed by constraints, role denials, backup/restore, labeled chain-event replay, numeric boundaries and concurrency checks. Successful full runs record 52 database checks plus orchestration outcomes, proven server stop and cleanup.
+5. Inspect the unique directory under `migrations/artifacts/` and [Codex review evidence](docs/evidence/t01-codex-52-review.json). See local test provenance and the limits of the evidence. Replay data is labeled fixture data, not observed onchain state.
+
+NEAR remains the authority for registration, final attendance and payouts. A successful cross-chain swap is not registration; scanning a QR code is not final attendance. Login/signing, escrow deposit/pass/refund, settlement, gated content and funded cross-chain integration remain subsequent acceptance milestones.
+
+Start with the [authoritative v2 planning packet](docs/planning/showstake-v2/00-START-HERE.md), [current status](docs/status.md), and [decisions](docs/decisions.md). Keep credentials in an ignored `.env`; `.env.example` contains placeholders only.

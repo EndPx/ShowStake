@@ -1,0 +1,30 @@
+{
+  "id": "t01-fresh-clone-lf-proof",
+  "reviewer": "Unreviewed worker evidence (Codex review pending)",
+  "classifier": "PASS_LOCAL",
+  "purpose": "Prove that committing the reviewed .gitattributes LF rules makes a fresh default Windows Git clone (core.autocrlf=true) check out docs/planning/showstake-v2/schema.sql with LF byte-for-byte equal to the recorded provenance hash; WITHOUT the committed attributes the same clone reproduces the exact CRLF drift the review observed.",
+  "method": [
+    "1. Confirm the effective Git setting: core.autocrlf=true (C:/Program Files/Git/etc/gitconfig, system-level) — the default Windows Git checkout behavior named in the review.",
+    "2. POSITIVE: create a temp repo (path WITH spaces) containing .gitattributes ('*.sql text eol=lf' plus .mjs/.json/.yaml/.md rules) and a copy of schema.sql, git add + commit, then `git clone` into a separate path WITH spaces.",
+    "3. Hash the clone's schema.sql raw bytes; count CRLF vs lone-LF.",
+    "4. NEGATIVE CONTROL: repeat the same clone WITHOUT .gitattributes to prove the counterfactual drift.",
+    "Commands were run with the stale GIT_CONFIG_* variables cleared; no home path was hardcoded; only temp paths under .local/ (whose parent repo path already contains spaces)."
+  ],
+  "observed": {
+    "with_gitattributes": {
+      "clone_sha256": "0e6afec55017ef15da3ab73f3a44ae23bca45c89856b268154a6cf45bc14c822",
+      "crlf_pairs": 0,
+      "lone_lf": 141,
+      "matches_recorded_lf_hash": true,
+      "git_check_attr_eol": "lf"
+    },
+    "without_gitattributes_negative_control": {
+      "clone_sha256": "0571dd09fc03d3882bd9eff0aa88c92f6cab1e0ab3d721ec3728fe96244c0f46",
+      "crlf_pairs": 141,
+      "lone_lf": 0,
+      "matches_recorded_lf_hash": false
+    }
+  },
+  "conclusion": "The committed .gitattributes *.sql text eol=lf is the fix: it forces LF checkout under core.autocrlf=true, so verify-baseline.mjs's recorded provenance SHA (0e6afec5...) holds in a fresh clone. The negative control reproduces the reviewer's exact fresh_clone_crlf_sha (0571dd09...), confirming the diagnosis. A candidate overlay created AFTER checkout cannot retroactively re-line-ending existing files, so the attributes must be part of the committed tree BEFORE any fresh clone; this worker does not commit/push.",
+  "limits": "Local Git/checkout proof only; no main commit/push performed by the worker. No historical hash or baseline/handoff byte was changed."
+}

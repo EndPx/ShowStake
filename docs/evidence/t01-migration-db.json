@@ -1,0 +1,531 @@
+{
+  "id": "t01-migration-db",
+  "task": "T01 database/interfaces (D01-D06)",
+  "classifier": "PASS_LOCAL",
+  "ok": true,
+  "reviewer_pending": true,
+  "base_commit": "bb4cc9470315db44ac24158267352074dbbdb910",
+  "run_id": "run-20261106T155958Z-13542",
+  "mode": "full",
+  "problems": [],
+  "source": {
+    "base_commit": "bb4cc9470315db44ac24158267352074dbbdb910",
+    "files": {
+      "package.json": "c5a2bb5df5d049e4a5ece5a4ede242d4f57c6f1938c80e0ed5647e3f124cc039",
+      "pnpm-lock.yaml": "a582cedb6f621ff8489dde4f288b19a36a05ffa70771705b6f0c3ea8d9f152c0",
+      "pnpm-workspace.yaml": "4c852704c7587dec520b146b0a110ecec78234c224848117bf97b7176ed1e392",
+      ".gitattributes": "235dd8bee4d6958a1c51966683d1dca8a95ff0cbb59e771f151183fee963f1b9",
+      ".env.example": "c66002bf02f5b0e5bdfcb78cf408bd585c474dd6b60c6c846f809d08b9b5f2c3",
+      "migrations/schema/0001_initial.sql": "45b6469488b84e0da39965c209ace910d398e8d6d53dbcadf2fef6b2be423db2",
+      "migrations/schema/0002_roles_grants.sql": "e5074c6f2a5fdd370f442532a169b6d0723ac33093cac07e7bd2e5dfdca9f74a",
+      "migrations/runner.mjs": "4808cac089297db5cd458e1d18f769fcb1a7a4c6b8f3d5dcb2b55a7d8825f1a9",
+      "migrations/cli.mjs": "8cd04bd7df1a176f9a398f0542ab9027c7e5e0a3d41d0dd9e4cd7cba0f8c83d6",
+      "migrations/verify-baseline.mjs": "45460fd0d2f5680bd5aca4352b2cf3558239ba6887a760381ae246d7b38b47fd",
+      "migrations/README.md": "b0da31de4a81a935b79d7bb3fe2eea4c016e8c0eb1aec54171bef25522e573d5",
+      "migrations/COMMIT-MANIFEST.md": "dbba2dca1c8bb38744543f8cacc58d29005e2a1a42e1cff6a816b560a38d8e5a",
+      "migrations/tests/run-t01.mjs": "853d58e739577da9cd65133ff94f9fedaa1ccc45cddbb012e5ef09c2245c6f78",
+      "migrations/tests/lib.mjs": "bf7dc3b3e6b0aab54a5f5476fa064554d5188197d6ade29182824eca852dd27d",
+      "migrations/tests/aggregate.mjs": "9a7a370840a1668eef4017a13c57fcf1b6d89e756b51e495613242f5049c68b2",
+      "migrations/tests/replay.mjs": "04528c50c0faedfa3b913717b351f90fb1d22c760d70b8b5ab268471aeb6c65f",
+      "migrations/tests/fixtures.mjs": "f11c1493464959b8986c338cfd7dc93a95177e3ffcae36ee9724361fa20f4cdf",
+      "migrations/tests/readiness.mjs": "605c3609c4a76018cc5cec90bd5cba1ccfa727c5b996e72e42c1e8f01fadb7ac",
+      "packages/domain/package.json": "c7682aa087ed2694cf5380b79dc11ad04a7345917103d6fb6ffa20e71a0462fc",
+      "packages/domain/README.md": "741a17d96e6eb83331f5ca1a4a24fc6b26885570296440319dd7c72635dbae2b",
+      "packages/domain/verify.mjs": "5ee1a7a2b9a0e50bedb48505e11e0fabba953c6bc842390f73f1dacef60e695b",
+      "packages/domain/src/index.mjs": "37e54db451aa700660bdd86a94860fa876c081a0b6b6e1f9ec54d590f4913614",
+      "packages/domain/src/atomic.mjs": "c8ab1e7ab5a0b9f5eaf739b5f333220ad5b54d76197a32ee7c8429614bb5aaf1",
+      "packages/domain/src/account.mjs": "c9d1f20c9029ff4fb8f685a735a2fc083666f1a7fae5153ca372e80c4bace2e2",
+      "packages/domain/src/capability.mjs": "971750bc44e988ac5161077d72cdfcc8956b4458a90241c06a13b5751712f30a",
+      "packages/domain/src/states.mjs": "ac59a6ac4b424dd693a6f11ff7fdf2ca8608c02e7411830180b39cdbe04edf94",
+      "packages/domain/src/envelope.mjs": "6005352b28ae9dd1b84126ac46589640b7d1042f2db1392345dd5a42545d51cc",
+      "packages/api-contract/openapi.yaml": "14c79228e1fe48ff808faf1ecb5b71b70e24d5112b885bb3b015978ad13ba381",
+      "packages/api-contract/routes.json": "c7e5890adbb10c7551d47020847268785891f460999481ef83fb78dfd7093cab",
+      "packages/api-contract/README.md": "3feb8d87571071dc30f5e3f48a65a22c72139921995d5f146f4e8991c18e4a00",
+      "scripts/verify-openapi.mjs": "b3a457e548edf395a68871a68131db8a049f4c10e4de3f3dc522221dbe1567cc",
+      "scripts/verify-t01-aggregate.mjs": "98bf4de5b4e7777f5ebb7923bf9b6ac5753e115521e57bb8653f9b7770cdd574",
+      "scripts/verify-bootstrap.mjs": "5bcd128940e56b995bbebba8a14a55b4ace83e3d38ad2d95c0476bb3936a06bd",
+      "scripts/verify-packet.mjs": "4b1c1d0d51cce9a8d2e6eb1a3013f864df64eba1a48cc09a4fe043ac80133cb9",
+      "scripts/run-packet-verifier.mjs": "fcde0cb8c902d7e4a3ebef7336c7449bfcd2e5203a018ea16ae1fa384c8d5e96",
+      "scripts/postgres-disposable/run-suite.sh": "8135a3d28fb897f9af2bd18c4062ea3d12db61378b9a8c8f895d5aa69e7e3678",
+      "scripts/postgres-disposable/setup.sh": "7cd985f0792a1317117a53600b44a3755eabe43cf5ee3d8d31f6036ada8f0a7b",
+      "scripts/postgres-disposable/setup.ps1": "739dcaddb899c76335b71a4ff31b6ea9d8296c3f074b28c07cca437c58f670d8",
+      "scripts/postgres-disposable/README.md": "582c1f38b37ebda8ca9d676956b8267744252abc83e756a0f1aef5a6c0ce58fe"
+    },
+    "environment": {
+      "node": "v24.18.0",
+      "pnpm": "10.21.0",
+      "uname": "Linux 6.18.33.2-microsoft-standard-WSL2",
+      "postgres": "postgres (PostgreSQL) 18.6 (Ubuntu 18.6-0ubuntu0.26.04.1)"
+    }
+  },
+  "environment": {
+    "os": "Windows + WSL2 (Linux Node over per-run Unix socket)",
+    "distro": "Ubuntu 26.04.1 LTS (WSL2)",
+    "node": "v24.18.0",
+    "postgresql": {
+      "cluster": "disposable (official postgresql-18 apt extracted to owned temp dir)",
+      "listener": "per-run Unix socket (loopback TCP disabled for the client)",
+      "port": "39691",
+      "superuser": "showstake",
+      "databases": [
+        "showstake_disposable",
+        "showstake_restore",
+        "showstake_drift/06 (temporary)"
+      ]
+    }
+  },
+  "commands": [
+    "wsl -d Ubuntu -- bash scripts/postgres-disposable/run-suite.sh",
+    "node migrations/tests/run-t01.mjs d01|d02|d03|d04-fixtures|d04-verify|d05|d06|finalize (Linux Node, Unix socket)",
+    "node migrations/cli.mjs status  (READ-ONLY, advisory-lock migration runner)",
+    "node packages/domain/verify.mjs  (D05-static money strings/states/envelopes)",
+    "node migrations/verify-baseline.mjs (baseline provenance, no edit)",
+    "node scripts/verify-t01-aggregate.mjs (fail-closed aggregate regressions)",
+    "node scripts/verify-openapi.mjs (pinned OpenAPI validation)",
+    "pg_dump -Fc showstake_disposable | pg_restore --no-owner --no-privileges showstake_restore"
+  ],
+  "d04_dump_restore": {
+    "pg_dump": 0,
+    "pg_restore": 0
+  },
+  "stages": {
+    "required": true,
+    "ok": true,
+    "stages": {
+      "static-domain": {
+        "exit": 0
+      },
+      "static-baseline": {
+        "exit": 0
+      },
+      "static-aggregate": {
+        "exit": 0
+      },
+      "static-openapi": {
+        "exit": 0
+      },
+      "readiness": {
+        "exit": 0
+      },
+      "cli-status": {
+        "exit": 0
+      },
+      "pg_dump": {
+        "exit": 0
+      },
+      "pg_restore": {
+        "exit": 0
+      },
+      "stop": {
+        "exit": 0
+      },
+      "cleanup": {
+        "exit": 0
+      }
+    },
+    "problems": []
+  },
+  "phases": {
+    "d01": {
+      "phase": "d01",
+      "title": "D01 apply + checksum + idempotency + drift + atomic rollback + stale + TEMP",
+      "run_id": "run-20261106T155958Z-13542",
+      "ok": true,
+      "passed": 10,
+      "failed": 0,
+      "checks": [
+        {
+          "id": "D01_APPLY_AND_REAPPLY",
+          "ok": true,
+          "expected": "2 migrations applied, then 0 on re-run",
+          "observed": "applied=1,2 re-run=0"
+        },
+        {
+          "id": "D01_NO_DRIFT_OR_PENDING",
+          "ok": true,
+          "expected": "no drift, no pending, no stale",
+          "observed": "drift=0 pending=0 stale=0"
+        },
+        {
+          "id": "D01_TABLES",
+          "ok": true,
+          "expected": "23 tables present",
+          "observed": "all present"
+        },
+        {
+          "id": "D01_REAL_POSTGRESQL",
+          "ok": true,
+          "expected": "real PostgreSQL server reports version",
+          "observed": "PostgreSQL 18.6 (Ubuntu 18.6-0ubuntu0.26.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0, 64-bit"
+        },
+        {
+          "id": "D01_LOOPBACK_OR_SOCKET_ONLY",
+          "ok": true,
+          "expected": "listener is loopback or Unix-socket only (never all-interfaces)",
+          "observed": "listen_addresses=\"127.0.0.1\""
+        },
+        {
+          "id": "D01_API_NO_TEMP",
+          "ok": true,
+          "expected": "API role denied TEMP table creation",
+          "observed": "denied=42501"
+        },
+        {
+          "id": "D01_ATOMIC_ROLLBACK",
+          "ok": true,
+          "expected": "failed migration rolled back fully (no table, no tracking row)",
+          "observed": "threw=true table-absent=true no-row=true"
+        },
+        {
+          "id": "D01_DRIFT",
+          "ok": true,
+          "expected": "checksum drift fails closed",
+          "observed": "drift-threw=true"
+        },
+        {
+          "id": "D01_STALE_REFUSAL",
+          "ok": true,
+          "expected": "stale (removed) migration refused",
+          "observed": "stale-threw=true"
+        },
+        {
+          "id": "D01_LOCK_RELEASED_ON_ERROR",
+          "ok": true,
+          "expected": "migration lock released after a failed apply",
+          "observed": "released=true"
+        }
+      ],
+      "meta": {},
+      "at": "2026-11-06T16:00:05.069Z"
+    },
+    "d02": {
+      "phase": "d02",
+      "title": "D02 FK/unique/identity/idempotency/rules",
+      "run_id": "run-20261106T155958Z-13542",
+      "ok": true,
+      "passed": 10,
+      "failed": 0,
+      "checks": [
+        {
+          "id": "D02_FK_EVENT",
+          "ok": true,
+          "expected": "foreign key violation 23503",
+          "observed": "code=23503"
+        },
+        {
+          "id": "D02_ONE_ACTIVE_REGISTRATION",
+          "ok": true,
+          "expected": "partial unique active-registration index 23505",
+          "observed": "code=23505"
+        },
+        {
+          "id": "D02_WITHDRAWN_EXCLUDED",
+          "ok": true,
+          "expected": "WITHDRAWN excluded from active-registration uniqueness (insert ok)",
+          "observed": "inserted"
+        },
+        {
+          "id": "D02_IDENTITY_CONFLICT",
+          "ok": true,
+          "expected": "duplicate provider+subject 23505",
+          "observed": "code=23505"
+        },
+        {
+          "id": "D02_WALLET_BINDING_CONFLICT",
+          "ok": true,
+          "expected": "duplicate namespace+network+account 23505",
+          "observed": "code=23505"
+        },
+        {
+          "id": "D02_IDEMPOTENCY_KEY",
+          "ok": true,
+          "expected": "duplicate (scope,key) 23505",
+          "observed": "code=23505"
+        },
+        {
+          "id": "D02_PARTICIPANT_EQ_BENEFICIARY",
+          "ok": true,
+          "expected": "participant!=beneficiary CHECK 23514",
+          "observed": "code=23514"
+        },
+        {
+          "id": "D02_CAPACITY_RANGE",
+          "ok": true,
+          "expected": "capacity 0 CHECK 23514",
+          "observed": "code=23514"
+        },
+        {
+          "id": "D02_ENVIRONMENT_ENUM",
+          "ok": true,
+          "expected": "environment 'prod' CHECK 23514",
+          "observed": "code=23514"
+        },
+        {
+          "id": "D02_SESSION_EXPIRY_RULE",
+          "ok": true,
+          "expected": "idle > absolute CHECK 23514",
+          "observed": "code=23514"
+        }
+      ],
+      "meta": {},
+      "at": "2026-11-06T16:00:07.428Z"
+    },
+    "d03": {
+      "phase": "d03",
+      "title": "D03 SET ROLE least-privilege",
+      "run_id": "run-20261106T155958Z-13542",
+      "ok": true,
+      "passed": 9,
+      "failed": 0,
+      "checks": [
+        {
+          "id": "D03_API_NO_PROJECTION_UPDATE",
+          "ok": true,
+          "expected": "API update projection denied 42501",
+          "observed": "code=42501"
+        },
+        {
+          "id": "D03_API_NO_PROJECTION_INSERT",
+          "ok": true,
+          "expected": "API insert projection denied 42501",
+          "observed": "code=42501"
+        },
+        {
+          "id": "D03_API_CAN_READ_PROJECTION",
+          "ok": true,
+          "expected": "API SELECT projection ok",
+          "observed": "rows=1"
+        },
+        {
+          "id": "D03_API_CAN_INSERT_SESSION",
+          "ok": true,
+          "expected": "API INSERT session allowed",
+          "observed": "inserted"
+        },
+        {
+          "id": "D03_WORKER_NO_SESSION",
+          "ok": true,
+          "expected": "worker INSERT session denied 42501",
+          "observed": "code=42501"
+        },
+        {
+          "id": "D03_WORKER_NO_IDENTITY",
+          "ok": true,
+          "expected": "worker INSERT identity denied 42501",
+          "observed": "code=42501"
+        },
+        {
+          "id": "D03_WORKER_NO_TEMP",
+          "ok": true,
+          "expected": "worker denied TEMP table",
+          "observed": "denied=42501"
+        },
+        {
+          "id": "D03_WORKER_CAN_WRITE_PROJECTION",
+          "ok": true,
+          "expected": "worker INSERT projection allowed",
+          "observed": "inserted evt-worker-1"
+        },
+        {
+          "id": "D03_WORKER_CAN_OBSERVE_FUNDING",
+          "ok": true,
+          "expected": "worker UPDATE funding observation allowed",
+          "observed": "state->SOURCE_PENDING"
+        }
+      ],
+      "meta": {},
+      "at": "2026-11-06T16:00:08.670Z"
+    },
+    "d04-fixtures": {
+      "phase": "d04-fixtures",
+      "title": "D04 immutable labeled replay ledger loaded",
+      "run_id": "run-20261106T155958Z-13542",
+      "ok": true,
+      "passed": 1,
+      "failed": 0,
+      "checks": [
+        {
+          "id": "D04_FIXTURES_LOADED",
+          "ok": true,
+          "expected": "replay chain_events ledger stored (EventCreated + 4 registrations + 1 withdrawal)",
+          "observed": "loaded"
+        }
+      ],
+      "meta": {},
+      "at": "2026-11-06T16:00:10.024Z"
+    },
+    "d04-verify": {
+      "phase": "d04-verify",
+      "title": "D04 dump/restore roundtrip + independent chain_events replay",
+      "run_id": "run-20261106T155958Z-13542",
+      "ok": true,
+      "passed": 12,
+      "failed": 0,
+      "checks": [
+        {
+          "id": "D04_DUMP_RESTORE_EXITS",
+          "ok": true,
+          "expected": "pg_dump and pg_restore both exit 0",
+          "observed": "{\"pg_dump\":0,\"pg_restore\":0}"
+        },
+        {
+          "id": "D04_ROUNDTRIP_EQUAL",
+          "ok": true,
+          "expected": "all 23 tables byte-equal after pg_dump/pg_restore",
+          "observed": "identical"
+        },
+        {
+          "id": "D04_REPLAY_RECONSTRUCT_DB1",
+          "ok": true,
+          "expected": "replay rebuilds projection from chain_events == independent fixture (accepted incl. withdrawn; pending=0; liability=accepted) in DB1",
+          "observed": "accepted=20000000 active=15000000 wdCredit=5000000 paid=0 pending=0 liability=20000000"
+        },
+        {
+          "id": "D04_REPLAY_RECONSTRUCT_DB2",
+          "ok": true,
+          "expected": "replay rebuilds projection from chain_events == independent fixture in DB2",
+          "observed": "accepted=20000000 active=15000000 wdCredit=5000000 liability=20000000"
+        },
+        {
+          "id": "D04_REPLAY_EQUIVALENT",
+          "ok": true,
+          "expected": "DB1 and DB2 replay agree and both match the fixture",
+          "observed": "agreed"
+        },
+        {
+          "id": "D04_CHAINEVENTS_TOTAL",
+          "ok": true,
+          "expected": "accepted total is derived from chain_events (not summed from the projection) and equals the rebuilt projection",
+          "observed": "chain_events=20000000 projection=20000000"
+        },
+        {
+          "id": "D04_CONSERVATION",
+          "ok": true,
+          "expected": "conservation holds: accepted = active + withdrawnCredit AND accepted = paid + pending + liability",
+          "observed": "active+wdCredit=20000000 paid+pending+liability=20000000"
+        },
+        {
+          "id": "D04_WITHDRAWN_REFUND_CLAIM",
+          "ok": true,
+          "expected": "withdrawn row retains a claimable refund credit (claim_atomic=D, payout_state=CLAIMABLE)",
+          "observed": "state=WITHDRAWN claim=5000000 payout=CLAIMABLE"
+        },
+        {
+          "id": "D04_WITHDRAWN_HISTORIC_OWNER",
+          "ok": true,
+          "expected": "withdrawn row retains historic owner (participant/beneficiary unchanged)",
+          "observed": "participant=replay.dan beneficiary=replay.dan"
+        },
+        {
+          "id": "D04_REPLAY_IDEMPOTENT",
+          "ok": true,
+          "expected": "re-replay is idempotent (dedup by receipt/registration; canonical totals unchanged)",
+          "observed": "again accepted=20000000 active=15000000 wdCredit=5000000 liability=20000000"
+        },
+        {
+          "id": "D04_DUPLICATE_RECEIPT_REJECTED",
+          "ok": true,
+          "expected": "immutable ledger rejects a duplicate receipt (23505)",
+          "observed": "code=23505"
+        },
+        {
+          "id": "D04_DURABLE_CURSOR",
+          "ok": true,
+          "expected": "worker_cursors advanced for the replay consumer in the same transaction",
+          "observed": "cursor={\"event_id\":\"00000000-0000-4000-8000-000000000012\",\"block_height\":\"105\",\"receipts_applied\":6}"
+        }
+      ],
+      "meta": {},
+      "at": "2026-11-06T16:00:11.630Z"
+    },
+    "d05": {
+      "phase": "d05",
+      "title": "D05 atomic_amount numeric boundary + canonical string round-trip",
+      "run_id": "run-20261106T155958Z-13542",
+      "ok": true,
+      "passed": 5,
+      "failed": 0,
+      "checks": [
+        {
+          "id": "D05_NEGATIVE",
+          "ok": true,
+          "expected": "atomic_amount(-1) -> 23514",
+          "observed": "code=23514"
+        },
+        {
+          "id": "D05_FRACTION",
+          "ok": true,
+          "expected": "atomic_amount(1.5) -> 23514",
+          "observed": "code=23514"
+        },
+        {
+          "id": "D05_OVERFLOW",
+          "ok": true,
+          "expected": "atomic_amount(340282366920938463463374607431768211456) -> 23514",
+          "observed": "code=23514"
+        },
+        {
+          "id": "D05_U128_MAX_OK",
+          "ok": true,
+          "expected": "2^128-1 accepted exactly",
+          "observed": "340282366920938463463374607431768211455"
+        },
+        {
+          "id": "D05_DB_STRING_ROUNDTRIP",
+          "ok": true,
+          "expected": "DB atomic_amount domain round-trips as exact string via ::text",
+          "observed": "d=5000000 type=atomic_amount"
+        }
+      ],
+      "meta": {},
+      "at": "2026-11-06T16:00:13.088Z"
+    },
+    "d06": {
+      "phase": "d06",
+      "title": "D06 two-connection cursor/projection tx, rollback recovery, migration lock",
+      "run_id": "run-20261106T155958Z-13542",
+      "ok": true,
+      "passed": 5,
+      "failed": 0,
+      "checks": [
+        {
+          "id": "D06_JOB_LEASE_ONE_WINNER",
+          "ok": true,
+          "expected": "exactly one connection claims the job lease",
+          "observed": "winner=1 loser=0"
+        },
+        {
+          "id": "D06_NONCE_ONE_CONSUMER",
+          "ok": true,
+          "expected": "one nonce consumer wins, the other gets 0 rows",
+          "observed": "rows=[1,0]"
+        },
+        {
+          "id": "D06_CURSOR_PROJECTION_OVERLAP",
+          "ok": true,
+          "expected": "one connection locks the cursor (FOR UPDATE NOWAIT); the other is refused 55P03",
+          "observed": "lockA=1 lockB=55P03"
+        },
+        {
+          "id": "D06_ROLLBACK_RECOVERY",
+          "ok": true,
+          "expected": "rolled-back projection+cursor transaction leaves no partial state",
+          "observed": "proj=0 cursor_h=0"
+        },
+        {
+          "id": "D06_MIGRATION_LOCK_CONCURRENT",
+          "ok": true,
+          "expected": "concurrent migration runs serialize: loser fails fast, bootstrap is under the lock",
+          "observed": "rejected=true noBootstrap=true winnerApplied=true"
+        }
+      ],
+      "meta": {},
+      "at": "2026-11-06T16:00:14.509Z"
+    }
+  },
+  "totals": {
+    "checks": 52,
+    "failed": 0
+  },
+  "note": "LABELED design-sample fixtures only; no chain/live data, no secrets. D04 replay rebuilds projections from immutable labeled chain_events with the Product01 invariant accepted=paid+pending+liability (withdrawn credit included). DB1==DB2 roundtrip and replay are local sandbox equivalence, never chained evidence. Full acceptance aggregates static/readiness/cli/dump/stop/cleanup plus every phase from the same run; a no-dump \"all\" run is NOT_RUN (partial), never PASS_LOCAL. Worker-authored; Codex review pending."
+}

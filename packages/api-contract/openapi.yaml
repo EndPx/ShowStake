@@ -1,0 +1,786 @@
+openapi: 3.0.3
+info:
+  title: ShowStake /v1 (provisional interface)
+  version: 0.1.0-provisional
+  description: >
+    PROVISIONAL API contract for the ShowStake v2 backend. This is a worker-written
+    interface derived from docs/planning/showstake-v2/02-ARCHITECTURE.md ("API
+    contract") and 01-PRODUCT.md. It is NOT frozen: Codex freezes the ABI/domain
+    after review (D012-D016 + T01 acceptance).
+
+    Authentication provider is REOPENED: NEAR Auth and HOT/NEAR Connect are
+    evaluated first (see docs/onboarding-capabilities.md); Privy remains an
+    alternative only. No provider is a final choice in this document. Public
+    routes are marked `security: []`; everything else requires a session cookie
+    (scheme `sessionCookie`). Host-only routes (attendance roster/check-in) are
+    named in their `description`; a participant must NOT pass these permissions.
+
+    All money values are canonical unsigned-128 base-10 STRINGS (never floats).
+    The OpenAPI `pattern` below is a STRUCTURAL digit-form check only; the
+    authoritative 2^128-1 ceiling is enforced semantically by
+    `packages/domain` (BigInt parse) and the `atomic_amount` database domain —
+    verified in scripts/verify-openapi.mjs.
+
+servers:
+  - url: http://localhost:3000/v1
+    description: Local disposable environment only.
+
+security:
+  - sessionCookie: []
+
+tags:
+  - name: events
+  - name: auth
+  - name: funding
+  - name: passes
+  - name: checkin
+  - name: claims
+  - name: content
+
+paths:
+  /events:
+    get:
+      summary: List published events (public)
+      tags: [events]
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Paginated event list
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EventListEnvelope' }
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /events/{eventId}:
+    get:
+      summary: Event detail + finalized rules/counts (public)
+      tags: [events]
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+      responses:
+        '200':
+          description: Event
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EventEnvelope' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /events/drafts:
+    post:
+      summary: Create an offchain event draft (organizer-capable session)
+      tags: [events]
+      description: >
+        ORGANIZER-CAPABLE: requires an authenticated organizer/host role. The
+        draft's economic rules/times are immutable once published; a participant
+        must NOT pass this permission (403).
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DraftRequest' }
+      responses:
+        '200':
+          description: Created draft
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DraftEnvelope' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /events/{eventId}/publish-intent:
+    post:
+      summary: Return a validated publish contract-call proposal (draft owner + NEAR binding)
+      tags: [events]
+      description: >
+        DRAFT OWNER + NEAR binding: returns a validated contract-call proposal for
+        the organizer wallet to sign; the server never signs organizer financial
+        actions and the contract revalidates the call. Requires the draft owner's
+        session and a machine-verified NEAR binding (403 otherwise).
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PublishIntentRequest' }
+      responses:
+        '200':
+          description: Validated publish intent (contract call payload to sign)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PublishIntentEnvelope' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/challenge:
+    post:
+      summary: Create a login challenge (public; no session)
+      tags: [auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ChallengeRequest' }
+      responses:
+        '200':
+          description: Challenge to sign
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ChallengeEnvelope' }
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/verify:
+    post:
+      summary: Consume a challenge proof and open a session
+      tags: [auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/VerifyRequest' }
+      responses:
+        '200':
+          description: Session
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SessionEnvelope' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/privy:
+    post:
+      summary: Resolve app identity from a verified Privy JWT (candidate adapter route)
+      tags: [auth]
+      security: []
+      description: >
+        CANDIDATE ADAPTER ROUTE preserving the baseline /auth/privy entry. A
+        server-verified Privy JWT (issuer/audience/expiry validated server-side)
+        resolves the app identity; it does NOT by itself grant NEAR participant
+        actions — those require a machine-verified NEAR account binding. The
+        provider is REOPENED: NEAR Auth and HOT/NEAR Connect are evaluated first
+        (see docs/onboarding-capabilities.md); Privy remains an alternative only.
+        Rate-limits apply as for /auth/challenge.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PrivyAuthRequest' }
+      responses:
+        '200':
+          description: Resolved identity + whether a NEAR binding is present
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PrivyAuthEnvelope' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /me/identities/link:
+    post:
+      summary: Link a new login identity (fresh session + proof)
+      tags: [auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LinkIdentityRequest' }
+      responses:
+        '200':
+          description: Link result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LinkEnvelope' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /me/wallets/link:
+    post:
+      summary: Link a controlled NEAR account (proof required)
+      tags: [auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LinkWalletRequest' }
+      responses:
+        '200':
+          description: Wallet binding
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WalletBindingEnvelope' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /me/passes:
+    get:
+      summary: Current verified pass projection
+      tags: [passes]
+      responses:
+        '200':
+          description: Pass list
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PassListEnvelope' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /passes/{passId}/qr:
+    post:
+      summary: Issue a 60s check-in QR challenge (owner only)
+      tags: [passes]
+      parameters:
+        - $ref: '#/components/parameters/PassId'
+      responses:
+        '200':
+          description: QR challenge
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/QrEnvelope' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /funding/attempts:
+    post:
+      summary: Create an immutable funding attempt (idempotent)
+      tags: [funding]
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FundingAttemptRequest' }
+      responses:
+        '200':
+          description: Attempt
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FundingAttemptEnvelope' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /funding/{attemptId}/quote:
+    post:
+      summary: Return a validated quote (no spend)
+      tags: [funding]
+      parameters:
+        - $ref: '#/components/parameters/AttemptId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/QuoteRequest' }
+      responses:
+        '200':
+          description: Quote
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/QuoteEnvelope' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /funding/{attemptId}:
+    get:
+      summary: Funding attempt state + next required action
+      tags: [funding]
+      parameters:
+        - $ref: '#/components/parameters/AttemptId'
+      responses:
+        '200':
+          description: Attempt
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FundingAttemptEnvelope' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /events/{eventId}/checkin-requests:
+    post:
+      summary: Validate QR / manual request and return a call proposal (host only)
+      tags: [checkin]
+      description: >
+        HOST-ONLY: requires the organizer/host role for this event. A participant
+        must NOT pass this permission (403).
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CheckinRequestRequest' }
+      responses:
+        '200':
+          description: Check-in request
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CheckinRequestEnvelope' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /events/{eventId}/attendance:
+    get:
+      summary: Organizer roster (host only)
+      tags: [checkin]
+      description: >
+        HOST-ONLY: roster of attendance. A participant must NOT pass this
+        permission (403); the response never exposes a host view to a participant.
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+      responses:
+        '200':
+          description: Roster
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RosterEnvelope' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /events/{eventId}/results:
+    get:
+      summary: Public results + personal claim detail (public)
+      tags: [claims]
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+      responses:
+        '200':
+          description: Results
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ResultsEnvelope' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /me/claims:
+    get:
+      summary: Immutable beneficiary credits
+      tags: [claims]
+      responses:
+        '200':
+          description: Claims
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ClaimListEnvelope' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /events/{eventId}/content:
+    get:
+      summary: Attended + SETTLED gated content (60s signed URL)
+      tags: [content]
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+      responses:
+        '200':
+          description: Signed resource URLs
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ContentEnvelope' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: showstake_session
+      description: HttpOnly Secure SameSite session cookie whose token hash is stored server-side.
+
+  parameters:
+    Cursor:
+      name: cursor
+      in: query
+      description: Opaque pagination cursor.
+      schema:
+        type: string
+    Limit:
+      name: limit
+      in: query
+      description: 'Page size, default 50, max 100.'
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 50
+    EventId:
+      name: eventId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    PassId:
+      name: passId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    AttemptId:
+      name: attemptId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: 'Required on funding attempt and check-in request creation. Same key + different body => 409.'
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 128
+
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+    Unauthorized:
+      description: Missing or invalid session
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+    Forbidden:
+      description: Authenticated but lacking the required role (e.g. host-only route)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+    Conflict:
+      description: Idempotency conflict or state conflict
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+    ValidationError:
+      description: Request body/parameters failed validation
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+    RateLimited:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+
+  schemas:
+    Money:
+      type: string
+      description: >
+        Canonical unsigned-128 integer as a base-10 string; never a float. This
+        OpenAPI `pattern` is a STRUCTURAL digit-form check only (no leading zeros,
+        no sign, no fraction). The authoritative 2^128-1 ceiling is enforced
+        semantically by packages/domain (BigInt) and the atomic_amount DB domain;
+        scripts/verify-openapi.mjs proves the ceiling. Structures carrying money
+        therefore also pass the semantic u128 validator, not merely the regex.
+      pattern: '^(0|[1-9][0-9]*)$'
+      example: '5000000'
+
+    Meta:
+      type: object
+      required: [requestId, observedAt]
+      properties:
+        requestId:
+          type: string
+        observedAt:
+          type: string
+          format: date-time
+        network:
+          type: string
+          enum: [local, testnet, mainnet]
+          nullable: true
+        stale:
+          type: boolean
+          description: true when the projection source is stale; money actions are disabled.
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        retryable:
+          type: boolean
+
+    BaseEnvelope:
+      type: object
+      required: [data, meta, error]
+      properties:
+        meta:
+          $ref: '#/components/schemas/Meta'
+        error:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/Error'
+
+    ErrorEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/BaseEnvelope'
+        - type: object
+          properties:
+            data:
+              nullable: true
+
+    EventState:
+      type: string
+      enum: [PUBLISHED, ATTENDANCE_FINALIZED, SETTLING, SETTLED, CANCELLED, REFUND_ONLY]
+    FundingState:
+      type: string
+      enum: [CREATED, QUOTED, SOURCE_PENDING, SWAP_SETTLED, READY_TO_COMMIT, COMMIT_PENDING, COMMITTED, EXPIRED, FAILED, PROVIDER_REFUNDED, ACTION_REQUIRED, UNKNOWN]
+    RegistrationState:
+      type: string
+      enum: [COMMITTED, WITHDRAWN, ATTENDED, NO_SHOW, REFUNDABLE]
+    PayoutState:
+      type: string
+      enum: [NOT_CLAIMABLE, CLAIMABLE, PENDING, PAID, ZERO]
+
+    Event:
+      type: object
+      required: [id, network, contractId, state, depositAtomic, capacity, times]
+      properties:
+        id: { type: string, format: uuid }
+        network: { type: string }
+        contractId: { type: string }
+        state: { $ref: '#/components/schemas/EventState' }
+        depositAtomic: { $ref: '#/components/schemas/Money' }
+        capacity: { type: integer }
+        times:
+          type: object
+          properties:
+            regOpen: { type: string, format: date-time }
+            regClose: { type: string, format: date-time }
+            cancelCutoff: { type: string, format: date-time }
+            checkinOpen: { type: string, format: date-time }
+            checkinClose: { type: string, format: date-time }
+
+    Pass:
+      type: object
+      required: [id, eventId, ownerAccount]
+      properties:
+        id: { type: string }
+        eventId: { type: string, format: uuid }
+        ownerAccount: { type: string }
+        registrationStatus: { $ref: '#/components/schemas/RegistrationState' }
+        attendanceStatus: { type: boolean }
+        financialStatus: { $ref: '#/components/schemas/PayoutState' }
+
+    FundingAttempt:
+      type: object
+      required: [id, state, participantAccount, expectedAtomic]
+      properties:
+        id: { type: string, format: uuid }
+        state: { $ref: '#/components/schemas/FundingState' }
+        participantAccount: { type: string }
+        expectedAtomic: { $ref: '#/components/schemas/Money' }
+
+    # ---- request bodies -----------------------------------------------------
+    ChallengeRequest:
+      type: object
+      required: [accountId, network, domain]
+      properties:
+        accountId: { type: string }
+        network: { type: string, enum: [local, testnet, mainnet] }
+        domain: { type: string }
+    VerifyRequest:
+      type: object
+      required: [challengeId, accountId, network, domain, signature, publicKey]
+      properties:
+        challengeId: { type: string, format: uuid }
+        accountId: { type: string }
+        network: { type: string, enum: [local, testnet, mainnet] }
+        domain: { type: string }
+        signature: { type: string, description: 'base64 signature over the challenge payload' }
+        publicKey: { type: string, description: 'base64 public key that produced the signature' }
+    LinkIdentityRequest:
+      type: object
+      required: [provider, subject, proof]
+      properties:
+        provider: { type: string }
+        subject: { type: string }
+        proof: { type: string, description: 'provider-verifiable proof of the claimed subject' }
+    LinkWalletRequest:
+      type: object
+      required: [namespace, network, accountId, publicKey, signature]
+      properties:
+        namespace: { type: string, enum: [near] }
+        network: { type: string, enum: [local, testnet, mainnet] }
+        accountId: { type: string }
+        publicKey: { type: string }
+        signature: { type: string, description: 'signature proving control of the account key' }
+    FundingAttemptRequest:
+      type: object
+      required: [eventId, participantAccount, destinationAsset, expectedAtomic]
+      properties:
+        eventId: { type: string, format: uuid }
+        participantAccount: { type: string }
+        destinationAsset: { type: string }
+        expectedAtomic: { $ref: '#/components/schemas/Money' }
+        sourceChain: { type: string }
+        sourceAsset: { type: string }
+    QuoteRequest:
+      type: object
+      required: [provider]
+      properties:
+        provider: { type: string }
+    CheckinRequestRequest:
+      type: object
+      properties:
+        qrChallengeId: { type: string, format: uuid }
+        manualReason:
+          type: string
+          description: required when qrChallengeId is absent
+      oneOf:
+        - required: [qrChallengeId]
+        - required: [manualReason]
+    DraftRequest:
+      type: object
+      required: [title, rules]
+      properties:
+        title: { type: string }
+        description: { type: string }
+        venue: { type: string }
+        venueTimezone: { type: string }
+        rules:
+          type: object
+          required: [depositAtomic, capacity, times]
+          properties:
+            depositAtomic: { $ref: '#/components/schemas/Money' }
+            capacity: { type: integer, minimum: 1, maximum: 200 }
+            assetContract: { type: string }
+            times:
+              type: object
+              required: [regOpen, regClose, cancelCutoff, checkinOpen, checkinClose]
+              properties:
+                regOpen: { type: string, format: date-time }
+                regClose: { type: string, format: date-time }
+                cancelCutoff: { type: string, format: date-time }
+                checkinOpen: { type: string, format: date-time }
+                checkinClose: { type: string, format: date-time }
+    PublishIntentRequest:
+      type: object
+      required: [draftId, organizerAccount, network, contractId]
+      properties:
+        draftId: { type: string, format: uuid }
+        organizerAccount: { type: string, description: 'immutable organizer NEAR account; must match the NEAR binding' }
+        network: { type: string, enum: [local, testnet, mainnet] }
+        contractId: { type: string }
+        contentHash: { type: string, description: 'hash of the immutable publish rules/content version' }
+    PrivyAuthRequest:
+      type: object
+      required: [jwt, network]
+      properties:
+        jwt: { type: string, description: 'server-verified Privy JWT (issuer/audience/expiry checked server-side; never trusted from the browser)' }
+        network: { type: string, enum: [local, testnet, mainnet] }
+        nearAccount: { type: string, description: 'optional proof of NEAR account control; REQUIRED before participant actions' }
+
+    # ---- response envelopes -------------------------------------------------
+    EventEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { $ref: '#/components/schemas/Event' } } } ] }
+    EventListEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/BaseEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                items: { type: array, items: { $ref: '#/components/schemas/Event' } }
+                nextCursor: { type: string, nullable: true }
+    ChallengeEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, required: [challengeId, nonce, domain, network, accountId, expiresAt], properties: { challengeId: { type: string, format: uuid }, nonce: { type: string }, domain: { type: string }, network: { type: string }, accountId: { type: string }, expiresAt: { type: string, format: date-time } } } } } ] }
+    SessionEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, properties: { userId: { type: string, format: uuid }, expiresAt: { type: string, format: date-time } } } } } ] }
+    LinkEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, properties: { linked: { type: boolean } } } } } ] }
+    WalletBindingEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, properties: { namespace: { type: string }, network: { type: string }, accountId: { type: string } } } } } ] }
+    PassListEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/Pass' } } } } } } ] }
+    QrEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/BaseEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [id, nonce, eventId, passId, ownerAccount, issuedAt, expiresAt, keyId]
+              properties:
+                id: { type: string, format: uuid }
+                nonce: { type: string }
+                eventId: { type: string, format: uuid }
+                passId: { type: string, format: uuid }
+                ownerAccount: { type: string }
+                issuedAt: { type: string, format: date-time }
+                expiresAt: { type: string, format: date-time }
+                keyId: { type: string }
+    FundingAttemptEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { $ref: '#/components/schemas/FundingAttempt' } } } ] }
+    QuoteEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, required: [provider, expiresAt, expectedOutputAtomic, minimumOutputAtomic], properties: { provider: { type: string }, expiresAt: { type: string, format: date-time }, expectedOutputAtomic: { $ref: '#/components/schemas/Money' }, minimumOutputAtomic: { $ref: '#/components/schemas/Money' } } } } } ] }
+    CheckinRequestEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, properties: { id: { type: string, format: uuid }, state: { type: string, enum: [PROPOSED, SUBMITTED, CONFIRMED, FAILED, EXPIRED] } } } } } ] }
+    RosterEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, properties: { items: { type: array, items: { type: object, properties: { participantAccount: { type: string }, attendanceStatus: { type: boolean }, payoutState: { $ref: '#/components/schemas/PayoutState' } } } } } } } } ] }
+    ResultsEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, properties: { counts: { type: object }, finalized: { type: boolean } } } } } ] }
+    ClaimListEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, properties: { items: { type: array, items: { type: object, properties: { principalAtomic: { $ref: '#/components/schemas/Money' }, bonusAtomic: { $ref: '#/components/schemas/Money' }, payoutState: { $ref: '#/components/schemas/PayoutState' } } } } } } } } ] }
+    ContentEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, properties: { items: { type: array, items: { type: object, properties: { objectKey: { type: string }, url: { type: string }, urlExpiresAt: { type: string, format: date-time } } } } } } } } ] }
+    DraftEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, required: [id, revision], properties: { id: { type: string, format: uuid }, revision: { type: integer } } } } } ] }
+    PublishIntentEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, required: [intentId, targetContract, method, argsHash, expiresAt], properties: { intentId: { type: string, format: uuid }, targetContract: { type: string }, method: { type: string, enum: [create_event] }, argsHash: { type: string }, expiresAt: { type: string, format: date-time } } } } } ] }
+    PrivyAuthEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, required: [userId, nearBindingPresent], properties: { userId: { type: string, format: uuid }, nearBindingPresent: { type: boolean, description: 'false => participant actions are unavailable until a NEAR binding is proved' } } } } } ] }

@@ -1,0 +1,11 @@
+{
+  "name": "@showstake/domain",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "ShowStake shared domain: exact atomic amounts, NEAR account ids, capability/status results. No secrets, no network, no provider code.",
+  "license": "UNLICENSED",
+  "exports": {
+    ".": "./src/index.mjs"
+  }
+}

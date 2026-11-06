@@ -1,0 +1,6 @@
+# ShowStake pnpm workspace. Only declares the intended module layout; subpackages
+# carry their own package.json when implementation lands (T01+). contracts/ is a
+# Rust crate and is intentionally outside the pnpm workspace.
+packages:
+  - "apps/*"
+  - "packages/*"
