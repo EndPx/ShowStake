@@ -1,0 +1,42 @@
+{
+  "source": "https://github.com/zai-org/ZCode",
+  "source_commit": "a9fe401eede6e6e5e01be9048679c206fe6f02d9",
+  "source_version": "3.17.2",
+  "agent_version": "0.17.1",
+  "node": "24.14.0 (official zip SHA256 verified)",
+  "pnpm": "10.33.2",
+  "builds": {
+    "dependency_install": 0,
+    "cli_tui": 0,
+    "server": 0,
+    "web": 0,
+    "distribution": 0
+  },
+  "build_adjustment": "Generated unbundled ESM JavaScript for 328 packages/shared/src TypeScript files using installed esbuild; upstream package has no build script but distribution collector requires dist. No tracked source files edited.",
+  "archive": "D:/Toolchains/zcode-local-3.17.2/releases/3.17.2/zcode-3.17.2.tar.gz",
+  "archive_sha256": "98b32222da4980d5f4a0b6df95f11df3d9ae062a19695d76960f2830da9a51bb",
+  "install": "D:\\Toolchains\\zcode-runtime-3.17.2\\zcode",
+  "launcher": "C:\\Users\\abaym\\AppData\\Roaming\\npm\\zcode.cmd",
+  "old_launcher_backup": "C:\\Users\\abaym\\.zcode\\toolchains\\zcode.cmd.before-full-distribution",
+  "provider_config": "shared desktop ~/.zcode/v2/provider_config.json",
+  "selected_model": {
+    "providerId": "new-provider",
+    "providerName": "Cloud Near",
+    "modelId": "deepseek-ai/DeepSeek-V4.1-Flash-1017-abliterated",
+    "reasoningLevel": "high"
+  },
+  "tests": {
+    "version": "3.17.2",
+    "web_help": "PASS",
+    "native_tui_render": "PASS native UI loaded; not desktop attach proof",
+    "web_loopback_http": 200,
+    "cloud_near_smoke": {
+      "exit": 0,
+      "response": "ZCODE_CLOUD_NEAR_OK",
+      "session": "sess_4767bc0a-125e-4471-ab80-a03d7762501f",
+      "persisted_model_selection_verified": true
+    }
+  },
+  "limits": "No live desktop session attachment claimed; CLI shares provider config. No design accepted from this smoke. Local installer metadata uses inert127.0.0.1:1 only; nothing published.",
+  "classifier": "PASS_LOCAL"
+}
