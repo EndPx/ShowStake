@@ -17,5 +17,14 @@
     "No provider fallback, paid upgrade, credential request or deliberate shared model change.",
     "Cloud Near design worker and DeepSeek main executor remain separate."
   ],
-  "next": "Supported ZCode Desktop Start Plan session in isolated workspace, or verified CLI support for start-plan; old API plan renewal is not an inferred requirement."
+  "next": "Supported ZCode Desktop Start Plan session in isolated workspace, or verified CLI support for start-plan; old API plan renewal is not an inferred requirement.",
+  "desktop_confirmation": {
+    "session_id": "sess_6acfbfcd-3834-4047-be68-9fdbee3642e6",
+    "workspace": "C:/Users/abaym/.zcode/workspace/draft-593c567f-a310-452a-b74b-12f62b51d2fb",
+    "provider_model": "account:zai-start-plan/GLM-5.3-Flash",
+    "task_status": "completed",
+    "source": "read-only tasks-index.sqlite exact workspace match",
+    "present_in_cli_session_store": true
+  },
+  "conclusion": "Start Plan Desktop is proven to have completed a real response; standalone CLI support and desktop-session attachment remain unproven/blocked. Old zai-api 1309 is not evidence of Start Plan quota expiry."
 }
