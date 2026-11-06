@@ -6,7 +6,7 @@ Snapshot: 2026-11-07. Tracks: open, nfts. Internal target: November 14, 23:59 WI
 |---|---|---|---|
 | T00 bootstrap | none | Real executor dispatch/result/Codex review, preserved v2 packet, repo/toolchain | Accepted, committed/pushed |
 | T01 database/interfaces | T00 | Versioned PostgreSQL migrations, constraints, least-privilege grants, replay/restore/concurrency, exact amounts, OpenAPI | Accepted PASS_LOCAL: 52 checks, default-clone proof; committed/pushed |
-| T02 wallet/route probes | T00 | Native NEAR and social/email/EVM paths, verified account binding, login/relogin same account, signing, supported funding/FT route and reviewed ABI | Partial: runnable harness local checks/build passed; source review and real wallet gates open |
+| T02 wallet/route probes | T00 | Native NEAR and social/email/EVM paths, verified account binding, login/relogin same account, signing, supported funding/FT route and reviewed ABI | Partial: local checks/build passed; Codex reproduced four harness defects, fixes assigned; real wallet gates open |
 | T03 escrow/pass | T01 + reviewed T02 interface gates | Event publish, valid FT deposit, atomic seat/pass issuance, immutable participant/beneficiary, non-transferable custom pass | Not accepted; no tested escrow lifecycle |
 | T04 settlement/payout | T03 | Organizer finalization, timeout/cancel/withdraw refunds, exact redistribution, claim callback failure/retry and conservation | Not accepted; local test oracle can proceed independently |
 | T05 auth/projections | T01,T02 | Backend challenges/sessions, identity linking, chain-event ingestion, durable cursor/recovery, projection freshness | Not accepted; T01 test replay is not a production worker |

@@ -1,0 +1,48 @@
+{
+  "reviewer": "Codex",
+  "classifier": "FAILED",
+  "scope": "offline adversarial review, synthetic keys/records, injected FullAccess resolver; zero network/wallet/transaction",
+  "rows": [
+    {
+      "id": "future",
+      "expected": "deny",
+      "observed": {
+        "ok": true,
+        "code": "VERIFIED",
+        "accountId": "fixture.testnet",
+        "publicKey": "ed25519:Dsf1EF88NT979mTwyhywdaG3eUzeiFSUujid1UDdthU7"
+      }
+    },
+    {
+      "id": "excessive_ttl",
+      "expected": "deny",
+      "observed": {
+        "ok": true,
+        "code": "VERIFIED",
+        "accountId": "fixture.testnet",
+        "publicKey": "ed25519:Dsf1EF88NT979mTwyhywdaG3eUzeiFSUujid1UDdthU7"
+      }
+    },
+    {
+      "id": "replayed_verification",
+      "expected": "deny",
+      "observed": {
+        "ok": true,
+        "code": "VERIFIED",
+        "accountId": "fixture.testnet",
+        "publicKey": "ed25519:Dsf1EF88NT979mTwyhywdaG3eUzeiFSUujid1UDdthU7"
+      }
+    },
+    {
+      "id": "same_connect_double_record",
+      "expected": "NEED_TWO_SESSIONS",
+      "observed": {
+        "ok": true,
+        "code": "SAME_ACCOUNT",
+        "first": "fixture.testnet",
+        "last": "fixture.testnet",
+        "same": true
+      }
+    }
+  ]
+}
