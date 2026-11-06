@@ -1,0 +1,21 @@
+{
+  "reviewer": "Codex",
+  "classifier": "BLOCKED_EXTERNAL",
+  "provider_id": "account:zai-start-plan",
+  "model_id": "GLM-5.3-Flash",
+  "prepared_workspace": ".local/zcode-settlement-oracle",
+  "prepared_task": "docs/dispatches/zcode-start-plan-settlement-oracle.txt",
+  "observations": [
+    "Scoped smoke attempts persisted zai-api/GLM-5.3 rather than requested Start Plan and returned 1309. This is NOT a Start Plan quota test.",
+    "Explicit TUI /model account:zai-start-plan/GLM-5.3-Flash denied: Model is not available.",
+    "Installed standalone-account-provider-runtime.ts catalogs individual-coding-plan only and rejects request identity for other plan modes.",
+    "Desktop UI inspected; attempted navigation did not change app state. Native click reported coordinate geometry unavailable. No desktop task submitted.",
+    "Unused diagnostic TUI terminal was closed with confirmed ptyKilled=true."
+  ],
+  "limits": [
+    "No new Start Plan worker execution claimed; terminal readiness is not executor proof.",
+    "No provider fallback, paid upgrade, credential request or deliberate shared model change.",
+    "Cloud Near design worker and DeepSeek main executor remain separate."
+  ],
+  "next": "Supported ZCode Desktop Start Plan session in isolated workspace, or verified CLI support for start-plan; old API plan renewal is not an inferred requirement."
+}
