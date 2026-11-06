@@ -1,0 +1,43 @@
+{
+  "reviewer": "Codex",
+  "dispatch": "ctx_bef153d72467",
+  "task": "task_eee96db2ff7f",
+  "provider": "gater",
+  "model": "deepseek-v4.1-flash-1017-v2",
+  "executor_classifier": "BLOCKED_EXTERNAL",
+  "provider_http": 503,
+  "recovery": "One same-dispatch resume attempted; repeated503. No further retry/provider switch/new worker. Process still live, turn errored.",
+  "files": {
+    "migrations\\cli.mjs": "e232d1b5069f6ad796dadf51954422ce9cce1d5a12caa9cf25260cdfbffe635a",
+    "migrations\\runner.mjs": "b4ae7f34eda30e5840c3b6fa364346b55a210188192046744e8787ba472d0ee3",
+    "migrations\\verify-baseline.mjs": "45460fd0d2f5680bd5aca4352b2cf3558239ba6887a760381ae246d7b38b47fd",
+    "migrations\\schema\\0001_initial.sql": "45b6469488b84e0da39965c209ace910d398e8d6d53dbcadf2fef6b2be423db2",
+    "migrations\\schema\\0002_roles_grants.sql": "729f900394a2b5b35241b0082f96cacdf1fa2baccf6a08f374355fdc0c06628f",
+    "packages\\domain\\src\\envelope.mjs": "6005352b28ae9dd1b84126ac46589640b7d1042f2db1392345dd5a42545d51cc"
+  },
+  "local_checks": [
+    {
+      "command": [
+        "node",
+        "migrations/verify-baseline.mjs"
+      ],
+      "exit": 0,
+      "stdout": "OK   baseline sha256 0e6afec55017ef15da3ab73f3a44ae23bca45c89856b268154a6cf45bc14c822 (preserved)\nOK   migration 0001 DDL body is byte-identical to baseline schema.sql body\nPASS: preserved baseline provenance verified (no baseline edit).\n",
+      "stderr": ""
+    },
+    {
+      "command": "Codex focused JSON-money boundary regression",
+      "script": "import {isMoneyString,assertMoneyString} from './packages/domain/src/envelope.mjs';\nconst invalid=[1n,1,1.5,'-1','1.0','00',((1n<<128n)).toString()];\nfor(const v of invalid){if(isMoneyString(v))throw Error('invalid accepted'); let denied=false; try{assertMoneyString(v)}catch{denied=true}if(!denied)throw Error('assert accepted invalid');}\nfor(const v of ['0','5000000',((1n<<128n)-1n).toString()]){if(!isMoneyString(v)||assertMoneyString(v).toString()!==v)throw Error('valid rejected');}\nconsole.log('PASS_LOCAL: JSON money strings reject bigint/numbers/invalid values; valid canonical u128 strings retained');",
+      "exit": 0,
+      "stdout": "PASS_LOCAL: JSON money strings reject bigint/numbers/invalid values; valid canonical u128 strings retained\n",
+      "stderr": ""
+    }
+  ],
+  "review_findings": [
+    "Migration CLI status calls bootstrap and mutates roles/schema/grants; read-only mode required",
+    "Runner has no advisory migration lock; concurrent migration application tests needed",
+    "Initial migration actor CREATEROLE is not needed by versioned table-grant migration and should be reviewed/minimized",
+    "No real versioned migration run or D01-D06 suite evidence yet; dependency pg not yet wired in root manifest at inspection"
+  ],
+  "acceptance": "Partial baseline provenance and money boundary checks only; full migration NOT_RUN, source not accepted/pushed."
+}
