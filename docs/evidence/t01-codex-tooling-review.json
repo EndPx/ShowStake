@@ -1,0 +1,23 @@
+{
+  "reviewer": "Codex",
+  "task": "T01 disposable PostgreSQL tooling acceptance",
+  "command": [
+    "wsl",
+    "-d",
+    "Ubuntu",
+    "--",
+    "bash",
+    "-lc",
+    "bash '/mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/scripts/postgres-disposable/setup.sh' run"
+  ],
+  "exit": 0,
+  "stdout": "[showstake-pg] disposable cluster root: /tmp/showstake-pg-test.YJjaoB\n[showstake-pg] no verified PostgreSQL server binaries; downloading official postgresql-18 into owned temp dir\n[showstake-pg] server bindir: /tmp/showstake-pg-test.YJjaoB/extracted/usr/lib/postgresql/18/bin\n[showstake-pg] no client psql found; downloading postgresql-client-18 into owned temp dir\n[showstake-pg] share dir: /tmp/showstake-pg-test.YJjaoB/extracted/usr/share/postgresql/18\n|PostgreSQL 18.6 (Ubuntu 18.6-0ubuntu0.26.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0, 64-bit\n[showstake-pg] removed proven-stopped disposable cluster /tmp/showstake-pg-test.YJjaoB\n[showstake-pg] one-shot cleanup complete (server proven stopped)\n",
+  "stderr": "",
+  "classifier": "PASS_LOCAL",
+  "source_sha256": {
+    "scripts\\postgres-disposable\\README.md": "e27c6bc5f03d0634c5841647c247a575b2fe28c6b4cb22c28fc23a52e57ef255",
+    "scripts\\postgres-disposable\\setup.ps1": "739dcaddb899c76335b71a4ff31b6ea9d8296c3f074b28c07cca437c58f670d8",
+    "scripts\\postgres-disposable\\setup.sh": "6e69daeb995f63ccc449781f4c49bbc2d74f1951301a1abd02254d7d67788bfa"
+  },
+  "limits": "Actual server health/start/stop tooling only. Baseline DDL previously applied separately. Versioned migration, grants, full constraints/concurrency/restore/replay not accepted yet."
+}
