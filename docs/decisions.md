@@ -1,5 +1,7 @@
 # Decisions
 
+2026-11-06 D011: user confirmed IP binding recovery and asked to continue. Resume the same ready Task task_7ea6236ac784 through ctx_7dc86222eff2 after Orca confirmed predecessor process exit. Preserve failed artifacts and untracked implementation; do not mark authentication or provider readiness passed from launch alone. Release of old terminal unresolved, not represented as successful cleanup.
+
 2026-11-06 D010 (interrupted executor): preserve ctx_889b3c4a7838 and partial files after provider HTTP 403 ip_limit_reached. No fallback/retry while binding unchanged. User recovery via GATER /unbind or admin; never collect keys. Independent review reproduced named-account key substitution and nonfinite challenge timestamps; partial implementation rejected until fixes and focused regression tests. Historical green fixtures do not override adversarial failures. PostgreSQL cleanup remains unaccepted.
 
 2026-11-06 D009 (Codex acceptance): T00 executor cycle accepted from dispatch ctx_e156747936ca result and independent verification. T01 foundation partially reviewed; PostgreSQL helper scripts rejected pending safe ownership/stop checks and reproducible isolated execution. Begin T02 now without waiting for full UI or T01 completion; no live capability gate closed by bootstrap.
