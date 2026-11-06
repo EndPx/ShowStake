@@ -1,0 +1,22 @@
+{
+  "assignment": "FigCraft design, additional parallel ZCode executor",
+  "provider": "Cloud Near",
+  "endpoint": "https://cloud-api.near.ai/v1",
+  "provider_id": "new-provider",
+  "model": "deepseek-ai/DeepSeek-V4.1-Flash-1017-abliterated",
+  "runtime": "ZCode CLI 0.17.1 headless via Orca terminal",
+  "terminal": "term_6ff4f5e6-13c8-446b-a87f-a6238d4eecd8",
+  "isolation": ".local/zcode-figcraft, native folder; NOT Git worktree (Orca folder project conversion refused). Main baseline copied, no secrets copied into workspace.",
+  "launch_issues": [
+    "TUI entry failed missing bundled provider path; actual bundled path supplied via terminal environment",
+    "TUI missing @zcode/tui; npm lookup404, headless mode used",
+    "First headless attempt chose default zai-api and failed expired plan1309; not Cloud Near proof; no successful model call claimed",
+    "CLI main model selection then set explicitly to requested Cloud Near model, task-scoped provider config retained outside repo; second headless attempt launched"
+  ],
+  "status": "BLOCKED_EXTERNAL",
+  "acceptance": "No design yet accepted; no parallel throughput claim until both produce accepted results",
+  "other_executor": "ctx_bef153d72467 database, DeepSeek Harness GATER; repeated503/429 external blocker",
+  "observed": "TUI cannot load @zcode/tui. Headless explicit selection attempts still chose providerId zai-api (GLM plan expired1309), not Cloud Near; no requested-provider response or design proof.",
+  "cli_selection_restored": true,
+  "limits": "No further provider attempts. Private raw logs remain in ignored folder and are not published (may contain response cookies). Task not claimed running or completed. Configuration catalog confirms Cloud Near exists but runtime binding is unresolved."
+}
