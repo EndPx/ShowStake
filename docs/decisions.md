@@ -1,5 +1,7 @@
 # Decisions
 
+2026-11-06 D019 (standing user authorization): on DeepSeek provider errors, coordinator resumes/retries the same task directly without requiring a new human retry message. Preserve partial work, same GATER/model, serial requests/no duplicate writers. Respect provider Retry-After/backoff and Orca circuit breaker; do not bypass it or substitute provider. Authentication/access failures still require concrete diagnosis/action when retry cannot resolve them. This does not authorize deployment/spending or a paid service change.
+
 2026-11-06 D011: user confirmed IP binding recovery and asked to continue. Resume the same ready Task task_7ea6236ac784 through ctx_7dc86222eff2 after Orca confirmed predecessor process exit. Preserve failed artifacts and untracked implementation; do not mark authentication or provider readiness passed from launch alone. Release of old terminal unresolved, not represented as successful cleanup.
 
 2026-11-06 D010 (interrupted executor): preserve ctx_889b3c4a7838 and partial files after provider HTTP 403 ip_limit_reached. No fallback/retry while binding unchanged. User recovery via GATER /unbind or admin; never collect keys. Independent review reproduced named-account key substitution and nonfinite challenge timestamps; partial implementation rejected until fixes and focused regression tests. Historical green fixtures do not override adversarial failures. PostgreSQL cleanup remains unaccepted.
