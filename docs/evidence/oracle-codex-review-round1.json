@@ -1,0 +1,49 @@
+{
+  "reviewer": "Codex",
+  "classifier": "FAILED",
+  "scope": "offline adversarial oracle review, not NEAR",
+  "findings": [
+    {
+      "id": "CROSS_EVENT_PAYOUT_ID_COLLISION",
+      "expected": "reject duplicate global id or namespace by event without destroying earlier payout",
+      "observed": {
+        "event1Callback": "PAYOUT_UNKNOWN",
+        "storedPayout": {
+          "payoutId": "same-id",
+          "eventId": "e2",
+          "registrationId": "reg-2",
+          "recipientAccount": "acct-1.showstake.oracle",
+          "amountAtomic": "10",
+          "state": "PENDING",
+          "receiptId": null
+        }
+      }
+    },
+    {
+      "id": "REJECTED_SETTLEMENT_MUTATES_STATE",
+      "expected": "ATTENDANCE_FINALIZED",
+      "observed": "SETTLING",
+      "error": "RULES_INVALID"
+    }
+  ],
+  "suite_rerun": {
+    "command": "node oracle/scripts/run-oracle.mjs",
+    "cwd": ".local/zcode-settlement-oracle",
+    "exit": 0,
+    "tests": 95,
+    "passed": 95,
+    "acceptance": "NOT_ACCEPTED: extra adversarial cases reproduced two defects"
+  },
+  "executor_identity": {
+    "source": "read-only CLI sqlite runtime/model_selection",
+    "session_id": "sess_8132d973-be55-4805-83a6-fcb32ff1e54f",
+    "provider": "new-provider",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash-1017-abliterated",
+    "reasoningLevel": "max",
+    "note": "Workspace Start Plan selector differs; persisted session agrees with requested executor. No credentials included."
+  },
+  "revision": {
+    "task": "task_6b8d98dfb7a8",
+    "dispatch": "ctx_5fa8d34704c5"
+  }
+}
