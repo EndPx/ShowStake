@@ -1,0 +1,30 @@
+{
+  "task": "T02 repeated executor blocker and additional Codex review",
+  "dispatch": "ctx_7dc86222eff2",
+  "reviewer": "Codex",
+  "observed_at": "2026-11-06T08:04:05.451061+00:00",
+  "executor_classifier": "BLOCKED_EXTERNAL",
+  "provider_error": {
+    "http": 403,
+    "code": "ip_limit_reached",
+    "source": "Orca escalation after user reported unbind complete"
+  },
+  "runtime": "GATER / deepseek-v4.1-flash-1017-v2",
+  "local_diagnostics": {
+    "proxy_environment": "HTTP_PROXY HTTPS_PROXY ALL_PROXY NO_PROXY unset",
+    "python_system_proxy": "none reported",
+    "active_adapters": [
+      "Wi-Fi",
+      "WSL Hyper-V virtual adapter"
+    ],
+    "limits": "No public egress IP sampled; no evidence of which IPs GATER bound; no credentials accessed; no network setting changed. Adapter names alone do not diagnose provider binding."
+  },
+  "review_classifier": "FAILED",
+  "local_probe": {
+    "script": "import {makeLocalFixtureSignature,nonceOf,verifyNep413SignedMessage} from './packages/wallet-adapter/src/nep413.mjs';\nimport {makeChallenge,verifyChallengeProof} from './packages/wallet-adapter/src/verify-binding.mjs';\nconst nonce=nonceOf('codex-domain-review-2'), message='fixture', domain='showstake.example';\nconst s=makeLocalFixtureSignature({message,nonce,recipient:domain});\nconst mislabeled=verifyNep413SignedMessage({message,nonce,recipient:domain,accountId:s.accountId,publicKey:s.publicKey.replace('ed25519:','secp256k1:'),signature:s.signature});\nconst challenge=makeChallenge({purpose:'login',domain,network:'testnet',accountId:s.accountId,nonce,message});\nconst proof={accountId:s.accountId,publicKey:s.publicKey,signature:s.signature};\nconst omittedExpectations=verifyChallengeProof({challenge,proof,consumedNonces:new Set()});\nconsole.log(JSON.stringify({mislabeledKeyType:mislabeled,missingExpectedDomainNetwork:omittedExpectations}));\nprocess.exitCode=(mislabeled.ok||omittedExpectations.ok)?1:0;",
+    "exit": 1,
+    "stdout": "{\"mislabeledKeyType\":{\"ok\":true,\"code\":\"VERIFIED\",\"hashHex\":\"5ca54637cf15f7ed3eee988a0ba688ce261cacee5c929de3cac3e72e854a68f1\"},\"missingExpectedDomainNetwork\":{\"ok\":true,\"code\":\"OK\"}}\n",
+    "stderr": ""
+  },
+  "limits": "Unreported partial worker code not accepted. No retries sent on unchanged provider failure. Current worker process remains live per worker-show; no stop or exit claimed."
+}
