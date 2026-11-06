@@ -1,0 +1,23 @@
+{
+  "path": "D:\\Belajar\\Hackacton\\Hackacton yang masih jalan\\ShowStake\\.local\\t01-accepted-default-clone-1793998049",
+  "commit": "2c74e7a535c34f8fac0008466f73fa4719625ada",
+  "reviewer": "Codex",
+  "classifier": "PASS_LOCAL",
+  "checkout": "default Windows Git clone; no core.autocrlf override",
+  "commands": [
+    {
+      "command": "pnpm install --frozen-lockfile --ignore-scripts",
+      "exit": 0
+    },
+    {
+      "command": "pnpm verify",
+      "exit": 0,
+      "packet_files_matching": 11
+    },
+    {
+      "command": "pnpm verify:t01-static",
+      "exit": 0
+    }
+  ],
+  "limits": "Post-commit reproducibility check. PostgreSQL 52/52 independent evidence is t01-codex-52-review.json; database source unchanged since that run. No live wallet or chain proof."
+}
