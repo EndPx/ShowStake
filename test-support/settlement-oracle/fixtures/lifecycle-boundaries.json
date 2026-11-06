@@ -1,0 +1,46 @@
+{
+  "label": "LOCAL TEST ORACLE FIXTURES — phase-boundary vectors derived directly from packet time rules; no chain evidence",
+  "source": "01-PRODUCT.md §Rules fixed at publish: reg_open<reg_close<=cancel_cutoff<=checkin_open<checkin_close; finalize_deadline=checkin_close+24h; registration open<=now<close; withdrawal now<cutoff; check-in open<=now<close; finalization checkin_close<=now<deadline; at deadline late finalization denied.",
+  "times": {
+    "regOpen": 1000000,
+    "regClose": 2000000,
+    "cancelCutoff": 2500000,
+    "checkinOpen": 3000000,
+    "checkinClose": 4000000,
+    "finalizeDeadline": 90400000
+  },
+  "commitBefore": 1000000,
+  "markAttendBefore": 3000000,
+  "phaseCases": [
+    { "id": "reg-at-open", "op": "commit", "now": 1000000, "expect": "ALLOWED", "citation": "CIT-TIME-WINDOWS" },
+    { "id": "reg-open-minus-1ms", "op": "commit", "now": 999999, "expect": "PHASE_DENIED", "citation": "CIT-TIME-WINDOWS" },
+    { "id": "reg-close-minus-1ms", "op": "commit", "now": 1999999, "expect": "ALLOWED", "citation": "CIT-TIME-WINDOWS" },
+    { "id": "reg-at-close", "op": "commit", "now": 2000000, "expect": "PHASE_DENIED", "citation": "CIT-TIME-WINDOWS" },
+    { "id": "withdraw-cutoff-minus-1ms", "op": "withdraw", "now": 2499999, "expect": "ALLOWED", "citation": "CIT-TIME-WINDOWS" },
+    { "id": "withdraw-at-cutoff", "op": "withdraw", "now": 2500000, "expect": "WITHDRAWAL_WINDOW_CLOSED", "citation": "CIT-TIME-WINDOWS" },
+    { "id": "mark-at-open", "op": "mark", "now": 3000000, "expect": "ALLOWED", "citation": "CIT-TIME-WINDOWS" },
+    { "id": "mark-at-close", "op": "mark", "now": 4000000, "expect": "PHASE_DENIED", "citation": "CIT-TIME-WINDOWS" },
+    { "id": "finalize-at-checkin-close", "op": "finalize", "now": 4000000, "expect": "ALLOWED", "citation": "CIT-TIME-WINDOWS" },
+    { "id": "finalize-before-checkin-close", "op": "finalize", "now": 3999999, "expect": "PHASE_DENIED", "citation": "CIT-TIME-WINDOWS" },
+    { "id": "finalize-deadline-minus-1ms", "op": "finalize", "now": 90399999, "expect": "ALLOWED", "citation": "CIT-TIME-WINDOWS" },
+    { "id": "finalize-at-deadline", "op": "finalize", "now": 90400000, "expect": "LATE_FINALIZATION", "citation": "CIT-TIME-WINDOWS" },
+    { "id": "refund-only-deadline-minus-1ms", "op": "refundOnly", "now": 90399999, "expect": "PHASE_DENIED", "citation": "CIT-REFUND-ONLY" },
+    { "id": "refund-only-at-deadline-default", "op": "refundOnly", "now": 90400000, "deadlineMode": "AT_OR_AFTER", "expect": "ALLOWED", "citation": "OG-01" },
+    { "id": "refund-only-at-deadline-after-mode", "op": "refundOnly", "now": 90400000, "deadlineMode": "AFTER", "expect": "PHASE_DENIED", "citation": "OG-01" },
+    { "id": "refund-only-deadline-plus-1ms", "op": "refundOnly", "now": 90400001, "deadlineMode": "AFTER", "expect": "ALLOWED", "citation": "OG-01" }
+  ],
+  "settlementChunkCase": {
+    "source": "F02-packet and CIT-CHUNK-IDEMPOTENT",
+    "deposit": "10",
+    "registrations": [
+      { "sequence": 0, "withdrawn": false, "attended": true },
+      { "sequence": 1, "withdrawn": false, "attended": false },
+      { "sequence": 2, "withdrawn": false, "attended": true },
+      { "sequence": 3, "withdrawn": false, "attended": true },
+      { "sequence": 4, "withdrawn": false, "attended": false }
+    ],
+    "chunks": [2, 2, 1],
+    "expectedBySequence": { "0": "17", "1": "0", "2": "17", "3": "16", "4": "0" },
+    "expectedTotal": "50"
+  }
+}

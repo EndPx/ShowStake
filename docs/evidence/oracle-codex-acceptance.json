@@ -1,0 +1,213 @@
+{
+  "reviewer": "Codex",
+  "classifier": "PASS_LOCAL",
+  "scope": "accepted independent local settlement/refund test-support only, not T03/T04 acceptance",
+  "executor": {
+    "agent": "zcode",
+    "provider": "Cloud Near/new-provider",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash-1017-abliterated",
+    "original_task": "task_395535500f72",
+    "revision_task": "task_6b8d98dfb7a8",
+    "revision_dispatch": "ctx_5fa8d34704c5"
+  },
+  "commands": [
+    {
+      "command": "node test-support/settlement-oracle/scripts/run-oracle.mjs --packet-root . --evidence-dir .local/oracle-codex-accepted-runs",
+      "exit": 0,
+      "tests": 105,
+      "passed": 105
+    }
+  ],
+  "run_id": "20261106235613708-pid15572-cfeec6b0",
+  "resolved_review_findings": [
+    "CROSS_EVENT_PAYOUT_ID_COLLISION",
+    "REJECTED_SETTLEMENT_MUTATES_STATE"
+  ],
+  "source_manifest": [
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/acceptance-map.mjs",
+      "destination": "test-support/settlement-oracle/acceptance-map.mjs",
+      "sha256": "6d992c07170263519963c4eab90b4c959c46d6a8317f16532ce16e7943aed80d",
+      "git_blob_sha256": "cd336f79dcd285aa161e4a9797a6a6ab47d39d28af33158155f9b364c242c11f"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/README.md",
+      "destination": "test-support/settlement-oracle/README.md",
+      "sha256": "7950417d80ac0385f913cbb9c3a066f78f0de7a2367da8e40c984aa9d8b08830",
+      "git_blob_sha256": "fa5c7ed8ec541fc6561e72838ae83e220524acb8686c9d877f8256e3239b9569"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/TRACEABILITY.md",
+      "destination": "test-support/settlement-oracle/TRACEABILITY.md",
+      "sha256": "cf87b84144f757d1cb0dffdc78d7aab4bbfb889169c6334e8bdb730bb8962515",
+      "git_blob_sha256": "4e4db764305087369d94ce69717df809d2ab234195ce72321b263dc218caa193"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/fixtures/acceptance-vectors.json",
+      "destination": "test-support/settlement-oracle/fixtures/acceptance-vectors.json",
+      "sha256": "9473cdfb84de37ee65ab0702fafb1e448a0a2b0cfaa8f6d1e26f4443d1859be0",
+      "git_blob_sha256": "cd0619547b06e80e269a9381665ab86aa6853a7c8a06ae3fcf18aaf1f6f3b114"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/fixtures/amount-edge-cases.json",
+      "destination": "test-support/settlement-oracle/fixtures/amount-edge-cases.json",
+      "sha256": "81e1e4880d28cf000b2f3856de982e90a54e4b407f0b8093bf1c2e32ff46fdcb",
+      "git_blob_sha256": "81e1e4880d28cf000b2f3856de982e90a54e4b407f0b8093bf1c2e32ff46fdcb"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/fixtures/lifecycle-boundaries.json",
+      "destination": "test-support/settlement-oracle/fixtures/lifecycle-boundaries.json",
+      "sha256": "bb8ecd9120b6e24883b05104f276befadccfa7d80ce9ddeb084d2ebb98adfef3",
+      "git_blob_sha256": "bb8ecd9120b6e24883b05104f276befadccfa7d80ce9ddeb084d2ebb98adfef3"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/fixtures/README.md",
+      "destination": "test-support/settlement-oracle/fixtures/README.md",
+      "sha256": "42d87db39d76a531e1ddddd2a2e2d686debbbae03e092d5ab73fb78cf3362814",
+      "git_blob_sha256": "42d87db39d76a531e1ddddd2a2e2d686debbbae03e092d5ab73fb78cf3362814"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/scripts/run-oracle.mjs",
+      "destination": "test-support/settlement-oracle/scripts/run-oracle.mjs",
+      "sha256": "46e16a2e7a072f2c8470fb817fe431308497179ecc908f98e9d2d9c0352d4bdd",
+      "git_blob_sha256": "64736cce57b125d2fc4a91b77171d13efe9b82660adc207824e56d0da72bb5be"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/src/atomic.mjs",
+      "destination": "test-support/settlement-oracle/src/atomic.mjs",
+      "sha256": "8abd07320bc2f2babc0be05b90a9782a6c1ce2377bc12b0d1cd3b2b3d0514896",
+      "git_blob_sha256": "8abd07320bc2f2babc0be05b90a9782a6c1ce2377bc12b0d1cd3b2b3d0514896"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/src/engine.mjs",
+      "destination": "test-support/settlement-oracle/src/engine.mjs",
+      "sha256": "f821606b262bb892b639bc92e2dac92c8d83f57b47771105437dfbc8c6d21c58",
+      "git_blob_sha256": "dc972fa1d08143d8ed33f8139ddf3f75506b7b643436440912b713224777bfa4"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/src/errors.mjs",
+      "destination": "test-support/settlement-oracle/src/errors.mjs",
+      "sha256": "ad97b06bfcc3bcc42e8e6ef15a89a97e1af16673c486b93a6582fe1756e5780e",
+      "git_blob_sha256": "ad97b06bfcc3bcc42e8e6ef15a89a97e1af16673c486b93a6582fe1756e5780e"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/src/index.mjs",
+      "destination": "test-support/settlement-oracle/src/index.mjs",
+      "sha256": "eb82aaf87ed0cf3db61905a86a6651321c28d02c3032c26b7db74be68b6d57d3",
+      "git_blob_sha256": "eb82aaf87ed0cf3db61905a86a6651321c28d02c3032c26b7db74be68b6d57d3"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/src/policy.mjs",
+      "destination": "test-support/settlement-oracle/src/policy.mjs",
+      "sha256": "916501dbcd3c760132449b8a0fa319d571962ecc81059c5d6f350274858b3b57",
+      "git_blob_sha256": "c67f53317059679f505e067e5b2d47c9c9d66423b1463a9fe90b2150ca254986"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/src/settlement.mjs",
+      "destination": "test-support/settlement-oracle/src/settlement.mjs",
+      "sha256": "61b926917a4b1c38295d689e5dc48094ee12081ea7cecdc26ed2c5018fffc6e8",
+      "git_blob_sha256": "e7f940df90dc42b31b50c8c0a9b04e2954fb131622c59500912dc39f0218bbcc"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/test/acceptance.test.mjs",
+      "destination": "test-support/settlement-oracle/test/acceptance.test.mjs",
+      "sha256": "b80f3be683a1f47fd43e1d24bab3571e581eda93bff8fb898a40b40137eaeb32",
+      "git_blob_sha256": "b80f3be683a1f47fd43e1d24bab3571e581eda93bff8fb898a40b40137eaeb32"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/test/adversarial-regressions.test.mjs",
+      "destination": "test-support/settlement-oracle/test/adversarial-regressions.test.mjs",
+      "sha256": "0f9f10fe9be19353d8c87387231cf51dd3520dd7f0792a0a7ab9a5daf8cb6167",
+      "git_blob_sha256": "f6b247c5a59376d5eb1a43c3a6f26247adc0859c2b68a60957893c421c196399"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/test/allocation.test.mjs",
+      "destination": "test-support/settlement-oracle/test/allocation.test.mjs",
+      "sha256": "353055230d3c3cb18d1690334d808f6b2e89f51bd0a43740802a7bb7d274c852",
+      "git_blob_sha256": "0da09232a2007cbeee6e862964fde6f820c8c7983af166525118b055b5efcb99"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/test/atomic.test.mjs",
+      "destination": "test-support/settlement-oracle/test/atomic.test.mjs",
+      "sha256": "c859aa8134580130c90d275d840cce97c08efa00f264a054da59e79fc0051af5",
+      "git_blob_sha256": "e3ea433a62ddafb044265d7e000afd7043d47ff42fec4b3496813d277ab0f281"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/test/citations.test.mjs",
+      "destination": "test-support/settlement-oracle/test/citations.test.mjs",
+      "sha256": "9ad9443cfbde82ca42ca6f4c9a88fedeb281165ad698c01c6a46cb079b592ef7",
+      "git_blob_sha256": "9ad9443cfbde82ca42ca6f4c9a88fedeb281165ad698c01c6a46cb079b592ef7"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/test/claims.test.mjs",
+      "destination": "test-support/settlement-oracle/test/claims.test.mjs",
+      "sha256": "eabc71e0b9b20deefc076df5e4faaf68289c2a22cf6779c6672a089d765c1446",
+      "git_blob_sha256": "5932db4b1681a52365cc50023238a0e4aec104c3e39f9f66e84e75d640a628d8"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/test/conservation.test.mjs",
+      "destination": "test-support/settlement-oracle/test/conservation.test.mjs",
+      "sha256": "866ceef7b89340998d965cd57a149ef04998c92d5afb7e066aaa8fdb9a3c4242",
+      "git_blob_sha256": "5becf0a0a269e3cd10b05df6c8a02fc01bda995016fa695114f6b1e2c0ae7a40"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/test/differential.test.mjs",
+      "destination": "test-support/settlement-oracle/test/differential.test.mjs",
+      "sha256": "ebecb5715e32460aa0d6f2899627fc7b34014cb0101fb13d241091bfb1b219f6",
+      "git_blob_sha256": "6f653d110a251cf3fb9b13bd1f331428b38c03271e8e89498751ec65c7c5a1f9"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/test/helpers.mjs",
+      "destination": "test-support/settlement-oracle/test/helpers.mjs",
+      "sha256": "2c68c73b0ea289d90f11da9daff823193366ad7dd636552580db6d87dc39d63d",
+      "git_blob_sha256": "78cfd4623c83d93502ade40805bf5a71b438978c82a67798b1ab2b245b1e6e19"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/test/identity-boundaries.test.mjs",
+      "destination": "test-support/settlement-oracle/test/identity-boundaries.test.mjs",
+      "sha256": "57a2ac48258957bc8dc8257d72f0bc77d491371945a6c3711002c693879eedd2",
+      "git_blob_sha256": "cacba172f4225f16129e49de2b6f07296f4acf5bc6cfa8f304463c08bc20d387"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/test/lifecycle.test.mjs",
+      "destination": "test-support/settlement-oracle/test/lifecycle.test.mjs",
+      "sha256": "c41f9d9d79257ac1e0d874977654c60a8632e0492009b2b69125180ddad059da",
+      "git_blob_sha256": "c41f9d9d79257ac1e0d874977654c60a8632e0492009b2b69125180ddad059da"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/test/publish.test.mjs",
+      "destination": "test-support/settlement-oracle/test/publish.test.mjs",
+      "sha256": "400a1adb3ed33f445c942a57751aaf8d37d57baee8837c60661ceab55052e0c6",
+      "git_blob_sha256": "400a1adb3ed33f445c942a57751aaf8d37d57baee8837c60661ceab55052e0c6"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/test/refunds.test.mjs",
+      "destination": "test-support/settlement-oracle/test/refunds.test.mjs",
+      "sha256": "f530145fe23c3f1aceae724f033253c7d5968be44f57ccd2548c74e58dd39261",
+      "git_blob_sha256": "2fa5675fadd24b2c2ec9b30008411f585b380af4911e9de0f3ba2f2dde5b28a4"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/test/relocation-paths.test.mjs",
+      "destination": "test-support/settlement-oracle/test/relocation-paths.test.mjs",
+      "sha256": "c52479c2fa35a682fd8515ccfa209897ad98357a90cec050f6f042f7cfe5bf2a",
+      "git_blob_sha256": "fd12834e313f62b5fe303a585c69880a1e3ffe1e89b51b68e2ba64dad36ecd16"
+    },
+    {
+      "source": ".local/zcode-settlement-oracle/oracle/test/traceability.test.mjs",
+      "destination": "test-support/settlement-oracle/test/traceability.test.mjs",
+      "sha256": "e747f90e31be43ba9cbdb180e261259ae1d6b5cc7e9350a0dbe012d4013af51c",
+      "git_blob_sha256": "59e12dcdd2f5730e49be5702744170b24b6c5dc91de3219546d157423807a592"
+    }
+  ],
+  "limits": [
+    "Node offline oracle and synthetic fixtures only",
+    "T03/T04 actual NEAR Wasm/receipt tests NOT_RUN",
+    "Max-200 gas/concurrency and testnet/live NOT_RUN",
+    "OG-01..OG-08 documented defaults remain unresolved for production contract; local oracle acceptance does not freeze them",
+    "No provider config, secrets, wallet, database or deployment files imported"
+  ],
+  "bounded_secret_scan": {
+    "patterns": "private-key PEM and common token prefixes; file-scope/provenance review also performed",
+    "hits": []
+  }
+}
