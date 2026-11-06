@@ -1,0 +1,17 @@
+{
+  "reviewer": "Codex",
+  "classifier": "PASS_LOCAL",
+  "commit": "70332a07e95d6766babe7cf5eeabde98f3363498",
+  "method": "fresh default Git clone; no dependency install; no local worker files",
+  "command": [
+    "node",
+    "test-support/settlement-oracle/scripts/run-oracle.mjs",
+    "--packet-root",
+    ".",
+    "--evidence-dir",
+    "D:\\Belajar\\Hackacton\\Hackacton yang masih jalan\\ShowStake\\.local\\oracle-accepted-clone-runs"
+  ],
+  "exit": 0,
+  "output": "ORACLE_STATUS PASS_LOCAL\nrunId=20261106235711838-pid19908-bdb82c78\ntests=105 pass=105 fail=0 skipped=0 exit=0\nresult=D:\\Belajar\\Hackacton\\Hackacton yang masih jalan\\ShowStake\\.local\\oracle-accepted-clone-runs\\settlement-oracle-runs\\20261106235711838-pid19908-bdb82c78\\result.json\nlatest=D:\\Belajar\\Hackacton\\Hackacton yang masih jalan\\ShowStake\\.local\\oracle-accepted-clone-runs\\settlement-oracle-latest.json\n",
+  "limits": "offline Node oracle only; not T03/T04 or NEAR proof"
+}
