@@ -1,0 +1,27 @@
+{
+  "reviewer": "Codex",
+  "classifier": "FAILED",
+  "command": "pnpm verify:t01",
+  "exit_status": 1,
+  "expected": "All phases from same fresh run pass; aggregate denies any failed/missing phase",
+  "observed": {
+    "d01": "ECONNREFUSED 127.0.0.1:55439 from Windows pg client",
+    "later_phases": "missing tables/domain because migration did not apply",
+    "cli_status": "PASS reports empty pending DB, not proof migration applied",
+    "finalize": "PASS despite failed phases, using pre-existing JSON artifacts",
+    "stale_summary_classifier": "PASS_LOCAL",
+    "stale_summary_checks": {
+      "checks": 39,
+      "failed": 0
+    },
+    "cleanup": "server proven stopped and owned directory removed"
+  },
+  "additional_review_findings": [
+    "D04 replay sums registrations_projection instead of reconstructing from chain_events; not replay acceptance",
+    "D06 cursor check sequential duplicate insert, not concurrent cursor+projection transaction",
+    "run-suite hardcoded repo path/base commit, not reproducible fresh clone",
+    "bootstrap outside advisory migration lock; concurrent initial CLI tests required",
+    "OpenAPI public events/auth inherit global session security; request schemas/missing routes incomplete; provisional not frozen"
+  ],
+  "preservation": "Original worker return archived .local/t01-review-worker-return; failed independent artifacts .local/t01-review-independent-failed. No source accepted or overwritten by Codex."
+}

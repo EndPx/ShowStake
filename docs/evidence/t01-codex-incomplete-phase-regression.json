@@ -1,0 +1,19 @@
+{
+  "reviewer": "Codex",
+  "test": "T01 finalizer rejects incomplete phase set",
+  "expected": "nonzero FAILED/NOT_RUN when d06.json absent",
+  "observed": {
+    "exit": 0,
+    "classifier": "PASS_LOCAL",
+    "phases": [
+      "d01",
+      "d02",
+      "d03",
+      "d04-fixtures",
+      "d04-verify",
+      "d05"
+    ]
+  },
+  "classifier": "FAILED",
+  "limits": "Isolated copy of artifacts, no source DB modified. Worker return preserved in ignored archive."
+}
