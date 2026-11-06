@@ -1,0 +1,109 @@
+{
+  "reviewer": "Codex",
+  "classifier": "PASS_LOCAL",
+  "scope": "read-only source inspection, not browser or integration acceptance",
+  "baseline_commit": "542273df306a7e5887f1dfcabf1383e78930f579",
+  "tracked_frontend_files": 94,
+  "license": "No tracked root LICENSE/COPYING/NOTICE found; human expressly authorizes reuse for ShowStake. Do not infer a third-party license. Preserve attribution and review third-party dependencies/assets separately.",
+  "files": [
+    {
+      "path": "apps/web/src/lib/display-time.ts",
+      "git_blob_sha256": "cca80e6a803e23a1c1c898fbc5ba72eab9e3dc1ce87454ca1bdbedb21f6551d1",
+      "working_matches_normalized_blob": true
+    },
+    {
+      "path": "apps/web/src/components/events/event-location.tsx",
+      "git_blob_sha256": "2008f6066bfb5434eb7d84998cb75e0ff28e649444b1ba15d590515600cee46f",
+      "working_matches_normalized_blob": true
+    },
+    {
+      "path": "apps/web/src/components/events/event-list-states.tsx",
+      "git_blob_sha256": "a384dbcc3a884f754ef1e1cfe4e9ba83b33c1b93920785d245e995518cabca6e",
+      "working_matches_normalized_blob": true
+    },
+    {
+      "path": "apps/web/src/components/events/event-period-tabs.tsx",
+      "git_blob_sha256": "6bbb810643cbccf00b90f07aee32c71d861d2146a50f5b32fe42942a788d9cb1",
+      "working_matches_normalized_blob": true
+    },
+    {
+      "path": "apps/web/src/components/events/editor-dialog.tsx",
+      "git_blob_sha256": "cbcdb49d792a534f0680b933a9935157b1381a912fd2b7ebed8e8e3324cd9ab1",
+      "working_matches_normalized_blob": true
+    },
+    {
+      "path": "apps/web/src/components/landing/hero.tsx",
+      "git_blob_sha256": "fdf7bfd527f4d6b6e38567a6d52f87a1c6d96719ea2a03eca02a2eb7b24d60a9",
+      "working_matches_normalized_blob": true
+    },
+    {
+      "path": "apps/web/src/components/landing/poster.tsx",
+      "git_blob_sha256": "cdae2d3d9e0d055f2460f2748a430e0fb59a6cf228ed57f616b387529d0dc146",
+      "working_matches_normalized_blob": true
+    },
+    {
+      "path": "apps/web/src/components/events/event-detail.tsx",
+      "git_blob_sha256": "1a90053dd3bbe1f1a25932e1c26c9c0d0d0f4fb1207c49b3fe7c9d1a85853924",
+      "working_matches_normalized_blob": true
+    },
+    {
+      "path": "apps/web/src/components/events/event-pass.tsx",
+      "git_blob_sha256": "0af15c07055f8e083b359e7f0e9b556699bb779dad3af02371561a9cfc498494",
+      "working_matches_normalized_blob": true
+    },
+    {
+      "path": "apps/web/src/components/events/host-tools.tsx",
+      "git_blob_sha256": "4eb48de9e19264a37188c90263e7d39f54635fd37dbb477d235385e4ca73b7bd",
+      "working_matches_normalized_blob": true
+    },
+    {
+      "path": "apps/web/src/components/events/use-event-state.ts",
+      "git_blob_sha256": "9e226dcefeb82cf35a38a629d0ae48e2fa7e51e938421554bb75de55033acbe9",
+      "working_matches_normalized_blob": true
+    },
+    {
+      "path": "apps/web/src/components/auth/provider.tsx",
+      "git_blob_sha256": "984fd77d53ade28c527b4006140cf42f73f1428f6d528c15820b619dceda0584",
+      "working_matches_normalized_blob": true
+    },
+    {
+      "path": "apps/web/src/lib/media.ts",
+      "git_blob_sha256": "07156f2403905f564a1627cfe5f64c9fb3a36556e946515b7f4da6063a455617",
+      "working_matches_normalized_blob": true
+    },
+    {
+      "path": "apps/web/src/lib/event-editor.ts",
+      "git_blob_sha256": "63bed3bcbcc607653c653262f80e430ea304cf89cb442f181af2abe8a3e73942",
+      "working_matches_normalized_blob": true
+    },
+    {
+      "path": "apps/web/package.json",
+      "git_blob_sha256": "41ba49e1507f06e4aa5b0b43d6a826d49742fd942762df50095fe071d0e6b0f8",
+      "working_matches_normalized_blob": true
+    },
+    {
+      "path": "DESIGN.md",
+      "git_blob_sha256": "5bcd3fdeb3dff3ed989105fe174d13963cd421f1155f2b27d9f09b2dcfb112e4",
+      "working_matches_normalized_blob": true
+    }
+  ],
+  "excluded": [
+    ".env*",
+    ".vercel",
+    ".deploy-local",
+    "deploy",
+    "api",
+    "indexer",
+    "cre",
+    "node_modules",
+    "database",
+    "deployment files",
+    "private endpoint configuration"
+  ],
+  "legacy_status_observed": [
+    "modified contracts/src/CommitPassFactory.sol",
+    "modified docs/gitbook/README.md",
+    "untracked docs/gitbook/assets/commitpass-overview-3d.jpg",
+    "untracked docs/gitbook/assets/commitpass-overview-3d.png"
+  ]
+}
