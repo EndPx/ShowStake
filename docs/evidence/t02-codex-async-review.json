@@ -1,0 +1,27 @@
+{
+  "reviewer": "Codex",
+  "classifier": "FAILED",
+  "scope": "offline fixture seam; no wallet/network/transaction",
+  "results": [
+    {
+      "id": "candidate_switch_during_verification",
+      "expected": "deny stale async completion",
+      "observed": {
+        "ok": true,
+        "code": "VERIFIED",
+        "accountId": "fixture.testnet",
+        "publicKey": "fixture"
+      }
+    },
+    {
+      "id": "expiry_during_verification",
+      "expected": "deny stale async completion",
+      "observed": {
+        "ok": true,
+        "code": "VERIFIED",
+        "accountId": "fixture.testnet",
+        "publicKey": "fixture"
+      }
+    }
+  ]
+}
