@@ -1,0 +1,28 @@
+{
+  "path": "D:\\Belajar\\Hackacton\\Hackacton yang masih jalan\\ShowStake\\.local\\t02-accepted-clone-1794030063",
+  "commit": "9b0018984864dbfa69d2dad80233f0b3e44c3a57",
+  "reviewer": "Codex",
+  "classifier": "PASS_LOCAL",
+  "method": "fresh default Git clone of accepted commit, no unaccepted worker source or configs",
+  "commands": [
+    {
+      "command": "pnpm install --frozen-lockfile --ignore-scripts",
+      "exit": 0
+    },
+    {
+      "command": "pnpm verify:t02-adversarial",
+      "exit": 0,
+      "checks": 18
+    },
+    {
+      "command": "pnpm build:t02-harness",
+      "exit": 0
+    },
+    {
+      "command": "pnpm verify",
+      "exit": 0,
+      "packet_hashes": 11
+    }
+  ],
+  "limits": "Local reproducibility, not real wallet/signature/relogin or backend auth acceptance."
+}
