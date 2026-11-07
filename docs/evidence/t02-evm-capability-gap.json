@@ -1,0 +1,39 @@
+{
+  "reviewer": "Codex",
+  "classifier": "BLOCKED_EXTERNAL",
+  "scope": "current EVM connector capability gap, actual reported error not yet captured",
+  "source": "https://raw.githubusercontent.com/hot-dao/near-selector/refs/heads/main/repository/manifest.json",
+  "observed_at": "2026-11-07T07:58:34.255435+00:00",
+  "manifest_sha256": "4805fb2ff5189b84ab1379ecbb76af68e44cbe444f6a5cacb2eda662ee29af20",
+  "wallet": {
+    "id": "ethereum-wallets",
+    "website": "https://evm-on-near.dev/",
+    "features": {
+      "signMessage": false,
+      "signTransaction": false,
+      "signAndSendTransaction": true,
+      "signAndSendTransactions": true,
+      "signInWithoutAddKey": true,
+      "signInAndSignMessage": false,
+      "signInWithFunctionCallKey": false,
+      "signDelegateActions": false,
+      "mainnet": true,
+      "testnet": true
+    }
+  },
+  "observations": [
+    "User screenshot shows Meteor SIGNED_IN on testnet (connect only)",
+    "PublicKey absent in getAccounts is not signature/control verification",
+    "Ethereum Wallets declares signMessage=false and signInAndSignMessage=false; cannot claim native NEP413 support",
+    "Current provider picker only filters testnet, so it can show transaction-capable but message-signing-unsupported entries"
+  ],
+  "next": [
+    "Capture exact EVM error/stage from user; do not assume this capability gap is the connect failure",
+    "Keep required EVM login+NEAR binding scope; alternative adapter needs its own PoC",
+    "Do not mutate live harness during human signing handoff"
+  ],
+  "limits": [
+    "No wallet signature/control proof or relogin accepted from connect screenshot",
+    "No transaction/account creation/secret access"
+  ]
+}
