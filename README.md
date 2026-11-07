@@ -2,7 +2,15 @@
 
 ShowStake is an event attendance commitment platform built around NEAR escrow. Participants commit a refundable deposit to an event; an account-bound, non-transferable pass represents registration. Organizers finalize attendance onchain before settlement and claims. The product addresses registrations that do not translate into attendance.
 
-Accepted local increments include the database foundation, the independent settlement oracle, and the wallet/signing diagnostic harness. There is no deployed application or proven live escrow lifecycle yet. Hackathon tracks: `open` and `nfts`; the custom pass does not currently claim NEP-171 or NEP-393 compliance.
+Accepted increments include the database foundation, independent settlement oracle, wallet/signing diagnostic harness, and minimum Rust escrow/pass contract. The minimum contract is deployed on NEAR testnet; the full browser/backend/financial lifecycle remains incomplete. Hackathon tracks: `open` and `nfts`; the custom pass does not claim NEP-171 or NEP-393 compliance.
+
+## Inspect the minimum testnet contract
+
+This deployment uses synthetic testnet assets only. Contract: `showstake-endpx.testnet`; organizer: `showstake-participant-endpx.testnet`; FT: `showstake-ft-endpx.testnet` (`SS_TEST`, 6 decimals). Source snapshot: `70d6319`; Wasm SHA-256: `fc49fb85cc6e718086ddf81e9a936362a8c36ef9384a8444eadafa6ec0cdcd8e`. One contract instance hosts one event and issues account-bound passes. Factory, withdrawal, cancellation, attendance, settlement and claim are not available in this artifact. Do not use real assets or treat this as a public deposit invitation.
+
+1. Run `npx --yes near-cli-rs@0.31.1 contract call-function as-read-only showstake-endpx.testnet get_config json-args '{}' network-config testnet now`. See the immutable organizer, canonical FT, testnet network and policy version.
+2. Run the same read command with method `list_events` and JSON arguments `'{"from":0,"limit":10}'`. See the published test event and its contract-derived counts, or an empty list before publication.
+3. Inspect the [deployment receipt](https://testnet.nearblocks.io/txns/B5DJuxtFuHi7gs2ePg3YKxG5orJqpA1myXo4qdyEm4mv), [deployment evidence](docs/evidence/testnet-showstake-deployment-result.json), and [Codex local review](docs/evidence/contract-slice-codex-review.json). See actual environment labels and the limits of this minimum slice.
 
 ## Try the accepted foundation
 

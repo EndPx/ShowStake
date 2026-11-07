@@ -1,0 +1,28 @@
+{
+  "network": "testnet",
+  "account": "showstake-endpx.testnet",
+  "source_commit": "70d6319",
+  "wasm_sha256": "fc49fb85cc6e718086ddf81e9a936362a8c36ef9384a8444eadafa6ec0cdcd8e",
+  "init_args": {
+    "organizer": "showstake-participant-endpx.testnet",
+    "canonical_ft": "showstake-ft-endpx.testnet",
+    "network": "testnet",
+    "policy_version": "showstake-v2/1"
+  },
+  "signer": "OS keychain (dedicated testnet only)",
+  "gas_limit": "100 Tgas",
+  "attached_deposit": "0 NEAR",
+  "estimated_native_upper_yocto": "3450530000000000000000000",
+  "storage_byte_cost": "10000000000000000000",
+  "gas_price": "100000000",
+  "before": {
+    "amount": "10000000000000000000000000",
+    "block_hash": "5iQCkNJMD2U6MQZLGuzc7VDb4AseWBKPasdLTAPvX1JL",
+    "block_height": 276624024,
+    "code_hash": "11111111111111111111111111111111",
+    "locked": "0",
+    "storage_paid_at": 0,
+    "storage_usage": 182
+  },
+  "authorization": "explicit user testnet-only deployment and testing"
+}

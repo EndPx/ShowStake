@@ -7,9 +7,9 @@ Snapshot: 2026-11-07. Tracks: open, nfts. Internal target: November 14, 23:59 WI
 | T00 bootstrap | none | Real executor dispatch/result/Codex review, preserved v2 packet, repo/toolchain | Accepted, committed/pushed |
 | T01 database/interfaces | T00 | Versioned PostgreSQL migrations, constraints, least-privilege grants, replay/restore/concurrency, exact amounts, OpenAPI | Accepted PASS_LOCAL: 52 checks, default-clone proof; committed/pushed |
 | T02 wallet/route probes | T00 | Native NEAR and social/email/EVM paths, verified account binding, login/relogin same account, signing, supported funding/FT route and reviewed ABI | Partial: local adapter/harness increment accepted after99 checks, build and browser startup; real signing/relogin/social/EVM gates open |
-| T03 escrow/pass | T01 + reviewed T02 interface gates | Event publish, valid FT deposit, atomic seat/pass issuance, immutable participant/beneficiary, non-transferable custom pass | Not accepted; no tested escrow lifecycle |
+| T03 escrow/pass | T01 + reviewed T02 interface gates | Event publish, valid FT deposit, atomic seat/pass issuance, immutable participant/beneficiary, non-transferable custom pass | Minimum accepted in 70d6319: 34 unit + 91 real Sandbox checks; same Wasm PASS_TESTNET via CLI/keychain publish/deposit/reg-0/pass-0, duplicate/wrong-amount refunds and transfer denial. Factory and full browser integration remain open |
 | T04 settlement/payout | T03 | Organizer finalization, timeout/cancel/withdraw refunds, exact redistribution, claim callback failure/retry and conservation | Not accepted; independent test-support oracle accepted PASS_LOCAL (105 tests), no contract execution |
-| T05 auth/projections | T01,T02 | Backend challenges/sessions, identity linking, chain-event ingestion, durable cursor/recovery, projection freshness | Not accepted; T01 test replay is not a production worker |
+| T05 auth/projections | T01,T02 | Backend challenges/sessions, identity linking, chain-event ingestion, durable cursor/recovery, projection freshness | API source in progress under ctx_0589ce453a2d, unaccepted; indexing worker not implemented; T01 replay is test support |
 | T06 funding | T03,T05 | Supported quote/delivery to participant NEAR account, separate signed escrow deposit, expiry/unknown/retry recovery | Not accepted; no funded cross-chain proof; Intents has no testnet |
 | T07 check-in/content | T04,T05 | Expiring QR, pending request, organizer-signed attendance, backend-gated attendee materials | Not accepted |
 | T08 frontend | T01; final integration T06,T07 | Adapt CommitPass baseline, preserve suitable layouts/interactions, ShowStake tokens and exact state presentation, responsive/accessibility checks | Reuse inspection/map complete; adaptation pending; new FigCraft design deferred |
@@ -19,13 +19,13 @@ Snapshot: 2026-11-07. Tracks: open, nfts. Internal target: November 14, 23:59 WI
 
 ## Execution policy
 
-Codex coordinates, freezes interfaces, reviews and accepts. DeepSeek Harness/GATER is the main implementation writer. ZCode can work on independent non-design tests in an isolated folder; its exact model/provider must be verified before task execution. No concurrent writes to the main source/lockfile. Preserve unfinished source and FigCraft archives. Review -> relevant tests -> fixes -> commit -> push for every accepted increment.
+Codex coordinates, freezes interfaces, reviews and accepts. DeepSeek Harness/GATER owns API/Node work; authorized ZCode/Cloud Near owns Rust contracts/integration tests directly in the main repository. Verify actual model/provider on executor recovery. Writers have disjoint file ownership; one owner for Node manifest/lockfile. Preserve unfinished source and FigCraft archives. Review -> relevant tests -> fixes -> commit -> push for every accepted increment.
 
 Immediate order: review T02 harness and fix any defects; real-wallet handoff and contract interface decision; T03 then T04. CommitPass adaptation, T05 and independent test preparation proceed where dependencies permit. No need to finish the entire UI before proving escrow. FigCraft work is deferred by the latest human direction.
 
 ## Gates and scope
 
-Public EndPx/ShowStake pushes are authorized only for reviewed/tested increments. Deployment, paid upgrades/resources, real-asset transactions and hackathon submission remain separate authorization gates. A fixture or local oracle never passes a wallet, testnet or live contract gate. No pass transfer/resale/reassignment; swap success is not registration; QR scan is not final attendance; SQL projections do not authorize balances or payouts.
+Public EndPx/ShowStake pushes are authorized only for reviewed/tested increments. Dedicated testnet accounts/faucet/keychain, reviewed testnet deployments and synthetic test-token transactions are explicitly authorized. Mainnet deployment, paid resources, real assets, public deposits and submission retain separate authorization gates. A fixture or local oracle never passes a wallet, testnet or live contract gate. No pass transfer/resale/reassignment; swap success is not registration; QR scan is not final attendance; SQL projections do not authorize balances or payouts.
 
 Capacity and schedule risk: approximately one week to internal target, with core wallet/escrow gates still open, repeated GATER IP-binding errors, a standalone ZCode Start Plan compatibility gap, and capacity shared with Keyfolio. No Keyfolio resources/services modified. Scope and acceptance are unchanged; no defensible completion percentage yet.
 
