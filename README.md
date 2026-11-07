@@ -4,6 +4,16 @@ ShowStake is an event attendance commitment platform built around NEAR escrow. P
 
 Accepted increments include the database foundation, independent settlement oracle, wallet/signing diagnostic harness, and minimum Rust escrow/pass contract. The minimum contract is deployed on NEAR testnet; the full browser/backend/financial lifecycle remains incomplete. Hackathon tracks: `open` and `nfts`; the custom pass does not claim NEP-171 or NEP-393 compliance.
 
+## Inspect D036 cancellation and claim on testnet
+
+The newer clean instance is `showstake-d036-endpx.testnet`, deployed from source snapshot `a632d3c` with Wasm SHA-256 `d79ef24c72d2eea762d4c3e78a1990a21bf13458b0bf07c908a68fc6ca1d5bee` and policy `showstake-v2-d036/1`. A valid commit is final for participants: voluntary withdrawal/rejoin is denied. Organizer cancellation and deadline timeout preserve principal refunds.
+
+1. Read `get_config` on this account through NEAR testnet RPC. See the D036 policy, immutable organizer and canonical synthetic FT.
+2. Inspect [the cancellation](https://testnet.nearblocks.io/txns/9dkwCjpHrhcW5tDFhcqfcAwEEwyVZ1UEcYZusqj7oWjY) and [the claim](https://testnet.nearblocks.io/txns/3KyMCsRvbkgLW6U5xjqp6EYmnWR5YXrXYDUxGupY2ZdG). See a real testnet FT payout after organizer cancellation.
+3. Read `get_claim` with registration ID `reg-0` and `get_event_totals` with event ID `d036-refund-test`. See `Paid`, accepted/paid `1000000`, pending/liability `0`. [Full receipts and balance snapshots](docs/evidence/testnet-d036-smoke.json) distinguish local, testnet and not-run cases.
+
+These are CLI/keychain proofs using synthetic SS_TEST; no browser/wallet/full lifecycle acceptance is implied. Testnet timeout24h, attendance, finalization, redistribution and factory remain open. The earlier minimum instance below remains unchanged; it was not upgraded over incompatible state.
+
 ## Inspect the minimum testnet contract
 
 This deployment uses synthetic testnet assets only. Contract: `showstake-endpx.testnet`; organizer: `showstake-participant-endpx.testnet`; FT: `showstake-ft-endpx.testnet` (`SS_TEST`, 6 decimals). Source snapshot: `70d6319`; Wasm SHA-256: `fc49fb85cc6e718086ddf81e9a936362a8c36ef9384a8444eadafa6ec0cdcd8e`. One contract instance hosts one event and issues account-bound passes. Factory, withdrawal, cancellation, attendance, settlement and claim are not available in this artifact. Do not use real assets or treat this as a public deposit invitation.

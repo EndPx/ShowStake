@@ -1,6 +1,6 @@
 # ShowStake delivery roadmap
 
-Snapshot: 2026-11-07. Tracks: open, nfts. Internal target: November 14, 23:59 WIB. Test evidence is local unless explicitly classified otherwise.
+Snapshot: 2026-11-08. Tracks: open, nfts. Internal target: November 14, 23:59 WIB. Test evidence is local unless explicitly classified otherwise.
 
 | Task | Dependency | Deliverable and acceptance | Current status |
 |---|---|---|---|
@@ -8,7 +8,7 @@ Snapshot: 2026-11-07. Tracks: open, nfts. Internal target: November 14, 23:59 WI
 | T01 database/interfaces | T00 | Versioned PostgreSQL migrations, constraints, least-privilege grants, replay/restore/concurrency, exact amounts, OpenAPI | Accepted PASS_LOCAL: 52 checks, default-clone proof; committed/pushed |
 | T02 wallet/route probes | T00 | Native NEAR and social/email/EVM paths, verified account binding, login/relogin same account, signing, supported funding/FT route and reviewed ABI | Partial: local adapter/harness increment accepted after99 checks, build and browser startup; real signing/relogin/social/EVM gates open |
 | T03 escrow/pass | T01 + reviewed T02 interface gates | Event publish, valid FT deposit, atomic seat/pass issuance, immutable participant/beneficiary, non-transferable custom pass | Minimum accepted in 70d6319: 34 unit + 91 real Sandbox checks; same Wasm PASS_TESTNET via CLI/keychain publish/deposit/reg-0/pass-0, duplicate/wrong-amount refunds and transfer denial. Factory and full browser integration remain open |
-| T04 settlement/payout | T03 | Organizer finalization, timeout/cancel refunds, D036 withdrawal denial, exact redistribution, claim callback failure/retry and conservation | Not accepted; independent test-support oracle accepted PASS_LOCAL (105 tests), no contract execution |
+| T04 settlement/payout | T03 | Organizer finalization, timeout/cancel refunds, D036 withdrawal denial, exact redistribution, claim callback failure/retry and conservation | Partial: D036 cancellation/timeout/claim retry accepted locally (50unit/984Sandbox); cancellation/claim PASS_TESTNET on newinstance. Attendance/finalization/redistribution still in progress; full T04 open |
 | T05 auth/projections | T01,T02 | Backend challenges/sessions, identity linking, chain-event ingestion, durable cursor/recovery, projection freshness | Bounded API accepted PASS_LOCAL:40local +25realPG/HTTP checks, final integration by Codex (D037). FullT05 remains open: indexing, pass/organizer authorization and browser/testnet integration pending |
 | T06 funding | T03,T05 | Supported quote/delivery to participant NEAR account, separate signed escrow deposit, expiry/unknown/retry recovery | Not accepted; no funded cross-chain proof; Intents has no testnet |
 | T07 check-in/content | T04,T05 | Expiring QR, pending request, organizer-signed attendance, backend-gated attendee materials | Not accepted |

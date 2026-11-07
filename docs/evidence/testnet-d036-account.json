@@ -1,0 +1,27 @@
+{
+  "network": "testnet",
+  "account_id": "showstake-d036-endpx.testnet",
+  "signer": "dedicated OS keychain outside repository",
+  "faucet": "testnet only",
+  "rpc_account": {
+    "amount": "10000000000000000000000000",
+    "block_hash": "HWjgvCLqsQF7jqwYgM4C1H4jfhA6BYGzDVVSSQwkwWcE",
+    "block_height": 276697497,
+    "code_hash": "11111111111111111111111111111111",
+    "locked": "0",
+    "storage_paid_at": 0,
+    "storage_usage": 182
+  },
+  "rpc_access_keys": [
+    {
+      "access_key": {
+        "nonce": 276697493000000,
+        "permission": "FullAccess"
+      },
+      "public_key": "ed25519:8pD5NHRiQsFVdjh6Tmk4gyQo6X2G3pyimHXsK7C9aZfm"
+    }
+  ],
+  "keychain_public_key_matches_rpc": true,
+  "secret_output_logged": false,
+  "scope": "new clean D036 instance, old contract untouched"
+}
