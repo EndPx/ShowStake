@@ -1,0 +1,28 @@
+{
+  "reviewer": "Codex",
+  "classification": "FAILED",
+  "scope": "API candidate acceptance review; not accepted",
+  "worker_dispatch": "ctx_0589ce453a2d",
+  "independent_typecheck": {
+    "exit_code": 0
+  },
+  "reproduced_defect": {
+    "method": "generated fixture signature, deterministic injected clock advanced beyond expiry during async resolver",
+    "observed": "sessionCreated=true after challenge expiry",
+    "expected": "deny without consuming nonce/opening session",
+    "cause": "pre-await nowMs reused in verification and Store consumeAndOpenSession"
+  },
+  "source_findings": [
+    "runtime ignores DB_ROLE; integration auth pool uses superuser",
+    "packet challenge rate limiting absent",
+    "CSRF defense absent on session mutation",
+    "projection meta.stale hardcoded false",
+    "implemented nonce/session interface differs from OpenAPI",
+    "domain account validator documented heuristic only"
+  ],
+  "action": "revision task_30a89fa6c3c9 / ctx_10e78291abac sent to same DeepSeek Harness GATER",
+  "limits": [
+    "No live wallet/API auth proof",
+    "No source acceptance/commit/push for this candidate"
+  ]
+}
