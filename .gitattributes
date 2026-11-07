@@ -22,6 +22,8 @@
 
 # Lockfile is text and normalized.
 pnpm-lock.yaml text eol=lf
+**/Cargo.lock text eol=lf
+*.wasm binary
 
 # VALIDATION.json is an immutable generated artifact whose recorded provenance
 # hash (docs/evidence/bootstrap.json) pins its CRLF checkout bytes (the verifier

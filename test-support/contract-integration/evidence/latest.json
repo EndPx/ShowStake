@@ -1,0 +1,7 @@
+{
+  "schema": "showstake.product-runner.latest/1.1.0",
+  "run_id": "20261107T111232Z-102958-f832dcb1",
+  "status": "PASS_LOCAL",
+  "run": "/mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/test-support/contract-integration/evidence/runs/20261107T111232Z-102958-f832dcb1/run.json",
+  "note": "Pointer to the current run only. Prior run folders are preserved."
+}

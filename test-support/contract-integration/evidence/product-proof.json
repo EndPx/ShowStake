@@ -1,0 +1,135 @@
+{
+  "schema": "showstake.product-proof/1.0.0",
+  "generated_at_utc": "2026-11-07T11:14:00Z",
+  "author": "ZCode / CloudNear / new-provider/deepseek-ai/DeepSeek-V4.1-Flash-1017-abliterated",
+  "task": "task_305fdb4144e3",
+  "dispatch": "ctx_11bccb9613ff",
+  "status": "PASS_LOCAL",
+  "reviewed_artifact": {
+    "path": "test-support/contract-integration/wasm/showstake.wasm",
+    "bytes": 339957,
+    "sha256": "fc49fb85cc6e718086ddf81e9a936362a8c36ef9384a8444eadafa6ec0cdcd8e",
+    "expected_sha256": "fc49fb85cc6e718086ddf81e9a936362a8c36ef9384a8444eadafa6ec0cdcd8e",
+    "unchanged_by_this_task": true,
+    "product_source_unchanged": {
+      "contracts/showstake/src/lib.rs": "2c844b74b7791174ff09c726be530d5acdf1af770280ad378435d008a3480013",
+      "contracts/showstake/tests/test_basics.rs": "7175cf8d6b788696a5fa62c9bacaa668df5460adc16d599881e3b199a7d40dc5",
+      "contracts/showstake/README.md": "ee3e6dfd328dafcd1a0a9e3029dec17978207a39af868e7cdba01a0340a5afc9"
+    },
+    "test_ft_fixture": {
+      "path": ".local/zcode-settlement-oracle/sandbox-probe/wasm/ft_fixture.wasm",
+      "bytes": 285025,
+      "sha256": "d1c7d009a2c49bee5ad4997fe7e3114899fa667a06876fb6e435d9a72fffb195",
+      "untouched": true
+    }
+  },
+  "runner_update": {
+    "path": "test-support/contract-integration/runner/src/main.rs",
+    "bytes": 64460,
+    "sha256": "7589fffa2c3531abedfc06566778ff257586b6661756946590d252baef552bde",
+    "script_path": "test-support/contract-integration/run-product-integration.sh",
+    "script_sha256": "ac707c3e520220f4dfdc3814e3cc38a1d62acfa5775dd8bba9bb2a22ae695728",
+    "changes": [
+      "new(organizer, canonical_ft, network, policy_version) init and get_config organizer check",
+      "one published event per contract instance; second publish is exercised and denied",
+      "separate ShowStake instances for evt-open, evt-open-2 and evt-closed",
+      "positive passes on the open instance and on the separate open2 instance",
+      "wrong-token, wrong-amount, duplicate-active and closed-phase refund paths",
+      "exact new-entry storage charge, exact existing top-up, 1 yoctoNEAR rejection and retry",
+      "nft_transfer, nft_transfer_call, nft_approve, admin_reassign_pass and burn denials",
+      "snapshots use non-panicking list_events so pre-publish state is representable"
+    ]
+  },
+  "commands": {
+    "top_level": "cd test-support/contract-integration && bash run-product-integration.sh",
+    "build_runner": "cd /mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/test-support/contract-integration/runner && CARGO_NET_OFFLINE=true /mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/.local/zcode-settlement-oracle/sandbox-probe/.toolchain/cargo/bin/rustup run 1.95.0-x86_64-unknown-linux-gnu cargo build --locked",
+    "run_sandbox": "bash /mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/.local/zcode-settlement-oracle/sandbox-probe/scripts/run-harness-owned.sh /var/tmp/showstake-target-c3989af8ce837da4/debug/showstake-product-runner 1200 /var/tmp/showstake-runs-c3989af8ce837da4/20261107T111232Z-102958-f832dcb1 /var/tmp/showstake-target/debug/build/near-sandbox-43bc2d0c4452c183/out/.near/near-sandbox-2.14.0/near-sandbox /mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/test-support/contract-integration/evidence/runs/20261107T111232Z-102958-f832dcb1/teardown.json /mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/test-support/contract-integration/evidence/runs/20261107T111232Z-102958-f832dcb1/harness.log"
+  },
+  "evidence_run": {
+    "run_id": "20261107T111232Z-102958-f832dcb1",
+    "run_dir": "test-support/contract-integration/evidence/runs/20261107T111232Z-102958-f832dcb1",
+    "run_json": "test-support/contract-integration/evidence/runs/20261107T111232Z-102958-f832dcb1/run.json",
+    "run_json_sha256": "bd909fabfc59359b691ac4fdcb03345bf1b5c900cd4b8bc44075aead7743da7e",
+    "result_json": "test-support/contract-integration/evidence/runs/20261107T111232Z-102958-f832dcb1/result.json",
+    "result_json_sha256": "259e37b467b095fc092265eafecfc40262e3657b8c159c5374d3cdb2d243b110",
+    "teardown_json": "test-support/contract-integration/evidence/runs/20261107T111232Z-102958-f832dcb1/teardown.json",
+    "teardown_json_sha256": "23ee1f05851ae7cca9d50821770441b8c52920887951f1f6871a6a5f674b743d",
+    "harness_log": "test-support/contract-integration/evidence/runs/20261107T111232Z-102958-f832dcb1/harness.log",
+    "runner_log": "test-support/contract-integration/evidence/runs/20261107T111232Z-102958-f832dcb1/runner.log"
+  },
+  "result": {
+    "status": "PASS_LOCAL",
+    "error": null,
+    "checks_passed": 91,
+    "checks_total": 91,
+    "transactions": 45,
+    "top_level_success": 37,
+    "snapshots": 16,
+    "expected_failures": [
+      "storage_deposit_dave_one_yocto",
+      "publish_unauthorized",
+      "publish_second_event",
+      "deny_nft_transfer",
+      "deny_nft_transfer_call",
+      "deny_nft_approve",
+      "deny_admin_reassign",
+      "deny_burn"
+    ],
+    "unexpected_failures": []
+  },
+  "proof_points": {
+    "positive_open_pass": "alice 1000->900 SFT-A; open instance 0->100; escrow 100; one registration/pass owner=alice",
+    "positive_second_pass": "bob 1000->900 SFT-A; open instance 100->200; two active passes; owner=bob",
+    "positive_separate_instance": "dave 1000->900 SFT-A; open2 instance 0->100; one pass on the second event instance",
+    "storage_new_entry": "attached 500000000000000000000000 yocto; returned 499250000000000000000000; 750000000000000000 entry charge",
+    "storage_existing_topup": "initial 499250000000000000000000 + topup 100000000000000000000000 = 599250000000000000000000 exactly",
+    "storage_one_yocto_rejected": "storage_deposit_dave_one_yocto failed; dave credit remained 0; adequate retry succeeded",
+    "rejected_wrong_amount": "carol D-1 refunded; snapshot unchanged; WRONG_AMOUNT logged",
+    "rejected_duplicate": "alice second exact deposit refunded; snapshot unchanged; ACTIVE_REGISTRATION logged",
+    "rejected_wrong_token": "bob FT B 1000->1000; open instance FT B 0; total supply unchanged; WRONG_FT logged",
+    "rejected_closed_phase": "alice deposit to closed instance refunded; closed instance 0 accepted; PHASE_CLOSED logged",
+    "nontransferable": "all five pass operations failed at the contract receipt with snapshot unchanged and owner still alice"
+  },
+  "sandbox": {
+    "version": "2.14.0",
+    "binary": "/var/tmp/showstake-target/debug/build/near-sandbox-43bc2d0c4452c183/out/.near/near-sandbox-2.14.0/near-sandbox",
+    "sha256": "797b9d7a9a23907048d68a427e86a55c94f1de232dbfb8b8a1eec09ecef3bf13",
+    "expected_sha256": "797b9d7a9a23907048d68a427e86a55c94f1de232dbfb8b8a1eec09ecef3bf13",
+    "public_network_calls": false,
+    "fixture_only": true
+  },
+  "runner_binary": {
+    "path": "/var/tmp/showstake-target-c3989af8ce837da4/debug/showstake-product-runner",
+    "sha256": "0650bc5c8ece99c571ca25041080657a84e73c0503c5ec41d736e8270e4e3707",
+    "build_exit": 0,
+    "run_exit": 0
+  },
+  "teardown_proof": {
+    "strategy": "owned process group + exact pinned binary + run-owned --home prefix",
+    "pgid": 103067,
+    "harness_pid": 103067,
+    "ownership_verified": true,
+    "proven_stopped": true,
+    "owned": [],
+    "killed": [],
+    "remaining": [],
+    "unverified_remaining": [],
+    "limits": [
+      "Only processes in this run's PGID with the exact pinned binary and a run-owned --home prefix were considered owned.",
+      "This proves teardown of this run's sandbox only; unrelated sandbox processes are out of scope."
+    ]
+  },
+  "reuse": {
+    "toolchain": ".local/zcode-settlement-oracle/sandbox-probe/.toolchain (1.95.0-x86_64-unknown-linux-gnu)",
+    "cargo_target_dir": "/var/tmp/showstake-target-c3989af8ce837da4 (existing; no new target)",
+    "cargo_network": "offline",
+    "supervisor": ".local/zcode-settlement-oracle/sandbox-probe/scripts/run-harness-owned.sh",
+    "contract_rebuilt": false
+  },
+  "limits": [
+    "Local synthetic NEAR Sandbox only; no testnet/mainnet, public RPC, wallet, key or real asset.",
+    "PASS_LOCAL is local receipt/balance evidence only; it is not the testnet deployment gate.",
+    "The reviewed product source and candidate Wasm were not modified by this task.",
+    "cancellation/refund/claim/payout-callback and factory remain the next bounded source slices."
+  ]
+}

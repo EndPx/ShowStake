@@ -1,0 +1,297 @@
+{
+  "schema": "showstake.storage-charge-fix-report/1.1.0",
+  "generated_at_utc": "2026-11-07T10:55:00Z",
+  "author": "ZCode / CloudNear / new-provider/deepseek-ai/DeepSeek-V4.1-Flash-1017-abliterated",
+  "task": "task_b0008d637e24",
+  "dispatch": "ctx_aed79abd86b9",
+  "provenance": {
+    "initial_source_author": "ZCode (task_e1e3b501a863)",
+    "initial_source_reviewer": "Codex",
+    "architecture_clarification": "Codex msg_58356e6273ce / human: one event per contract with many passes, immutable expected organizer in new/config, only that organizer may publish; factory is a later slice.",
+    "baseline": "Before this task, contracts/showstake was byte-identical to the archived .local/zcode-settlement-oracle/product/contracts/showstake source (lib.rs 5c6917c87fcb982882d1689d83b765479e82e39417f5166202eed065f60feac9, tests 60de352aeed3449062ffec65bea49216c9b7a5700ae8e6f7d152f3705aee67e4).",
+    "archive_unchanged": ".local/zcode-settlement-oracle/product/contracts/showstake was not modified by this task."
+  },
+  "status": {
+    "unit_tests": "PASS_LOCAL",
+    "wasm_build": "PASS_LOCAL",
+    "sandbox_integration": "NOT_RUN",
+    "testnet_deploy": "NOT_RUN",
+    "compilation_basis": "offline cargo with the existing isolated Rust 1.95.0 toolchain and existing WSL target cache; no new registry, target or bootstrap"
+  },
+  "architecture": {
+    "model": "Exactly one event instance per contract account; that instance issues many nontransferable account-bound passes (max 200 active, one active registration per account).",
+    "organizer": "Immutable constructor argument stored in Config. publish_event requires predecessor == config.organizer before any other check or write, preventing first-publish front-running.",
+    "one_event_enforcement": "publish_event requires next_event_seq == 0 before validation, native-credit insertion or event insertion; any second publish of any event id traps with 'event already published' and changes no state, credit or escrow.",
+    "pass_identity": "External key tuple is (network, contract account, pass_id). pass_id is unique within the contract; owner = participant = beneficiary; no transfer/approval/burn/admin-reassignment.",
+    "factory_scope": "Permissionless child-contract factory/registry is not implemented and is explicitly out of this slice.",
+    "compatibility_views": "The bounded list/get views remain in place; list_events returns zero or one event. get_event(event_id), list_event_registrations(event_id, from, limit) are unchanged for this first instance."
+  },
+  "abi_review": {
+    "init": {
+      "method": "new",
+      "args": {
+        "organizer": "AccountId — immutable publisher and event organizer",
+        "canonical_ft": "AccountId — immutable canonical NEP-141 FT",
+        "network": "string 1..=64 printable ASCII",
+        "policy_version": "string 1..=64 printable ASCII"
+      },
+      "one_time": true,
+      "proposed_first_testnet_instance": {
+        "contract_account": "showstake-endpx.testnet",
+        "organizer": "showstake-participant-endpx.testnet",
+        "canonical_ft": "showstake-ft-endpx.testnet",
+        "network": "testnet",
+        "policy_version": "showstake-v2/1",
+        "note": "Coordinator msg_9caffcaaf036 reports SS_TEST6 deployed at showstake-ft-endpx.testnet with 1000000000000 atomic owned by the participant. Codex must confirm the organizer identity before deploy; no factory or second organizer is implemented."
+      }
+    },
+    "views": {
+      "get_config": "returns organizer, canonical_ft, network, policy_version (all immutable)",
+      "get_event": "get_event(event_id) -> EventView (immutable rules + state/counts/accepted_principal)",
+      "get_registration": "get_registration(registration_id) -> RegistrationView",
+      "get_pass": "get_pass(pass_id) -> PassView",
+      "storage_balance_of": "storage_balance_of(account_id) -> U128 yoctoNEAR credit",
+      "get_escrow_principal": "aggregate accepted canonical-FT principal",
+      "get_block_timestamp_ms": "chain clock in UTC milliseconds",
+      "list_events": "list_events(from, limit) -> 0 or 1 EventView",
+      "list_event_registrations": "list_event_registrations(event_id, from, limit) -> RegistrationView[]"
+    },
+    "write_methods": {
+      "storage_deposit": "storage_deposit(account_id?) payable in native NEAR; charges measured new-entry growth first, credits remainder only, rejects too-small new prepay atomically; existing top-up is full",
+      "publish_event": "publish_event(event_id, rules) payable; only config.organizer; exactly one event for contract lifetime; attached deposit pays credit-entry growth then measured event growth",
+      "ft_on_transfer": "ft_on_transfer(sender_id, amount, msg) only canonical FT; bounded versioned message {version:1,event_id,commitment_id}; exact D; one registration + one account-bound pass in one receipt or full resolver refund"
+    },
+    "panic_guards": [
+      "only the configured organizer may publish",
+      "event already published",
+      "storage deposit too small for new credit entry: attached {amount}, requires {entry_cost}",
+      "insufficient prepaid storage for event",
+      "event_id must be 1..=64 safe ASCII chars",
+      "rules_hash must be 1..=128 printable ASCII chars",
+      "deposit must be positive",
+      "capacity must be 1..=200",
+      "reg_open must be < reg_close",
+      "reg_close must be <= cancel_cutoff",
+      "cancel_cutoff must be <= checkin_open",
+      "checkin_open must be < checkin_close",
+      "PASS_NOT_TRANSFERABLE"
+    ],
+    "event_ids_and_pass_ids": "event_id is organizer-supplied and validated; pass_id = pass-{next_registration_seq}, unique per contract instance"
+  },
+  "blocker_fix": {
+    "problem": "add_credit credited the full attached deposit and did not charge the native storage growth of a new credits entry; publish_event called add_credit before its storage measurement, so the same new entry was uncharged and a 1 yoctoNEAR deposit could make the contract pay for persistent storage.",
+    "fix": [
+      "add_credit measures env::storage_usage() across its own tentative credits insert and charges that actual growth from the attached amount.",
+      "A new entry receives only attached-minus-entry-cost credit; an attached amount below the measured entry cost restores the previous value (or removes the new key) and traps atomically.",
+      "An existing credits entry is a fixed-size Borsh u128, so top-ups are charged only actual growth (measured zero) and are credited in full.",
+      "publish_event charges its credit entry first and then measures event growth after that entry already exists.",
+      "storage_deposit returns and logs the net charged balance, plus storage_charge_yocto and credited_yocto; FT principal remains separate."
+    ],
+    "unchanged_invariants": [
+      "immutable canonical FT, network and policy version",
+      "immutable organizer fixed at init",
+      "immutable event times/rules, deposit > 0, capacity 1..=200",
+      "owner = participant = beneficiary for pass and registration",
+      "no transfer, approval, burn or admin reassignment",
+      "exact canonical-FT deposit D; every invalid ft_on_transfer path returns the full amount with no state"
+    ]
+  },
+  "tests": {
+    "command": "cd contracts/showstake && <isolated>/rustup run 1.95.0-x86_64-unknown-linux-gnu cargo test --locked",
+    "environment": {
+      "RUSTUP_HOME": "<repo>/.local/zcode-settlement-oracle/sandbox-probe/.toolchain/rustup",
+      "CARGO_HOME": "<repo>/.local/zcode-settlement-oracle/sandbox-probe/.toolchain/cargo",
+      "CARGO_TARGET_DIR": "/var/tmp/showstake-target-c3989af8ce837da4",
+      "CARGO_NET_OFFLINE": "true"
+    },
+    "result": {
+      "passed": 34,
+      "failed": 0,
+      "kind": "mock near-sdk VM unit tests, not chain evidence"
+    },
+    "targeted_new_or_adjusted": [
+      "storage_deposit_can_credit_another_account — attached-minus-actual-entry-cost and measured 75-byte new-entry footprint for a 13-character account",
+      "storage_deposit_rejects_one_yocto_new_entry — 1 yoctoNEAR new prepay traps",
+      "storage_deposit_rejection_restores_new_entry — catch_unwind proves no residual credit entry and the next adequate prepay is charged as a new entry",
+      "storage_deposit_existing_account_topup_is_exact — measured zero growth and full top-up credited",
+      "publish_event_rejects_one_yocto_new_organizer — 1 yoctoNEAR new organizer publish traps",
+      "publish_event_new_organizer_charges_credit_entry_overhead — publish charges credit-entry growth plus event growth",
+      "publish_event_existing_organizer_charges_only_event_growth — pre-created credit entry adds the full top-up before event growth is charged",
+      "unauthorized_publisher_is_denied_without_state_or_credit — intruder publish leaves storage_usage, list_events and intruder credit unchanged; organizer can still publish",
+      "second_publish_is_denied_without_state_or_credit_change — evt-2 after evt-1 leaves usage, organizer/participant credits, escrow and evt-1 state unchanged",
+      "publish_rejects_duplicate_event_id — second publish of evt-1 traps with 'event already published'"
+    ],
+    "obsolete_test_note": "duplicate_commitment_is_rejected_across_events was replaced because one contract can no longer host a second event; the lifetime (payer, commitment_id) check remains in code but is unreachable on a single-event instance while the first registration stays active."
+  },
+  "build": {
+    "crate": "contracts/showstake",
+    "package": "showstake 0.1.0",
+    "toolchain": "1.95.0-x86_64-unknown-linux-gnu (existing isolated sandbox-probe .toolchain)",
+    "sdk": "near-sdk 5.30.1 (legacy collections); serde 1.0.229",
+    "command": "cd contracts/showstake && RUSTUP_HOME=<isolated>/rustup CARGO_HOME=<isolated>/cargo CARGO_TARGET_DIR=/var/tmp/showstake-target-c3989af8ce837da4 CARGO_NET_OFFLINE=true <isolated>/cargo/bin/rustup run 1.95.0-x86_64-unknown-linux-gnu cargo build --locked --release --target wasm32-unknown-unknown",
+    "wasm": {
+      "path_in_cache": "/var/tmp/showstake-target-c3989af8ce837da4/wasm32-unknown-unknown/release/showstake.wasm",
+      "copied_path": "test-support/contract-integration/wasm/showstake.wasm",
+      "bytes": 339957,
+      "sha256": "fc49fb85cc6e718086ddf81e9a936362a8c36ef9384a8444eadafa6ec0cdcd8e",
+      "reproducibility": "PASS_LOCAL: cargo clean -p showstake then the same locked release build reproduced the identical size and SHA-256."
+    },
+    "locks": {
+      "contracts/showstake/Cargo.lock": "148799ddfc137451d6182205aa8b8a269b1d4214752efee165540e828ec00c11",
+      "unchanged_from_baseline": true
+    }
+  },
+  "storage_gas_basis": {
+    "storage_charge_formula": "contract charges measured env::storage_usage() growth * env::storage_byte_cost(); no hardcoded per-entry price in the contract",
+    "storage_byte_cost_yocto_per_byte": "10000000000000000000",
+    "new_credit_entry_bytes_formula": "2-byte LookupMap prefix + 4-byte Borsh string length + len(account_id) + 16-byte u128 value + 40 protocol bytes per new record",
+    "measured_unit_test": {
+      "account": "alice.sandbox (13 chars)",
+      "measured_entry_bytes": 75,
+      "entry_cost_near": "0.00075"
+    },
+    "derived_examples": {
+      "organizer.sandbox (17 chars)": {
+        "entry_bytes": 79,
+        "entry_cost_near": "0.00079"
+      },
+      "showstake-endpx.testnet (23 chars)": {
+        "entry_bytes": 85,
+        "entry_cost_near": "0.00085"
+      },
+      "showstake-participant-endpx.testnet (35 chars)": {
+        "entry_bytes": 97,
+        "entry_cost_near": "0.00097"
+      },
+      "existing_credit_entry_topup": {
+        "entry_bytes": 0,
+        "entry_cost_near": "0"
+      }
+    },
+    "event_and_registration_basis": {
+      "source": "prior local NEAR Sandbox 2.14.0 observation of the unchanged Event/Registration layouts; not re-run for this candidate",
+      "event_storage_bytes_observed_prior": [295, 303],
+      "event_storage_near_observed_prior": ["0.00295", "0.00303"],
+      "registration_storage_bytes_observed_prior": [509, 524],
+      "registration_storage_near_observed_prior": ["0.00509", "0.00524"],
+      "new_organizer_publish_example": "35-char organizer entry 97 bytes + event 295..303 bytes = 392..400 bytes = 0.00392..0.00400 NEAR",
+      "registration_example": "35-char participant must cover entry 97 bytes + registration 509..524 bytes = 606..621 bytes = 0.00606..0.00621 NEAR, before any buffer"
+    },
+    "gas_basis": {
+      "candidate_gas": "NOT_RUN",
+      "source": "prior local NEAR Sandbox 2.14.0 observations on the pre-fix artifact; reference only, not a guarantee",
+      "prior_observations_tgas": {
+        "publish_event_contract": [2.25, 2.297],
+        "storage_deposit_contract": [1.719, 1.737],
+        "accepted_ft_deposit_contract": [2.664, 2.689]
+      },
+      "analytical_delta": "the corrected credit path adds one credits read plus one same-size credits write and one storage_usage probe; the one-event check adds no storage. No additional receipt or promise is created."
+    },
+    "limits": [
+      "All storage/gas numbers are local bases; testnet storage_byte_cost and gas must be re-measured after Codex deploys.",
+      "No Sandbox integration run and no public RPC/key access were performed for this correction.",
+      "event/registration byte ranges are inherited observations of unchanged layouts, not fresh measurements of this Wasm."
+    ]
+  },
+  "file_manifest": {
+    "changed_by_this_task": [
+      {
+        "path": "contracts/showstake/src/lib.rs",
+        "bytes": 34514,
+        "sha256": "2c844b74b7791174ff09c726be530d5acdf1af770280ad378435d008a3480013"
+      },
+      {
+        "path": "contracts/showstake/tests/test_basics.rs",
+        "bytes": 28487,
+        "sha256": "7175cf8d6b788696a5fa62c9bacaa668df5460adc16d599881e3b199a7d40dc5"
+      },
+      {
+        "path": "contracts/showstake/README.md",
+        "bytes": 4024,
+        "sha256": "ee3e6dfd328dafcd1a0a9e3029dec17978207a39af868e7cdba01a0340a5afc9"
+      },
+      {
+        "path": "test-support/contract-integration/wasm/showstake.wasm",
+        "bytes": 339957,
+        "sha256": "fc49fb85cc6e718086ddf81e9a936362a8c36ef9384a8444eadafa6ec0cdcd8e"
+      }
+    ],
+    "owned_but_unchanged": [
+      {
+        "path": "contracts/showstake/Cargo.lock",
+        "bytes": 68937,
+        "sha256": "148799ddfc137451d6182205aa8b8a269b1d4214752efee165540e828ec00c11"
+      },
+      {
+        "path": "contracts/showstake/Cargo.toml",
+        "bytes": 670,
+        "sha256": "d2015d5423bfa8509d6206d077a2d6357fb69e85842cfb5e652adeb1a2017cb9"
+      },
+      {
+        "path": "contracts/showstake/rust-toolchain.toml",
+        "bytes": 68,
+        "sha256": "88a5619b90d948c7274059df8e2c4f04a5dbfb87fee898e8d312b51f08e469ec"
+      },
+      {
+        "path": "contracts/test-ft/Cargo.lock",
+        "bytes": 69196,
+        "sha256": "f9833ea316e7e759ee2627eedfca12ef7e111d5a56cb25a7ecaee11bd0afe7d2"
+      },
+      {
+        "path": "contracts/test-ft/Cargo.toml",
+        "bytes": 1192,
+        "sha256": "9036cc6bc70e1df69f2dc48ae678d587346c0b075c03c186e3290849a4d6a699"
+      },
+      {
+        "path": "contracts/test-ft/rust-toolchain.toml",
+        "bytes": 68,
+        "sha256": "88a5619b90d948c7274059df8e2c4f04a5dbfb87fee898e8d312b51f08e469ec"
+      },
+      {
+        "path": "contracts/test-ft/src/lib.rs",
+        "bytes": 4235,
+        "sha256": "da9c6a0d925aea93f8b71422f38c13ed39c1479d84280f278d70efa5fa0e5e55"
+      },
+      {
+        "path": "contracts/test-ft/tests/test_basics.rs",
+        "bytes": 5021,
+        "sha256": "7bdde8a14f26594ce3419d4045c5169d220256295e2c8a2b20f8979e68669a69"
+      },
+      {
+        "path": "test-support/contract-integration/runner/Cargo.lock",
+        "bytes": 75193,
+        "sha256": "a5d78973b016c0162649f8a07584ed34f01cbc46ffa192bac7e97ac905243a08"
+      },
+      {
+        "path": "test-support/contract-integration/runner/Cargo.toml",
+        "bytes": 418,
+        "sha256": "369732a003977f35ccb4fc808375750b007e954c70e7b43bc52ce2fb0c8bebe2"
+      },
+      {
+        "path": "test-support/contract-integration/runner/rust-toolchain.toml",
+        "bytes": 31,
+        "sha256": "696c2536031250a4fa61a1ec4daeba2e8ea2b1c5b725e659e19bf12be076c5f3"
+      },
+      {
+        "path": "test-support/contract-integration/runner/src/main.rs",
+        "bytes": 62021,
+        "sha256": "d705e4cd6c2c9324492ddbfaa587a31ecebbf6032e01a70de58a01b8f551a7b5"
+      }
+    ]
+  },
+  "resource_notes": {
+    "target_cache": "/var/tmp/showstake-target-c3989af8ce837da4 (existing WSL cache owned by the sandbox-probe workspace; reused, not duplicated)",
+    "final_free_space": {
+      "C_GiB": 5.49,
+      "D_GiB": 7.6,
+      "WSL_var_tmp_avail": "939G"
+    },
+    "deviation": "A Windows rustup probe auto-installed the duplicate 1.95.0-x86_64-pc-windows-msvc toolchain; it was uninstalled immediately, restoring the pre-task Windows toolchain list (stable 1.99.0). No WSL distro/settings, global cache, or registry was cleaned."
+  },
+  "limits": [
+    "No commit, push, deployment, public RPC, key access, transaction, or paid resource was used.",
+    "PASS_LOCAL here means mocked-VM unit tests plus a reproducible release Wasm; it is not Sandbox or testnet evidence.",
+    "The next lifecycle assignment (withdraw/cancel/refund/claim/payout callback retry) and the factory/registry were not implemented.",
+    "contracts/test-ft was not modified; the frozen fixture Wasm hash remains d1c7d009a2c49bee5ad4997fe7e3114899fa667a06876fb6e435d9a72fffb195."
+  ]
+}

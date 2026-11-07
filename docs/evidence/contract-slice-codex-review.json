@@ -1,0 +1,41 @@
+{
+  "reviewer": "Codex",
+  "implementation_author": "ZCode / Cloud Near DeepSeek",
+  "classification": "PASS_LOCAL",
+  "accepted_scope": "single-event immutable-organizer publication, measured storage prepay, canonical FT deposit -> registration/account-bound pass, views and denial paths",
+  "wasm_sha256": "fc49fb85cc6e718086ddf81e9a936362a8c36ef9384a8444eadafa6ec0cdcd8e",
+  "independent_unit_test": {
+    "command": "WSL Ubuntu: isolated rustup 1.95.0 cargo test --locked (offline existing target)",
+    "exit_code": 0,
+    "passed": 34
+  },
+  "evidence_review": {
+    "run_id": "20261107T111232Z-102958-f832dcb1",
+    "checks": 91,
+    "transactions": 45,
+    "expected_failures": 8,
+    "snapshots": 16,
+    "hashes_verified": true,
+    "failed_checks": [],
+    "teardown_verified": true,
+    "balance_reconciliation": "alice=900,bob=900,dave=900,carol=1000; instance1=200,instance2=100,closed=0; total_supply=1000000"
+  },
+  "limits": [
+    "Not full T03/T04 acceptance",
+    "No withdrawal/cancellation/refund/claim/attendance/settlement/factory yet",
+    "Runner currently requires existing ignored local toolchain/support; clean-clone release reproduction remains open",
+    "No testnet acceptance inferred from Sandbox"
+  ],
+  "testnet_plan": {
+    "account": "showstake-endpx.testnet",
+    "organizer": "showstake-participant-endpx.testnet",
+    "canonical_ft": "showstake-ft-endpx.testnet",
+    "signer": "dedicated OS keychain",
+    "network": "testnet",
+    "preflight_empty_code": true,
+    "gas_limit": "100 Tgas",
+    "attached_deposit": "0 NEAR",
+    "native_reservation_guard": "4 testnet NEAR",
+    "authorization": "user explicit dedicated testnet deployment and synthetic-token tests"
+  }
+}
