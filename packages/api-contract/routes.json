@@ -1,5 +1,5 @@
 {
-  "$note": "Explicit reviewed route inventory for /v1. Derived 1:1 from the packet architecture (docs/planning/showstake-v2/02-ARCHITECTURE.md 'API contract' table), normalized to OpenAPI parameter style (`:id` -> `{eventId}` / `{attemptId}` / `{passId}`). Includes the reviewed baseline PLUS the previously-omitted organizer routes (/events/drafts, /events/{eventId}/publish-intent) and the social-auth provider boundary (/auth/privy, candidate adapter route). NEAR-first providers remain provisional; Privy is an alternative only. scripts/verify-openapi.mjs enforces this inventory against packages/api-contract/openapi.yaml so a missing/extra route fails the check (never a hardcoded count that matches an incomplete spec).",
+  "$note": "Explicit reviewed route inventory for /v1. Derived 1:1 from the packet architecture (docs/planning/showstake-v2/02-ARCHITECTURE.md 'API contract' table), normalized to OpenAPI parameter style (`:id` -> `{eventId}` / `{attemptId}` / `{passId}`). Includes the reviewed baseline PLUS the previously-omitted organizer routes (/events/drafts, /events/{eventId}/publish-intent) and the social-auth provider boundary (/auth/privy, candidate adapter route). NEAR-first providers remain provisional; Privy is an alternative only. scripts/verify-openapi.mjs enforces this inventory against packages/api-contract/openapi.yaml so a missing/extra route fails the check (never a hardcoded count that matches an incomplete spec). Codex API integration adds authenticated logout and current-session reads; these are implemented-session lifecycle surfaces.",
   "source": "docs/planning/showstake-v2/02-ARCHITECTURE.md API contract table",
   "public": [
     "/events",
@@ -14,24 +14,92 @@
     "/events/{eventId}/attendance"
   ],
   "routes": [
-    { "path": "/events", "method": "get" },
-    { "path": "/events/{eventId}", "method": "get" },
-    { "path": "/auth/challenge", "method": "post" },
-    { "path": "/auth/verify", "method": "post" },
-    { "path": "/auth/privy", "method": "post", "note": "verified Privy JWT resolves app identity; needs NEAR binding for participant actions. Candidate adapter route; provider REOPENED (NEAR Auth/HOT Connect first, Privy alternative)." },
-    { "path": "/me/identities/link", "method": "post" },
-    { "path": "/me/wallets/link", "method": "post" },
-    { "path": "/events/drafts", "method": "post", "note": "organizer-capable session creates an offchain draft" },
-    { "path": "/events/{eventId}/publish-intent", "method": "post", "note": "draft owner + NEAR binding returns a validated contract call proposal" },
-    { "path": "/funding/attempts", "method": "post" },
-    { "path": "/funding/{attemptId}/quote", "method": "post" },
-    { "path": "/funding/{attemptId}", "method": "get" },
-    { "path": "/me/passes", "method": "get" },
-    { "path": "/passes/{passId}/qr", "method": "post" },
-    { "path": "/events/{eventId}/checkin-requests", "method": "post" },
-    { "path": "/events/{eventId}/attendance", "method": "get" },
-    { "path": "/events/{eventId}/results", "method": "get" },
-    { "path": "/me/claims", "method": "get" },
-    { "path": "/events/{eventId}/content", "method": "get" }
+    {
+      "path": "/events",
+      "method": "get"
+    },
+    {
+      "path": "/events/{eventId}",
+      "method": "get"
+    },
+    {
+      "path": "/auth/challenge",
+      "method": "post"
+    },
+    {
+      "path": "/auth/verify",
+      "method": "post"
+    },
+    {
+      "path": "/auth/privy",
+      "method": "post",
+      "note": "verified Privy JWT resolves app identity; needs NEAR binding for participant actions. Candidate adapter route; provider REOPENED (NEAR Auth/HOT Connect first, Privy alternative)."
+    },
+    {
+      "path": "/me/identities/link",
+      "method": "post"
+    },
+    {
+      "path": "/me/wallets/link",
+      "method": "post"
+    },
+    {
+      "path": "/events/drafts",
+      "method": "post",
+      "note": "organizer-capable session creates an offchain draft"
+    },
+    {
+      "path": "/events/{eventId}/publish-intent",
+      "method": "post",
+      "note": "draft owner + NEAR binding returns a validated contract call proposal"
+    },
+    {
+      "path": "/funding/attempts",
+      "method": "post"
+    },
+    {
+      "path": "/funding/{attemptId}/quote",
+      "method": "post"
+    },
+    {
+      "path": "/funding/{attemptId}",
+      "method": "get"
+    },
+    {
+      "path": "/me/passes",
+      "method": "get"
+    },
+    {
+      "path": "/passes/{passId}/qr",
+      "method": "post"
+    },
+    {
+      "path": "/events/{eventId}/checkin-requests",
+      "method": "post"
+    },
+    {
+      "path": "/events/{eventId}/attendance",
+      "method": "get"
+    },
+    {
+      "path": "/events/{eventId}/results",
+      "method": "get"
+    },
+    {
+      "path": "/me/claims",
+      "method": "get"
+    },
+    {
+      "path": "/events/{eventId}/content",
+      "method": "get"
+    },
+    {
+      "path": "/auth/logout",
+      "method": "post"
+    },
+    {
+      "path": "/me",
+      "method": "get"
+    }
   ]
 }

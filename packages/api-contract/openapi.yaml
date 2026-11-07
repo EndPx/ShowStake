@@ -175,6 +175,32 @@ paths:
         '422':
           $ref: '#/components/responses/ValidationError'
 
+  /auth/logout:
+    post:
+      summary: Revoke the current session and clear its cookie
+      tags: [auth]
+      description: Requires a current session and an allowed Origin or Referer; no participant pass required.
+      responses:
+        '200':
+          description: Session revoked
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LogoutEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /me:
+    get:
+      summary: Read the current authenticated session
+      tags: [auth]
+      responses:
+        '200':
+          description: Current session identity; no participant pass required
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MeEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
   /auth/privy:
     post:
       summary: Resolve app identity from a verified Privy JWT (candidate adapter route)
@@ -650,14 +676,15 @@ components:
         domain: { type: string }
     VerifyRequest:
       type: object
-      required: [challengeId, accountId, network, domain, signature, publicKey]
+      required: [challengeId, accountId, network, domain, nonce, signature, publicKey]
       properties:
         challengeId: { type: string, format: uuid }
         accountId: { type: string }
         network: { type: string, enum: [local, testnet, mainnet] }
         domain: { type: string }
+        nonce: { type: string, pattern: '^[0-9a-fA-F]{64}$', description: 'Echo of the issued 32-byte nonce in hex' }
         signature: { type: string, description: 'base64 signature over the challenge payload' }
-        publicKey: { type: string, description: 'base64 public key that produced the signature' }
+        publicKey: { type: string, description: 'NEAR ed25519 public key in ed25519:base58 form' }
     LinkIdentityRequest:
       type: object
       required: [provider, subject, proof]
@@ -740,6 +767,8 @@ components:
         network: { type: string, enum: [local, testnet, mainnet] }
         nearAccount: { type: string, description: 'optional proof of NEAR account control; REQUIRED before participant actions' }
 
+    MeEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, required: [userId, sessionId, active], properties: { userId: { type: string, format: uuid }, sessionId: { type: string, format: uuid }, active: { type: boolean } } } } } ] }
+    LogoutEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, required: [loggedOut, revoked], properties: { loggedOut: { type: boolean }, revoked: { type: boolean } } } } } ] }
     # ---- response envelopes -------------------------------------------------
     EventEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { $ref: '#/components/schemas/Event' } } } ] }
     EventListEnvelope:

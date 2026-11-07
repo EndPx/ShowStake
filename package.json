@@ -2,7 +2,7 @@
   "name": "showstake",
   "version": "0.0.0",
   "private": true,
-  "description": "ShowStake v2 — NEAR-centered event attendance commitment platform. T00/T01 database + bootstrap foundation only; wallet/intents/UI implementation is a separate, later acceptance (its commands live in each package's own manifest, not at the root).",
+  "description": "ShowStake v2 \u2014 NEAR-centered event attendance commitment platform. T00/T01 database + bootstrap foundation only; wallet/intents/UI implementation is a separate, later acceptance (its commands live in each package's own manifest, not at the root).",
   "packageManager": "pnpm@10.21.0",
   "engines": {
     "node": ">=24.18.0 <25",
@@ -28,7 +28,11 @@
     "verify:wallet": "node packages/wallet-adapter/src/cli.mjs",
     "migrations:up": "node migrations/cli.mjs up",
     "migrations:status": "node migrations/cli.mjs status",
-    "verify:t01": "wsl -d Ubuntu -- bash scripts/postgres-disposable/run-suite.sh"
+    "verify:t01": "wsl -d Ubuntu -- bash scripts/postgres-disposable/run-suite.sh",
+    "typecheck:api": "pnpm --filter @showstake/api typecheck",
+    "build:api": "pnpm --filter @showstake/api build",
+    "verify:api": "pnpm --filter @showstake/api typecheck && pnpm --filter @showstake/api build && node scripts/verify-api.mjs",
+    "verify:api-db": "pnpm --filter @showstake/api build && wsl -d Ubuntu -- bash scripts/postgres-disposable/run-api-suite.sh"
   },
   "devDependencies": {
     "@hot-labs/near-connect": "0.12.0",

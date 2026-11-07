@@ -1,0 +1,31 @@
+{
+  "name": "@showstake/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "ShowStake /v1 HTTP API — Fastify TypeScript. Health, public event reads, NEP-413 challenge/verify, secure session lifecycle and logout. Exact-money JSON; API DB role is read-only on chain projections (worker-owned).",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=24.18.0 <25"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "verify:api": "node ../../scripts/verify-api.mjs"
+  },
+  "dependencies": {
+    "@fastify/cookie": "11.1.5",
+    "@showstake/domain": "workspace:*",
+    "@showstake/wallet-adapter": "workspace:*",
+    "fastify": "5.12.8",
+    "pg": "8.23.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/pg": "8.23.1",
+    "tsx": "4.23.15",
+    "typescript": "5.8.3"
+  }
+}

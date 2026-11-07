@@ -1,0 +1,97 @@
+{
+  "classification": "PASS_LOCAL",
+  "scope": "bounded runnable API health/public events/native NEAR challenge-verify-session-logout only",
+  "accepted_by": "Codex",
+  "implementation_authors": [
+    "DeepSeek Harness/GATER (initial)",
+    "MiniMax via DeepSeek Harness/GATER (partial review fixes)",
+    "Codex (post-lock expiry, actual unprivileged LOGIN, RPC timestamp ordering, failclosed runners, interface and test integration)"
+  ],
+  "review_boundary": "Codex implemented and reviewed final integration; not an independent external audit",
+  "executor_takeover": "ctx_a745ea8dea23 stopped with process confirmation after repeated literal tool markup/no worker_done; no competing API writer",
+  "tests": {
+    "local": {
+      "command": "pnpm verify:api",
+      "exit": 0,
+      "checks": 40,
+      "evidence": "docs\\evidence\\api-local-1794072711797-6488.json"
+    },
+    "postgres": {
+      "command": "WSL Ubuntu env TMPDIR=/tmp bash scripts/postgres-disposable/run-api-suite.sh",
+      "exit": 0,
+      "checks": 25,
+      "evidence": "docs\\evidence\\api-db-api-run-20261107T173356Z-607483.json",
+      "real_http_loopback": true,
+      "actual_login": "showstake_api_service NOINHERIT NOSUPERUSER",
+      "reset_role_write_denied": true,
+      "operator_login_rejected": true,
+      "post_lock_expiry_denied": true,
+      "server_stop_proven": true,
+      "cleanup_complete": true
+    },
+    "negative_control": {
+      "environment": "SHOWSTAKE_VERIFY_HANG_CONTROL=1",
+      "command": "node scripts/verify-api.mjs",
+      "actual_exit": 1,
+      "expected_exit": 1,
+      "reason": "deadline for incomplete suite"
+    },
+    "openapi": {
+      "command": "node scripts/verify-openapi.mjs",
+      "exit": 0,
+      "routes": 21
+    },
+    "source_snapshot": {
+      "path": ".local/api-source-candidate-1794072965",
+      "accepted_dependencies_only": true,
+      "frozen_offline_install_exit": 0,
+      "typecheck_build_local40_exit": 0,
+      "not_a_git_clone": true
+    }
+  },
+  "limits": [
+    "No real wallet or testnet API login acceptance; crypto keys and RPC resolver injected in tests",
+    "No worker/indexing/pass/organizer/content/funding API integration accepted",
+    "Projection freshness is row-age only, not ingestion completeness",
+    "In-memory challenge limiter is single-process; multi-instance ingress/shared limiting remains",
+    "Persistent database hosting/runtime credential provisioning not performed",
+    "Full T05/T09 incomplete"
+  ],
+  "source_reference": {
+    "account_validator": "https://raw.githubusercontent.com/near/near-account-id/master/src/validation.rs",
+    "vectors": "https://raw.githubusercontent.com/near/near-account-id/master/src/test_data.rs"
+  },
+  "file_sha256": {
+    "apps\\api\\package.json": "1a249a33c57de57883c7ecacec261b0d471b8e897a3501fc9d082c85d98bcc95",
+    "apps\\api\\README.md": "a2a7e192a929f48bdf44d2a59bd65a6ad35f9dcef8f2843b6b5f9e546a7e2c19",
+    "apps\\api\\src\\app.ts": "0a00d55f393caa6f55a4930c67c1d06a6f878522ee7ef9df5b7a942c36202d4a",
+    "apps\\api\\src\\auth\\challenge.ts": "32023243168947989e23613b367f698d590952c5fed380799cbc9e2527fe99d1",
+    "apps\\api\\src\\auth\\middleware.ts": "cd63bd285a16062890213c8990c9507527eccb7716e9c7308f4a700d1b7b9108",
+    "apps\\api\\src\\auth\\rpc.ts": "29d7b7e2bc4112994ac19ca1e0d094bcefcbf0e7937f6a6a7935bdccade5739e",
+    "apps\\api\\src\\auth\\session.ts": "3f1d2975a6c2c12fbf0a6b7f40aaf0822aef7f301933cc2db29f20fcb8376844",
+    "apps\\api\\src\\auth\\verify.ts": "d4261cda984e500cf9b2898088ed4dad4d9c5095aab56bc2c4b976673b782419",
+    "apps\\api\\src\\config.ts": "b7dc517c7de0d59958a043a7ed1788f006adda5422751bf8615ac23f2e64b92c",
+    "apps\\api\\src\\db.ts": "081d36bfbe8b8528283a2cc3e7135e7c620ae57fa1cbf7bef66bb7e8bcc586a0",
+    "apps\\api\\src\\errors.ts": "4ada1aa02b78dedfd68b3e715559cb7c97cd77f94e62d106f513a9cab5b232c4",
+    "apps\\api\\src\\external.d.ts": "2d0edb65d930001652cddd1555e62fecc9ec8f5047e352fadcd3c710ea870ad7",
+    "apps\\api\\src\\http\\origin.ts": "185ea7e4d02f2aa0b0e8d6d7de92bac312ffe6b0bfd26f63a16f6c03f924f610",
+    "apps\\api\\src\\http\\rate-limit.ts": "047f6e71286121587d0b2366ddb05f05b314938070d6c242abf25211cef55ec9",
+    "apps\\api\\src\\index.ts": "43ea6bef5a2dbc1443c540a07778126becd2a0cc11aab7fcb251f58062d48fe0",
+    "apps\\api\\src\\lib\\account-id.ts": "2bae9f332a92dfbe4f44879ff58335f2e15e6296236187c3280a159a0587dc5a",
+    "apps\\api\\src\\lib\\cursor.ts": "8ce8a08c65e998d35b5c71b0fc8e1714c2f493bb0dfb74708684d15c51179df6",
+    "apps\\api\\src\\lib\\util.ts": "812a8524da2b69d8247abd4e8f102753b14fb2639817429a0599cbed65c321a6",
+    "apps\\api\\src\\routes\\auth.ts": "b636e8d9a4e454126cefadb19463be2e3a80db3aa92ff8731cef1a89321d3778",
+    "apps\\api\\src\\routes\\events.ts": "b12040878b785fd284aae4d4bda53147c6462f1c8a0f363bff4ec175399e5534",
+    "apps\\api\\src\\routes\\health.ts": "530716a94d1231b18120c2e932862830b5ecc4ae33a01915cd98cdf870fe2dae",
+    "apps\\api\\src\\store\\memory-store.ts": "268c653fcaba2faa7526dc952505767b30538d3d97ac11ba2d2e28e87a98116f",
+    "apps\\api\\src\\store\\pg-store.ts": "f6867732dc365c761037d9b7fd7aa3af58e09b358fca7571a18c68361c0926cf",
+    "apps\\api\\src\\store\\types.ts": "11d8f3b1beebaeefe66a70bbc0daf0e6a27bff38b4cc66ba9f2661b0f0cc528f",
+    "apps\\api\\src\\types-external.ts": "1dfeff6f3d434abca8e9c1032d129756a075b3f8843c485e0d6963aac8698c71",
+    "apps\\api\\src\\types-fastify.d.ts": "4d8b40afecf6a720d454f1c7acaf21c8ac1f0454b615dd11963029f5f4d90ec3",
+    "apps\\api\\src\\types.ts": "f6a13cdd755884d0c0dc774b39ba7b75dddcc577392ac5b2d70dd47b5c63b494",
+    "apps\\api\\test\\account-id-official-vectors.mjs": "d7f67c076dc841d3c44cee086b9ad3d7bb2a21039e06b98eedfe3ca936ae7738",
+    "apps\\api\\test\\fixtures.mjs": "701e6a4d7a9957dfea3d76224ef76d8c8a9581e85338a167fb5c02a7bfd2c19e",
+    "apps\\api\\test\\verify-api-db.mjs": "176de629e309e685afd967c2441cd369e459fdedfdedb67a7ea3ae5014c553b9",
+    "apps\\api\\tsconfig.json": "67a3ab0ff64b7be714f5312a1a7bc409623789b90df3f3a05e06d6ef35b1f1d0"
+  }
+}

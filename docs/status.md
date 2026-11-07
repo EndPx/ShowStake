@@ -119,3 +119,33 @@ D033 targetoneevent/contract delivered msg_58356e6273ce to mainZCodecontractwrit
 
 
 API review round1 NOT ACCEPTED: worker reports local25/PG18 checks, but Codex reproduced session creation after challenge expiry during awaited RPC; typecheck independently exit0. Runtime ignores DB_ROLE and DB auth tests use superuser, so least-privilege service behavior remains unproven. Packet rate limit/CSRF, conservative projection freshness and interface alignment also required. Same executor revision task_30a89fa6c3c9 / ctx_10e78291abac active; no API source pushed. Review evidence api-codex-review-round1.json.
+
+
+API revision BLOCKED_EXTERNAL after same-task resume msg_b9327ed159cc again produced GATER503/upstream429 (escalation msg_stop_297a1699a2b8d4647a973b2d). Available worker-read truncates cause and exposes no Retry-After; do not infer quota-reset time. No additional retry, /unbind, provider/model replacement or API acceptance. Preserve task/source ownership; ZCode financial lifecycle remains independent. See api-provider429-blocker.json.
+
+
+User execution direction: defer GATER retries and focus on existing ZCode/Cloud Near lifecycle task_fb6b46871083 / ctx_103879a23245. Orca confirms live process/input_accepted; priority instruction msg_37803f990044 delivered. No new task or model substitution; Rust/integration ownership remains ZCode, API partial source preserved and unaccepted. Next assignments follow review/test/acceptance of this lifecycle slice.
+
+
+D034: user authorizes GATER glm-5-3-flash for Harness. Same API task_30a89fa6c3c9 restarted as ctx_6d1b436eb4df after old attempt stopped/released. Ready and runtime header glm-5-3-flash verified; successful provider execution pending. Shared profile default restored; no other project model/default changed. API remains unaccepted.
+
+
+Recovery after coordinator return: ZCode previous attempt operator_close/exited/released; same lifecycle task_fb6b46871083 ready, recovered as ctx_3911bca6b4d1 with Cloud Near DeepSeek/max runtime header verified. Preserve two156-check local runs and prior failed run; final lifecycle report/review still pending. GATERDeepSeek attempt ctx_efc9650acabe had503, guardedstop/release confirmed. Authorized MiniMax fallback sameAPI task_30a89fa6c3c9 launched ctx_136518ad9861 ready; sharedprofile default restored, actualresponse/modelheader verification pending. Terminal reveal timed out but process running per launch receipt; do not startduplicate. No new feature acceptance or implementation push.
+
+
+Correction: ctx_136518ad9861 fallback launch actually displayed DeepSeek Flash, so its503 is not MiniMax evidence. Old attempt stopped/released. New same-task API dispatch ctx_a745ea8dea23 launched while GATER/minimax-m2.7 selector remained pinned until terminal header verified, then shared default restored. No source acceptance or completed API revision inferred. Codex notified worker of runtime/ownership/security requirements.
+
+
+Lifecycle report received 50unit/156Sandbox PASS_LOCAL worker evidence for4dde5f4b. Codex review NOT ACCEPTED: refund paths loop total_registrations although only active count is bounded; withdrawal/rejoin history makes gas unbounded. Need bounded processing without lifetimecap plus real deposited timeout/refund/claim Sandbox leg. Revision msg_1a307e35812d sent. Oldfc49fb85 deployment unchanged; candidate requires cleaninstance/no migration. API MiniMax resumed once after humanunbind msg_8109b818082f; provider outcome not assumed. C~520MiB resource risk, no cleanup of personal/sharedfiles authorized/performed.
+
+
+D036 changes current hackathon product: no voluntarywithdrawal/rejoin after commit/pass; organizer cancellation/timeout/zeroattendee safeguards preserved. Canonical packet unchanged; current acceptance must explicitly map override. Both worker mailboxes notified; no implementation acceptance claimed. MiniMax API stopped-turn withoutreport, processlive; msg_b1b7263f5bf7 requests realtool execution/tests and worker_done, not literaltoolmarkup or wrapperexit0. Contract LC-R1/LC-R2 review remains open, max200gas still requires measurement.
+
+
+Codex direct APIverification found incomplete exit0: only17 checks, no finalsummary. Reproduced app.inject allowed-Origin verify request hanging>1000ms. Source originpreHandler returns syncvoid withoutdone/Promise, so positivepath nevercontinues. Worker notified exactfix async hook and failclosed verifiercompletion; oldexit0 notPASS. Evidence api-codex-origin-hang-review.json. API remains unaccepted.
+
+
+2026-11-08 Codex independently verify:api completes39/39 exit0. RealPG rerun via existing TMPDIR=/tmp tmpfs succeeds in downloading/starting runtime/cluster despite lowC; disk notcurrentexecutionblocker. Run api-run-20261107T170046Z-315038 FAILED exit1: DBtests lackOrigin (403), cookie null and dependent401/concurrency failures, fatal hash(null). Stop PROVEN, cleanupcomplete. Revision evidence api-codex-pg-round2-failed.json; worker notified exactroute/failures and additional realnonprivilegedLOGIN/post-lockexpiry proof required. API remains unaccepted.
+
+
+2026-11-08 bounded API increment accepted PASS_LOCAL by Codex:40local and25realPostgreSQL checks (run api-run-20261107T173356Z-607483), actualloopbackHTTP, restrictedLOGIN, RESETROLE denial, operatorrejection, post-lock expiry denial and serverstop/cleanup verified. Failclosed verifier negativecontrol exits1; OpenAPI21 validates. Source snapshot excludes pendingfrontend/intents, frozenofflineinstall/build/40checks exit0. Codex authored/reviewed finalintegration (D037), no independentexternal audit. Review api-codex-integration-review.json. FullT05 remains partial: no ingestionworker, no testnet/APIwalletlogin, pass/organizer/content/funding API integration pending.

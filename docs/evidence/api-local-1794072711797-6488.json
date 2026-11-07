@@ -1,0 +1,300 @@
+{
+  "id": "api-increment-round2-local",
+  "run_id": "round2-local-2026-11-07T17-31-51-797Z",
+  "task": "apps/api challenge/verify/session/logout + public event reads (LOCAL, no DB) — round 2",
+  "classifier": "PASS_LOCAL",
+  "ok": true,
+  "reviewer_pending": true,
+  "environment": {
+    "os": "win32",
+    "node": "v24.18.0",
+    "db": "none (MemoryStore)"
+  },
+  "totals": {
+    "checks": 40,
+    "failed": 0
+  },
+  "checks": [
+    {
+      "id": "MONEY_CANONICAL",
+      "ok": true,
+      "expected": "canonical money string accepted",
+      "observed": "true",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "MONEY_U128_MAX",
+      "ok": true,
+      "expected": "2^128-1 accepted",
+      "observed": "true",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "MONEY_OVERFLOW",
+      "ok": true,
+      "expected": "2^128 rejected",
+      "observed": "false",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "MONEY_LEADING_ZERO",
+      "ok": true,
+      "expected": "leading zeros rejected",
+      "observed": "false",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "HEALTH_200",
+      "ok": true,
+      "expected": "health 200 db up",
+      "observed": "{\"status\":\"ok\",\"db\":\"up\"}",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "EVENT_LIST_ENVELOPE",
+      "ok": true,
+      "expected": "200 list envelope",
+      "observed": "{\"status\":200,\"error\":null}",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "EVENT_LIST_MONEY_STRING",
+      "ok": true,
+      "expected": "money stays a string",
+      "observed": "5000000",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "EVENT_LIST_CURSOR",
+      "ok": true,
+      "expected": "nextCursor present",
+      "observed": "eyJyZWdPcGVuIjoiMjAyNi0xMS0xMVQwMDowMDowMC4wMDBaIiwiaWQiOiIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDIifQ",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "EVENT_LIST_STALE_OLD_SEED",
+      "ok": true,
+      "expected": "old seeded projection list reports meta.stale=true",
+      "observed": "true",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "EVENT_LIST_PAGE2",
+      "ok": true,
+      "expected": "second page returns remaining 2 (4 total seeded)",
+      "observed": "count=2",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "EVENT_DETAIL",
+      "ok": true,
+      "expected": "event detail money string",
+      "observed": "5000000",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "EVENT_DETAIL_STALE_OLD",
+      "ok": true,
+      "expected": "old seeded event detail meta.stale=true",
+      "observed": "true",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "EVENT_DETAIL_STALE_FRESH",
+      "ok": true,
+      "expected": "recent observedAt event detail meta.stale=false",
+      "observed": "false",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "EVENT_DETAIL_404",
+      "ok": true,
+      "expected": "unknown event 404",
+      "observed": "404",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "EVENT_DETAIL_BAD_UUID",
+      "ok": true,
+      "expected": "bad uuid 422",
+      "observed": "422",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "EVENT_LIST_BAD_CURSOR",
+      "ok": true,
+      "expected": "bad cursor 422",
+      "observed": "422",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "CHALLENGE_ISSUED",
+      "ok": true,
+      "expected": "challenge issued with canonical message + 32-byte nonce",
+      "observed": "200",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "VERIFY_OK",
+      "ok": true,
+      "expected": "verify 200 + userId",
+      "observed": "200",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "VERIFY_SET_COOKIE",
+      "ok": true,
+      "expected": "HttpOnly session cookie set (token never printed)",
+      "observed": "showstake_session=[REDACTED]",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "ME_ACTIVE",
+      "ok": true,
+      "expected": "session active via cookie",
+      "observed": "200",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "REPLAY_REJECTED",
+      "ok": true,
+      "expected": "replayed nonce 401 already-consumed",
+      "observed": "401 CHALLENGE_ALREADY_CONSUMED",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "LOGOUT_200",
+      "ok": true,
+      "expected": "logout revokes session",
+      "observed": "200",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "LOGOUT_REVOKES",
+      "ok": true,
+      "expected": "revoked session rejected after logout",
+      "observed": "401 SESSION_REVOKED",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "ME_NO_SESSION",
+      "ok": true,
+      "expected": "missing session 401",
+      "observed": "401",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "WRONG_ACCOUNT_DENIED",
+      "ok": true,
+      "expected": "unresolved account key denied 401",
+      "observed": "401 ACCOUNT_NOT_FOUND",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "WRONG_DOMAIN_DENIED",
+      "ok": true,
+      "expected": "mismatched domain denied",
+      "observed": "WRONG_DOMAIN",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "EXPIRY_DENIED",
+      "ok": true,
+      "expected": "expired challenge denied 401",
+      "observed": "401 NONPOSITIVE_TTL",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "NONCE_MISMATCH_DENIED",
+      "ok": true,
+      "expected": "mismatched nonce denied",
+      "observed": "NONCE_MISMATCH",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "EXPIRY_DURING_RPC_DENIED",
+      "ok": true,
+      "expected": "expiry advanced during awaited RPC denies (STALE_PROOF, no session)",
+      "observed": "code=STALE_PROOF session=false",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "EXPIRY_DURING_RPC_NONCE_UNCONSUMED",
+      "ok": true,
+      "expected": "expired-during-RPC nonce left unconsumed",
+      "observed": "null",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "RPC_REPLY_AFTER_REQUEST_ACCEPTED",
+      "ok": true,
+      "expected": "fresh post-request RPC timestamp accepted",
+      "observed": true,
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "RATE_LIMIT_10_ALLOWED",
+      "ok": true,
+      "expected": "first 10 challenges per IP allowed",
+      "observed": "200",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "RATE_LIMIT_11TH_429",
+      "ok": true,
+      "expected": "11th challenge in window 429 RATE_LIMITED",
+      "observed": "429 RATE_LIMITED",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "RATE_LIMIT_XFF_SPOOF_NO_BYPASS",
+      "ok": true,
+      "expected": "X-Forwarded-For rotation does not bypass challenge rate limit",
+      "observed": "429",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "ORIGIN_ALLOWED",
+      "ok": true,
+      "expected": "verify with allowed Origin accepted",
+      "observed": "200",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "ORIGIN_WRONG_403",
+      "ok": true,
+      "expected": "foreign Origin on session write 403",
+      "observed": "403 ORIGIN_MISMATCH",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "ORIGIN_MISSING_403",
+      "ok": true,
+      "expected": "missing Origin on session write 403",
+      "observed": "403 ORIGIN_REQUIRED",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "ORIGIN_SPOOF_HEADER_NO_BYPASS",
+      "ok": true,
+      "expected": "X-Forwarded-Origin spoof does not satisfy origin check",
+      "observed": "403 ORIGIN_REQUIRED",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "ACCOUNT_ID_OFFICIAL_VECTORS",
+      "ok": true,
+      "expected": "validator matches all official near-account-id OK/BAD vectors",
+      "observed": "mismatches=0",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "ACCOUNT_ID_IMPLICIT",
+      "ok": true,
+      "expected": "64-hex implicit account accepted",
+      "observed": "implicit",
+      "classifier": "PASS_LOCAL"
+    }
+  ],
+  "note": "LOCAL only: generated ed25519 keypair + fake final access-key resolver (never a wallet/testnet proof). Round-2 adds conservative meta.stale, challenge 10/min/IP rate limit (incl. X-Forwarded-For spoof no-bypass), CSRF/origin defense on session writes, expiry-during-RPC regression, and official near-account-id account-validator vectors. No cookie/token/private-key material is printed."
+}

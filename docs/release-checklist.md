@@ -8,7 +8,7 @@ This is the canonical release gate checklist referenced by the roadmap. Current 
 - [ ] Dedicated testnet contract account and separate test participants; signer in restricted credential store outside repository; network/account/public keys/balance verified by RPC. Never use endpx.testnet or mainnet user keys.
 - [ ] Canonical test FT, decimals and account/escrow FT storage verified; gas/storage estimates and observed cost recorded separately.
 - [ ] Actual frontend/backend/wallet path: create event -> valid FT deposit -> registration -> non-transferable pass -> pending scan -> organizer-signed attendance -> finalization -> settlement -> claim.
-- [ ] Withdrawal before cutoff, cancellation refund, timeout refund, zero attendees, deterministic remainder, duplicate claim denial, failed payout/retry, immutable beneficiary and per-event isolation proven. Existing local/Sandbox tests cover hard timing/callback cases with exact environment labels.
+- [ ] D036 voluntary withdrawal after commit denied without mutation; cancellation refund, timeout refund, zero attendees, deterministic remainder, duplicate claim denial, failed payout/retry, immutable beneficiary and per-event isolation proven. Existing local/Sandbox tests cover hard timing/callback cases with exact environment labels.
 - [ ] Each required action links receipt, contract views, before/after balances and source/artifact; unknown outcomes reconciled before retry.
 - [ ] API/session/worker projection recovery, public vs protected routes and frontend state/freshness verified; DB cannot authorize final attendance or payout.
 

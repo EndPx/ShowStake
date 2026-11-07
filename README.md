@@ -12,6 +12,12 @@ This deployment uses synthetic testnet assets only. Contract: `showstake-endpx.t
 2. Run the same read command with method `list_events` and JSON arguments `'{"from":0,"limit":10}'`. See the published test event and its contract-derived counts, or an empty list before publication.
 3. Inspect the [deployment receipt](https://testnet.nearblocks.io/txns/B5DJuxtFuHi7gs2ePg3YKxG5orJqpA1myXo4qdyEm4mv), [deployment evidence](docs/evidence/testnet-showstake-deployment-result.json), and [Codex local review](docs/evidence/contract-slice-codex-review.json). See actual environment labels and the limits of this minimum slice.
 
+## Try the local API
+
+1. Run `pnpm verify:api`. See40 local checks for public event reads, nonce/signature/session behavior, delayed RPC/expiry, Origin checks and rate limits. These use generated local keys and an injected resolver, not a real-wallet proof.
+2. Run `pnpm verify:api-db` with WSL `Ubuntu`. See25 checks against a real disposable PostgreSQL server, including a loopback HTTP server, restricted service login, concurrent nonce use and expiry after a database lock. The server stops after the suite.
+3. Follow [API configuration](apps/api/README.md) to run a persistent local server against your configured database. Worker/indexing and full browser/testnet auth integration remain incomplete.
+
 ## Try the accepted foundation
 
 Prerequisites: Node 24.18.x, pnpm 10.21.0, Git. The PostgreSQL command below additionally requires Windows with WSL distribution `Ubuntu`, Bash, and access to download official PostgreSQL packages and the pinned Linux Node runtime. It creates an isolated temporary server and stops it after the run.
