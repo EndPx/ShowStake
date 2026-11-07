@@ -1,0 +1,17 @@
+{
+  "name": "@showstake/wallet-adapter",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "ShowStake wallet-adapter probes: Privy NEAR signing path, NEP-413 signed-message verify, identity-binding challenge guards, trusted RPC access-key resolver. Zero runtime dependencies (Node crypto only); borsh is a dev-only test dependency.",
+  "license": "UNLICENSED",
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "engines": {
+    "node": ">=24.18.0 <25"
+  },
+  "devDependencies": {
+    "borsh": "2.0.0"
+  }
+}

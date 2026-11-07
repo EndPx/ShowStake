@@ -1,0 +1,65 @@
+{
+  "reviewer": "DeepSeek (GATER/deepseek-v4.1-flash-1017-v2)",
+  "classifier": "PASS_LOCAL",
+  "scope": "T02 harness security fixes + adversarial behavior regressions (injected verifyMessage/clock/resolver seams, synthetic signatures). Zero network/wallet/transaction.",
+  "date": "2026-11-07",
+  "defects_fixed": [
+    {
+      "id": "future",
+      "reproduced_by": "docs/evidence/t02-codex-harness-review.json (Codex, coordinator-owned)",
+      "root_cause": "browser harness verifyChallenge never checked issuedAtMs <= now",
+      "fix": "harness.mjs verifyChallenge now enforces finite integer timestamps and FUTURE_ISSUANCE",
+      "regression": "HARNESS-FUTURE-ISSUANCE-DENIED -> FUTURE_ISSUANCE (deny)"
+    },
+    {
+      "id": "excessive_ttl",
+      "root_cause": "harness only checked elapsed-since-issue, not expiresAtMs - issuedAtMs <= 5m",
+      "fix": "0 < TTL <= MAX_CHALLENGE_TTL_MS enforced before the SDK call",
+      "regression": "HARNESS-EXCESSIVE-TTL-DENIED -> EXPIRY_TOO_LONG (deny)"
+    },
+    {
+      "id": "replayed_verification",
+      "root_cause": "no single-use nonce tracking or overlap guard in the harness",
+      "fix": "consumedNonces Set (consume once on success) + verifyingNonces synchronous in-flight reservation (overlapping awaits cannot both pass)",
+      "regression": "HARNESS-NONCE-REPLAY-DENIED (VERIFIED then REUSED_NONCE)"
+    },
+    {
+      "id": "same_connect_double_record",
+      "root_cause": "sameAccountAcrossSessions counted SIGN_IN_EVENT + CONNECTED from one connect as two sessions",
+      "fix": "comparator ignores SIGN_IN_EVENT and requires a DISCONNECTED/SIGNED_OUT boundary between two CONNECTED rows; disconnect/account-switch/candidate-switch invalidate signed state",
+      "regression": "HARNESS-SINGLE-CONNECT-NOT-TWO-SESSIONS (NEED_TWO_SESSIONS) and HARNESS-GENUINE-RECONNECT-SAME-ACCOUNT (SAME_ACCOUNT)"
+    }
+  ],
+  "additional_fixes": [
+    {
+      "id": "account_not_found_suppression",
+      "file": "packages/wallet-adapter/src/verify-binding.mjs",
+      "root_cause": "the ACCOUNT_NOT_FOUND exception for a not-yet-funded implicit account was applied even without the fixture flag, bypassing live resolver denial",
+      "fix": "the exception is now gated behind allowLocalImplicitFallback === true (fixture-only); otherwise ACCOUNT_NOT_FOUND denies (fail-closed)"
+    },
+    {
+      "id": "adapter_overlapping_nonce",
+      "file": "packages/wallet-adapter/src/verify-binding.mjs",
+      "fix": "nonce is reserved synchronously before the access-key await and released on failure, so await-interleaved verifications of one nonce cannot both consume it"
+    },
+    {
+      "id": "session_table_xss",
+      "file": "apps/web/onboarding-probe/src/main.mjs",
+      "fix": "session table renders wallet-returned accountId/publicKey via textContent (never innerHTML)"
+    }
+  ],
+  "regression_results": {
+    "verify:t02-adversarial": "11/11 PASS (new: scripts/verify-t02-adversarial.mjs; real harness behavior via injected seams)",
+    "verify:t02-harness": "20/20 PASS",
+    "verify:t02-regressions": "11/11 PASS",
+    "verify:t02-review-gaps": "29/29 PASS",
+    "verify:nep413-official": "5/5 PASS",
+    "verify:wallet": "16/16 PASS",
+    "build:t02-harness": "exit 0, 70 modules (vite 8.3.6)"
+  },
+  "limits": [
+    "W03/G02/G03 and any live NEAR Connect / NEAR Auth signature remain BLOCKED_EXTERNAL (need human + real wallet); not claimed live.",
+    "consumedNonces is in-memory per page load (probe scope); production must persist nonce consumption atomically in the DB (noted in source).",
+    "no commit/push, no deployment, no financial action."
+  ]
+}

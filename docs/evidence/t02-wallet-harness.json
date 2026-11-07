@@ -1,0 +1,62 @@
+{
+  "id": "t02-wallet-harness",
+  "task": "T02 runnable NEAR-first wallet/signing proof harness (browser, real SDKs)",
+  "author": "worker (DeepSeek Harness / GATER / deepseek-v4.1-flash-1017-v2, no fallback)",
+  "reviewer_pending": true,
+  "classifier": "PASS_LOCAL",
+  "base": {
+    "runtime": { "node": "v24.18.0", "pnpm": "10.21.0", "os": "Windows" },
+    "note": "build + verify are LOCAL (Node/bundler). Actual browser login/sign with a real wallet is NOT_RUN / BLOCKED_EXTERNAL."
+  },
+  "sdk_pins": [
+    { "package": "@hot-labs/near-connect", "version": "0.12.0", "license": "MIT", "role": "NearConnector native-wallet connect + offchain NEP-413 signMessage", "source": "https://docs.near.org/tools/near-connect, https://github.com/hot-dao/near-selector" },
+    { "package": "near-api-js", "version": "7.4.0", "license": "(MIT AND Apache-2.0)", "role": "JsonRpcProvider viewAccount/viewAccessKey + near-api-js/nep413 verifyMessage", "source": "https://docs.near.org/tools/near-api, https://github.com/near/near-api-js" },
+    { "package": "vite", "version": "8.3.6", "license": "MIT", "role": "harness dev server + reproducible build", "source": "https://vite.dev" }
+  ],
+  "verified_sdk_facts": [
+    "near-api-js@7.4.0 npm dist-tag latest == 7.4.0 (no silent major migration); exports ./nep413, ./tokens, ./rpc-errors; engines node>=22.22.2 (satisfied by v24.18.0).",
+    "near-api-js@7.4.0 verifyMessage (lib/nep413/index.js) calls provider.viewAccessKey then requires accessKey.permission === 'FullAccess' before checking the ed25519/secp256k1/ml-dsa-65 signature -> the key-ownership resolver is the official SDK.",
+    "@hot-labs/near-connect@0.12.0 is CommonJS ('type':'commonjs', main build/index.js) exporting NearConnector; named ESM import { NearConnector } resolves in Node and in Vite (70-module build succeeded)."
+  ],
+  "deliverables": {
+    "harness": "apps/web/onboarding-probe/src/harness.mjs (real SDK logic) + src/main.mjs (DOM) + index.html (diagnostic UI) + vite.config.mjs + README.md",
+    "script": "scripts/verify-t02-harness.mjs",
+    "root": "package.json (deps + scripts) and pnpm-lock.yaml updated to add the self-contained wallet-harness dependency"
+  },
+  "commands": [
+    { "command": "pnpm install", "exit": 0, "observed": "added 81 packages: @hot-labs/near-connect@0.12.0, near-api-js@7.4.0, vite@8.3.6" },
+    { "command": "pnpm build:t02-harness", "exit": 0, "observed": "vite 8.3.6 built 70 modules -> apps/web/onboarding-probe/dist (index.html 5.33kB + assets/index-*.js 246.53kB). Warning: benign 'util' externalized-for-browser from transitive generate-function <- is-my-json-valid <- near-api-js." },
+    { "command": "pnpm verify:t02-harness", "exit": 0, "observed": "20/20 checks: SDK pins exact, imports resolve, NearConnector/verifyMessage/JsonRpcProvider present, live auth fail-closed on missing/unavailable RPC resolver for BOTH named and implicit accounts (default), implicit local check reachable ONLY via explicit allowLocalImplicitFallback opt-in, harness source imports real SDKs and pins domain/network/purpose/RPC" },
+    { "command": "pnpm verify:t02-regressions", "exit": 0, "observed": "11/11 regressions deny (named-account foreign key, nonfinite timestamps, key-type mismatch, missing expectations, canonical binding)" },
+    { "command": "pnpm verify:t02-review-gaps", "exit": 0, "observed": "29/29 resolver context + linking identity checks" },
+    { "command": "pnpm verify:nep413-official", "exit": 0, "observed": "5/5 vectors byte-identical to official borsh@2.0.0" },
+    { "command": "pnpm verify:wallet", "exit": 0, "observed": "16/16 wallet fixtures/negative checks" },
+    { "command": "pnpm verify", "exit": 0, "observed": "bootstrap baseline packet integrity (11 files, no byte drift)" }
+  ],
+  "fail_closed_resolution": {
+    "requirement": "implicit account resolver fallback must be explicit fixture-only; default live authentication must fail closed on missing/unavailable RPC resolver",
+    "behavior": "verifyChallengeProof in packages/wallet-adapter/src/verify-binding.mjs takes an injected accessKeyVerifier; with a resolver wired (as browser/live auth always does), RPC failure/missing/removed/non-FullAccess denies. The implicit 64-hex local check runs ONLY when no resolver is injected (the explicit fixture path). The browser harness's verifyChallenge calls near-api-js verifyMessage (which does viewAccessKey + FullAccess) and never consults the implicit fallback.",
+    "evidence_ids": ["AUTH-NAMED-NO-RESOLVER-DENIED", "AUTH-RPC-UNAVAILABLE-DENIED", "AUTH-IMPLICIT-NO-RESOLVER-DENIED", "AUTH-IMPLICIT-FIXTURE-ONLY-ALLOWED", "AUTH-IMPLICIT-WITH-RESOLVER-UNAVAILABLE-DENIED"]
+  },
+  "same_account_relogin": {
+    "status": "NOT_RUN",
+    "detail": "mechanism is wired in the harness (session log + sameAccountAcrossSessions comparing first vs last accountId across connect/disconnect/reconnect), but no human+wallet session was recorded by this worker; live comparison stays BLOCKED_EXTERNAL."
+  },
+  "near_auth_candidate": {
+    "status": "PREPARED_NOT_INVOKED",
+    "detail": "NEAR Auth message signing is ON-CHAIN: requestMessageSignature -> createSignAction builds a `sign` action (contract fast-auth.testnet, method sign, gas 300000000000000, deposit 1 yocto) that a funded relayer must broadcast; the SuccessValue is the MPC signature. Harness records these exact values but flashes a hard stop and never broadcasts (no funded relayer + human Auth0 approval + spend authorization).",
+    "source": "https://docs.auth.near.org/home/guides/sign-messages"
+  },
+  "outstanding_scope": [
+    "Live NEAR Connect wallet return + NEP-413 signature (needs browser + human + real wallet) — BLOCKED_EXTERNAL => W03/G02.",
+    "NEAR Auth social/email login + on-chain sign (needs funded relayer + Auth0) — BLOCKED_EXTERNAL => W01/G01.",
+    "EVM login -> verified bound NEAR account (neither NEAR Connect nor NEAR Auth has an EVM leg) — OPEN => W02/E09.",
+    "Same-account after logout/login with a real provider — NOT_RUN => G03.",
+    "Deposits / passes / funding / gas-storage sponsorship — NOT_RUN, no fabricated wallet responses."
+  ],
+  "never_done": [
+    "no wallet/account created, no faucet, no transaction broadcast, no deploy, no spend, no paid resource, no real wallet modified",
+    "no pass/deposit success shown, no fabricated wallet response",
+    "no secret read or stored (NEAR Auth clientId is the public shared testnet dev credential)"
+  ]
+}

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ShowStake T02 — NEAR wallet / signing proof harness</title>
+    <style>
+      :root { color-scheme: light; --ink: #17202a; --muted: #5b6672; --line: #d7dde3; --bg: #fbfcfd; --panel: #ffffff; --accent: #1b6ec2; --ok: #1a7f37; --bad: #b42318; --warn: #9a6700; }
+      * { box-sizing: border-box; }
+      body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: var(--bg); }
+      header, main { max-width: 880px; margin: 0 auto; padding: 16px 20px 40px; }
+      header { border-bottom: 1px solid var(--line); }
+      h1 { font-size: 20px; margin: 0 0 4px; }
+      h2 { font-size: 15px; margin: 20px 0 8px; }
+      .tag { display: inline-block; background: #eef4fb; color: var(--accent); border: 1px solid #cfe2f3; border-radius: 4px; padding: 1px 8px; font-size: 12px; margin-right: 6px; }
+      .banner { border: 1px solid var(--warn); background: #fff8e6; color: #5c4300; border-radius: 6px; padding: 10px 12px; margin: 14px 0; }
+      .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; margin: 12px 0; }
+      .row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+      button { font: inherit; padding: 7px 12px; border-radius: 6px; border: 1px solid var(--accent); background: #fff; color: var(--accent); cursor: pointer; }
+      button:disabled { opacity: .5; cursor: not-allowed; }
+      button.primary { background: var(--accent); color: #fff; }
+      button.warn { border-color: var(--bad); color: var(--bad); }
+      .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; }
+      pre { background: #f4f6f8; border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; overflow: auto; font-size: 12.5px; white-space: pre-wrap; word-break: break-word; margin: 8px 0; }
+      .status { font-weight: 600; }
+      .ok { color: var(--ok); } .bad { color: var(--bad); } .warn { color: var(--warn); } .muted { color: var(--muted); }
+      table { border-collapse: collapse; width: 100%; font-size: 13px; }
+      th, td { border: 1px solid var(--line); padding: 5px 8px; text-align: left; vertical-align: top; }
+      th { background: #f4f6f8; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>ShowStake T02 — NEAR wallet / signing proof harness</h1>
+      <div>
+        <span class="tag">diagnostic only</span>
+        <span class="tag">NOT product UI</span>
+        <span class="tag">testnet</span>
+      </div>
+      <p class="muted" style="margin: 8px 0 0">
+        Bounded proof-of-control probe. Read-only RPC + off-chain NEP-413 message
+        signature (with a consenting human wallet). No deposits, no spending, no
+        transaction broadcast, no account creation, no fabricated wallet responses.
+      </p>
+    </header>
+
+    <main>
+      <div class="banner">
+        <strong>Environment (pinned):</strong>
+        <div class="kbd">
+          network=<span id="env-network">testnet</span> ·
+          domain=<span id="env-domain">showstake.app</span> ·
+          purpose=<span id="env-purpose">login</span> ·
+          RPC=<span id="env-rpc">https://rpc.testnet.near.org</span>
+        </div>
+        <div class="muted" style="margin-top: 6px">
+          These are constants in <code>src/harness.mjs</code>; the harness never reads
+          them from user input, so a UI field cannot silently change the domain or
+          network the proof is bound to.
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 style="margin-top:0">Candidate</h2>
+        <div class="row" id="candidate-row"></div>
+        <div id="near-auth-panel" class="panel" hidden></div>
+      </div>
+
+      <div class="panel">
+        <h2 style="margin-top:0">Actions (NEAR Connect)</h2>
+        <div class="row">
+          <button id="btn-connect" class="primary">1. Connect wallet</button>
+          <button id="btn-read">2. Read account</button>
+          <button id="btn-sign" disabled>3. Sign NEP-413 challenge</button>
+          <button id="btn-verify" disabled>4. Verify proof (canonical + key resolver)</button>
+          <button id="btn-disconnect">Disconnect</button>
+          <button id="btn-reconnect">Reconnect (compare account)</button>
+        </div>
+        <p class="muted" style="margin:6px 0 0">
+          Step 3 is <em>off-chain</em> message signing only. Step 4 runs the real
+          <code>near-api-js</code> NEP-413 verifier, which resolves the account&rarr;key
+          relation through the pinned RPC and requires <code>FullAccess</code>. If the
+          RPC is down or the key is removed/non-full-access, verification DENIES
+          (fail-closed; no implicit-account fallback in live mode).
+        </p>
+      </div>
+
+      <div class="panel">
+        <h2 style="margin-top:0">Status</h2>
+        <div class="status" id="status">IDLE</div>
+        <pre id="result" class="mono">—</pre>
+      </div>
+
+      <div class="panel">
+        <h2 style="margin-top:0">Session log (disconnect / reconnect same-account comparison)</h2>
+        <div id="same-account" class="muted">connect twice (including after a disconnect) to compare</div>
+        <table id="session-table">
+          <thead><tr><th>#</th><th>event</th><th>accountId</th><th>publicKey</th><th>at (UTC)</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </main>
+
+    <script type="module" src="/src/main.mjs"></script>
+  </body>
+</html>

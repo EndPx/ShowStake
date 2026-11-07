@@ -1,0 +1,47 @@
+{
+  "reviewer": "DeepSeek (GATER/deepseek-v4.1-flash-1017-v2)",
+  "classifier": "PASS_LOCAL",
+  "scope": "T02 stale-async-completion fixes + deferred-promise behavior regressions (injected verifyMessage/clock/wallet/resolver seams, synthetic signatures). Zero network/wallet/transaction.",
+  "date": "2026-11-07",
+  "review_source": "docs/evidence/t02-codex-async-review.json (Codex-owned, read only)",
+  "defects_fixed": [
+    {
+      "id": "candidate_switch_during_verification",
+      "root_cause": "verifyChallenge captured the challenge but never re-checked currency after the SDK await, so a candidate/account/disconnect invalidation during the await still published VERIFIED",
+      "fix": "added a monotonic verificationGeneration (bumped by invalidateSignedState on candidate/account/disconnect switch); verifyChallenge re-reads generation + lastChallenge identity after the await and returns a detached STALE_OPERATION without touching status",
+      "regression": "HARNESS-CANDIDATE-SWITCH-STALE -> ok:false STALE_OPERATION; newer status/lastResult untouched"
+    },
+    {
+      "id": "expiry_during_verification",
+      "root_cause": "freshness was only checked BEFORE the await; the clock could advance past expiry while the verifier was pending",
+      "fix": "verifyChallenge re-checks nowMs() >= expiresAtMs (and issuedAtMs > now) AFTER the await before publishing success",
+      "regression": "HARNESS-EXPIRY-DURING-VERIFY -> ok:false STALE_PROOF"
+    }
+  ],
+  "additional_guards": [
+    "invalidateSignedState() now bumps verificationGeneration and is called at the START of disconnectWallet (before its await)",
+    "late sign callbacks: signChallenge re-checks generation after the wallet.signMessage await; a boundary crossed while signing returns STALE_OPERATION and does not (re)populate lastChallenge",
+    "wallet:signOut success:false no longer records a SIGNED_OUT boundary nor invalidates; only success:true records a boundary and invalidates",
+    "stale completions return a detached result (never overwrite status/lastResult of the newer session)",
+    "nonce overlap lock ownership: a stale (generation-mismatched) completion neither deletes nor consumes the nonce; invalidateSignedState already cleared verifyingNonces, so a new attempt's reservation is untouched"
+  ],
+  "changed_files": [
+    "apps/web/onboarding-probe/src/harness.mjs",
+    "scripts/verify-t02-adversarial.mjs"
+  ],
+  "regression_results": {
+    "verify:t02-adversarial": "18/18 PASS (11 prior + 7 new async: candidate switch, expiry-during-verify, disconnect-immediate, disconnect-completes, late-sign, failed-signout-not-relogin, success-signout-relogin)",
+    "verify:t02-harness": "20/20 PASS",
+    "verify:t02-regressions": "11/11 PASS",
+    "verify:t02-review-gaps": "29/29 PASS",
+    "verify:nep413-official": "5/5 PASS",
+    "verify:wallet": "16/16 PASS",
+    "build:t02-harness": "exit 0 (vite 8.3.6, 70 modules)"
+  },
+  "clean_clone_notice": "the harness and wallet-adapter import only near-api-js, @hot-labs/near-connect and the accepted packages/domain internal modules; no import/dependency on the unaccepted packages/intents-adapter, no viem/privy-sdk/Monad/config/secrets carryover.",
+  "limits": [
+    "W03/G02/G03 and any live NEAR Connect / NEAR Auth signature remain BLOCKED_EXTERNAL (need human + real wallet); not claimed live.",
+    "consumedNonces/verifyingNonces/verificationGeneration are in-memory per page load (probe scope); production must persist nonce consumption + generation atomically.",
+    "no commit/push, no deployment, no financial action."
+  ]
+}

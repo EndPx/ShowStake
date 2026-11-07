@@ -2,7 +2,7 @@
 
 ShowStake is an event attendance commitment platform built around NEAR escrow. Participants commit a refundable deposit to an event; an account-bound, non-transferable pass represents registration. Organizers finalize attendance onchain before settlement and claims. The product addresses registrations that do not translate into attendance.
 
-The current accepted increment is the local database foundation. There is no deployed application or proven live escrow lifecycle yet. Hackathon tracks: `open` and `nfts`; the custom pass does not currently claim NEP-171 or NEP-393 compliance.
+Accepted local increments include the database foundation, the independent settlement oracle, and the wallet/signing diagnostic harness. There is no deployed application or proven live escrow lifecycle yet. Hackathon tracks: `open` and `nfts`; the custom pass does not currently claim NEP-171 or NEP-393 compliance.
 
 ## Try the accepted foundation
 
@@ -21,3 +21,7 @@ Start with the [authoritative v2 planning packet](docs/planning/showstake-v2/00-
 ## Settlement/refund test support
 
 Run `node test-support/settlement-oracle/scripts/run-oracle.mjs --packet-root . --evidence-dir .local/oracle-runs`. See 105 local oracle tests covering packet allocation examples, withdrawals, refund modes, claim callbacks and event isolation, with a unique evidence directory for every run. This executes a synthetic Node model; it does not execute a NEAR contract, measure gas, or pass T03/T04. Read the [oracle limits and OPEN_GATEs](test-support/settlement-oracle/README.md) before using it as an independent test reference.
+
+## Wallet/signing diagnostic harness
+
+Run `pnpm dev:t02-harness`, open the local URL Vite prints (default `http://127.0.0.1:5174/`), and see the NEAR Connect candidate plus a documented, uninvoked NEAR Auth candidate. `pnpm build:t02-harness` and the `verify:t02-*` scripts check the local implementation; they do not prove a real wallet session. Connect/sign/relogin requires a consenting human wallet, and production auth requires server-side challenge/session handling. No pass, deposit or payout success is simulated. See the [probe README](apps/web/onboarding-probe/README.md) and [Codex acceptance limits](docs/evidence/t02-codex-local-acceptance.json).

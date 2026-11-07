@@ -1,0 +1,208 @@
+{
+  "reviewer": "Codex",
+  "classifier": "PASS_LOCAL",
+  "scope": "accepted T02 local wallet adapter/probe and diagnostic harness increment only; full T02 remains partial",
+  "executor": {
+    "agent": "dsh",
+    "provider": "gater",
+    "model": "deepseek-v4.1-flash-1017-v2",
+    "revision_task": "task_827bf679a58d",
+    "revision_dispatch": "ctx_4bbd32d529ae"
+  },
+  "method": "fresh default Git clone plus exact21-file candidate overlay, no intents source or worker config",
+  "install": {
+    "command": "pnpm install --frozen-lockfile --ignore-scripts",
+    "exit": 0
+  },
+  "commands": [
+    {
+      "exit": 0,
+      "command": "pnpm verify"
+    },
+    {
+      "exit": 0,
+      "command": "pnpm verify:t01-static"
+    },
+    {
+      "exit": 0,
+      "command": "pnpm verify:t02-harness"
+    },
+    {
+      "exit": 0,
+      "command": "pnpm verify:t02-regressions"
+    },
+    {
+      "exit": 0,
+      "command": "pnpm verify:t02-review-gaps"
+    },
+    {
+      "exit": 0,
+      "command": "pnpm verify:t02-adversarial"
+    },
+    {
+      "exit": 0,
+      "command": "pnpm verify:nep413-official"
+    },
+    {
+      "exit": 0,
+      "command": "pnpm verify:wallet"
+    },
+    {
+      "exit": 0,
+      "command": "pnpm build:t02-harness"
+    }
+  ],
+  "checks_by_suite": {
+    "harness": 20,
+    "regressions": 11,
+    "review_gaps": 29,
+    "adversarial": 18,
+    "official_serialization": 5,
+    "wallet": 16
+  },
+  "browser_smoke": {
+    "environment": "Orca embedded browser, local Vite dev server",
+    "url": "http://127.0.0.1:5174/",
+    "observed": [
+      "Expected harness document title",
+      "2 candidate radio inputs rendered by JavaScript",
+      "IDLE state",
+      "Connect enabled; read/sign/verify disabled before connection",
+      "console entries empty at inspection"
+    ],
+    "limits": [
+      "Initial snapshot command returned daemon EOF; successful DOM eval used for observation",
+      "No connect, read RPC, login, wallet popup or signing action performed",
+      "Dev-bundle startup smoke only; production build separately succeeded"
+    ]
+  },
+  "resolved_findings": [
+    "future issuance",
+    "TTL greater than5minutes",
+    "nonce replay and overlap",
+    "single-connect false relogin",
+    "ACCOUNT_NOT_FOUND default-live exception",
+    "stale candidate/account/disconnect async completion",
+    "expiry while awaiting SDK",
+    "unsafe session-table innerHTML"
+  ],
+  "source_files": [
+    {
+      "path": "apps/web/onboarding-probe/README.md",
+      "working_sha256": "e4e67fe658dfea24bb5fcb67f8c37a3139fc3e3c5d729957717b2636863fb2aa",
+      "git_blob_sha256": "952f984b20f28f36df443537eb6c33fba1c10bcdbac775bf0ae7e102f9c53a43"
+    },
+    {
+      "path": "apps/web/onboarding-probe/index.html",
+      "working_sha256": "d876653b96f0fdd52b4aea857397d0e6da342a25e511a961b8ba84a4080fdbbf",
+      "git_blob_sha256": "d876653b96f0fdd52b4aea857397d0e6da342a25e511a961b8ba84a4080fdbbf"
+    },
+    {
+      "path": "apps/web/onboarding-probe/src/harness.mjs",
+      "working_sha256": "c99439b8a4dac6c7d0e3878314d85586d45481ae6af9b6beb7682ee3e9ba6654",
+      "git_blob_sha256": "c99439b8a4dac6c7d0e3878314d85586d45481ae6af9b6beb7682ee3e9ba6654"
+    },
+    {
+      "path": "apps/web/onboarding-probe/src/main.mjs",
+      "working_sha256": "04f5bc18ee501c4a9da9b47af06a3446323766be3bdb197a87263078d71949ab",
+      "git_blob_sha256": "04f5bc18ee501c4a9da9b47af06a3446323766be3bdb197a87263078d71949ab"
+    },
+    {
+      "path": "apps/web/onboarding-probe/vite.config.mjs",
+      "working_sha256": "d89a0719405f3e8bb8d7eb722882808bec65433f3affaa8b87e99a66a7711c56",
+      "git_blob_sha256": "d89a0719405f3e8bb8d7eb722882808bec65433f3affaa8b87e99a66a7711c56"
+    },
+    {
+      "path": "package.json",
+      "working_sha256": "f816df1a1547d60a33339d55031e76b6d43216f6ec8367085c0c8d9cf0c0c87b",
+      "git_blob_sha256": "f816df1a1547d60a33339d55031e76b6d43216f6ec8367085c0c8d9cf0c0c87b"
+    },
+    {
+      "path": "packages/wallet-adapter/package.json",
+      "working_sha256": "70fcd4e6903865dd8943c0e382329b71350ad76a7bedddc5286079f05be636a6",
+      "git_blob_sha256": "70fcd4e6903865dd8943c0e382329b71350ad76a7bedddc5286079f05be636a6"
+    },
+    {
+      "path": "packages/wallet-adapter/src/base58.mjs",
+      "working_sha256": "49ec908b303d5b1e877ce42868e3df99269b8d19fec05cf9d741a22593c3bcc1",
+      "git_blob_sha256": "49ec908b303d5b1e877ce42868e3df99269b8d19fec05cf9d741a22593c3bcc1"
+    },
+    {
+      "path": "packages/wallet-adapter/src/borsh-lit.mjs",
+      "working_sha256": "a8a271d9598eca5404af9143dda6f2a34d497edbd6f9c7f7571a49b8f371f366",
+      "git_blob_sha256": "a8a271d9598eca5404af9143dda6f2a34d497edbd6f9c7f7571a49b8f371f366"
+    },
+    {
+      "path": "packages/wallet-adapter/src/cli.mjs",
+      "working_sha256": "d2fb6308c381c1462bc94e5974717080d5e4cec594a909962fc76c2cfe1421c7",
+      "git_blob_sha256": "d2fb6308c381c1462bc94e5974717080d5e4cec594a909962fc76c2cfe1421c7"
+    },
+    {
+      "path": "packages/wallet-adapter/src/index.mjs",
+      "working_sha256": "b8690d0ac09d0e6d7d401ca8f13a7b98f26f110e383f144bd6ba084a204afa0d",
+      "git_blob_sha256": "b8690d0ac09d0e6d7d401ca8f13a7b98f26f110e383f144bd6ba084a204afa0d"
+    },
+    {
+      "path": "packages/wallet-adapter/src/near-rpc-resolver.mjs",
+      "working_sha256": "f617dc2341e87c121e99255f85fcf64cf234d6d34632b854bb2ff44fc877798e",
+      "git_blob_sha256": "f617dc2341e87c121e99255f85fcf64cf234d6d34632b854bb2ff44fc877798e"
+    },
+    {
+      "path": "packages/wallet-adapter/src/nep413.mjs",
+      "working_sha256": "771a8ffb01138427475b13f1fde3f2fbf6a00f575412595d967a76307e58a4a5",
+      "git_blob_sha256": "771a8ffb01138427475b13f1fde3f2fbf6a00f575412595d967a76307e58a4a5"
+    },
+    {
+      "path": "packages/wallet-adapter/src/privy-near.mjs",
+      "working_sha256": "78b86e8c69d56cbf765903dd87f4d9409ba65f9e05c58293346bf0304b97e0f2",
+      "git_blob_sha256": "78b86e8c69d56cbf765903dd87f4d9409ba65f9e05c58293346bf0304b97e0f2"
+    },
+    {
+      "path": "packages/wallet-adapter/src/verify-binding.mjs",
+      "working_sha256": "b2da0492f3ad496ea484aee980de8f3dd98967724fa00ec0e49ea2db8ef14988",
+      "git_blob_sha256": "b2da0492f3ad496ea484aee980de8f3dd98967724fa00ec0e49ea2db8ef14988"
+    },
+    {
+      "path": "packages/wallet-adapter/verify-nep413-official.mjs",
+      "working_sha256": "11d8608d042b89d6793123cd7884fd64c86943036984b475d0cf9a4bc53f2905",
+      "git_blob_sha256": "11d8608d042b89d6793123cd7884fd64c86943036984b475d0cf9a4bc53f2905"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "working_sha256": "52633be1e0cdc96445475b4fa0ffd60fba31731968067914d4fb1b27702c8307",
+      "git_blob_sha256": "52633be1e0cdc96445475b4fa0ffd60fba31731968067914d4fb1b27702c8307"
+    },
+    {
+      "path": "scripts/verify-t02-adversarial.mjs",
+      "working_sha256": "e22cd242b8697713109b93c19c9ab1c74067ffe18e598dabd203aac90925f594",
+      "git_blob_sha256": "e22cd242b8697713109b93c19c9ab1c74067ffe18e598dabd203aac90925f594"
+    },
+    {
+      "path": "scripts/verify-t02-harness.mjs",
+      "working_sha256": "cda93d24dfeeac61307e55cb3bdd2e2583fe443e0f0f3f0a66ef7efb5eb7d248",
+      "git_blob_sha256": "cda93d24dfeeac61307e55cb3bdd2e2583fe443e0f0f3f0a66ef7efb5eb7d248"
+    },
+    {
+      "path": "scripts/verify-t02-regressions.mjs",
+      "working_sha256": "68d3e1fd3f80398b7ed06283bf20de010cf66e65434cace76ea596ccb0d3b361",
+      "git_blob_sha256": "68d3e1fd3f80398b7ed06283bf20de010cf66e65434cace76ea596ccb0d3b361"
+    },
+    {
+      "path": "scripts/verify-t02-review-gaps.mjs",
+      "working_sha256": "878c171f48e5fb0306d2bc9d11cb913d6f03935bccef663a5a1a71abbdae442f",
+      "git_blob_sha256": "878c171f48e5fb0306d2bc9d11cb913d6f03935bccef663a5a1a71abbdae442f"
+    }
+  ],
+  "official_config_source": "https://docs.auth.near.org/resources/testnet (Codex rechecked public development clientId and contract IDs)",
+  "limits": [
+    "No server session/auth backend implemented; in-memory nonce state is diagnostic only",
+    "W01/W02/W03/G01/G02/G03/E09 remain open or blocked as applicable",
+    "Native relogin, social/email/EVM binding and actual signatures not tested",
+    "No deposit/pass/claim/funding/real asset/public deployment",
+    "Node adapter supports Ed25519; other key curves fail closed; browser SDK capability is not universal wallet proof"
+  ],
+  "bounded_secret_scan": {
+    "private_key_and_token_pattern_hits": [],
+    "public_development_clientId": "checked against official NEAR Auth testnet docs; not a secret"
+  }
+}
