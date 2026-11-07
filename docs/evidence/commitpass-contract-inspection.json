@@ -1,0 +1,45 @@
+{
+  "reviewer": "Codex",
+  "classifier": "PASS_LOCAL",
+  "scope": "read-only Solidity and test source inspection, not execution or security acceptance",
+  "baseline_commit": "542273df306a7e5887f1dfcabf1383e78930f579",
+  "sources": [
+    {
+      "path": "contracts/src/CommitPassFactory.sol",
+      "commit": "542273df306a7e5887f1dfcabf1383e78930f579",
+      "sha256": "600bc50bf841bf3dafa9aa3eaec3948177200196e736ac2d39a7d1891a2f648a",
+      "spdx_mit": true
+    },
+    {
+      "path": "contracts/src/CommitPassVault.sol",
+      "commit": "542273df306a7e5887f1dfcabf1383e78930f579",
+      "sha256": "9779d6224a8cc259f6010212f662a85c633147b9ed7987df322bb1cb8743b87b",
+      "spdx_mit": true
+    },
+    {
+      "path": "contracts/src/cre/ReceiverTemplate.sol",
+      "commit": "542273df306a7e5887f1dfcabf1383e78930f579",
+      "sha256": "4d4e0f98f47fd154d6a180d4b37fbc913d81da9552e98d31de97dd4af79ca930",
+      "spdx_mit": true
+    },
+    {
+      "path": "contracts/test/SettlementPolicy.t.sol",
+      "commit": "542273df306a7e5887f1dfcabf1383e78930f579",
+      "sha256": "761804095d8410b461d282b3e5b9341b9267ad39403735869fe40a2015242c31",
+      "spdx_mit": true
+    },
+    {
+      "path": "contracts/test/CommitPassVault.t.sol",
+      "commit": "542273df306a7e5887f1dfcabf1383e78930f579",
+      "sha256": "3a6451ef58e98434ec1b13f918382757238d9688380ff3637ad606ef6610f608",
+      "spdx_mit": true
+    }
+  ],
+  "local_factory_change": "Pre-existing working-tree diff is formatting only; baseline blob used for provenance, no modification performed",
+  "limits": [
+    "No Foundry tests rerun",
+    "Existing deployed service/runtime not inspected or changed",
+    "Solidity synchronous rollback/CRE/yield/fees cannot be inherited into NEAR",
+    "No code copied or new production ABI frozen"
+  ]
+}
