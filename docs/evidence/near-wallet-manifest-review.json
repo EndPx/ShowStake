@@ -1,0 +1,115 @@
+{
+  "reviewer": "Codex",
+  "classifier": "PASS_LIVE",
+  "scope": "read-only official manifest observation, not wallet-login/signature proof",
+  "observed_at": "2026-11-07T07:14:02.672232+00:00",
+  "source": "https://raw.githubusercontent.com/hot-dao/near-selector/refs/heads/main/repository/manifest.json",
+  "sha256": "4805fb2ff5189b84ab1379ecbb76af68e44cbe444f6a5cacb2eda662ee29af20",
+  "sdk": "@hot-labs/near-connect@0.12.0",
+  "filter": "on testnet, include only entries with truthy manifest.features.testnet",
+  "wallets": [
+    {
+      "id": "hot-wallet",
+      "name": "HOT Wallet",
+      "testnet_declared": null,
+      "testnet_field_present": false,
+      "signMessage": true
+    },
+    {
+      "id": "meteor-wallet",
+      "name": "Meteor Wallet",
+      "testnet_declared": true,
+      "testnet_field_present": true,
+      "signMessage": true
+    },
+    {
+      "id": "intear-wallet",
+      "name": "Intear Wallet",
+      "testnet_declared": true,
+      "testnet_field_present": true,
+      "signMessage": true
+    },
+    {
+      "id": "ledger",
+      "name": "Ledger",
+      "testnet_declared": true,
+      "testnet_field_present": true,
+      "signMessage": true
+    },
+    {
+      "id": "mynearwallet",
+      "name": "MyNearWallet",
+      "testnet_declared": null,
+      "testnet_field_present": false,
+      "signMessage": true
+    },
+    {
+      "id": "okx-wallet",
+      "name": "OKX Wallet",
+      "testnet_declared": null,
+      "testnet_field_present": false,
+      "signMessage": true
+    },
+    {
+      "id": "near-mobile",
+      "name": "NEAR Mobile",
+      "testnet_declared": false,
+      "testnet_field_present": true,
+      "signMessage": true
+    },
+    {
+      "id": "trezu-wallet",
+      "name": "Trezu Wallet",
+      "testnet_declared": null,
+      "testnet_field_present": false,
+      "signMessage": null
+    },
+    {
+      "id": "nightly-wallet",
+      "name": "Nightly Wallet",
+      "testnet_declared": true,
+      "testnet_field_present": true,
+      "signMessage": true
+    },
+    {
+      "id": "wallet-connect",
+      "name": "Wallet Connect",
+      "testnet_declared": true,
+      "testnet_field_present": true,
+      "signMessage": true
+    },
+    {
+      "id": "unity-wallet",
+      "name": "Unity Wallet",
+      "testnet_declared": true,
+      "testnet_field_present": true,
+      "signMessage": true
+    },
+    {
+      "id": "hana-wallet",
+      "name": "Hana Wallet",
+      "testnet_declared": null,
+      "testnet_field_present": false,
+      "signMessage": true
+    },
+    {
+      "id": "ethereum-wallets",
+      "name": "Ethereum Wallets",
+      "testnet_declared": true,
+      "testnet_field_present": true,
+      "signMessage": false
+    },
+    {
+      "id": "near-cli",
+      "name": "NEAR CLI",
+      "testnet_declared": true,
+      "testnet_field_present": true,
+      "signMessage": true
+    }
+  ],
+  "limits": [
+    "Manifest flags are capability declarations, not successful PoC",
+    "HOT testnet field absent is not proof about every HOT product/version",
+    "Do not override unsupported flag or change to mainnet without scope decision"
+  ]
+}

@@ -55,8 +55,10 @@ Reconnect. The session table records the same-account comparison.
 
 - **Live wallet return / signature** (`W03`/`G02`): requires a browser + a human
   + a real NEAR wallet. Testnet-capable wallets in the NEAR Connect manifest
-  include Meteor, MyNearWallet, Nightly, NEAR Mobile (HOT Wallet's manifest is
-  `testnet: false`, so it is not offered for testnet). No live signature was
+  include Meteor, Intear, Ledger, Nightly and other explicitly flagged entries.
+  The current HOT Wallet and MyNearWallet entries do not declare `testnet: true`;
+  NEAR Mobile declares `testnet: false`. The SDK excludes those entries on testnet.
+  Flags are not live signing proof; see `docs/evidence/near-wallet-manifest-review.json`. No live signature was
   produced by the worker.
 - **NEAR Auth login/sign** (`W01`/`G01`): its message signing is **on-chain**
   (`sign` transaction to `fast-auth.testnet`, gas `300000000000000`, deposit `1`
