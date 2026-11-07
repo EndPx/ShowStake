@@ -1,0 +1,66 @@
+{
+  "reviewer": "Codex",
+  "classifier": "PASS_TESTNET",
+  "scope": "TEST-ONLY FT deployed and RPC verified, no ShowStake product deposit yet",
+  "account": "showstake-ft-endpx.testnet",
+  "network": "testnet",
+  "signer": "dedicated OS keychain",
+  "exit": 0,
+  "wasm_sha256": "d1c7d009a2c49bee5ad4997fe7e3114899fa667a06876fb6e435d9a72fffb195",
+  "transaction_hashes": [
+    "FzgHCF4CVWRWF6xnM9GzgJwZjfdF3ooiwvtqnfJd5sSx"
+  ],
+  "observed_at": "2026-11-07T10:07:49.120688+00:00",
+  "raw_output_logged": false,
+  "rpc_verification": {
+    "account": {
+      "amount": "9997703439163469200000000",
+      "block_hash": "HBmCEFneqvaWPzNbbJmK8R3ekBPwz94ywvw5U2niTLYc",
+      "block_height": 276616623,
+      "code_hash": "F7tvbqmUHnqGDT45ZHj3zon74uNqcddmyCML2X7ceV9W",
+      "locked": "0",
+      "storage_paid_at": 0,
+      "storage_usage": 285479
+    },
+    "expected_code_hash": "F7tvbqmUHnqGDT45ZHj3zon74uNqcddmyCML2X7ceV9W",
+    "code_hash_matches": true,
+    "metadata": {
+      "spec": "ft-1.0.0",
+      "name": "ShowStake Test FT",
+      "symbol": "SS_TEST",
+      "icon": null,
+      "reference": null,
+      "reference_hash": null,
+      "decimals": 6
+    },
+    "total_supply": "1000000000000",
+    "participant_balance": "1000000000000",
+    "storage_balance_bounds": {
+      "min": "1260000000000000000000",
+      "max": "1260000000000000000000"
+    },
+    "transaction_status": {
+      "SuccessValue": ""
+    },
+    "receipts": [
+      {
+        "id": "HxBHCsf1RqXijiexUNuyzyFpxW4kVEJPbmTBepz7VP6M",
+        "executor_id": "showstake-ft-endpx.testnet",
+        "status": {
+          "SuccessValue": ""
+        },
+        "gas_burnt": 20530492191609,
+        "tokens_burnt": "2053049219160900000000"
+      },
+      {
+        "id": "D88NnQQgYLcTwroVeJwDCRqmFp3owWhcgu8HVvzsqNqR",
+        "executor_id": "showstake-ft-endpx.testnet",
+        "status": {
+          "SuccessValue": ""
+        },
+        "gas_burnt": 223182562500,
+        "tokens_burnt": "0"
+      }
+    ]
+  }
+}

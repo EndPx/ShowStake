@@ -1,0 +1,35 @@
+{
+  "reviewer": "Codex",
+  "classifier": "PASS_TESTNET",
+  "scope": "dedicated TEST-ONLY FT account provision, not token or product deployment",
+  "network": "testnet",
+  "account_id": "showstake-ft-endpx.testnet",
+  "signer": "near-cli OS keychain outside repository",
+  "creation_exit": 0,
+  "account_rpc": {
+    "amount": "10000000000000000000000000",
+    "block_hash": "7rEZYZErUcz1XX8tPwgTf7t6bajnuhRwZBFsZnP75Ki6",
+    "block_height": 276616250,
+    "code_hash": "11111111111111111111111111111111",
+    "locked": "0",
+    "storage_paid_at": 0,
+    "storage_usage": 182
+  },
+  "public_keys_rpc": {
+    "block_hash": "9or3kiL3Dzc3gkHpZA25PFzEmTHzHfpESHfCJuFmEivv",
+    "block_height": 276616256,
+    "keys": [
+      {
+        "access_key": {
+          "nonce": 276616246000000,
+          "permission": "FullAccess"
+        },
+        "public_key": "ed25519:GpZFcwLtpXBPHGWBdgomYLivoKSjvrbxHQpuVCw4XDgD"
+      }
+    ]
+  },
+  "limits": [
+    "Fixed supply test FT planned; not USDC or real asset",
+    "No original user account/keys accessed"
+  ]
+}

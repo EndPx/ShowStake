@@ -1,0 +1,32 @@
+{
+  "reviewer": "Codex",
+  "network": "testnet",
+  "action": "deploy reviewed fixed-supply TEST-ONLY FT and initialize",
+  "account": "showstake-ft-endpx.testnet",
+  "wasm_sha256": "d1c7d009a2c49bee5ad4997fe7e3114899fa667a06876fb6e435d9a72fffb195",
+  "source": "contracts/test-ft",
+  "signer": "OS keychain, only dedicated account",
+  "init_args": {
+    "owner_id": "showstake-participant-endpx.testnet",
+    "total_supply": "1000000000000",
+    "metadata": {
+      "spec": "ft-1.0.0",
+      "name": "ShowStake Test FT",
+      "symbol": "SS_TEST",
+      "decimals": 6
+    }
+  },
+  "gas_limit": "100 Tgas",
+  "attached_deposit": "0 NEAR",
+  "gas_price_yocto": "100000000",
+  "storage_amount_per_byte": "10000000000000000000",
+  "estimated_storage_upper_bytes": 289121,
+  "native_cost_guard_yocto": "4000000000000000000000000",
+  "approval": "explicit testnet deployment/test-token authorization",
+  "limits": [
+    "No USDC/realasset claim; synthetic testnet only",
+    "Product escrow deploy waits storage fix review",
+    "Abort if account code nonempty/hash mismatch or conservative gas/storage estimate exceeds guard"
+  ],
+  "estimated_native_upper_yocto": "2901210000000000000000000"
+}
