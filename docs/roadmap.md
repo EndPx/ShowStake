@@ -30,3 +30,19 @@ Public EndPx/ShowStake pushes are authorized only for reviewed/tested increments
 Capacity and schedule risk: approximately one week to internal target, with core wallet/escrow gates still open, repeated GATER IP-binding errors, a standalone ZCode Start Plan compatibility gap, and capacity shared with Keyfolio. No Keyfolio resources/services modified. Scope and acceptance are unchanged; no defensible completion percentage yet.
 
 Latest sequencing (D027): interactive wallet acceptance is performed through the adapted ShowStake frontend when ready. Local wallet regression tests and independent backend/contract/Sandbox work continue now; the diagnostic harness remains available as test support. Do not treat this scheduling change as a passed or removed T02 gate.
+
+
+## Testnet to mainnet release progression
+
+Canonical operational gates and evidence requirements: [release-checklist.md](release-checklist.md). Execution order is full testnet lifecycle acceptance -> mainnet release candidate preparation -> exact human authorization -> mainnet deployment without public deposits -> same-network small-fund E2E -> separately approved limited pilot. Preparation does not authorize mainnet signing, spending, paid services or public deposits. Mainnet gates do not block current local/testnet implementation.
+
+| Release status | Required evidence | Current state |
+|---|---|---|
+| IMPLEMENTED_LOCAL | Reviewed product source, pinned build/Wasm, relevant implementation tests and reproducible commands | Only individually accepted foundation/probe increments; full product not at this status |
+| TESTNET_ACCEPTED | Frontend/backend/wallet full lifecycle and negative cases, verified dedicated accounts/FT and receipts/balance reconciliation | Not reached |
+| MAINNET_PREPARED | Exact release commit/artifact/config, review evidence, custody/upgrade/pause decisions, recovery and bounded transaction proposals | Not reached; planning only |
+| MAINNET_DEPLOYED | Scoped human authorization, installed code/config/key/asset verification and deployment receipt | Not authorized or reached |
+| MAINNET_E2E_ACCEPTED | Direct NEAR + supported EVM/non-EVM funding, participant NEAR delivery, separate escrow commit, attendance/settlement/claim and separate cancellation/refund with same-network receipts/reconciliation | Not reached |
+| PILOT_APPROVED | E2E accepted, explicit participant/deposit limits, monitoring/support and separate human launch decision | Not authorized or reached |
+
+These are product/release statuses, distinct from PASS_LOCAL/PASS_TESTNET/PASS_LIVE/FAILED/BLOCKED_EXTERNAL/NOT_RUN test classifications. Deployment alone never advances to E2E acceptance.

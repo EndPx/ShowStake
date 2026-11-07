@@ -1,0 +1,35 @@
+{
+  "reviewer": "Codex",
+  "classifier": "PASS_TESTNET",
+  "scope": "dedicated participant creation, not product acceptance",
+  "network": "testnet",
+  "account_id": "showstake-participant-endpx.testnet",
+  "signer_method": "near-cli OS keychain outside repository",
+  "creation_exit": 0,
+  "account": {
+    "amount": "10000000000000000000000000",
+    "block_hash": "4wad8R6moXGWsj9WEV1db6GZSu3XPa1RjpCVVdX8MRzC",
+    "block_height": 276608229,
+    "code_hash": "11111111111111111111111111111111",
+    "locked": "0",
+    "storage_paid_at": 0,
+    "storage_usage": 182
+  },
+  "public_keys": {
+    "block_hash": "Au6q5CsnyrvzADt4q1WZsrnCYwRptgpQ6T1ZxmnHpp75",
+    "block_height": 276608235,
+    "keys": [
+      {
+        "access_key": {
+          "nonce": 276608224000000,
+          "permission": "FullAccess"
+        },
+        "public_key": "ed25519:2oWNjLUBKMyKfGT3Ch7JcqUMVucxTnqcNDGGEM4zzf8K"
+      }
+    ]
+  },
+  "limits": [
+    "No original user account/keys modified",
+    "No product deposit/transfers yet"
+  ]
+}
