@@ -1,0 +1,83 @@
+{
+  "reviewer": "Codex",
+  "classifier": "PASS_LIVE",
+  "scope": "dry-run provider HTTP probe with PUBLIC DOCUMENTATION SAMPLE ADDRESSES, not user-owned accounts; not a funded route or registration",
+  "endpoint": "https://1click.chaindefuser.com/v0/quote",
+  "observed_at": "2026-11-07T05:53:56.089311+00:00",
+  "http_status": 201,
+  "request": {
+    "dry": true,
+    "swapType": "EXACT_OUTPUT",
+    "slippageTolerance": 100,
+    "originAsset": "nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near",
+    "depositType": "ORIGIN_CHAIN",
+    "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+    "amount": "5000000",
+    "refundTo": "0x2527D02599Ba641c19FEa793cD0F167589a0f10D",
+    "refundType": "ORIGIN_CHAIN",
+    "recipient": "your-account.near",
+    "recipientType": "DESTINATION_CHAIN",
+    "deadline": "2026-11-07T06:53:55.199718Z"
+  },
+  "request_address_source": "official API quote/auth docs examples; ownership NOT claimed",
+  "authentication": "none, no credentials read",
+  "response": {
+    "quote": {
+      "amountIn": "5051095",
+      "amountInFormatted": "5.051095",
+      "amountInUsd": "5.049589773690",
+      "minAmountIn": "5000584",
+      "amountOut": "5000000",
+      "amountOutFormatted": "5.0",
+      "amountOutUsd": "4.998510000000",
+      "minAmountOut": "5000000",
+      "timeEstimate": 35,
+      "refundFee": "2400",
+      "withdrawFee": "0"
+    },
+    "quoteRequest": {
+      "dry": true,
+      "depositMode": "SIMPLE",
+      "swapType": "EXACT_OUTPUT",
+      "slippageTolerance": 100,
+      "originAsset": "nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near",
+      "depositType": "ORIGIN_CHAIN",
+      "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "amount": "5000000",
+      "refundTo": "0x2527D02599Ba641c19FEa793cD0F167589a0f10D",
+      "refundType": "ORIGIN_CHAIN",
+      "recipient": "your-account.near",
+      "recipientType": "DESTINATION_CHAIN",
+      "deadline": "2026-11-07T06:53:55.199Z",
+      "confidentiality": "public",
+      "quoteWaitingTimeMs": 0,
+      "insured": false,
+      "appFees": [
+        {
+          "recipient": "5880ad2b362620fadf759cbceb1cd5737ce8c6ed7fb8e9942881e6731f9247dd",
+          "fee": 1
+        }
+      ]
+    },
+    "signature": "ed25519:g9BsbByKtLBSazNqzWDi1UrDLFk5qev3aB2pb8jNxydJntndtoLSSFNJv2P8m85F6t3eiKYKdAiwZyJ4zyPHDy9",
+    "timestamp": "2026-11-07T05:53:55.717Z",
+    "correlationId": "6bf0864c-8856-435b-80a1-3fb78d345c0e"
+  },
+  "limits": [
+    "dry=true, no deposit-address request or swap initiation",
+    "No user wallet or control proof",
+    "No signing, funds, receipt or escrow interaction",
+    "HTTP400 is not evidence that an API key is required",
+    "Canonical asset/routing still not frozen for production",
+    "Provider signature returned but NOT cryptographically verified; live gate still open"
+  ],
+  "response_checks": {
+    "http_2xx": true,
+    "dry_echo": true,
+    "origin_matches": true,
+    "destination_matches": true,
+    "recipient_matches": true,
+    "exact_output_5m": true,
+    "no_deposit_address": true
+  }
+}

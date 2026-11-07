@@ -1,0 +1,25 @@
+{
+  "reviewer": "Codex",
+  "classifier": "PASS_LOCAL",
+  "scope": "file existence/header/hash inspection only, not contract execution or provenance acceptance",
+  "observed_at": "2026-11-07T05:54:59.593906+00:00",
+  "files": [
+    {
+      "path": ".local/zcode-settlement-oracle/sandbox-probe/wasm/ft_fixture.wasm",
+      "bytes": 285025,
+      "header": "0061736d01000000",
+      "sha256": "d1c7d009a2c49bee5ad4997fe7e3114899fa667a06876fb6e435d9a72fffb195"
+    },
+    {
+      "path": ".local/zcode-settlement-oracle/sandbox-probe/wasm/receiver_fixture.wasm",
+      "bytes": 265608,
+      "header": "0061736d01000000",
+      "sha256": "e2b50bcb52537e1b7d4db807e956928d7e251b99da8b17b2600fe02ebac28a6e"
+    }
+  ],
+  "limits": [
+    "Sandbox receipt tests not yet returned",
+    "Fixture compile/header is not ShowStake T03/T04 acceptance",
+    "No public deployment or transaction"
+  ]
+}

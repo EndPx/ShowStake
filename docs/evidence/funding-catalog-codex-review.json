@@ -1,0 +1,54 @@
+{
+  "reviewer": "Codex",
+  "classifier": "PASS_LIVE",
+  "scope": "unauthenticated read-only public token catalog HTTP response ONLY, not quote/swap/deposit",
+  "source_documentation": "https://docs.near-intents.org/api-reference/oneclick/get-supported-tokens",
+  "endpoint": "https://1click.chaindefuser.com/v0/tokens",
+  "observed_at": "2026-11-07T05:52:30.501989+00:00",
+  "http_status": 200,
+  "catalog_entries": 216,
+  "response_sha256": "091a71f2f274af6880440f6e7030a677091e7c73b6db7814433a18ef80e5d534",
+  "candidate_assets": [
+    {
+      "assetId": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "blockchain": "near",
+      "symbol": "USDC",
+      "decimals": 6,
+      "contractAddress": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1"
+    },
+    {
+      "assetId": "nep141:sol-c800a4bd850783ccb82c2b2c7e84175443606352.omft.near",
+      "blockchain": "sol",
+      "symbol": "USDT",
+      "decimals": 6,
+      "contractAddress": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"
+    },
+    {
+      "assetId": "nep141:usdt.tether-token.near",
+      "blockchain": "near",
+      "symbol": "USDT",
+      "decimals": 6,
+      "contractAddress": "usdt.tether-token.near"
+    },
+    {
+      "assetId": "nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near",
+      "blockchain": "base",
+      "symbol": "USDC",
+      "decimals": 6,
+      "contractAddress": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
+    },
+    {
+      "assetId": "nep141:sol-5ce3bf3a31af18be40ba30f721101b4341690186.omft.near",
+      "blockchain": "sol",
+      "symbol": "USDC",
+      "decimals": 6,
+      "contractAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+    }
+  ],
+  "limits": [
+    "No user wallet address supplied",
+    "Catalog presence is not a route quote, liquidity guarantee, funded route or escrow registration",
+    "Mainnet asset choice not frozen",
+    "No funds, authenticated call, deployment or transaction"
+  ]
+}
