@@ -1,0 +1,32 @@
+{
+  "reviewer": "Codex",
+  "classification": "PASS_LOCAL",
+  "scope": "UI-observed provider-access recovery only; not wallet/contract acceptance",
+  "trigger": {
+    "dispatch": "ctx_4bbd32d529ae",
+    "task": "task_827bf679a58d",
+    "error": "403 ip_limit_reached"
+  },
+  "authorization": "Human conditional Telegram /unbind direction, recorded D025",
+  "actions": [
+    "Verified Telegram target was GATER bot, not another chat",
+    "Sent exactly /unbind once",
+    "Bot returned Unbind IP panel; selected Lepas Semua IP",
+    "Confirmed Ya, Lepas for that same unbind operation",
+    "Observed same current bot response edited to IP berhasil dilepas, remaining quota17",
+    "Sent one resume instruction to same retained DeepSeek dispatch"
+  ],
+  "verification": {
+    "command_sent": true,
+    "new_bot_success_response": true,
+    "remaining_unbind_quota": 17,
+    "resume_message": "msg_b0d0e8ccb0ad",
+    "provider_request_after_resume": "PENDING"
+  },
+  "limits": [
+    "No other Telegram command/message sent",
+    "No API key changed, copied or included in evidence",
+    "No IP addresses or Telegram screenshots included",
+    "Provider recovery does not prove T02 acceptance"
+  ]
+}
