@@ -9,3 +9,5 @@ For material integration choices, apply NEAR ecosystem first (docs/decisions.md 
 Later explicit user authorization makes EndPx/ShowStake public and permits push of Codex-reviewed/tested work; deployment, paid resources and real assets remain separately gated.
 
 User-authorized parallel design executor: ZCode via Orca, Cloud Near/deepseek-ai/DeepSeek-V4.1-Flash-1017-abliterated, isolated .local/zcode-figcraft. DeepSeek Harness/GATER remains main database implementer. ZCode must not write main source/migrations/lockfile. Codex reviews rendered editable FigCraft artifacts before integration.
+
+Conditional Telegram authorization (D025): Codex only, after a fresh GATER ip_limit_reached, may verify the already-open GATER bot chat and send exactly /unbind. No other Telegram command/message or secret disclosure; no unbind for other errors. Observe result then retry same task once, diagnose repeated immediate binding rather than looping. Executors must report the error and leave Telegram to Codex.
