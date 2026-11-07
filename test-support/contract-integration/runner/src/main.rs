@@ -17,20 +17,59 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use anyhow::anyhow;
+use base64::Engine;
+use borsh::{BorshDeserialize, BorshSerialize};
 use near_api::types::transaction::result::{
     ExecutionFinalResult, ExecutionOutcome, TransactionResult,
 };
 use near_api::{AccountId, Contract, NearGas, NearToken, NetworkConfig, Signer};
+use near_sandbox::sandbox::patch::{FetchData, StateRecord};
 use serde::{Deserialize, Serialize};
 
 const SANDBOX_VERSION: &str = "2.14.0";
 const DEPOSIT: u128 = 100;
 const HOUR_MS: u64 = 3_600_000;
 const DAY_MS: u64 = 86_400_000;
+/// D036 published policy identity (final commit, no voluntary withdrawal or
+/// rejoin). The contract rejects the earlier `showstake-v2/1` label.
+const POLICY_IDENTITY: &str = "showstake-v2-d036/1";
 
 const EVENT_OPEN: &str = "evt-open";
 const EVENT_OPEN2: &str = "evt-open-2";
 const EVENT_CLOSED: &str = "evt-closed";
+const EVENT_LIFE: &str = "evt-life";
+const EVENT_HISTORY: &str = "evt-history";
+const EVENT_TIMEOUT: &str = "evt-timeout";
+const EVENT_FAIL: &str = "evt-fail";
+const EVENT_DEADLINE: &str = "evt-deadline";
+
+/// Exact Borsh mirror of the contract's stored `Event` for the bounded
+/// Sandbox time jump. 24h of sandbox fast-forward is too slow on this host,
+/// so the runner shortens only the stored `finalize_deadline` to
+/// `checkin_close + 20s`, then uses the real sandbox clock/fast-forward to
+/// cross it. Unit tests prove the real `checkin_close + 24h` derivation and
+/// exact boundary; this Sandbox leg proves nonzero-principal timeout + claim
+/// receipts/balances on a real Published event.
+#[derive(BorshDeserialize, BorshSerialize, Debug)]
+struct EventStorageMirror {
+    event_id: String,
+    organizer: String,
+    rules_hash: String,
+    deposit: u128,
+    capacity: u32,
+    reg_open: u64,
+    reg_close: u64,
+    cancel_cutoff: u64,
+    checkin_open: u64,
+    checkin_close: u64,
+    finalize_deadline: u64,
+    policy_version: String,
+    state: u8,
+    active_registrations: u32,
+    total_registrations: u64,
+    accepted_principal: u128,
+    created_at: u64,
+}
 
 #[derive(Serialize)]
 struct Evidence {
@@ -40,6 +79,8 @@ struct Evidence {
     status: String,
     error: Option<String>,
     sandbox: SandboxEvidence,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    deadline_sandbox: Option<SandboxEvidence>,
     accounts: BTreeMap<String, String>,
     contracts: BTreeMap<String, String>,
     wasm: WasmEvidence,
@@ -112,11 +153,15 @@ struct Snapshot {
     bob_a: String,
     carol_a: String,
     dave_a: String,
+    frank_a: String,
     alice_b: String,
     bob_b: String,
     open_stake_a: String,
     open2_stake_a: String,
     closed_stake_a: String,
+    life_stake_a: String,
+    timeout_stake_a: String,
+    fail_stake_a: String,
     open_stake_b: String,
     ft_a_total: String,
     ft_b_total: String,
@@ -151,7 +196,7 @@ struct ConfigJson {
 }
 
 #[allow(dead_code)]
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 struct EventViewJson {
     event_id: String,
     organizer: String,
@@ -170,12 +215,40 @@ struct EventViewJson {
     phase: String,
     active_registrations: u32,
     total_registrations: u64,
+    withdrawn_registrations: u64,
     accepted_principal: String,
     created_at: u64,
 }
 
 #[allow(dead_code)]
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
+struct ClaimViewJson {
+    registration_id: String,
+    event_id: String,
+    beneficiary: String,
+    amount: String,
+    payout_state: String,
+    pending_payout_id: Option<String>,
+    paid_amount: String,
+    withdrawn_at: u64,
+}
+
+#[allow(dead_code)]
+#[derive(Serialize, Deserialize, Debug)]
+struct EventTotalsJson {
+    event_id: String,
+    state: String,
+    registrations: u64,
+    active_registrations: u32,
+    withdrawn_registrations: u64,
+    accepted_principal: String,
+    paid: String,
+    pending: String,
+    liability: String,
+}
+
+#[allow(dead_code)]
+#[derive(Clone, Deserialize, Debug)]
 struct RegistrationJson {
     registration_id: String,
     event_id: String,
@@ -214,11 +287,15 @@ struct Env {
     open_id: AccountId,
     open2_id: AccountId,
     closed_id: AccountId,
+    life_id: AccountId,
+    timeout_id: AccountId,
+    fail_id: AccountId,
     organizer: AccountId,
     alice: AccountId,
     bob: AccountId,
     carol: AccountId,
     dave: AccountId,
+    frank: AccountId,
     owner_a: AccountId,
     owner_b: AccountId,
     network: NetworkConfig,
@@ -366,6 +443,71 @@ async fn single_event_or_none(
     Ok(events.into_iter().next())
 }
 
+async fn claim_view(
+    env: &Env,
+    stake: &Contract,
+    registration_id: &str,
+) -> anyhow::Result<ClaimViewJson> {
+    view::<ClaimViewJson>(
+        stake,
+        "get_claim",
+        serde_json::json!({"registration_id": registration_id}),
+        &env.network,
+    )
+    .await
+}
+
+async fn event_totals(
+    env: &Env,
+    stake: &Contract,
+    event_id: &str,
+) -> anyhow::Result<EventTotalsJson> {
+    view::<EventTotalsJson>(
+        stake,
+        "get_event_totals",
+        serde_json::json!({"event_id": event_id}),
+        &env.network,
+    )
+    .await
+}
+
+async fn instance_escrow(env: &Env, stake: &Contract) -> anyhow::Result<String> {
+    view::<String>(
+        stake,
+        "get_escrow_principal",
+        serde_json::json!({}),
+        &env.network,
+    )
+    .await
+}
+
+async fn lifecycle_state(
+    env: &Env,
+    stake: &Contract,
+    event_id: &str,
+    registration_ids: &[String],
+) -> anyhow::Result<serde_json::Value> {
+    let event = view::<EventViewJson>(
+        stake,
+        "get_event",
+        serde_json::json!({"event_id": event_id}),
+        &env.network,
+    )
+    .await?;
+    let totals = event_totals(env, stake, event_id).await?;
+    let escrow = instance_escrow(env, stake).await?;
+    let mut claims = Vec::new();
+    for registration_id in registration_ids {
+        claims.push(claim_view(env, stake, registration_id).await?);
+    }
+    Ok(serde_json::json!({
+        "event": event,
+        "totals": totals,
+        "escrow": escrow,
+        "claims": claims,
+    }))
+}
+
 #[allow(clippy::too_many_arguments)]
 async fn call(
     contract: &Contract,
@@ -456,6 +598,57 @@ fn receipt_log_contains(evidence: &TxEvidence, executor: &AccountId, needle: &st
     })
 }
 
+fn receipt_gas(evidence: &TxEvidence, executor: &AccountId) -> Option<u64> {
+    evidence
+        .receipts
+        .iter()
+        .find(|receipt| receipt.executor_id == executor.to_string())
+        .map(|receipt| receipt.gas_burnt)
+}
+
+/// Shorten only the stored `finalize_deadline` for the bounded Sandbox
+/// timeout leg. The value stays after `checkin_close`, preserving the event's
+/// time ordering; the real clock is then advanced across it.
+async fn patch_event_deadline(
+    sandbox: &near_sandbox::Sandbox,
+    stake_id: &AccountId,
+    event_id: &str,
+    deadline: u64,
+) -> anyhow::Result<()> {
+    let fetched = sandbox
+        .patch_state(stake_id.as_str().parse()?)
+        .fetch_from(&sandbox.rpc_addr, FetchData::new().storage())
+        .await?;
+    let engine = base64::engine::general_purpose::STANDARD;
+    let mut expected_key = b"ev".to_vec();
+    expected_key.extend_from_slice(&(event_id.len() as u32).to_le_bytes());
+    expected_key.extend_from_slice(event_id.as_bytes());
+    for record in fetched.state.iter() {
+        let StateRecord::Data {
+            data_key_base64,
+            value_base64,
+            ..
+        } = record
+        else {
+            continue;
+        };
+        let key = engine.decode(data_key_base64)?;
+        if key != expected_key {
+            continue;
+        }
+        let mut event = EventStorageMirror::try_from_slice(&engine.decode(value_base64)?)?;
+        event.finalize_deadline = deadline;
+        let value = borsh::to_vec(&event)?;
+        sandbox
+            .patch_state(stake_id.as_str().parse()?)
+            .storage(engine.encode(&expected_key), engine.encode(&value))
+            .send()
+            .await?;
+        return Ok(());
+    }
+    anyhow::bail!("event storage key not found for {event_id}")
+}
+
 fn parse_u128(value: &str) -> u128 {
     value.parse().unwrap_or_else(|_| panic!("not a u128: {value}"))
 }
@@ -530,11 +723,15 @@ async fn snapshot(env: &Env, label: &str) -> anyhow::Result<Snapshot> {
         bob_a: ft_balance(env, &env.ft_a, &env.bob).await?,
         carol_a: ft_balance(env, &env.ft_a, &env.carol).await?,
         dave_a: ft_balance(env, &env.ft_a, &env.dave).await?,
+        frank_a: ft_balance(env, &env.ft_a, &env.frank).await?,
         alice_b: ft_balance(env, &env.ft_b, &env.alice).await?,
         bob_b: ft_balance(env, &env.ft_b, &env.bob).await?,
         open_stake_a: ft_balance(env, &env.ft_a, &env.open_id).await?,
         open2_stake_a: ft_balance(env, &env.ft_a, &env.open2_id).await?,
         closed_stake_a: ft_balance(env, &env.ft_a, &env.closed_id).await?,
+        life_stake_a: ft_balance(env, &env.ft_a, &env.life_id).await?,
+        timeout_stake_a: ft_balance(env, &env.ft_a, &env.timeout_id).await?,
+        fail_stake_a: ft_balance(env, &env.ft_a, &env.fail_id).await?,
         open_stake_b: ft_balance(env, &env.ft_b, &env.open_id).await?,
         ft_a_total: view::<String>(
             &env.ft_a,
@@ -640,6 +837,7 @@ async fn run_case(evidence: &mut Evidence, ft_wasm: &Path, showstake_wasm: &Path
     let bob = create_account(&sandbox, "bob.sandbox").await?;
     let carol = create_account(&sandbox, "carol.sandbox").await?;
     let dave = create_account(&sandbox, "dave.sandbox").await?;
+    let frank = create_account(&sandbox, "frank.sandbox").await?;
     let owner_a = create_account(&sandbox, "owner-a.sandbox").await?;
     let owner_b = create_account(&sandbox, "owner-b.sandbox").await?;
     let ft_a_id = create_account(&sandbox, "ft-a.sandbox").await?;
@@ -647,6 +845,10 @@ async fn run_case(evidence: &mut Evidence, ft_wasm: &Path, showstake_wasm: &Path
     let open_id = create_account(&sandbox, "showstake-open.sandbox").await?;
     let open2_id = create_account(&sandbox, "showstake-open2.sandbox").await?;
     let closed_id = create_account(&sandbox, "showstake-closed.sandbox").await?;
+    let life_id = create_account(&sandbox, "showstake-life.sandbox").await?;
+    let history_id = create_account(&sandbox, "showstake-history.sandbox").await?;
+    let timeout_id = create_account(&sandbox, "showstake-timeout.sandbox").await?;
+    let fail_id = create_account(&sandbox, "showstake-fail.sandbox").await?;
 
     evidence.accounts = BTreeMap::from([
         ("organizer".to_string(), organizer.to_string()),
@@ -654,6 +856,7 @@ async fn run_case(evidence: &mut Evidence, ft_wasm: &Path, showstake_wasm: &Path
         ("bob".to_string(), bob.to_string()),
         ("carol".to_string(), carol.to_string()),
         ("dave".to_string(), dave.to_string()),
+        ("frank".to_string(), frank.to_string()),
         ("owner_a".to_string(), owner_a.to_string()),
         ("owner_b".to_string(), owner_b.to_string()),
     ]);
@@ -663,6 +866,10 @@ async fn run_case(evidence: &mut Evidence, ft_wasm: &Path, showstake_wasm: &Path
         ("showstake_open".to_string(), open_id.to_string()),
         ("showstake_open2".to_string(), open2_id.to_string()),
         ("showstake_closed".to_string(), closed_id.to_string()),
+        ("showstake_life".to_string(), life_id.to_string()),
+        ("showstake_history".to_string(), history_id.to_string()),
+        ("showstake_timeout".to_string(), timeout_id.to_string()),
+        ("showstake_fail".to_string(), fail_id.to_string()),
     ]);
 
     let ft_a = Contract(ft_a_id.clone());
@@ -670,6 +877,10 @@ async fn run_case(evidence: &mut Evidence, ft_wasm: &Path, showstake_wasm: &Path
     let open_stake = Contract(open_id.clone());
     let open2_stake = Contract(open2_id.clone());
     let closed_stake = Contract(closed_id.clone());
+    let life_stake = Contract(life_id.clone());
+    let history_stake = Contract(history_id.clone());
+    let timeout_stake = Contract(timeout_id.clone());
+    let fail_stake = Contract(fail_id.clone());
     let env = Env {
         ft_a: ft_a.clone(),
         ft_b: ft_b.clone(),
@@ -679,11 +890,15 @@ async fn run_case(evidence: &mut Evidence, ft_wasm: &Path, showstake_wasm: &Path
         open_id: open_id.clone(),
         open2_id: open2_id.clone(),
         closed_id: closed_id.clone(),
+        life_id: life_id.clone(),
+        timeout_id: timeout_id.clone(),
+        fail_id: fail_id.clone(),
         organizer: organizer.clone(),
         alice: alice.clone(),
         bob: bob.clone(),
         carol: carol.clone(),
         dave: dave.clone(),
+        frank: frank.clone(),
         owner_a: owner_a.clone(),
         owner_b: owner_b.clone(),
         network: network.clone(),
@@ -703,7 +918,7 @@ async fn run_case(evidence: &mut Evidence, ft_wasm: &Path, showstake_wasm: &Path
             "organizer": organizer,
             "canonical_ft": stake_ft,
             "network": "sandbox-local",
-            "policy_version": "showstake-v2/1",
+            "policy_version": POLICY_IDENTITY,
         })
     };
     for tx in [
@@ -762,6 +977,50 @@ async fn run_case(evidence: &mut Evidence, ft_wasm: &Path, showstake_wasm: &Path
             "separate ShowStake instance for an already-closed event",
         )
         .await?,
+        deploy(
+            &life_id,
+            showstake_wasm,
+            "new",
+            init_args(&ft_a_id),
+            signer.clone(),
+            &network,
+            "deploy_showstake_life",
+            "lifecycle instance: cancel and claim at capacity 3",
+        )
+        .await?,
+        deploy(
+            &history_id,
+            showstake_wasm,
+            "new",
+            init_args(&ft_b_id),
+            signer.clone(),
+            &network,
+            "deploy_showstake_history",
+            "capacity-200 instance for max-capacity cancellation gas and claims",
+        )
+        .await?,
+        deploy(
+            &timeout_id,
+            showstake_wasm,
+            "new",
+            init_args(&ft_a_id),
+            signer.clone(),
+            &network,
+            "deploy_showstake_timeout",
+            "lifecycle instance: permissionless timeout refund-only",
+        )
+        .await?,
+        deploy(
+            &fail_id,
+            showstake_wasm,
+            "new",
+            init_args(&ft_a_id),
+            signer.clone(),
+            &network,
+            "deploy_showstake_fail",
+            "lifecycle instance: failed FT payout restoration and retry",
+        )
+        .await?,
     ] {
         check(
             &mut evidence.checks,
@@ -777,6 +1036,9 @@ async fn run_case(evidence: &mut Evidence, ft_wasm: &Path, showstake_wasm: &Path
         ("config_open", &open_stake, &open_id),
         ("config_open2", &open2_stake, &open2_id),
         ("config_closed", &closed_stake, &closed_id),
+        ("config_life", &life_stake, &life_id),
+        ("config_timeout", &timeout_stake, &timeout_id),
+        ("config_fail", &fail_stake, &fail_id),
     ] {
         let config = view::<ConfigJson>(stake, "get_config", serde_json::json!({}), &network).await?;
         check(
@@ -786,10 +1048,22 @@ async fn run_case(evidence: &mut Evidence, ft_wasm: &Path, showstake_wasm: &Path
             config.organizer == organizer.to_string()
                 && config.canonical_ft == ft_a_id.to_string()
                 && config.network == "sandbox-local"
-                && config.policy_version == "showstake-v2/1",
+                && config.policy_version == POLICY_IDENTITY,
             format!("stake={stake_id} {config:?}"),
         );
     }
+    let history_config =
+        view::<ConfigJson>(&history_stake, "get_config", serde_json::json!({}), &network).await?;
+    check(
+        &mut evidence.checks,
+        "config_history_immutable",
+        "history instance has the exact organizer, canonical FT B and labels",
+        history_config.organizer == organizer.to_string()
+            && history_config.canonical_ft == ft_b_id.to_string()
+            && history_config.network == "sandbox-local"
+            && history_config.policy_version == POLICY_IDENTITY,
+        format!("stake={history_id} {history_config:?}"),
+    );
     let clock_ms = view::<u64>(
         &open_stake,
         "get_block_timestamp_ms",
@@ -804,13 +1078,19 @@ async fn run_case(evidence: &mut Evidence, ft_wasm: &Path, showstake_wasm: &Path
         ("ft_a_storage_open", &ft_a, &open_id, "register open instance on canonical FT"),
         ("ft_a_storage_open2", &ft_a, &open2_id, "register second instance on canonical FT"),
         ("ft_a_storage_closed", &ft_a, &closed_id, "register closed instance on canonical FT"),
+        ("ft_a_storage_life", &ft_a, &life_id, "register lifecycle instance on canonical FT"),
+        ("ft_a_storage_timeout", &ft_a, &timeout_id, "register timeout instance on canonical FT"),
+        ("ft_a_storage_fail", &ft_a, &fail_id, "register failed-payout instance on canonical FT"),
         ("ft_b_storage_open", &ft_b, &open_id, "register open instance on wrong-token FT"),
         ("ft_a_storage_alice", &ft_a, &alice, "register alice on canonical FT"),
         ("ft_a_storage_bob", &ft_a, &bob, "register bob on canonical FT"),
         ("ft_a_storage_carol", &ft_a, &carol, "register carol on canonical FT"),
         ("ft_a_storage_dave", &ft_a, &dave, "register dave on canonical FT"),
+        ("ft_a_storage_frank", &ft_a, &frank, "register frank on canonical FT"),
         ("ft_b_storage_alice", &ft_b, &alice, "register alice on wrong-token FT"),
         ("ft_b_storage_bob", &ft_b, &bob, "register bob on wrong-token FT"),
+        ("ft_b_storage_history", &ft_b, &history_id, "register history instance on FT B"),
+        ("ft_b_storage_owner_b", &ft_b, &owner_b, "register owner B on FT B"),
     ] {
         let tx = call(
             ft,
@@ -836,18 +1116,19 @@ async fn run_case(evidence: &mut Evidence, ft_wasm: &Path, showstake_wasm: &Path
     }
 
     // --------------------------------------------------------------- funding
-    for (label, ft, owner, target, note) in [
-        ("fund_alice_a", &ft_a, &owner_a, &alice, "owner A -> alice 1000 SFT-A"),
-        ("fund_bob_a", &ft_a, &owner_a, &bob, "owner A -> bob 1000 SFT-A"),
-        ("fund_carol_a", &ft_a, &owner_a, &carol, "owner A -> carol 1000 SFT-A"),
-        ("fund_dave_a", &ft_a, &owner_a, &dave, "owner A -> dave 1000 SFT-A"),
-        ("fund_alice_b", &ft_b, &owner_b, &alice, "owner B -> alice 1000 SFT-B"),
-        ("fund_bob_b", &ft_b, &owner_b, &bob, "owner B -> bob 1000 SFT-B"),
+    for (label, ft, owner, target, amount, note) in [
+        ("fund_alice_a", &ft_a, &owner_a, &alice, "1000", "owner A -> alice 1000 SFT-A"),
+        ("fund_bob_a", &ft_a, &owner_a, &bob, "1000", "owner A -> bob 1000 SFT-A"),
+        ("fund_carol_a", &ft_a, &owner_a, &carol, "1000", "owner A -> carol 1000 SFT-A"),
+        ("fund_dave_a", &ft_a, &owner_a, &dave, "1000", "owner A -> dave 1000 SFT-A"),
+        ("fund_frank_a", &ft_a, &owner_a, &frank, "100", "owner A -> frank 100 SFT-A (zero after commit)"),
+        ("fund_alice_b", &ft_b, &owner_b, &alice, "1000", "owner B -> alice 1000 SFT-B"),
+        ("fund_bob_b", &ft_b, &owner_b, &bob, "1000", "owner B -> bob 1000 SFT-B"),
     ] {
         let tx = call(
             ft,
             "ft_transfer",
-            serde_json::json!({"receiver_id": target, "amount": "1000", "memo": null}),
+            serde_json::json!({"receiver_id": target, "amount": amount, "memo": null}),
             owner,
             signer.clone(),
             &network,
@@ -876,6 +1157,11 @@ async fn run_case(evidence: &mut Evidence, ft_wasm: &Path, showstake_wasm: &Path
         ("storage_deposit_bob", &open_stake, &bob, prepay, "bob prepays 0.5 NEAR storage credit"),
         ("storage_deposit_carol", &open_stake, &carol, prepay, "carol prepays 0.5 NEAR storage credit"),
         ("storage_deposit_dave_open2", &open2_stake, &dave, prepay, "dave prepays 0.5 NEAR on the second instance"),
+        ("storage_deposit_alice_life", &life_stake, &alice, prepay, "alice prepays on the lifecycle instance"),
+        ("storage_deposit_bob_life", &life_stake, &bob, prepay, "bob prepays on the lifecycle instance"),
+        ("storage_deposit_alice_timeout", &timeout_stake, &alice, prepay, "alice prepays on the timeout instance"),
+        ("storage_deposit_bob_history", &history_stake, &bob, prepay, "bob prepays on the capacity-200 maxcap instance"),
+        ("storage_deposit_frank_fail", &fail_stake, &frank, prepay, "frank prepays on the failed-payout instance"),
     ] {
         let tx = call(
             stake,
@@ -1007,15 +1293,57 @@ async fn run_case(evidence: &mut Evidence, ft_wasm: &Path, showstake_wasm: &Path
         clock_ms - 2 * HOUR_MS,
         clock_ms - HOUR_MS,
     );
+    let life_rules = event_rules(
+        "local-rules-life-v1",
+        3,
+        clock_ms - 60_000,
+        clock_ms + HOUR_MS,
+        clock_ms + 2 * HOUR_MS,
+    );
+    // Capacity 200, no voluntary withdrawal/rejoin: total registrations are
+    // bounded by capacity and cancellation/timeout must stay O(1).
+    let history_rules = event_rules(
+        "local-rules-maxcap-v1",
+        200,
+        clock_ms - 60_000,
+        clock_ms + HOUR_MS,
+        clock_ms + 2 * HOUR_MS,
+    );
+    // Past-deadline zero-registration instance remains the permissionless
+    // activation check. A separate Sandbox with a 5s block time proves the
+    // real timeout path with nonzero deposited principal and claim.
+    // Exact deadline-1/at-deadline is covered by the unit suite.
+    let timeout_rules = event_rules(
+        "local-rules-timeout-v1",
+        2,
+        clock_ms - 30 * HOUR_MS,
+        clock_ms - 29 * HOUR_MS,
+        clock_ms - 28 * HOUR_MS,
+    );
+    let fail_rules = event_rules(
+        "local-rules-fail-v1",
+        2,
+        clock_ms - 60_000,
+        clock_ms + 2 * HOUR_MS,
+        clock_ms + 3 * HOUR_MS,
+    );
     evidence.event_rules = serde_json::json!({
         "open": open_rules,
         "open2": open2_rules,
         "closed": closed_rules,
+        "life": life_rules,
+        "history": history_rules,
+        "timeout": timeout_rules,
+        "fail": fail_rules,
         "expected_finalize_deadline_ms": clock_ms + 2 * HOUR_MS + DAY_MS,
         "instances": {
             "open": open_id,
             "open2": open2_id,
             "closed": closed_id,
+            "life": life_id,
+            "history": history_id,
+            "timeout": timeout_id,
+            "fail": fail_id,
         }
     });
 
@@ -1057,6 +1385,10 @@ async fn run_case(evidence: &mut Evidence, ft_wasm: &Path, showstake_wasm: &Path
         ("publish_open", &open_stake, EVENT_OPEN, open_rules.clone(), "publish evt-open on its own instance"),
         ("publish_open2", &open2_stake, EVENT_OPEN2, open2_rules.clone(), "publish evt-open-2 on its own instance"),
         ("publish_closed", &closed_stake, EVENT_CLOSED, closed_rules.clone(), "publish already-closed evt-closed on its own instance"),
+        ("publish_life", &life_stake, EVENT_LIFE, life_rules.clone(), "publish lifecycle event on its own instance"),
+        ("publish_history", &history_stake, EVENT_HISTORY, history_rules.clone(), "publish capacity-200 cancellation event on its own instance"),
+        ("publish_timeout", &timeout_stake, EVENT_TIMEOUT, timeout_rules.clone(), "publish timeout event on its own instance"),
+        ("publish_fail", &fail_stake, EVENT_FAIL, fail_rules.clone(), "publish failed-payout event on its own instance"),
     ] {
         let tx = call(
             stake,
@@ -1093,7 +1425,7 @@ async fn run_case(evidence: &mut Evidence, ft_wasm: &Path, showstake_wasm: &Path
             && open_event.rules_hash == "local-rules-open-v1"
             && open_event.state == "Published"
             && open_event.phase == "RegistrationOpen"
-            && open_event.policy_version == "showstake-v2/1",
+            && open_event.policy_version == POLICY_IDENTITY,
         format!("{open_event:?}"),
     );
     check(
@@ -1305,7 +1637,7 @@ async fn run_case(evidence: &mut Evidence, ft_wasm: &Path, showstake_wasm: &Path
             && alice_pass.registration_status == "Active"
             && alice_pass.attendance_status == "NotMarked"
             && alice_pass.financial_status == "Committed"
-            && alice_pass.policy_version == "showstake-v2/1",
+            && alice_pass.policy_version == POLICY_IDENTITY,
         format!("{alice_pass:?}"),
     );
 
@@ -1403,7 +1735,7 @@ async fn run_case(evidence: &mut Evidence, ft_wasm: &Path, showstake_wasm: &Path
         NearToken::from_yoctonear(1),
         NearGas::from_tgas(120),
         "alice_duplicate_deposit",
-        "one active registration per account/event must refund",
+        "one lifetime registration per account/event must refund",
     )
     .await?;
     let after = snapshot(&env, "after_duplicate_deposit").await?;
@@ -1414,7 +1746,7 @@ async fn run_case(evidence: &mut Evidence, ft_wasm: &Path, showstake_wasm: &Path
         &after,
         &tx,
         &open_id,
-        "ACTIVE_REGISTRATION",
+        "ACCOUNT_ALREADY_REGISTERED",
     );
     evidence.snapshots.push(after.clone());
     evidence.transactions.push(tx);
@@ -1659,9 +1991,13 @@ async fn run_case(evidence: &mut Evidence, ft_wasm: &Path, showstake_wasm: &Path
                 + parse_u128(&final_snap.bob_a)
                 + parse_u128(&final_snap.carol_a)
                 + parse_u128(&final_snap.dave_a)
+                + parse_u128(&final_snap.frank_a)
                 + parse_u128(&final_snap.open_stake_a)
                 + parse_u128(&final_snap.open2_stake_a)
                 + parse_u128(&final_snap.closed_stake_a)
+                + parse_u128(&final_snap.life_stake_a)
+                + parse_u128(&final_snap.timeout_stake_a)
+                + parse_u128(&final_snap.fail_stake_a)
                 == parse_u128(&final_snap.ft_a_total),
         format!("{final_snap:?}"),
     );
@@ -1761,6 +2097,1666 @@ async fn run_case(evidence: &mut Evidence, ft_wasm: &Path, showstake_wasm: &Path
         format!("registration={bob_registration:?} pass={bob_pass:?}"),
     );
 
+    // ----------------- lifecycle: cancel / no voluntary withdrawal / claim
+    let tx = call(
+        &ft_a,
+        "ft_transfer_call",
+        serde_json::json!({
+            "receiver_id": life_id,
+            "amount": DEPOSIT.to_string(),
+            "memo": null,
+            "msg": commit_msg(EVENT_LIFE, "alice-life"),
+        }),
+        &alice,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(1),
+        NearGas::from_tgas(120),
+        "alice_life_commit",
+        "lifecycle event registration",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "alice_life_commit_receipts",
+        "lifecycle registration used real FT and receiver receipts",
+        tx.top_level_success && has_receipt_success(&tx, &ft_a_id) && has_receipt_success(&tx, &life_id),
+        format!("{tx:?}"),
+    );
+    evidence.transactions.push(tx);
+
+    let tx = call(
+        &ft_a,
+        "ft_transfer_call",
+        serde_json::json!({
+            "receiver_id": life_id,
+            "amount": DEPOSIT.to_string(),
+            "memo": null,
+            "msg": commit_msg(EVENT_LIFE, "bob-life"),
+        }),
+        &bob,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(1),
+        NearGas::from_tgas(120),
+        "bob_life_commit",
+        "second lifecycle registration",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "bob_life_commit_receipts",
+        "second lifecycle registration used real FT and receiver receipts",
+        tx.top_level_success && has_receipt_success(&tx, &ft_a_id) && has_receipt_success(&tx, &life_id),
+        format!("{tx:?}"),
+    );
+    evidence.transactions.push(tx);
+
+    let life_list = registration_list(&env, &life_stake, EVENT_LIFE, 0, 50).await?;
+    let alice_life = life_list
+        .iter()
+        .find(|registration| registration.participant == alice.to_string())
+        .ok_or_else(|| anyhow!("alice lifecycle registration missing"))?
+        .clone();
+    let bob_life = life_list
+        .iter()
+        .find(|registration| registration.participant == bob.to_string())
+        .ok_or_else(|| anyhow!("bob lifecycle registration missing"))?
+        .clone();
+    let life_before_allocation = lifecycle_state(
+        &env,
+        &life_stake,
+        EVENT_LIFE,
+        &[alice_life.registration_id.clone(), bob_life.registration_id.clone()],
+    )
+    .await?;
+
+    // Wrong beneficiary before any claimable allocation: rejected unchanged.
+    let tx = call(
+        &life_stake,
+        "claim",
+        serde_json::json!({"registration_id": alice_life.registration_id}),
+        &bob,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(1),
+        NearGas::from_tgas(150),
+        "wrong_beneficiary_claim_before_cancel",
+        "claim receiver must be the immutable beneficiary",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "wrong_beneficiary_claim_before_cancel_fails",
+        "wrong-beneficiary claim fails on the contract receipt",
+        tx.top_level_failure && has_receipt_failure(&tx, &life_id),
+        format!("{tx:?}"),
+    );
+    let life_after_wrong_beneficiary = lifecycle_state(
+        &env,
+        &life_stake,
+        EVENT_LIFE,
+        &[alice_life.registration_id.clone(), bob_life.registration_id.clone()],
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "wrong_beneficiary_claim_before_cancel_no_state",
+        "wrong-beneficiary claim changed no claim, total or balance",
+        life_before_allocation == life_after_wrong_beneficiary,
+        format!("before={life_before_allocation} after={life_after_wrong_beneficiary}"),
+    );
+    evidence.transactions.push(tx);
+
+    // D036: voluntary withdrawal is removed; the route traps before mutation.
+    let tx = call(
+        &life_stake,
+        "withdraw_registration",
+        serde_json::json!({"registration_id": alice_life.registration_id}),
+        &alice,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(0),
+        NearGas::from_tgas(60),
+        "voluntary_withdrawal_disabled",
+        "withdraw_registration must trap before any state mutation",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "voluntary_withdrawal_disabled_fails",
+        "voluntary withdrawal fails on the contract receipt",
+        tx.top_level_failure && has_receipt_failure(&tx, &life_id),
+        format!("{tx:?}"),
+    );
+    let life_after_withdraw_denial = lifecycle_state(
+        &env,
+        &life_stake,
+        EVENT_LIFE,
+        &[alice_life.registration_id.clone(), bob_life.registration_id.clone()],
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "voluntary_withdrawal_disabled_no_state",
+        "disabled withdrawal changed no event, claim, total or balance",
+        life_before_allocation == life_after_withdraw_denial,
+        format!("before={life_before_allocation} after={life_after_withdraw_denial}"),
+    );
+    evidence.transactions.push(tx);
+
+    // One lifetime accepted registration per account/event: no rejoin.
+    let alice_before_duplicate = ft_balance(&env, &ft_a, &alice).await?;
+    let life_before_duplicate = lifecycle_state(
+        &env,
+        &life_stake,
+        EVENT_LIFE,
+        &[alice_life.registration_id.clone(), bob_life.registration_id.clone()],
+    )
+    .await?;
+    let tx = call(
+        &ft_a,
+        "ft_transfer_call",
+        serde_json::json!({
+            "receiver_id": life_id,
+            "amount": DEPOSIT.to_string(),
+            "memo": null,
+            "msg": commit_msg(EVENT_LIFE, "alice-second"),
+        }),
+        &alice,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(1),
+        NearGas::from_tgas(120),
+        "lifetime_duplicate_registration",
+        "a second registration for the same account/event must be refunded",
+    )
+    .await?;
+    let life_after_duplicate = lifecycle_state(
+        &env,
+        &life_stake,
+        EVENT_LIFE,
+        &[alice_life.registration_id.clone(), bob_life.registration_id.clone()],
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "lifetime_duplicate_registration_refunded",
+        "duplicate lifetime registration is rejected by the receiver and returns the full amount",
+        tx.top_level_success
+            && has_receipt_success(&tx, &ft_a_id)
+            && has_receipt_success(&tx, &life_id)
+            && receipt_log_contains(&tx, &life_id, "ACCOUNT_ALREADY_REGISTERED")
+            && life_before_duplicate == life_after_duplicate
+            && ft_balance(&env, &ft_a, &alice).await? == alice_before_duplicate,
+        format!("{tx:?}"),
+    );
+    evidence.transactions.push(tx);
+
+    let life_before_unauthorized_cancel = lifecycle_state(
+        &env,
+        &life_stake,
+        EVENT_LIFE,
+        &[alice_life.registration_id.clone(), bob_life.registration_id.clone()],
+    )
+    .await?;
+    let tx = call(
+        &life_stake,
+        "cancel_event",
+        serde_json::json!({"event_id": EVENT_LIFE}),
+        &alice,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(0),
+        NearGas::from_tgas(100),
+        "unauthorized_life_cancel",
+        "only the organizer may cancel",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "unauthorized_life_cancel_fails",
+        "non-organizer cancellation fails on the contract receipt",
+        tx.top_level_failure && has_receipt_failure(&tx, &life_id),
+        format!("{tx:?}"),
+    );
+    let life_after_unauthorized_cancel = lifecycle_state(
+        &env,
+        &life_stake,
+        EVENT_LIFE,
+        &[alice_life.registration_id.clone(), bob_life.registration_id.clone()],
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "unauthorized_life_cancel_no_state",
+        "denied cancellation changed no event, claim, total or balance",
+        life_before_unauthorized_cancel == life_after_unauthorized_cancel,
+        format!("before={life_before_unauthorized_cancel} after={life_after_unauthorized_cancel}"),
+    );
+    evidence.transactions.push(tx);
+
+    // Organizer cancellation before settlement; O(1) terminal activation.
+    let tx = call(
+        &life_stake,
+        "cancel_event",
+        serde_json::json!({"event_id": EVENT_LIFE}),
+        &organizer,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(0),
+        NearGas::from_tgas(200),
+        "organizer_cancel_life",
+        "organizer cancellation before settlement",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "organizer_cancel_life_succeeds",
+        "organizer cancellation succeeds",
+        tx.top_level_success && has_receipt_success(&tx, &life_id),
+        format!("{tx:?}"),
+    );
+    evidence.transactions.push(tx);
+    let life_event = event_view(&env, &life_stake, EVENT_LIFE).await?;
+    let life_totals = event_totals(&env, &life_stake, EVENT_LIFE).await?;
+    check(
+        &mut evidence.checks,
+        "cancel_sets_cancelled_and_full_liability",
+        "cancellation sets CANCELLED and every registration is claimable at full D",
+        life_event.state == "Cancelled"
+            && life_event.phase == "Cancelled"
+            && life_totals.accepted_principal == (2 * DEPOSIT).to_string()
+            && life_totals.paid == "0"
+            && life_totals.pending == "0"
+            && life_totals.liability == (2 * DEPOSIT).to_string()
+            && instance_escrow(&env, &life_stake).await? == (2 * DEPOSIT).to_string(),
+        format!("event={life_event:?} totals={life_totals:?}"),
+    );
+    for registration_id in [&alice_life.registration_id, &bob_life.registration_id] {
+        let claim = claim_view(&env, &life_stake, registration_id).await?;
+        check(
+            &mut evidence.checks,
+            &format!("cancel_claimable_{registration_id}"),
+            "cancellation makes this registration claimable at full D",
+            claim.amount == DEPOSIT.to_string()
+                && claim.payout_state == "Claimable"
+                && claim.paid_amount == "0",
+            format!("{claim:?}"),
+        );
+    }
+
+    // First claim pays the immutable beneficiary through the real FT.
+    let alice_before_claim = ft_balance(&env, &ft_a, &alice).await?;
+    let life_before_claim = ft_balance(&env, &ft_a, &life_id).await?;
+    let tx = call(
+        &life_stake,
+        "claim",
+        serde_json::json!({"registration_id": alice_life.registration_id}),
+        &alice,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(1),
+        NearGas::from_tgas(100),
+        "alice_claim_life",
+        "claim at the documented 100 Tgas minimum",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "alice_claim_life_receipts",
+        "claim produced successful FT transfer and payout callback receipts",
+        tx.top_level_success
+            && has_receipt_success(&tx, &ft_a_id)
+            && has_receipt_success(&tx, &life_id),
+        format!("{tx:?}"),
+    );
+    evidence.transactions.push(tx);
+    let alice_paid = claim_view(&env, &life_stake, &alice_life.registration_id).await?;
+    let life_after_alice = event_totals(&env, &life_stake, EVENT_LIFE).await?;
+    check(
+        &mut evidence.checks,
+        "alice_claim_life_paid_once",
+        "claim paid exactly D to alice and moved liability to paid",
+        alice_paid.payout_state == "Paid"
+            && alice_paid.paid_amount == DEPOSIT.to_string()
+            && parse_u128(&ft_balance(&env, &ft_a, &alice).await?)
+                == parse_u128(&alice_before_claim) + DEPOSIT
+            && parse_u128(&ft_balance(&env, &ft_a, &life_id).await?) + DEPOSIT
+                == parse_u128(&life_before_claim)
+            && life_after_alice.paid == DEPOSIT.to_string()
+            && life_after_alice.pending == "0"
+            && life_after_alice.liability == DEPOSIT.to_string()
+            && instance_escrow(&env, &life_stake).await? == DEPOSIT.to_string(),
+        format!("claim={alice_paid:?} totals={life_after_alice:?}"),
+    );
+
+    // Overlapping/double claim and spoofed callback must not pay twice.
+    let life_before_double = lifecycle_state(
+        &env,
+        &life_stake,
+        EVENT_LIFE,
+        &[alice_life.registration_id.clone(), bob_life.registration_id.clone()],
+    )
+    .await?;
+    let tx = call(
+        &life_stake,
+        "claim",
+        serde_json::json!({"registration_id": alice_life.registration_id}),
+        &alice,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(1),
+        NearGas::from_tgas(150),
+        "alice_double_claim_life",
+        "already-paid registration cannot claim again",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "double_claim_fails",
+        "double claim fails on the contract receipt",
+        tx.top_level_failure && has_receipt_failure(&tx, &life_id),
+        format!("{tx:?}"),
+    );
+    evidence.transactions.push(tx);
+    let life_after_double = lifecycle_state(
+        &env,
+        &life_stake,
+        EVENT_LIFE,
+        &[alice_life.registration_id.clone(), bob_life.registration_id.clone()],
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "double_claim_no_state",
+        "double claim changed no claim, total or balance",
+        life_before_double == life_after_double,
+        format!("before={life_before_double} after={life_after_double}"),
+    );
+    let old_payout_id = format!("pay-{}-1", alice_life.registration_id);
+    let tx = call(
+        &life_stake,
+        "on_payout_result",
+        serde_json::json!({"payout_id": old_payout_id}),
+        &alice,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(0),
+        NearGas::from_tgas(60),
+        "spoofed_payout_callback",
+        "private callback cannot be called by a participant",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "spoofed_payout_callback_fails",
+        "spoofed payout callback fails on the contract receipt",
+        tx.top_level_failure && has_receipt_failure(&tx, &life_id),
+        format!("{tx:?}"),
+    );
+    evidence.transactions.push(tx);
+    let life_after_spoof = lifecycle_state(
+        &env,
+        &life_stake,
+        EVENT_LIFE,
+        &[alice_life.registration_id.clone(), bob_life.registration_id.clone()],
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "spoofed_payout_callback_no_state",
+        "spoofed callback changed no claim, total or balance",
+        life_after_double == life_after_spoof,
+        format!("before={life_after_double} after={life_after_spoof}"),
+    );
+
+    // Claim bob's remaining registration.
+    let bob_before_claim = ft_balance(&env, &ft_a, &bob).await?;
+    let tx = call(
+        &life_stake,
+        "claim",
+        serde_json::json!({"registration_id": bob_life.registration_id}),
+        &bob,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(1),
+        NearGas::from_tgas(100),
+        "bob_claim_life",
+        "claim remaining liability at 100 Tgas",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "bob_claim_life_receipts",
+        "claim produced successful FT transfer and payout callback receipts",
+        tx.top_level_success
+            && has_receipt_success(&tx, &ft_a_id)
+            && has_receipt_success(&tx, &life_id),
+        format!("{tx:?}"),
+    );
+    evidence.transactions.push(tx);
+    let bob_paid = claim_view(&env, &life_stake, &bob_life.registration_id).await?;
+    check(
+        &mut evidence.checks,
+        "bob_claim_life_paid",
+        "claim paid exactly D to bob",
+        bob_paid.payout_state == "Paid"
+            && bob_paid.paid_amount == DEPOSIT.to_string()
+            && parse_u128(&ft_balance(&env, &ft_a, &bob).await?)
+                == parse_u128(&bob_before_claim) + DEPOSIT,
+        format!("{bob_paid:?}"),
+    );
+    let final_life = event_totals(&env, &life_stake, EVENT_LIFE).await?;
+    check(
+        &mut evidence.checks,
+        "life_conservation",
+        "all accepted principal is paid, escrow is zero and no claim remains pending",
+        final_life.accepted_principal == (2 * DEPOSIT).to_string()
+            && final_life.paid == (2 * DEPOSIT).to_string()
+            && final_life.pending == "0"
+            && final_life.liability == "0"
+            && instance_escrow(&env, &life_stake).await? == "0"
+            && ft_balance(&env, &ft_a, &life_id).await? == "0",
+        format!("{final_life:?}"),
+    );
+
+    // ------------------------- lifecycle: failed FT payout restoration + retry
+    let tx = call(
+        &ft_a,
+        "ft_transfer_call",
+        serde_json::json!({
+            "receiver_id": fail_id,
+            "amount": DEPOSIT.to_string(),
+            "memo": null,
+            "msg": commit_msg(EVENT_FAIL, "frank-c1"),
+        }),
+        &frank,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(1),
+        NearGas::from_tgas(120),
+        "frank_fail_commit",
+        "frank commits exactly his 100 FT; balance becomes zero",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "frank_fail_commit_receipts",
+        "frank commit used real FT and receiver receipts",
+        tx.top_level_success && has_receipt_success(&tx, &ft_a_id) && has_receipt_success(&tx, &fail_id),
+        format!("{tx:?}"),
+    );
+    evidence.transactions.push(tx);
+    check(
+        &mut evidence.checks,
+        "frank_zero_ft_after_commit",
+        "frank FT balance is zero and the fail instance holds exactly D",
+        ft_balance(&env, &ft_a, &frank).await? == "0"
+            && ft_balance(&env, &ft_a, &fail_id).await? == DEPOSIT.to_string(),
+        format!(
+            "frank={} stake={}",
+            ft_balance(&env, &ft_a, &frank).await?,
+            ft_balance(&env, &ft_a, &fail_id).await?
+        ),
+    );
+    let frank_list = registration_list(&env, &fail_stake, EVENT_FAIL, 0, 50).await?;
+    let frank_registration = frank_list
+        .iter()
+        .find(|registration| registration.participant == frank.to_string())
+        .ok_or_else(|| anyhow!("frank registration missing"))?
+        .clone();
+    let tx = call(
+        &fail_stake,
+        "cancel_event",
+        serde_json::json!({"event_id": EVENT_FAIL}),
+        &organizer,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(0),
+        NearGas::from_tgas(100),
+        "frank_fail_event_cancel",
+        "cancel the failed-payout event so frank becomes claimable",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "frank_fail_event_cancel_succeeds",
+        "failed-payout event cancellation succeeds",
+        tx.top_level_success && has_receipt_success(&tx, &fail_id),
+        format!("{tx:?}"),
+    );
+    evidence.transactions.push(tx);
+
+    let supply_before_unregister = view::<String>(
+        &ft_a,
+        "ft_total_supply",
+        serde_json::json!({}),
+        &network,
+    )
+    .await?;
+    let tx = call(
+        &ft_a,
+        "storage_unregister",
+        serde_json::json!({"force": null}),
+        &frank,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(1),
+        NearGas::from_tgas(30),
+        "frank_unregister_ft_storage",
+        "remove the beneficiary FT storage before claim to force payout failure",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "frank_unregister_ft_storage_succeeds",
+        "frank FT storage unregistration succeeds with zero balance",
+        tx.top_level_success
+            && ft_balance(&env, &ft_a, &frank).await? == "0"
+            && view::<String>(&ft_a, "ft_total_supply", serde_json::json!({}), &network).await?
+                == supply_before_unregister,
+        format!("{tx:?}"),
+    );
+    evidence.transactions.push(tx);
+
+    let tx = call(
+        &fail_stake,
+        "claim",
+        serde_json::json!({"registration_id": frank_registration.registration_id}),
+        &frank,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(1),
+        NearGas::from_tgas(100),
+        "frank_claim_failed_transfer",
+        "FT transfer fails at the documented 100 Tgas claim minimum because beneficiary storage is gone",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "frank_failed_payout_receipts",
+        "FT transfer failed while the ShowStake callback receipt restored the claim",
+        has_receipt_failure(&tx, &ft_a_id) && has_receipt_success(&tx, &fail_id),
+        format!("{tx:?}"),
+    );
+    evidence.transactions.push(tx);
+    let frank_restored = claim_view(&env, &fail_stake, &frank_registration.registration_id).await?;
+    let fail_totals_after_failure = event_totals(&env, &fail_stake, EVENT_FAIL).await?;
+    check(
+        &mut evidence.checks,
+        "failed_payout_restores_claim",
+        "failed payout restores the full claimable D without changing registration status",
+        frank_restored.payout_state == "Claimable"
+            && frank_restored.paid_amount == "0"
+            && frank_restored.pending_payout_id.is_none()
+            && view::<RegistrationJson>(
+                &fail_stake,
+                "get_registration",
+                serde_json::json!({"registration_id": frank_registration.registration_id}),
+                &network,
+            )
+            .await?
+            .registration_status
+                == "Active"
+            && fail_totals_after_failure.paid == "0"
+            && fail_totals_after_failure.pending == "0"
+            && fail_totals_after_failure.liability == DEPOSIT.to_string()
+            && instance_escrow(&env, &fail_stake).await? == DEPOSIT.to_string()
+            && ft_balance(&env, &ft_a, &fail_id).await? == DEPOSIT.to_string(),
+        format!("claim={frank_restored:?} totals={fail_totals_after_failure:?}"),
+    );
+
+    let tx = call(
+        &ft_a,
+        "storage_deposit",
+        serde_json::json!({"account_id": frank, "registration_only": true}),
+        &organizer,
+        signer.clone(),
+        &network,
+        NearToken::from_millinear(10),
+        NearGas::from_tgas(30),
+        "frank_restore_ft_storage",
+        "re-register beneficiary FT storage before retry",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "frank_restore_ft_storage_succeeds",
+        "beneficiary FT storage is restored",
+        tx.top_level_success,
+        format!("{tx:?}"),
+    );
+    evidence.transactions.push(tx);
+
+    let tx = call(
+        &fail_stake,
+        "claim",
+        serde_json::json!({"registration_id": frank_registration.registration_id}),
+        &frank,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(1),
+        NearGas::from_tgas(150),
+        "frank_claim_retry",
+        "retry after FT storage restoration",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "frank_retry_receipts",
+        "retry produced successful FT transfer and payout callback receipts",
+        tx.top_level_success
+            && has_receipt_success(&tx, &ft_a_id)
+            && has_receipt_success(&tx, &fail_id),
+        format!("{tx:?}"),
+    );
+    evidence.transactions.push(tx);
+    let frank_paid = claim_view(&env, &fail_stake, &frank_registration.registration_id).await?;
+    let fail_totals_final = event_totals(&env, &fail_stake, EVENT_FAIL).await?;
+    check(
+        &mut evidence.checks,
+        "failed_payout_retry_pays_once",
+        "retry pays exactly D, leaves zero escrow and conserves accepted principal",
+        frank_paid.payout_state == "Paid"
+            && frank_paid.paid_amount == DEPOSIT.to_string()
+            && ft_balance(&env, &ft_a, &frank).await? == DEPOSIT.to_string()
+            && ft_balance(&env, &ft_a, &fail_id).await? == "0"
+            && fail_totals_final.paid == DEPOSIT.to_string()
+            && fail_totals_final.pending == "0"
+            && fail_totals_final.liability == "0"
+            && instance_escrow(&env, &fail_stake).await? == "0",
+        format!("claim={frank_paid:?} totals={fail_totals_final:?}"),
+    );
+
+
+    // --------------------------------- lifecycle: permissionless timeout refund-only
+    // The timeout event has a past finalize_deadline and no registrations, so
+    // this proves permissionless activation without a multi-hour fast-forward.
+    // Exact deadline-1/at-deadline and timeout-claim semantics are covered by
+    // the 49-test unit suite.
+    let timeout_event_before = event_view(&env, &timeout_stake, EVENT_TIMEOUT).await?;
+    let timeout_clock = view::<u64>(
+        &timeout_stake,
+        "get_block_timestamp_ms",
+        serde_json::json!({}),
+        &network,
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "timeout_event_is_past_deadline",
+        "timeout instance is still Published and its finalize_deadline is already past",
+        timeout_event_before.state == "Published"
+            && timeout_clock >= timeout_event_before.finalize_deadline,
+        format!("now={timeout_clock} event={timeout_event_before:?}"),
+    );
+    let timeout_before = lifecycle_state(&env, &timeout_stake, EVENT_TIMEOUT, &[]).await?;
+    let tx = call(
+        &timeout_stake,
+        "activate_timeout_refund",
+        serde_json::json!({"event_id": EVENT_TIMEOUT}),
+        &bob,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(0),
+        NearGas::from_tgas(100),
+        "permissionless_timeout_refund",
+        "any account may activate refund-only at/after finalize_deadline",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "permissionless_timeout_refund_succeeds",
+        "permissionless refund-only activation succeeds on the contract receipt",
+        tx.top_level_success && has_receipt_success(&tx, &timeout_id),
+        format!("{tx:?}"),
+    );
+    evidence.transactions.push(tx);
+    let timeout_event_after = event_view(&env, &timeout_stake, EVENT_TIMEOUT).await?;
+    let timeout_totals = event_totals(&env, &timeout_stake, EVENT_TIMEOUT).await?;
+    check(
+        &mut evidence.checks,
+        "timeout_refund_only_state",
+        "REFUND_ONLY is terminal, zero-liability and remains on the separate instance",
+        timeout_event_after.state == "RefundOnly"
+            && timeout_event_after.phase == "RefundOnly"
+            && timeout_totals.accepted_principal == "0"
+            && timeout_totals.paid == "0"
+            && timeout_totals.pending == "0"
+            && timeout_totals.liability == "0"
+            && instance_escrow(&env, &timeout_stake).await? == "0"
+            && ft_balance(&env, &ft_a, &timeout_id).await? == "0",
+        format!("event={timeout_event_after:?} totals={timeout_totals:?}"),
+    );
+    let timeout_after = lifecycle_state(&env, &timeout_stake, EVENT_TIMEOUT, &[]).await?;
+    check(
+        &mut evidence.checks,
+        "timeout_refund_only_changed_state",
+        "successful activation changed the event state from Published to RefundOnly",
+        timeout_before != timeout_after,
+        format!("before={timeout_before} after={timeout_after}"),
+    );
+    let tx = call(
+        &timeout_stake,
+        "activate_timeout_refund",
+        serde_json::json!({"event_id": EVENT_TIMEOUT}),
+        &alice,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(0),
+        NearGas::from_tgas(100),
+        "timeout_double_activation",
+        "refund-only cannot be activated twice",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "timeout_double_activation_fails",
+        "second refund-only activation fails",
+        tx.top_level_failure && has_receipt_failure(&tx, &timeout_id),
+        format!("{tx:?}"),
+    );
+    evidence.transactions.push(tx);
+    let tx = call(
+        &timeout_stake,
+        "cancel_event",
+        serde_json::json!({"event_id": EVENT_TIMEOUT}),
+        &organizer,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(0),
+        NearGas::from_tgas(100),
+        "cancel_after_refund_only",
+        "cancellation after refund-only must fail",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "cancel_after_refund_only_fails",
+        "organizer cancellation after REFUND_ONLY fails",
+        tx.top_level_failure && has_receipt_failure(&tx, &timeout_id),
+        format!("{tx:?}"),
+    );
+    evidence.transactions.push(tx);
+    let timeout_after_failures = lifecycle_state(&env, &timeout_stake, EVENT_TIMEOUT, &[]).await?;
+    check(
+        &mut evidence.checks,
+        "timeout_failed_calls_no_state",
+        "denied double activation and cancellation changed no event or totals",
+        timeout_after == timeout_after_failures,
+        format!("before={timeout_after} after={timeout_after_failures}"),
+    );
+
+    // -------------------------- final all-instance conservation / solvency
+    let final_all = snapshot(&env, "final_all").await?;
+    evidence.snapshots.push(final_all.clone());
+    let open_totals = event_totals(&env, &open_stake, EVENT_OPEN).await?;
+    let open2_totals = event_totals(&env, &open2_stake, EVENT_OPEN2).await?;
+    let life_final = event_totals(&env, &life_stake, EVENT_LIFE).await?;
+    let fail_final = event_totals(&env, &fail_stake, EVENT_FAIL).await?;
+    let timeout_final = event_totals(&env, &timeout_stake, EVENT_TIMEOUT).await?;
+    let totals_conserve = |totals: &EventTotalsJson| {
+        parse_u128(&totals.accepted_principal)
+            == parse_u128(&totals.paid) + parse_u128(&totals.pending) + parse_u128(&totals.liability)
+    };
+    check(
+        &mut evidence.checks,
+        "final_all_totals_conserve",
+        "every instance satisfies accepted = paid + pending + liability",
+        totals_conserve(&open_totals)
+            && totals_conserve(&open2_totals)
+            && totals_conserve(&life_final)
+            && totals_conserve(&fail_final)
+            && totals_conserve(&timeout_final),
+        format!(
+            "open={open_totals:?} open2={open2_totals:?} life={life_final:?} fail={fail_final:?} timeout={timeout_final:?}"
+        ),
+    );
+    check(
+        &mut evidence.checks,
+        "final_all_escrow_equals_liability_plus_pending",
+        "each instance holds exactly pending + outstanding liability",
+        parse_u128(&instance_escrow(&env, &open_stake).await?)
+            == parse_u128(&open_totals.pending) + parse_u128(&open_totals.liability)
+            && parse_u128(&instance_escrow(&env, &open2_stake).await?)
+                == parse_u128(&open2_totals.pending) + parse_u128(&open2_totals.liability)
+            && parse_u128(&instance_escrow(&env, &life_stake).await?)
+                == parse_u128(&life_final.pending) + parse_u128(&life_final.liability)
+            && parse_u128(&instance_escrow(&env, &fail_stake).await?)
+                == parse_u128(&fail_final.pending) + parse_u128(&fail_final.liability)
+            && parse_u128(&instance_escrow(&env, &timeout_stake).await?)
+                == parse_u128(&timeout_final.pending) + parse_u128(&timeout_final.liability),
+        "escrow equals pending + liability per instance",
+    );
+    let all_ft_holders_total = parse_u128(&final_all.owner_a_a)
+        + parse_u128(&final_all.alice_a)
+        + parse_u128(&final_all.bob_a)
+        + parse_u128(&final_all.carol_a)
+        + parse_u128(&final_all.dave_a)
+        + parse_u128(&final_all.frank_a)
+        + parse_u128(&final_all.open_stake_a)
+        + parse_u128(&final_all.open2_stake_a)
+        + parse_u128(&final_all.closed_stake_a)
+        + parse_u128(&final_all.life_stake_a)
+        + parse_u128(&final_all.timeout_stake_a)
+        + parse_u128(&final_all.fail_stake_a);
+    check(
+        &mut evidence.checks,
+        "final_all_ft_supply_conserved",
+        "sum of every FT A holder equals immutable total supply",
+        all_ft_holders_total == parse_u128(&final_all.ft_a_total)
+            && final_all.ft_a_total == "1000000",
+        format!("holders={all_ft_holders_total} total={}", final_all.ft_a_total),
+    );
+
+    // --------------------- max-capacity cancellation (200 registrations)
+    let tx = call(
+        &ft_b,
+        "ft_transfer",
+        serde_json::json!({
+            "receiver_id": history_id,
+            "amount": (DEPOSIT * 199).to_string(),
+            "memo": null,
+        }),
+        &owner_b,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(1),
+        NearGas::from_tgas(30),
+        "maxcap_bulk_funding",
+        "fund the maxcap instance with 199 synthetic registration principals",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "maxcap_bulk_funding_receipt",
+        "maxcap bulk FT funding succeeds",
+        tx.top_level_success && has_receipt_success(&tx, &ft_b_id),
+        format!("{tx:?}"),
+    );
+    evidence.transactions.push(tx);
+
+    let tx = call(
+        &ft_b,
+        "ft_transfer_call",
+        serde_json::json!({
+            "receiver_id": history_id,
+            "amount": DEPOSIT.to_string(),
+            "memo": null,
+            "msg": commit_msg(EVENT_HISTORY, "maxcap-real"),
+        }),
+        &bob,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(1),
+        NearGas::from_tgas(120),
+        "maxcap_real_registration",
+        "real FT deposit for the maxcap claim beneficiary",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "maxcap_real_registration_receipts",
+        "maxcap real registration used FT and receiver receipts",
+        tx.top_level_success
+            && has_receipt_success(&tx, &ft_b_id)
+            && has_receipt_success(&tx, &history_id),
+        format!("{tx:?}"),
+    );
+    evidence.transactions.push(tx);
+
+    let fake_count = 199u32;
+    for index in 0..fake_count {
+        let fake: AccountId = format!("maxcap-p{index:03}.sandbox").parse()?;
+        let tx = call(
+            &history_stake,
+            "storage_deposit",
+            serde_json::json!({"account_id": fake}),
+            &organizer,
+            signer.clone(),
+            &network,
+            NearToken::from_millinear(20),
+            NearGas::from_tgas(30),
+            &format!("maxcap_prepay_{index}"),
+            "prepay synthetic maxcap registration storage",
+        )
+        .await?;
+        check(
+            &mut evidence.checks,
+            &format!("maxcap_prepay_{index}_success"),
+            "synthetic maxcap storage prepay succeeds",
+            tx.top_level_success && returned_u128(&tx).is_some(),
+            tx.tx_hash.clone(),
+        );
+        evidence.transactions.push(tx);
+
+        let tx = call(
+            &history_stake,
+            "ft_on_transfer",
+            serde_json::json!({
+                "sender_id": fake,
+                "amount": DEPOSIT.to_string(),
+                "msg": commit_msg(EVENT_HISTORY, &format!("maxcap-{index}")),
+            }),
+            &ft_b_id,
+            signer.clone(),
+            &network,
+            NearToken::from_yoctonear(0),
+            NearGas::from_tgas(60),
+            &format!("maxcap_register_{index}"),
+            "synthetic canonical-FT receiver registration at max capacity",
+        )
+        .await?;
+        check(
+            &mut evidence.checks,
+            &format!("maxcap_register_{index}_success"),
+            "synthetic maxcap registration succeeds",
+            tx.top_level_success && has_receipt_success(&tx, &history_id),
+            tx.tx_hash.clone(),
+        );
+        evidence.transactions.push(tx);
+    }
+    let history_event = event_view(&env, &history_stake, EVENT_HISTORY).await?;
+    check(
+        &mut evidence.checks,
+        "maxcap_counts_before_cancel",
+        "capacity 200 is reached with total registrations bounded by capacity",
+        history_event.active_registrations == 200
+            && history_event.total_registrations == 200
+            && history_event.withdrawn_registrations == 0,
+        format!("{history_event:?}"),
+    );
+
+    let tx = call(
+        &history_stake,
+        "cancel_event",
+        serde_json::json!({"event_id": EVENT_HISTORY}),
+        &organizer,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(0),
+        NearGas::from_tgas(200),
+        "organizer_cancel_maxcap",
+        "cancel a full 200-registration event",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "maxcap_cancel_success",
+        "cancellation succeeds at capacity 200",
+        tx.top_level_success && has_receipt_success(&tx, &history_id),
+        format!("{tx:?}"),
+    );
+    let history_cancel_gas = receipt_gas(&tx, &history_id).unwrap_or(u64::MAX);
+    let life_cancel_gas = evidence
+        .transactions
+        .iter()
+        .find(|candidate| candidate.label == "organizer_cancel_life")
+        .and_then(|candidate| receipt_gas(candidate, &life_id))
+        .unwrap_or(u64::MAX);
+    check(
+        &mut evidence.checks,
+        "maxcap_cancel_o1_gas",
+        "cancel gas at 200 registrations stays near the 2-registration cancel and below 3 Tgas",
+        history_cancel_gas <= 3_000_000_000_000
+            && history_cancel_gas <= life_cancel_gas.saturating_add(1_000_000_000_000),
+        format!("maxcap_gas={history_cancel_gas} life_gas={life_cancel_gas}"),
+    );
+    evidence.transactions.push(tx);
+
+    let history_totals = event_totals(&env, &history_stake, EVENT_HISTORY).await?;
+    check(
+        &mut evidence.checks,
+        "maxcap_cancel_conservation",
+        "cancellation preserves accepted principal and full liability at capacity 200",
+        history_totals.accepted_principal == (DEPOSIT * 200).to_string()
+            && history_totals.paid == "0"
+            && history_totals.pending == "0"
+            && history_totals.liability == history_totals.accepted_principal
+            && instance_escrow(&env, &history_stake).await? == history_totals.accepted_principal
+            && ft_balance(&env, &ft_b, &history_id).await? == history_totals.accepted_principal,
+        format!("{history_totals:?}"),
+    );
+    let bob_before_claim = ft_balance(&env, &ft_b, &bob).await?;
+    let stake_before_claim = ft_balance(&env, &ft_b, &history_id).await?;
+    let tx = call(
+        &history_stake,
+        "claim",
+        serde_json::json!({"registration_id": "reg-0"}),
+        &bob,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(1),
+        NearGas::from_tgas(100),
+        "maxcap_claim",
+        "claim at capacity 200 at the documented 100 Tgas minimum",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "maxcap_claim_receipts",
+        "maxcap claim produced successful FT transfer and payout callback receipts",
+        tx.top_level_success
+            && has_receipt_success(&tx, &ft_b_id)
+            && has_receipt_success(&tx, &history_id),
+        format!("{tx:?}"),
+    );
+    evidence.transactions.push(tx);
+    let claim = claim_view(&env, &history_stake, "reg-0").await?;
+    let history_final = event_totals(&env, &history_stake, EVENT_HISTORY).await?;
+    check(
+        &mut evidence.checks,
+        "maxcap_claim_paid_once",
+        "maxcap claim pays exactly D and leaves the remaining 199 liabilities conserved",
+        claim.payout_state == "Paid"
+            && claim.paid_amount == DEPOSIT.to_string()
+            && parse_u128(&ft_balance(&env, &ft_b, &bob).await?)
+                == parse_u128(&bob_before_claim) + DEPOSIT
+            && parse_u128(&ft_balance(&env, &ft_b, &history_id).await?) + DEPOSIT
+                == parse_u128(&stake_before_claim)
+            && history_final.accepted_principal == (DEPOSIT * 200).to_string()
+            && history_final.paid == DEPOSIT.to_string()
+            && history_final.pending == "0"
+            && history_final.liability == (DEPOSIT * 199).to_string()
+            && instance_escrow(&env, &history_stake).await? == history_final.liability,
+        format!("claim={claim:?} totals={history_final:?}"),
+    );
+    let history_holder_sum = parse_u128(&ft_balance(&env, &ft_b, &owner_b).await?)
+        + parse_u128(&ft_balance(&env, &ft_b, &alice).await?)
+        + parse_u128(&ft_balance(&env, &ft_b, &bob).await?)
+        + parse_u128(&ft_balance(&env, &ft_b, &history_id).await?);
+    check(
+        &mut evidence.checks,
+        "maxcap_ft_b_supply_conserved",
+        "maxcap FT B holders sum to the immutable total supply",
+        history_holder_sum == 1_000_000
+            && ft_balance(&env, &ft_b, &history_id).await? == (DEPOSIT * 199).to_string()
+            && ft_balance(&env, &ft_b, &bob).await? == "1000",
+        format!(
+            "sum={history_holder_sum} owner_b={} history={} alice_b={} bob_b={}",
+            ft_balance(&env, &ft_b, &owner_b).await?,
+            ft_balance(&env, &ft_b, &history_id).await?,
+            ft_balance(&env, &ft_b, &alice).await?,
+            ft_balance(&env, &ft_b, &bob).await?,
+        ),
+    );
+
+    run_deadline_case(evidence, ft_wasm, showstake_wasm).await?;
+
+    Ok(())
+}
+
+/// Real timeout path on a second, time-configured Sandbox: capacity-1 event,
+/// nonzero deposited principal, permissionless refund-only after the real
+/// `checkin_close + 24h` deadline, then a beneficiary claim through the
+/// canonical FT and private callback. A 5s block interval keeps the
+/// fast-forward to ~17.5k blocks while the main default-time Sandbox keeps
+/// the 156-check suite fast.
+async fn run_deadline_case(
+    evidence: &mut Evidence,
+    ft_wasm: &Path,
+    showstake_wasm: &Path,
+) -> anyhow::Result<()> {
+    let sandbox = near_sandbox::Sandbox::start_sandbox_with_version(SANDBOX_VERSION).await?;
+    let network = NetworkConfig::from_rpc_url("sandbox", sandbox.rpc_addr.parse()?);
+    evidence.deadline_sandbox = Some(SandboxEvidence {
+        version: SANDBOX_VERSION.to_string(),
+        rpc_addr: sandbox.rpc_addr.clone(),
+        home_dir: sandbox.home_dir.path().display().to_string(),
+        fixture_only: true,
+        public_network_calls: false,
+    });
+
+    let signer = Signer::from_secret_key(
+        near_sandbox::config::DEFAULT_GENESIS_ACCOUNT_PRIVATE_KEY.parse()?,
+    )?;
+    let organizer = create_account(&sandbox, "deadline-organizer.sandbox").await?;
+    let alice = create_account(&sandbox, "deadline-alice.sandbox").await?;
+    let bob = create_account(&sandbox, "deadline-bob.sandbox").await?;
+    let owner = create_account(&sandbox, "deadline-owner.sandbox").await?;
+    let ft_id = create_account(&sandbox, "deadline-ft.sandbox").await?;
+    let stake_id = create_account(&sandbox, "deadline-showstake.sandbox").await?;
+    evidence.accounts.extend([
+        ("deadline_organizer".to_string(), organizer.to_string()),
+        ("deadline_alice".to_string(), alice.to_string()),
+        ("deadline_bob".to_string(), bob.to_string()),
+        ("deadline_owner".to_string(), owner.to_string()),
+    ]);
+    evidence.contracts.extend([
+        ("deadline_ft".to_string(), ft_id.to_string()),
+        ("deadline_showstake".to_string(), stake_id.to_string()),
+    ]);
+
+    let ft = Contract(ft_id.clone());
+    let stake = Contract(stake_id.clone());
+    let env = Env {
+        ft_a: ft.clone(),
+        ft_b: ft.clone(),
+        open_stake: stake.clone(),
+        open2_stake: stake.clone(),
+        closed_stake: stake.clone(),
+        open_id: stake_id.clone(),
+        open2_id: stake_id.clone(),
+        closed_id: stake_id.clone(),
+        life_id: stake_id.clone(),
+        timeout_id: stake_id.clone(),
+        fail_id: stake_id.clone(),
+        organizer: organizer.clone(),
+        alice: alice.clone(),
+        bob: bob.clone(),
+        carol: organizer.clone(),
+        dave: organizer.clone(),
+        frank: organizer.clone(),
+        owner_a: owner.clone(),
+        owner_b: owner.clone(),
+        network: network.clone(),
+    };
+    let metadata = serde_json::json!({
+        "spec": "ft-1.0.0", "name": "Sandbox FT Deadline", "symbol": "SFT-D",
+        "icon": null, "reference": null, "reference_hash": null, "decimals": 0
+    });
+    let tx = deploy(
+        &ft_id,
+        ft_wasm,
+        "new",
+        serde_json::json!({"owner_id": owner, "total_supply": "1000000", "metadata": metadata}),
+        signer.clone(),
+        &network,
+        "deploy_deadline_ft",
+        "deadline Sandbox canonical FT fixture",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "deploy_deadline_ft_success",
+        "deadline Sandbox FT deploy succeeds",
+        tx.top_level_success,
+        tx.tx_hash.clone(),
+    );
+    evidence.transactions.push(tx);
+    let tx = deploy(
+        &stake_id,
+        showstake_wasm,
+        "new",
+        serde_json::json!({
+            "organizer": organizer,
+            "canonical_ft": ft_id,
+            "network": "sandbox-local",
+            "policy_version": POLICY_IDENTITY,
+        }),
+        signer.clone(),
+        &network,
+        "deploy_deadline_showstake",
+        "deadline showstake instance with a 5s block-time Sandbox",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "deploy_deadline_showstake_success",
+        "deadline ShowStake deploy succeeds",
+        tx.top_level_success,
+        tx.tx_hash.clone(),
+    );
+    evidence.transactions.push(tx);
+
+    for (label, target) in [
+        ("deadline_ft_storage_stake", stake_id.clone()),
+        ("deadline_ft_storage_alice", alice.clone()),
+        ("deadline_ft_storage_owner", owner.clone()),
+    ] {
+        let tx = call(
+            &ft,
+            "storage_deposit",
+            serde_json::json!({"account_id": target, "registration_only": true}),
+            &organizer,
+            signer.clone(),
+            &network,
+            NearToken::from_millinear(10),
+            NearGas::from_tgas(30),
+            label,
+            "register deadline FT storage",
+        )
+        .await?;
+        check(
+            &mut evidence.checks,
+            &format!("{label}_success"),
+            "deadline FT storage registration succeeds",
+            tx.top_level_success,
+            tx.tx_hash.clone(),
+        );
+        evidence.transactions.push(tx);
+    }
+    let tx = call(
+        &ft,
+        "ft_transfer",
+        serde_json::json!({"receiver_id": alice, "amount": "100", "memo": null}),
+        &owner,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(1),
+        NearGas::from_tgas(30),
+        "deadline_fund_alice",
+        "fund alice with exactly D on the deadline Sandbox",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "deadline_fund_alice_success",
+        "deadline funding succeeds",
+        tx.top_level_success,
+        tx.tx_hash.clone(),
+    );
+    evidence.transactions.push(tx);
+    let tx = call(
+        &stake,
+        "storage_deposit",
+        serde_json::json!({"account_id": null}),
+        &alice,
+        signer.clone(),
+        &network,
+        NearToken::from_millinear(500),
+        NearGas::from_tgas(30),
+        "deadline_storage_alice",
+        "alice prepays registration storage on the deadline instance",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "deadline_storage_alice_success",
+        "deadline native storage prepay succeeds",
+        tx.top_level_success && returned_u128(&tx).is_some(),
+        tx.tx_hash.clone(),
+    );
+    evidence.transactions.push(tx);
+    let tx = call(
+        &ft,
+        "ft_transfer",
+        serde_json::json!({
+            "receiver_id": stake_id,
+            "amount": (DEPOSIT * 199).to_string(),
+            "memo": null,
+        }),
+        &owner,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(1),
+        NearGas::from_tgas(30),
+        "deadline_bulk_funding",
+        "fund the deadline instance with 199 synthetic registration principals",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "deadline_bulk_funding_receipt",
+        "deadline bulk FT funding succeeds",
+        tx.top_level_success && has_receipt_success(&tx, &ft_id),
+        format!("{tx:?}"),
+    );
+    evidence.transactions.push(tx);
+
+    let clock = view::<u64>(
+        &stake,
+        "get_block_timestamp_ms",
+        serde_json::json!({}),
+        &network,
+    )
+    .await?;
+    let deadline_rules = event_rules(
+        "local-rules-deadline-v1",
+        200,
+        clock - 60_000,
+        clock + 900_000,
+        clock + 901_000,
+    );
+    let tx = call(
+        &stake,
+        "publish_event",
+        serde_json::json!({"event_id": EVENT_DEADLINE, "rules": deadline_rules.clone()}),
+        &organizer,
+        signer.clone(),
+        &network,
+        NearToken::from_near(1),
+        NearGas::from_tgas(100),
+        "publish_deadline",
+        "publish a real-deadline event with nonzero principal",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "publish_deadline_success",
+        "deadline event publish succeeds",
+        tx.top_level_success,
+        tx.tx_hash.clone(),
+    );
+    evidence.transactions.push(tx);
+    if let Some(rules) = evidence.event_rules.as_object_mut() {
+        rules.insert("deadline".to_string(), deadline_rules);
+    }
+
+    let original_event = event_view(&env, &stake, EVENT_DEADLINE).await?;
+    let original_deadline = original_event.finalize_deadline;
+    let mut now = view::<u64>(
+        &stake,
+        "get_block_timestamp_ms",
+        serde_json::json!({}),
+        &network,
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "deadline_original_definition",
+        "published finalize_deadline is checkin_close + 24h and still in the future",
+        original_deadline == original_event.checkin_close + DAY_MS
+            && original_deadline > now,
+        format!(
+            "now={now} checkin_close={} deadline={original_deadline}",
+            original_event.checkin_close
+        ),
+    );
+
+    // Sandbox fast-forward cannot cover 24h on this host within the run
+    // budget. Keep the event time ordering and shorten only the stored
+    // finalize_deadline to checkin_close + 20s; then use the real clock and
+    // sandbox_fast_forward to cross it. The +24h derivation and exact
+    // boundary are unit-tested.
+    let patched_deadline = original_event
+        .checkin_close
+        .checked_add(20_000)
+        .ok_or_else(|| anyhow!("deadline overflow"))?;
+    patch_event_deadline(&sandbox, &stake_id, EVENT_DEADLINE, patched_deadline).await?;
+    let event = event_view(&env, &stake, EVENT_DEADLINE).await?;
+    check(
+        &mut evidence.checks,
+        "deadline_patched_for_bounded_sandbox",
+        "stored deadline is shortened to checkin_close + 20s while preserving time ordering",
+        event.finalize_deadline == patched_deadline
+            && patched_deadline > event.checkin_close
+            && patched_deadline < original_deadline
+            && event.state == "Published",
+        format!(
+            "checkin_close={} patched={} original={} now={now}",
+            event.checkin_close, event.finalize_deadline, original_deadline
+        ),
+    );
+
+    let tx = call(
+        &ft,
+        "ft_transfer_call",
+        serde_json::json!({
+            "receiver_id": stake_id,
+            "amount": DEPOSIT.to_string(),
+            "memo": null,
+            "msg": commit_msg(EVENT_DEADLINE, "deadline-c1"),
+        }),
+        &alice,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(1),
+        NearGas::from_tgas(120),
+        "deadline_commit",
+        "real nonzero deposit on the deadline instance",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "deadline_commit_receipts",
+        "deadline registration used real FT and receiver receipts",
+        tx.top_level_success
+            && has_receipt_success(&tx, &ft_id)
+            && has_receipt_success(&tx, &stake_id),
+        format!("{tx:?}"),
+    );
+    evidence.transactions.push(tx);
+    let fake_count = 199u32;
+    for index in 0..fake_count {
+        let fake: AccountId = format!("deadline-p{index:03}.sandbox").parse()?;
+        let tx = call(
+            &stake,
+            "storage_deposit",
+            serde_json::json!({"account_id": fake}),
+            &organizer,
+            signer.clone(),
+            &network,
+            NearToken::from_millinear(20),
+            NearGas::from_tgas(30),
+            &format!("deadline_prepay_{index}"),
+            "prepay synthetic deadline registration storage",
+        )
+        .await?;
+        check(
+            &mut evidence.checks,
+            &format!("deadline_prepay_{index}_success"),
+            "synthetic deadline storage prepay succeeds",
+            tx.top_level_success && returned_u128(&tx).is_some(),
+            tx.tx_hash.clone(),
+        );
+        evidence.transactions.push(tx);
+
+        let tx = call(
+            &stake,
+            "ft_on_transfer",
+            serde_json::json!({
+                "sender_id": fake,
+                "amount": DEPOSIT.to_string(),
+                "msg": commit_msg(EVENT_DEADLINE, &format!("deadline-{index}")),
+            }),
+            &ft_id,
+            signer.clone(),
+            &network,
+            NearToken::from_yoctonear(0),
+            NearGas::from_tgas(60),
+            &format!("deadline_register_{index}"),
+            "synthetic canonical-FT receiver registration at capacity 200",
+        )
+        .await?;
+        check(
+            &mut evidence.checks,
+            &format!("deadline_register_{index}_success"),
+            "synthetic deadline registration succeeds",
+            tx.top_level_success && has_receipt_success(&tx, &stake_id),
+            tx.tx_hash.clone(),
+        );
+        evidence.transactions.push(tx);
+    }
+    let deadline_event = event_view(&env, &stake, EVENT_DEADLINE).await?;
+    check(
+        &mut evidence.checks,
+        "deadline_capacity_200",
+        "deadline event reaches capacity 200 with one real and 199 synthetic registrations",
+        deadline_event.active_registrations == 200
+            && deadline_event.total_registrations == 200
+            && deadline_event.withdrawn_registrations == 0,
+        format!("{deadline_event:?}"),
+    );
+
+    now = view::<u64>(
+        &stake,
+        "get_block_timestamp_ms",
+        serde_json::json!({}),
+        &network,
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "deadline_principal_held",
+        "deadline instance holds 200D of principal and alice holds zero",
+        ft_balance(&env, &ft, &stake_id).await? == (DEPOSIT * 200).to_string()
+            && ft_balance(&env, &ft, &alice).await? == "0",
+        "deadline principal snapshot",
+    );
+
+    let tx = call(
+        &stake,
+        "activate_timeout_refund",
+        serde_json::json!({"event_id": EVENT_DEADLINE}),
+        &bob,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(0),
+        NearGas::from_tgas(100),
+        "deadline_early_activation",
+        "before the stored deadline, permissionless activation must fail",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "deadline_early_activation_fails",
+        "permissionless timeout activation fails before the stored deadline",
+        tx.top_level_failure && has_receipt_failure(&tx, &stake_id),
+        format!("{tx:?}"),
+    );
+    evidence.transactions.push(tx);
+
+    let mut fast_forward_attempts = 0u32;
+    let initial_now = now;
+    let mut fast_forward_trace = Vec::new();
+    while now < patched_deadline && fast_forward_attempts < 8 {
+        let before_now = now;
+        let blocks = (((patched_deadline - now) / 300) + 50).min(500);
+        let started = std::time::Instant::now();
+        sandbox.fast_forward(blocks).await?;
+        now = view::<u64>(
+            &stake,
+            "get_block_timestamp_ms",
+            serde_json::json!({}),
+            &network,
+        )
+        .await?;
+        fast_forward_attempts += 1;
+        fast_forward_trace.push(format!(
+            "attempt={fast_forward_attempts} blocks={blocks} before={before_now} after={now} elapsed_ms={}",
+            started.elapsed().as_millis()
+        ));
+    }
+    check(
+        &mut evidence.checks,
+        "deadline_fast_forward_progress",
+        "Sandbox fast-forward advanced real block time toward and across the stored deadline",
+        fast_forward_attempts > 0 && now > initial_now,
+        format!(
+            "initial={initial_now} final={now} deadline={patched_deadline} attempts={fast_forward_attempts} trace={}",
+            fast_forward_trace.join("; ")
+        ),
+    );
+    check(
+        &mut evidence.checks,
+        "deadline_clock_reached_deadline",
+        "real Sandbox clock is at/after the stored deadline before activation",
+        now >= patched_deadline,
+        format!(
+            "now={now} deadline={patched_deadline} attempts={fast_forward_attempts}"
+        ),
+    );
+
+    let tx = call(
+        &stake,
+        "activate_timeout_refund",
+        serde_json::json!({"event_id": EVENT_DEADLINE}),
+        &bob,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(0),
+        NearGas::from_tgas(100),
+        "deadline_permissionless_timeout",
+        "any account activates refund-only after the real deadline",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "deadline_permissionless_timeout_succeeds",
+        "permissionless timeout activation succeeds on the real deadline instance",
+        tx.top_level_success && has_receipt_success(&tx, &stake_id),
+        format!("{tx:?}"),
+    );
+    let timeout_gas = receipt_gas(&tx, &stake_id).unwrap_or(u64::MAX);
+    check(
+        &mut evidence.checks,
+        "deadline_timeout_o1_gas",
+        "timeout activation at capacity 200 stays O(1) and below 3 Tgas",
+        timeout_gas <= 3_000_000_000_000,
+        format!("gas={timeout_gas}"),
+    );
+    evidence.transactions.push(tx);
+    let event = event_view(&env, &stake, EVENT_DEADLINE).await?;
+    let claim = claim_view(&env, &stake, "reg-0").await?;
+    let totals = event_totals(&env, &stake, EVENT_DEADLINE).await?;
+    check(
+        &mut evidence.checks,
+        "deadline_timeout_refund_only",
+        "real-deadline event is RefundOnly with every registration claimable at D",
+        event.state == "RefundOnly"
+            && event.phase == "RefundOnly"
+            && event.active_registrations == 200
+            && claim.amount == DEPOSIT.to_string()
+            && claim.payout_state == "Claimable"
+            && totals.accepted_principal == (DEPOSIT * 200).to_string()
+            && totals.paid == "0"
+            && totals.pending == "0"
+            && totals.liability == (DEPOSIT * 200).to_string()
+            && instance_escrow(&env, &stake).await? == (DEPOSIT * 200).to_string(),
+        format!("event={event:?} claim={claim:?} totals={totals:?}"),
+    );
+
+    let alice_before_claim = ft_balance(&env, &ft, &alice).await?;
+    let stake_before_claim = ft_balance(&env, &ft, &stake_id).await?;
+    let tx = call(
+        &stake,
+        "claim",
+        serde_json::json!({"registration_id": "reg-0"}),
+        &alice,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(1),
+        NearGas::from_tgas(100),
+        "deadline_claim",
+        "claim the deposited principal at the 100 Tgas minimum",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "deadline_claim_receipts",
+        "deadline claim produced successful FT transfer and payout callback receipts",
+        tx.top_level_success
+            && has_receipt_success(&tx, &ft_id)
+            && has_receipt_success(&tx, &stake_id),
+        format!("{tx:?}"),
+    );
+    evidence.transactions.push(tx);
+    let claim = claim_view(&env, &stake, "reg-0").await?;
+    let totals = event_totals(&env, &stake, EVENT_DEADLINE).await?;
+    check(
+        &mut evidence.checks,
+        "deadline_claim_paid_once",
+        "deadline claim pays exactly D and leaves 199D liability conserved at capacity 200",
+        claim.payout_state == "Paid"
+            && claim.paid_amount == DEPOSIT.to_string()
+            && parse_u128(&ft_balance(&env, &ft, &alice).await?)
+                == parse_u128(&alice_before_claim) + DEPOSIT
+            && parse_u128(&ft_balance(&env, &ft, &stake_id).await?) + DEPOSIT
+                == parse_u128(&stake_before_claim)
+            && totals.accepted_principal == (DEPOSIT * 200).to_string()
+            && totals.paid == DEPOSIT.to_string()
+            && totals.pending == "0"
+            && totals.liability == (DEPOSIT * 199).to_string()
+            && instance_escrow(&env, &stake).await? == (DEPOSIT * 199).to_string()
+            && ft_balance(&env, &ft, &stake_id).await? == (DEPOSIT * 199).to_string(),
+        format!("claim={claim:?} totals={totals:?}"),
+    );
+    let deadline_holders = parse_u128(&ft_balance(&env, &ft, &owner).await?)
+        + parse_u128(&ft_balance(&env, &ft, &alice).await?)
+        + parse_u128(&ft_balance(&env, &ft, &stake_id).await?);
+    check(
+        &mut evidence.checks,
+        "deadline_ft_supply_conserved",
+        "deadline FT holders sum to the immutable total supply",
+        deadline_holders == 1_000_000
+            && ft_balance(&env, &ft, &owner).await? == "980000"
+            && ft_balance(&env, &ft, &alice).await? == "100"
+            && ft_balance(&env, &ft, &stake_id).await? == (DEPOSIT * 199).to_string(),
+        format!("sum={deadline_holders}"),
+    );
+
     Ok(())
 }
 
@@ -1782,6 +3778,7 @@ async fn main() {
         status: "INCOMPLETE".to_string(),
         error: None,
         sandbox: SandboxEvidence::default(),
+        deadline_sandbox: None,
         accounts: BTreeMap::new(),
         contracts: BTreeMap::new(),
         wasm: WasmEvidence {
@@ -1800,12 +3797,16 @@ async fn main() {
         limits: vec![
             "Local synthetic NEAR Sandbox only; no testnet/mainnet, faucet, public deployment, wallet or real asset.",
             "Reviewed artifact is one event per contract instance; distinct events are separate instances.",
-            "Product slice is immutable organizer + publish_event + native storage prepay + ft_on_transfer registration/pass + views + transfer denial.",
-            "Withdrawal, cancellation, settlement, attendance, claims and factory are NOT implemented in this slice.",
+            "Implemented product slice: publish, native storage prepay, canonical-FT registration/pass, one lifetime registration per account/event (no voluntary withdrawal or rejoin), organizer cancellation, permissionless timeout refund-only, and exactly-once beneficiary claims via private FT callback.",
+            "Attendance, finalization, settlement/redistribution and factory are NOT implemented in this slice.",
+            "Timeout is proved twice: zero-registration activation on the default Sandbox, and a capacity-200 event with a real nonzero deposit -> shortened stored deadline (checkin_close + 20s via sandbox_patch_state) -> real fast-forward over it -> permissionless refund-only -> claim; the +24h derivation and exact deadline-1/at-deadline are unit-tested.",
+            "Capacity 200 is the total-registration bound on a clean instance: no withdrawal frees seats and a second registration by the same account/event is rejected.",
+            "The max-capacity Sandbox instances use one real FT registration plus 199 bulk-funded synthetic canonical-FT receiver registrations to measure 200-registration cancel/timeout activation gas; the claimed registration uses real FT and balances.",
             "Pass is custom and account-bound; no NEP-171/NEP-393 conformance is claimed.",
-            "Gas is recorded for observation only; max-200 G09 is NOT measured or passed.",
+            "Cancellation and timeout activation are O(1) and measured at 200 registrations; settlement/redistribution max-200 gas remains NOT_RUN.",
+            "Voluntary withdrawal traps before mutation; legacy states without the schema marker fail closed and require a clean instance.",
             "Invalid deposits rely on real FT resolver refund receipts and restored balances; no in-memory model is evidence.",
-            "Teardown is limited to this run's PGID + pinned near-sandbox binary + run-owned --home.",
+            "Teardown is limited to this run's PGID + pinned near-sandbox binary and run-owned --home.",
         ],
     };
 

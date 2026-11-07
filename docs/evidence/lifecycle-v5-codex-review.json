@@ -1,0 +1,46 @@
+{
+  "reviewer": "Codex",
+  "implementation_author": "ZCode/Cloud Near DeepSeek",
+  "classification": "PASS_LOCAL",
+  "accepted_scope": "D036 no voluntarywithdrawal/rejoin; canonicalFT/pass; O(1) cancellation/timeout; beneficiary-only privatecallback payout/failure-retry",
+  "unit_rerun": {
+    "command": "WSL Ubuntu existing isolated Rust1.95 offline cargo test --locked",
+    "exit": 0,
+    "passed": 50
+  },
+  "artifact": {
+    "path": "test-support/contract-integration/wasm/showstake-lifecycle-v5.wasm",
+    "sha256": "d79ef24c72d2eea762d4c3e78a1990a21bf13458b0bf07c908a68fc6ca1d5bee",
+    "bytes": 390557
+  },
+  "sandbox_review": {
+    "run": "20261107T230211Z-1427450-f5f311e3",
+    "checks": 984,
+    "failed": 0,
+    "receipt_transactions": 898,
+    "all_manifest_hashes_verified": true,
+    "teardown_proven": true,
+    "cancel_200_gas": 2265237437803,
+    "timeout_200_gas": 2283943686759,
+    "source_review": "refund state transitions and aggregates contain no historical-registration loop; lazy fullprincipal claims preserve exactly-once pending/paid accounting"
+  },
+  "limits": [
+    "Not full T04/settlement acceptance",
+    "Real24h deadline NOT waited: shortened stored deadline patch explicitly labelled Sandboxfixture; +24h exactboundary unit tested",
+    "Zero-registration tests do not prove zero-attendee settlement with registered participants; settlement notimplemented",
+    "Oldminimum deployment lacks lifecycle records; newcleaninstance only, no implicit migration",
+    "Callback non-execution can leave Pending; no manualfinancialoverride claimed",
+    "Existing Sandbox runner uses ignored local support/toolchain; clean-clone release packaging remains open",
+    "Worker rollout verifies provider/model, reasoning max notindependently recorded"
+  ],
+  "deployment_plan": {
+    "network": "testnet",
+    "preferred_new_account": "showstake-d036-endpx.testnet",
+    "organizer": "showstake-participant-endpx.testnet",
+    "canonical_ft": "showstake-ft-endpx.testnet",
+    "policy": "showstake-v2-d036/1",
+    "signer": "dedicated OSkeychain",
+    "authorization": "existing explicit testnet-only account/faucet/deploy/synthetic-token tests"
+  },
+  "source_sha256": "0c9f9a56d00acdbfcf7c759e2e6d5f3c8b896fe8d5614ae0a1fb4aaacb505f71"
+}

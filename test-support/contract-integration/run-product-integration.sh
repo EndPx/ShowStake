@@ -6,8 +6,10 @@
 # script. It adds no bootstrap, framework, contract rebuild or new target.
 #
 # The reviewed contract source/Wasm are inputs only:
-#   test-support/contract-integration/wasm/showstake.wasm (candidate fc49fb85...)
-# and are never rebuilt or modified here.
+#   test-support/contract-integration/wasm/showstake-lifecycle-v5.wasm
+#   (candidate d79ef24c..., D036 policy identity showstake-v2-d036/1) and the
+#   frozen deployed fc49fb85... artifact.
+# They are never rebuilt or modified here.
 set -euo pipefail
 
 INTEGRATION_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -17,13 +19,14 @@ source "$PROBE_ROOT/scripts/lib.sh"
 
 ensure_owned_paths
 
-EXPECTED_SHOWSTAKE_SHA256="fc49fb85cc6e718086ddf81e9a936362a8c36ef9384a8444eadafa6ec0cdcd8e"
+EXPECTED_SHOWSTAKE_SHA256="d79ef24c72d2eea762d4c3e78a1990a21bf13458b0bf07c908a68fc6ca1d5bee"
+FROZEN_DEPLOYED_SHA256="fc49fb85cc6e718086ddf81e9a936362a8c36ef9384a8444eadafa6ec0cdcd8e"
 EXPECTED_FT_SHA256="d1c7d009a2c49bee5ad4997fe7e3114899fa667a06876fb6e435d9a72fffb195"
 EXPECTED_SANDBOX_SHA256="797b9d7a9a23907048d68a427e86a55c94f1de232dbfb8b8a1eec09ecef3bf13"
 
 RUN_TIMEOUT_SECONDS="${RUN_TIMEOUT_SECONDS:-1200}"
 MIN_D_FREE_KB="${MIN_D_FREE_KB:-2097152}"     # 2 GiB
-MIN_C_FREE_KB="${MIN_C_FREE_KB:-3145728}"     # 3 GiB
+MIN_C_FREE_KB="${MIN_C_FREE_KB:-524288}"       # 512 MiB; host C: ~528 MiB, builds/outputs on D/WSL
 MIN_TMP_FREE_KB="${MIN_TMP_FREE_KB:-5242880}" # 5 GiB ext4 (not tmpfs /tmp)
 
 RUN_ID="${RUN_ID:-$(date -u +%Y%m%dT%H%M%SZ)-$$-$(od -An -N4 -tx1 /dev/urandom | tr -d ' \n')}"
@@ -68,7 +71,8 @@ if ! toolchain_ready; then
   log "TOOLCHAIN_NOT_READY: $TOOLCHAIN under $TOOLCHAIN_ROOT (no bootstrap in this run)"
 fi
 
-SHOWSTAKE_WASM="$INTEGRATION_ROOT/wasm/showstake.wasm"
+SHOWSTAKE_WASM="$INTEGRATION_ROOT/wasm/showstake-lifecycle-v5.wasm"
+FROZEN_DEPLOYED_WASM="$INTEGRATION_ROOT/wasm/showstake.wasm"
 FT_WASM="$PROBE_ROOT/wasm/ft_fixture.wasm"
 SHOWSTAKE_WASM_SHA256="$(sha256sum "$SHOWSTAKE_WASM" 2>/dev/null | awk '{print $1}')"
 FT_WASM_SHA256="$(sha256sum "$FT_WASM" 2>/dev/null | awk '{print $1}')"
@@ -76,7 +80,13 @@ WASM_OK=false
 if [ "$SHOWSTAKE_WASM_SHA256" = "$EXPECTED_SHOWSTAKE_SHA256" ] && [ "$FT_WASM_SHA256" = "$EXPECTED_FT_SHA256" ]; then
   WASM_OK=true
 fi
+FROZEN_DEPLOYED_SHA256_ACTUAL="$(sha256sum "$FROZEN_DEPLOYED_WASM" 2>/dev/null | awk '{print $1}')"
+FROZEN_DEPLOYED_OK=false
+if [ "$FROZEN_DEPLOYED_SHA256_ACTUAL" = "$FROZEN_DEPLOYED_SHA256" ]; then
+  FROZEN_DEPLOYED_OK=true
+fi
 log "showstake_wasm=$SHOWSTAKE_WASM sha256=${SHOWSTAKE_WASM_SHA256:-missing} expected=$EXPECTED_SHOWSTAKE_SHA256"
+log "frozen_deployed_wasm=$FROZEN_DEPLOYED_WASM sha256=${FROZEN_DEPLOYED_SHA256_ACTUAL:-missing} expected=$FROZEN_DEPLOYED_SHA256 match=$FROZEN_DEPLOYED_OK"
 log "ft_fixture_wasm=$FT_WASM sha256=${FT_WASM_SHA256:-missing} expected=$EXPECTED_FT_SHA256"
 
 RUNNER_BUILD_EXIT=1
@@ -152,8 +162,9 @@ python3 - "$RUN_DIR/run.json" "$RUN_DIR/result.json" "$RUN_DIR/teardown.json" \
   "$RUN_ID" "$STARTED_AT" "$FINISHED_AT" "$RUNNER_EXIT" "$RUNNER_BUILD_EXIT" \
   "$SHOWSTAKE_WASM_SHA256" "$FT_WASM_SHA256" "$EXPECTED_SHOWSTAKE_SHA256" "$EXPECTED_FT_SHA256" \
   "$SANDBOX_BIN" "$SANDBOX_BIN_SHA256" "$EXPECTED_SANDBOX_SHA256" "$SANDBOX_BIN_OK" \
-  "$RUNNER_BIN" "$RUNNER_SHA256" "$WASM_OK" "$RUN_DIR" "$RUN_TMP" \
+  "$RUNNER_BIN" "$RUNNER_SHA256" "$WASM_OK" "$RUN_DIR" "$RUN_TMP" "$SHOWSTAKE_WASM" \
   "$BUILD_RUNNER_CMD" "${RUN_SANDBOX_CMD:-NOT_RUN}" \
+  "$FROZEN_DEPLOYED_WASM" "${FROZEN_DEPLOYED_SHA256_ACTUAL:-}" "$FROZEN_DEPLOYED_SHA256" "$FROZEN_DEPLOYED_OK" \
   "$D_FREE_BEFORE" "$C_FREE_BEFORE" "$TMP_FREE_BEFORE" \
   "$D_FREE_AFTER" "$C_FREE_AFTER" "$TMP_FREE_AFTER" <<'PY'
 import hashlib, json, os, sys
@@ -161,7 +172,8 @@ import hashlib, json, os, sys
 (out_path, result_path, teardown_path, run_id, started_at, finished_at,
  runner_exit, runner_build_exit, showstake_sha, ft_sha, expected_showstake_sha,
  expected_ft_sha, sandbox_bin, sandbox_sha, expected_sandbox_sha, sandbox_ok,
- runner_bin, runner_sha, wasm_ok, run_dir, run_tmp, build_cmd, run_cmd,
+ runner_bin, runner_sha, wasm_ok, run_dir, run_tmp, showstake_path, build_cmd, run_cmd,
+ frozen_path, frozen_sha, expected_frozen_sha, frozen_ok,
  d_before, c_before, tmp_before, d_after, c_after, tmp_after) = sys.argv[1:]
 
 def read_json(path):
@@ -193,6 +205,8 @@ if runner_exit != "0":
     failed.append(f"runner_exit={runner_exit}")
 if wasm_ok != "true":
     failed.append("input_wasm_hash_mismatch")
+if frozen_ok != "true":
+    failed.append("frozen_deployed_wasm_hash_mismatch")
 if sandbox_ok != "true":
     failed.append("sandbox_binary_hash_mismatch")
 if result_status != "PASS_LOCAL":
@@ -220,12 +234,19 @@ record = {
         "run_sandbox": run_cmd,
     },
     "wasm": {
-        "showstake_path": os.path.abspath(os.path.join(run_dir, "..", "..", "..", "wasm", "showstake.wasm")),
+        "showstake_path": showstake_path,
         "showstake_sha256": showstake_sha,
         "expected_showstake_sha256": expected_showstake_sha,
         "ft_fixture_sha256": ft_sha,
         "expected_ft_fixture_sha256": expected_ft_sha,
         "match": wasm_ok == "true",
+    },
+    "frozen_deployed": {
+        "path": frozen_path,
+        "sha256": frozen_sha,
+        "expected_sha256": expected_frozen_sha,
+        "match": frozen_ok == "true",
+        "note": "The previously deployed fc49fb85 artifact is preserved unchanged; this run uses the separate lifecycle candidate.",
     },
     "sandbox": {
         "binary": sandbox_bin,

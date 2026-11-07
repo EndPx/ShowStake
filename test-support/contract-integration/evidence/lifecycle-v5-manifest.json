@@ -1,0 +1,286 @@
+{
+  "schema": "showstake.lifecycle.manifest/1.2.0",
+  "generated_at_utc": "2026-11-07T23:23:46Z",
+  "task": "task_ea9a46a43699",
+  "dispatch": "ctx_47d4c5001b1b",
+  "retry_of": "ctx_74978d0ea9c2",
+  "executor": "ZCode via Orca",
+  "runtime_confirmation": {
+    "provider": "new-provider",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash-1017-abliterated",
+    "source": "session model-I/O rollout metadata (modelId/providerId per request)",
+    "global_selector_present": "zai-api / GLM-5.3-Flash",
+    "global_selector_used": false,
+    "reasoning_level_max_verified": false,
+    "notes": "options/reasoningLevel is null in the rollout records; only provider/model identity is machine-verified"
+  },
+  "status": "PASS_LOCAL",
+  "base_commit": "59ac44a",
+  "changes_from_v4": [
+    "new() now requires policy_version == POLICY_IDENTITY (showstake-v2-d036/1); legacy showstake-v2/1 is rejected",
+    "unit tests for zero-attendee cancel and zero-attendee timeout",
+    "runner publishes POLICY_IDENTITY for every instance",
+    "wrapper passes the candidate Wasm path explicitly so run.json records the real path"
+  ],
+  "deployed_artifact": {
+    "path": "test-support/contract-integration/wasm/showstake.wasm",
+    "bytes": 339957,
+    "sha256": "fc49fb85cc6e718086ddf81e9a936362a8c36ef9384a8444eadafa6ec0cdcd8e",
+    "unchanged_by_this_task": true,
+    "note": "fc49fb85 remains the deployed testnet artifact; this run used a separate local candidate"
+  },
+  "candidate_artifact": {
+    "version": "v5",
+    "path": "test-support/contract-integration/wasm/showstake-lifecycle-v5.wasm",
+    "bytes": 390557,
+    "sha256": "d79ef24c72d2eea762d4c3e78a1990a21bf13458b0bf07c908a68fc6ca1d5bee",
+    "policy_identity": "showstake-v2-d036/1",
+    "schema_version": 2,
+    "distinct_from_deployed": true,
+    "distinct_from_prior_candidates": true,
+    "reproducible": true,
+    "reproducibility_method": "rebuild with the same isolated toolchain/target reproduced the SHA-256 exactly",
+    "crate": "showstake 0.1.0",
+    "sdk": "near-sdk 5.30.1",
+    "toolchain": "1.95.0-x86_64-unknown-linux-gnu"
+  },
+  "prior_candidate_artifacts": [
+    {
+      "version": "v4",
+      "path": "test-support/contract-integration/wasm/showstake-lifecycle-v4.wasm",
+      "bytes": 390430,
+      "sha256": "7b2735ef5d30986df828a3af024e3b3dc37e1ddd6d519088233a8bfc8405d707",
+      "note": "D036 rules without the enforced policy identity; preserved"
+    },
+    {
+      "version": "v3",
+      "path": "test-support/contract-integration/wasm/showstake-lifecycle-v3.wasm",
+      "bytes": 389769,
+      "sha256": "5b3ae99db854a013368029ac4716ecd21893a3c93db6f7d8e0b3596b8bc0d34a",
+      "note": "historical O(1) accounting candidate; preserved"
+    },
+    {
+      "version": "v2",
+      "path": "test-support/contract-integration/wasm/showstake-lifecycle-v2.wasm",
+      "bytes": 389769,
+      "sha256": "9211fe4c790e9eec5d9f8d070c83a40868abc0ab249929cd8aebbadc8e4d8f43",
+      "note": "preserved"
+    },
+    {
+      "version": "v1",
+      "path": "test-support/contract-integration/wasm/showstake-lifecycle.wasm",
+      "bytes": 388381,
+      "sha256": "4dde5f4bd2fbe0a6c7d3918d188cf2f06aafa03fd7a9f9b01dfbf6af0224187d",
+      "note": "preserved; lacks claims/accounting"
+    }
+  ],
+  "test_ft_fixture": {
+    "path": ".local/zcode-settlement-oracle/sandbox-probe/wasm/ft_fixture.wasm",
+    "bytes": 285025,
+    "sha256": "d1c7d009a2c49bee5ad4997fe7e3114899fa667a06876fb6e435d9a72fffb195",
+    "unchanged": true
+  },
+  "source_manifest": [
+    {
+      "path": "contracts/showstake/src/lib.rs",
+      "bytes": 61174,
+      "sha256": "0c9f9a56d00acdbfcf7c759e2e6d5f3c8b896fe8d5614ae0a1fb4aaacb505f71"
+    },
+    {
+      "path": "contracts/showstake/tests/test_basics.rs",
+      "bytes": 53361,
+      "sha256": "f86981480cf6fcab6a5f1ad2e2a30155e8203de629aeff12796c41e7242b7dfe"
+    },
+    {
+      "path": "contracts/showstake/README.md",
+      "bytes": 8043,
+      "sha256": "fd95c59d8877a5c7fa6394745fdbbffc2172903dd5965753a7991106556576b5"
+    },
+    {
+      "path": "test-support/contract-integration/runner/src/main.rs",
+      "bytes": 143227,
+      "sha256": "d30336da455ecf0938ea98b9fe9ffd4c1e1af83df971313c6a8fc9c7732e5a89"
+    },
+    {
+      "path": "test-support/contract-integration/runner/Cargo.toml",
+      "bytes": 491,
+      "sha256": "b816976737cd0387796bf3f5cc1c3e89991946e2e3aed5e35377d5c4405455db"
+    },
+    {
+      "path": "test-support/contract-integration/run-product-integration.sh",
+      "bytes": 14557,
+      "sha256": "4c40d72dc11a5da4008227bc606e8dbd71adc89377113fbf1c78a2726dd961fe"
+    }
+  ],
+  "abi": {
+    "init": "new(organizer, canonical_ft, network, policy_version) \u2014 same signature; policy_version must equal showstake-v2-d036/1",
+    "deployed_export_count": 21,
+    "candidate_export_count": 29,
+    "added_exports": [
+      "activate_timeout_refund",
+      "cancel_event",
+      "claim",
+      "get_claim",
+      "get_event_totals",
+      "get_payout",
+      "on_payout_result",
+      "withdraw_registration"
+    ],
+    "removed_exports": [],
+    "verification": "Node WebAssembly.Module.exports on both artifacts",
+    "explicitly_rejected": [
+      "nft_transfer",
+      "nft_transfer_call",
+      "nft_approve",
+      "nft_revoke",
+      "nft_revoke_all",
+      "burn",
+      "admin_reassign_pass",
+      "withdraw_registration"
+    ],
+    "claim_rules": "exactly 1 yoctoNEAR, immutable beneficiary, >= 100 Tgas prepaid"
+  },
+  "state_compatibility": {
+    "root_layout": "field-for-field identical to deployed source (12 fields)",
+    "unchanged_structs": [
+      "Config",
+      "Event",
+      "Registration",
+      "Pass"
+    ],
+    "append_only_enums": {
+      "EventState": [
+        "Published",
+        "Cancelled",
+        "RefundOnly"
+      ],
+      "FinancialStatus": [
+        "Committed",
+        "Claimable",
+        "Pending",
+        "Paid"
+      ]
+    },
+    "separate_maps": [
+      {
+        "prefix": "lc",
+        "type": "ClaimRecord",
+        "entry_created": "same measured write as registration",
+        "fixed_size": "yes"
+      },
+      {
+        "prefix": "ea",
+        "type": "EventAccounting",
+        "entry_created": "measured publish write",
+        "fixed_size": "yes"
+      },
+      {
+        "prefix": "sv",
+        "type": "u32 schema marker",
+        "entry_created": "measured publish write",
+        "fixed_size": "yes"
+      },
+      {
+        "prefix": "lr",
+        "type": "lifetime (event,account) index",
+        "entry_created": "same measured write as registration",
+        "fixed_size": "yes"
+      }
+    ],
+    "schema_version": 2,
+    "old_state_behavior": "fails closed: missing sv/ea/lc panics with clean-instance-required",
+    "clean_instance": "required for fc49fb85, v1 and v2; v3/v4 states are schema 2 but lack the enforced policy identity"
+  },
+  "build": {
+    "environment": {
+      "RUSTUP_HOME": ".local/zcode-settlement-oracle/sandbox-probe/.toolchain/rustup",
+      "CARGO_HOME": ".local/zcode-settlement-oracle/sandbox-probe/.toolchain/cargo",
+      "CARGO_TARGET_DIR": "/var/tmp/showstake-target-c3989af8ce837da4",
+      "CARGO_NET_OFFLINE": "true"
+    },
+    "unit_command": "cargo test --locked",
+    "build_command": "cargo build --locked --release --target wasm32-unknown-unknown",
+    "integration_command": "bash run-product-integration.sh",
+    "network_access": "none (offline; no bootstrap or cache download/cleanup)",
+    "dependency_note": "runner reuses already-locked borsh 1.8.1 / base64 0.22.1 for the bounded state patch"
+  },
+  "evidence": {
+    "classification": "PASS_LOCAL",
+    "unit": {
+      "passed": 50,
+      "failed": 0,
+      "log_path": "test-support/contract-integration/evidence/lifecycle-v5-unit-tests.log",
+      "log_sha256": "8089d87cae74c20797ad935c2998e3ba37f3b7d7057fee46df4cfda4abaebb1a",
+      "summary_path": "test-support/contract-integration/evidence/lifecycle-v5-unit-tests.json",
+      "summary_sha256": "4b3a9cec6a4a66a538bd696c80ee97211390a85ce43d85ffa1b3f7639da26fca"
+    },
+    "sandbox": {
+      "run_id": "20261107T230211Z-1427450-f5f311e3",
+      "status": "PASS_LOCAL",
+      "checks_passed": 984,
+      "checks_total": 984,
+      "transactions": 898,
+      "top_level_success": 882,
+      "expected_failures": 16,
+      "snapshots": 17,
+      "run_dir": "test-support/contract-integration/evidence/runs/20261107T230211Z-1427450-f5f311e3",
+      "run_json_sha256": "6d8469e956075df94b2306cbb7133215b3df46a387f8e498baa71fa634244dd5",
+      "result_json_sha256": "f99533fc61e0ef9f65bae68247c3bb036218db84a125d5b6b6c7faa7b3994685",
+      "teardown_json_sha256": "3e4b0baec6d98d33283bd190d148d6d56d7fb090b64bd78c60e569422aecd91d",
+      "candidate_wasm_sha256": "d79ef24c72d2eea762d4c3e78a1990a21bf13458b0bf07c908a68fc6ca1d5bee",
+      "frozen_deployed_sha256": "fc49fb85cc6e718086ddf81e9a936362a8c36ef9384a8444eadafa6ec0cdcd8e",
+      "sandbox_sha256": "797b9d7a9a23907048d68a427e86a55c94f1de232dbfb8b8a1eec09ecef3bf13"
+    },
+    "gas": {
+      "cancel_200_registrations": 2265237437803,
+      "cancel_2_registrations": 2260070621358,
+      "timeout_activation_200_registrations": 2283943686759
+    },
+    "teardown": {
+      "ownership_verified": true,
+      "proven_stopped": true,
+      "pgid": 1427567,
+      "remaining": []
+    }
+  },
+  "d036": {
+    "withdrawal_disabled": true,
+    "rejoin_disabled": true,
+    "one_registration_per_account_event": true,
+    "cancel_refund": true,
+    "timeout_refund": true,
+    "zero_attendee_safe": true,
+    "policy_identity": "showstake-v2-d036/1",
+    "legacy_identity_rejected": true
+  },
+  "lc_r1": {
+    "o1_terminal_activation": true,
+    "lazy_entitlement": true,
+    "fixed_size_accounting": true,
+    "capacity_200_measured": true
+  },
+  "lc_r2": {
+    "real_nonzero_deposit": true,
+    "real_clock_crossing": true,
+    "stored_deadline_patch_label": "deadline_patched_for_bounded_sandbox",
+    "fake_24h_claim": false,
+    "claim_receipts_verified": true
+  },
+  "open_gates": [
+    "Codex review/acceptance of v5",
+    "testnet deployment NOT_RUN (fc49fb85 remains deployed)",
+    "clean instance required for legacy state",
+    "real 24h deadline PARTIAL (shortened stored deadline + real fast-forward; +24h unit-tested)",
+    "attendance/finalization/settlement/factory out of slice",
+    "callback non-execution residual risk",
+    "reasoning level max not independently machine-verified"
+  ],
+  "authorization": {
+    "commit": false,
+    "push": false,
+    "deploy": false,
+    "paid_resources": false,
+    "real_assets": false,
+    "api_node_lockfile_touched": false
+  }
+}

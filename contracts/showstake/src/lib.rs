@@ -9,10 +9,14 @@
 //!   * `ft_on_transfer` acceptance that atomically creates one registration and
 //!     one account-bound pass in the same receipt, or returns the full unused
 //!     amount and creates no state,
-//!   * bounded views, and explicit rejection of transfer/approval/reassignment.
+//!   * bounded views, and explicit rejection of transfer/approval/reassignment,
+//!   * one lifetime registration per account/event (no voluntary
+//!     withdrawal/rejoin), O(1) organizer cancellation and timeout
+//!     refund-only, and exactly-once beneficiary claims materialized lazily.
 //!
-//! Out of scope here (next assignment): withdrawal, cancellation, settlement,
-//! claims, attendance. The state retained below is only what those stages need.
+//! Out of scope here (next assignment): attendance, finalization,
+//! settlement/redistribution and the factory. The state retained below is only
+//! what those stages need.
 //!
 //! This is NOT a NEP-171 or NEP-393 implementation. The pass is a custom,
 //! account-bound event credential; every transfer/approval/burn/admin-reassign
@@ -24,15 +28,19 @@
 
 use near_sdk::collections::LookupMap;
 use near_sdk::json_types::U128;
-use near_sdk::{env, near, require, AccountId, PanicOnDefault, PromiseOrValue};
+use near_sdk::{
+    env, near, require, AccountId, Gas, NearToken, PanicOnDefault, Promise, PromiseOrValue,
+};
 use serde::Deserialize;
 
-/// The only event state implemented in this slice. Later lifecycle stages add
-/// variants; no financial lifecycle is executed here yet.
+/// Event financial state for this slice. Variants are append-only so Borsh
+/// state written by the deployed `Published`-only artifact still decodes.
 #[near(serializers = [borsh, json])]
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum EventState {
     Published,
+    Cancelled,
+    RefundOnly,
 }
 
 /// Registration lifecycle in this slice: accepted registrations are Active.
@@ -50,20 +58,37 @@ pub enum AttendanceStatus {
     NotMarked,
 }
 
-/// Financial lifecycle in this slice: the accepted principal is committed.
+/// Registration/pass financial lifecycle. Variants are append-only so Borsh
+/// state written by the deployed `Committed`-only artifact still decodes.
 #[near(serializers = [borsh, json])]
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum FinancialStatus {
     Committed,
+    Claimable,
+    Pending,
+    Paid,
 }
 
-/// Derived from immutable times and block time; never stored.
+/// Derived from immutable times and block time (plus terminal event state);
+/// never stored.
 #[near(serializers = [json])]
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum EventPhase {
     Scheduled,
     RegistrationOpen,
     RegistrationClosed,
+    Cancelled,
+    RefundOnly,
+}
+
+/// Outcome of one FT payout attempt. Not stored directly; derived from the
+/// registration claim record.
+#[near(serializers = [json])]
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum PayoutState {
+    Pending,
+    Succeeded,
+    Failed,
 }
 
 #[near(serializers = [borsh, json])]
@@ -129,6 +154,33 @@ pub struct Pass {
     pub policy_version: String,
 }
 
+/// Fixed-size per-registration claim state. Deliberately created in the same
+/// measured storage write as a new registration, so no non-payable lifecycle
+/// method ever creates uncharged storage. Field widths are fixed, so updates
+/// during cancel/refund-only/claim/callback never grow storage.
+#[near(serializers = [borsh, json])]
+#[derive(Clone, Debug)]
+pub struct ClaimRecord {
+    pub amount: U128,
+    pub paid_amount: U128,
+    pub payout_state: FinancialStatus,
+    pub attempts: u32,
+    /// 0 means no payout is pending; otherwise it is the attempt number.
+    pub pending_attempt: u32,
+    pub withdrawn_at: u64,
+}
+
+/// Fixed-size per-event accounting aggregates. Created during the measured
+/// publish write and updated only by fixed-size claim/callback writes. This
+/// keeps cancellation, timeout activation and totals O(1); no critical write
+/// walks the capacity-200 registration set.
+#[near(serializers = [borsh, json])]
+#[derive(Clone, Debug)]
+pub struct EventAccounting {
+    pub paid: U128,
+    pub pending: U128,
+}
+
 /// Bounded, versioned `ft_on_transfer` message. No owner/beneficiary/recipient
 /// field is accepted; unknown fields are rejected.
 #[derive(Deserialize)]
@@ -182,6 +234,7 @@ pub struct EventView {
     pub phase: EventPhase,
     pub active_registrations: u32,
     pub total_registrations: u64,
+    pub withdrawn_registrations: u64,
     pub accepted_principal: U128,
     pub created_at: u64,
 }
@@ -217,7 +270,50 @@ pub struct PassView {
     pub policy_version: String,
 }
 
+#[near(serializers = [json])]
+#[derive(Clone, Debug)]
+pub struct ClaimView {
+    pub registration_id: String,
+    pub event_id: String,
+    pub beneficiary: AccountId,
+    pub amount: U128,
+    pub payout_state: FinancialStatus,
+    pub pending_payout_id: Option<String>,
+    pub paid_amount: U128,
+    pub withdrawn_at: u64,
+}
+
+#[near(serializers = [json])]
+#[derive(Clone, Debug)]
+pub struct PayoutView {
+    pub payout_id: String,
+    pub registration_id: String,
+    pub event_id: String,
+    pub beneficiary: AccountId,
+    pub amount: U128,
+    pub state: PayoutState,
+    pub attempt: u32,
+}
+
+#[near(serializers = [json])]
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct EventTotalsView {
+    pub event_id: String,
+    pub state: EventState,
+    pub registrations: u64,
+    pub active_registrations: u32,
+    pub withdrawn_registrations: u64,
+    pub accepted_principal: U128,
+    pub paid: U128,
+    pub pending: U128,
+    pub liability: U128,
+}
+
 const DAY_MS: u64 = 24 * 60 * 60 * 1000;
+const FT_TRANSFER_GAS: u64 = 50_000_000_000_000;
+const PAYOUT_CALLBACK_GAS: u64 = 40_000_000_000_000;
+const CLAIM_MIN_PREPAID_GAS: u64 = 100_000_000_000_000;
+const ONE_YOCTO: u128 = 1;
 const MIN_CAPACITY: u32 = 1;
 const MAX_CAPACITY: u32 = 200;
 const MAX_ID_LEN: usize = 64;
@@ -225,6 +321,15 @@ const MAX_HASH_LEN: usize = 128;
 const MAX_MSG_LEN: usize = 512;
 const MAX_LIST_LIMIT: u32 = 50;
 const MAX_TEXT_LEN: usize = 64;
+/// Product state schema. Old candidates lack the `sv` marker and must use a
+/// clean instance; v4 never upgrades their claims in place.
+const SCHEMA_VERSION: u32 = 2;
+
+/// Published policy identity. D036 removes voluntary withdrawal/rejoin, so an
+/// instance built from this source must not be labelled with the earlier
+/// voluntary-withdrawal identity (`showstake-v2/1`): the init argument is
+/// validated against this constant instead of accepting a free-form label.
+pub const POLICY_IDENTITY: &str = "showstake-v2-d036/1";
 
 #[near(contract_state)]
 #[derive(PanicOnDefault)]
@@ -253,6 +358,12 @@ impl Contract {
     /// One-time initialization. The event organizer, canonical FT, network
     /// label and policy version are immutable for the lifetime of the
     /// deployment. There is exactly one event instance per contract.
+    ///
+    /// `policy_version` must equal [`POLICY_IDENTITY`] (D036: commit/pass is
+    /// final, no voluntary withdrawal or rejoin). The parameter is retained
+    /// for ABI stability with the deployed `fc49fb85` surface, but the earlier
+    /// voluntary-withdrawal identity `showstake-v2/1` is rejected so old rules
+    /// can never be silently reinterpreted by a new instance.
     #[init]
     pub fn new(
         organizer: AccountId,
@@ -264,6 +375,10 @@ impl Contract {
         require!(
             valid_text(&policy_version),
             "policy_version must be 1..=64 printable ASCII chars"
+        );
+        require!(
+            policy_version == POLICY_IDENTITY,
+            "policy_version must equal the current D036 policy identity"
         );
         Self {
             config: Config {
@@ -304,22 +419,47 @@ impl Contract {
 
     pub fn get_registration(&self, registration_id: String) -> RegistrationView {
         let registration = self.registration_or_panic(&registration_id);
-        registration_view(&registration)
+        let event = self.event_or_panic(&registration.event_id);
+        registration_view(&registration, &event)
     }
 
     pub fn get_pass(&self, pass_id: String) -> PassView {
         let pass = self.pass_or_panic(&pass_id);
-        pass_view(&pass)
+        let event = self.event_or_panic(&pass.event_id);
+        pass_view(&pass, &event)
     }
 
     pub fn storage_balance_of(&self, account_id: AccountId) -> U128 {
         U128(self.credits.get(&account_id).unwrap_or(0))
     }
 
-    /// Aggregate accepted canonical-FT principal. Per-event principal is in
-    /// `get_event`.
+    /// Aggregate canonical-FT principal still held by this contract (accepted
+    /// minus successful payouts). Per-event cumulative principal is in
+    /// `get_event`; paid/pending/liability are in `get_event_totals`.
     pub fn get_escrow_principal(&self) -> U128 {
         U128(self.escrow_principal)
+    }
+
+    pub fn get_claim(&self, registration_id: String) -> ClaimView {
+        let registration = self.registration_or_panic(&registration_id);
+        self.schema_or_panic(&registration.event_id);
+        let record = self.claim_record_or_panic(&registration_id);
+        let event = self.event_or_panic(&registration.event_id);
+        self.claim_view(&registration, &record, &event)
+    }
+
+    pub fn get_payout(&self, payout_id: String) -> PayoutView {
+        let (registration_id, attempt) = parse_payout_id(&payout_id)
+            .unwrap_or_else(|| env::panic_str("invalid payout id"));
+        let registration = self.registration_or_panic(&registration_id);
+        self.schema_or_panic(&registration.event_id);
+        let record = self.claim_record_or_panic(&registration_id);
+        self.payout_view(&payout_id, attempt, &registration, &record)
+    }
+
+    pub fn get_event_totals(&self, event_id: String) -> EventTotalsView {
+        let event = self.event_or_panic(&event_id);
+        self.event_totals(&event)
     }
 
     /// Chain clock in UTC milliseconds, used by local clients to build and
@@ -365,7 +505,7 @@ impl Contract {
             let Some(registration) = self.registrations.get(&registration_id) else {
                 break;
             };
-            out.push(registration_view(&registration));
+            out.push(registration_view(&registration, &event));
             index = match index.checked_add(1) {
                 Some(next) => next,
                 None => break,
@@ -487,6 +627,14 @@ impl Contract {
         let before = env::storage_usage();
         self.events.insert(&event_id, &event);
         self.event_ids.insert(&seq, &event_id);
+        self.schema().insert(&event_id, &SCHEMA_VERSION);
+        self.accounting().insert(
+            &event_id,
+            &EventAccounting {
+                paid: U128(0),
+                pending: U128(0),
+            },
+        );
         self.next_event_seq = seq.checked_add(1).unwrap_or_else(|| env::panic_str("event seq overflow"));
         let after = env::storage_usage();
         let cost = storage_cost(before, after);
@@ -563,6 +711,13 @@ impl Contract {
             log_reject("EVENT_NOT_FOUND", amount.0);
             return refund(amount);
         };
+        if event.state != EventState::Published {
+            log_reject("EVENT_NOT_PUBLISHED", amount.0);
+            return refund(amount);
+        }
+        // Clean-instance gate: legacy states have no schema marker and are
+        // never upgraded in place.
+        self.schema_or_panic(&event.event_id);
 
         let now = env::block_timestamp_ms();
         if now < event.reg_open || now >= event.reg_close {
@@ -578,6 +733,11 @@ impl Contract {
             return refund(amount);
         }
         let active_key = (message.event_id.clone(), sender_id.clone());
+        let lifetime_key = (message.event_id.clone(), sender_id.clone());
+        if self.lifetime().contains_key(&lifetime_key) {
+            log_reject("ACCOUNT_ALREADY_REGISTERED", amount.0);
+            return refund(amount);
+        }
         if self.active.contains_key(&active_key) {
             log_reject("ACTIVE_REGISTRATION", amount.0);
             return refund(amount);
@@ -650,13 +810,23 @@ impl Contract {
             financial_status: FinancialStatus::Committed,
             policy_version: self.config.policy_version.clone(),
         };
+        let claim_record = ClaimRecord {
+            amount: U128(0),
+            paid_amount: U128(0),
+            payout_state: FinancialStatus::Committed,
+            attempts: 0,
+            pending_attempt: 0,
+            withdrawn_at: 0,
+        };
 
         // One receipt: all of these writes belong to this ft_on_transfer call.
         let before = env::storage_usage();
         self.registrations.insert(&registration_id, &registration);
         self.passes.insert(&pass_id, &pass);
+        self.claims().insert(&registration_id, &claim_record);
         self.commitments.insert(&commitment_key, &registration_id);
         self.active.insert(&active_key, &registration_id);
+        self.lifetime().insert(&lifetime_key, &registration_id);
         self.event_index
             .insert(&(message.event_id.clone(), event_sequence), &registration_id);
         self.events.insert(&message.event_id, &updated_event);
@@ -672,8 +842,10 @@ impl Contract {
                 // restore the aggregate/root counters before refunding the FT.
                 self.registrations.remove(&registration_id);
                 self.passes.remove(&pass_id);
+                self.claims().remove(&registration_id);
                 self.commitments.remove(&commitment_key);
                 self.active.remove(&active_key);
+                self.lifetime().remove(&lifetime_key);
                 self.event_index
                     .remove(&(message.event_id.clone(), event_sequence));
                 self.events.insert(&message.event_id, &event);
@@ -700,6 +872,292 @@ impl Contract {
             }),
         );
         PromiseOrValue::Value(U128(0))
+    }
+
+    // --------------------------------------- cancellation / timeout / claim
+
+    /// D036 product policy: after a valid deposit/pass the participant cannot
+    /// voluntarily cancel/refund. The route remains callable for ABI stability
+    /// but traps before any state read or mutation. One lifetime registration
+    /// per account/event; no rejoin exists.
+    pub fn withdraw_registration(&mut self, _registration_id: String) -> ClaimView {
+        env::log_str("SHOWSTAKE_REJECT reason=VOLUNTARY_WITHDRAWAL_DISABLED");
+        env::panic_str(
+            "voluntary withdrawal is disabled; one lifetime registration per account/event",
+        );
+    }
+
+    /// Organizer cancellation while the event is still `Published` (no
+    /// settlement in this slice). Every registration becomes entitled to a
+    /// full-principal claim. The terminal transition is O(1): entitlement is
+    /// materialized lazily on `claim`, so total registration count cannot make
+    /// cancellation run out of gas.
+    pub fn cancel_event(&mut self, event_id: String) -> EventView {
+        let caller = env::predecessor_account_id();
+        let mut event = self.event_or_panic(&event_id);
+        require!(
+            caller == self.config.organizer,
+            "only the configured organizer may cancel"
+        );
+        require!(
+            event.state == EventState::Published,
+            "cannot cancel from the current event state"
+        );
+        // Fail closed on legacy state before writing the terminal flag.
+        self.schema_or_panic(&event.event_id);
+        self.accounting_or_panic(&event.event_id);
+        event.state = EventState::Cancelled;
+        self.events.insert(&event.event_id, &event);
+        let totals = self.event_totals(&event);
+        log_event(
+            "EventCancelled",
+            near_sdk::serde_json::json!({
+                "event_id": event.event_id,
+                "organizer": event.organizer,
+                "refunded_registrations": totals.registrations,
+                "accepted_principal": totals.accepted_principal.0.to_string(),
+                "paid": totals.paid.0.to_string(),
+                "pending": totals.pending.0.to_string(),
+                "liability": totals.liability.0.to_string(),
+                "reward": "0",
+            }),
+        );
+        self.event_view(&event)
+    }
+
+    /// Permissionless timeout refund-only activation at/after the immutable
+    /// `finalize_deadline`. Finalization does not exist in this slice, so any
+    /// still-`Published` event becomes REFUND_ONLY exactly once. Like
+    /// cancellation, this terminal transition is O(1) and does not walk
+    /// historical registrations.
+    pub fn activate_timeout_refund(&mut self, event_id: String) -> EventView {
+        let actor = env::predecessor_account_id();
+        let mut event = self.event_or_panic(&event_id);
+        require!(
+            event.state == EventState::Published,
+            "cannot activate refund-only from the current event state"
+        );
+        let now = env::block_timestamp_ms();
+        require!(
+            now >= event.finalize_deadline,
+            "refund-only activates at/after the finalization deadline"
+        );
+        // Fail closed on legacy state before writing the terminal flag.
+        self.schema_or_panic(&event.event_id);
+        self.accounting_or_panic(&event.event_id);
+        event.state = EventState::RefundOnly;
+        self.events.insert(&event.event_id, &event);
+        let totals = self.event_totals(&event);
+        log_event(
+            "RefundModeActivated",
+            near_sdk::serde_json::json!({
+                "event_id": event.event_id,
+                "activated_by": actor,
+                "finalize_deadline": event.finalize_deadline,
+                "refunded_registrations": totals.registrations,
+                "accepted_principal": totals.accepted_principal.0.to_string(),
+                "paid": totals.paid.0.to_string(),
+                "pending": totals.pending.0.to_string(),
+                "liability": totals.liability.0.to_string(),
+                "permissionless": true,
+            }),
+        );
+        self.event_view(&event)
+    }
+
+    /// Claim the registration's full-principal refund. The caller must be the
+    /// immutable beneficiary; the FT receiver is always that beneficiary. One
+    /// payout may be pending per registration. Exactly 1 yoctoNEAR is forwarded
+    /// to the canonical FT `ft_transfer`; the private callback resolves or
+    /// restores the claim exactly once.
+    #[payable]
+    pub fn claim(&mut self, registration_id: String) -> Promise {
+        require!(
+            env::attached_deposit().as_yoctonear() == ONE_YOCTO,
+            "claim requires exactly 1 yoctoNEAR"
+        );
+        require!(
+            env::prepaid_gas().as_gas() >= CLAIM_MIN_PREPAID_GAS,
+            "claim requires at least 100 Tgas"
+        );
+        let caller = env::predecessor_account_id();
+        let mut registration = self.registration_or_panic(&registration_id);
+        require!(
+            caller == registration.beneficiary,
+            "claim receiver must be the immutable beneficiary"
+        );
+        let mut record = self.claim_record_or_panic(&registration_id);
+        let event = self.event_or_panic(&registration.event_id);
+        match record.payout_state.clone() {
+            FinancialStatus::Committed => {
+                // Cancellation/refund-only is O(1) and does not rewrite every
+                // historical registration. The full-D entitlement is
+                // materialized here, on the first claim for this registration.
+                require!(
+                    terminal_event(&event.state),
+                    "registration has no claimable allocation"
+                );
+                record.amount = event.deposit;
+                record.payout_state = FinancialStatus::Claimable;
+            }
+            FinancialStatus::Pending => env::panic_str("claim already pending"),
+            FinancialStatus::Paid => env::panic_str("claim already paid"),
+            FinancialStatus::Claimable => {}
+        }
+        require!(record.amount.0 > 0, "claim amount is zero");
+        require!(
+            effective_financial_status(&event.state, &registration.financial_status)
+                == FinancialStatus::Claimable,
+            "registration is not claimable"
+        );
+        self.schema_or_panic(&registration.event_id);
+        let mut accounting = self.accounting_or_panic(&registration.event_id);
+        let pending = accounting
+            .pending
+            .0
+            .checked_add(record.amount.0)
+            .unwrap_or_else(|| env::panic_str("pending total overflow"));
+        accounting.pending = U128(pending);
+        let mut pass = self.pass_or_panic(&registration.pass_id);
+        let attempt = record
+            .attempts
+            .checked_add(1)
+            .unwrap_or_else(|| env::panic_str("payout attempt overflow"));
+        let payout_id = payout_id_for(&registration_id, attempt);
+
+        record.attempts = attempt;
+        record.pending_attempt = attempt;
+        record.payout_state = FinancialStatus::Pending;
+        registration.financial_status = FinancialStatus::Pending;
+        pass.financial_status = FinancialStatus::Pending;
+        self.registrations.insert(&registration_id, &registration);
+        self.passes.insert(&registration.pass_id, &pass);
+        self.claims().insert(&registration_id, &record);
+        self.accounting()
+            .insert(&registration.event_id, &accounting);
+
+        log_event(
+            "PayoutStarted",
+            near_sdk::serde_json::json!({
+                "payout_id": payout_id,
+                "registration_id": registration_id,
+                "event_id": registration.event_id,
+                "beneficiary": registration.beneficiary,
+                "amount": record.amount.0.to_string(),
+            }),
+        );
+
+        let ft_args = near_sdk::serde_json::json!({
+            "receiver_id": registration.beneficiary,
+            "amount": record.amount,
+            "memo": null,
+        });
+        let callback_args = near_sdk::serde_json::json!({"payout_id": payout_id});
+        Promise::new(self.config.canonical_ft.clone())
+            .function_call(
+                "ft_transfer".to_string(),
+                ft_args.to_string().into_bytes(),
+                NearToken::from_yoctonear(ONE_YOCTO),
+                Gas::from_gas(FT_TRANSFER_GAS),
+            )
+            .then(
+                Promise::new(env::current_account_id()).function_call(
+                    "on_payout_result".to_string(),
+                    callback_args.to_string().into_bytes(),
+                    NearToken::from_yoctonear(0),
+                    Gas::from_gas(PAYOUT_CALLBACK_GAS),
+                ),
+            )
+    }
+
+    /// Private FT payout callback. Only this contract can call it. A pending
+    /// payout resolves exactly once: success moves liability to paid; failure
+    /// restores the claimable liability without changing registration status. A stale or
+    /// duplicate callback traps without paying twice.
+    #[private]
+    pub fn on_payout_result(&mut self, payout_id: String) -> PayoutView {
+        require!(
+            env::promise_results_count() == 1,
+            "payout callback requires exactly one promise result"
+        );
+        let success = match env::promise_result_checked(0, 1024) {
+            Ok(_) => true,
+            Err(near_sdk::PromiseError::Failed) => false,
+            Err(_) => env::panic_str("unexpected payout callback result"),
+        };
+        let (registration_id, attempt) = parse_payout_id(&payout_id)
+            .unwrap_or_else(|| env::panic_str("invalid payout id"));
+        require!(
+            payout_id == payout_id_for(&registration_id, attempt),
+            "non-canonical payout id"
+        );
+        let mut registration = self.registration_or_panic(&registration_id);
+        let mut record = self.claim_record_or_panic(&registration_id);
+        require!(
+            record.payout_state == FinancialStatus::Pending
+                && record.pending_attempt == attempt,
+            "payout is not pending"
+        );
+        let amount = record.amount.0;
+        self.schema_or_panic(&registration.event_id);
+        let mut accounting = self.accounting_or_panic(&registration.event_id);
+        accounting.pending = U128(
+            accounting
+                .pending
+                .0
+                .checked_sub(amount)
+                .unwrap_or_else(|| env::panic_str("pending total underflow")),
+        );
+        let mut pass = self.pass_or_panic(&registration.pass_id);
+        if success {
+            record.payout_state = FinancialStatus::Paid;
+            record.paid_amount = U128(
+                record
+                    .paid_amount
+                    .0
+                    .checked_add(amount)
+                    .unwrap_or_else(|| env::panic_str("paid amount overflow")),
+            );
+            record.pending_attempt = 0;
+            registration.financial_status = FinancialStatus::Paid;
+            pass.financial_status = FinancialStatus::Paid;
+            accounting.paid = U128(
+                accounting
+                    .paid
+                    .0
+                    .checked_add(amount)
+                    .unwrap_or_else(|| env::panic_str("paid total overflow")),
+            );
+            self.escrow_principal = self
+                .escrow_principal
+                .checked_sub(amount)
+                .unwrap_or_else(|| env::panic_str("escrow principal underflow"));
+        } else {
+            record.payout_state = FinancialStatus::Claimable;
+            record.pending_attempt = 0;
+            registration.financial_status = FinancialStatus::Claimable;
+            pass.financial_status = FinancialStatus::Claimable;
+        }
+        self.registrations.insert(&registration_id, &registration);
+        self.passes.insert(&registration.pass_id, &pass);
+        self.claims().insert(&registration_id, &record);
+        self.accounting()
+            .insert(&registration.event_id, &accounting);
+        log_event(
+            if success {
+                "PayoutSucceeded"
+            } else {
+                "PayoutFailed"
+            },
+            near_sdk::serde_json::json!({
+                "payout_id": payout_id,
+                "registration_id": registration_id,
+                "event_id": registration.event_id,
+                "beneficiary": registration.beneficiary,
+                "amount": amount.to_string(),
+            }),
+        );
+        self.payout_view(&payout_id, attempt, &registration, &record)
     }
 
     // ------------------------------------- explicit non-transferable surface
@@ -814,6 +1272,156 @@ impl Contract {
             .unwrap_or_else(|| env::panic_str(&format!("pass not found: {pass_id}")))
     }
 
+    /// Fixed-prefix map kept outside the root Borsh layout so the deployed
+    /// `Published`/`Committed`-only state layout is not reinterpreted.
+    fn claims(&self) -> LookupMap<String, ClaimRecord> {
+        LookupMap::new(b"lc".to_vec())
+    }
+
+    /// Fixed-prefix per-event accounting aggregates, also outside the root
+    /// Borsh layout. One fixed-size entry per event, created at publish.
+    fn accounting(&self) -> LookupMap<String, EventAccounting> {
+        LookupMap::new(b"ea".to_vec())
+    }
+
+    /// Fixed-prefix schema marker. Present only on state created by this
+    /// product generation; legacy candidates fail closed instead of being
+    /// upgraded in place.
+    fn schema(&self) -> LookupMap<String, u32> {
+        LookupMap::new(b"sv".to_vec())
+    }
+
+    /// Lifetime registration index: one accepted registration per
+    /// account/event, never removed. Withdrawal is disabled in this product.
+    fn lifetime(&self) -> LookupMap<(String, AccountId), String> {
+        LookupMap::new(b"lr".to_vec())
+    }
+
+    fn schema_or_panic(&self, event_id: &str) -> u32 {
+        let version = self.schema().get(&event_id.to_string()).unwrap_or_else(|| {
+            env::panic_str(
+                "schema marker missing; clean lifecycle instance or explicit migration required",
+            )
+        });
+        require!(
+            version == SCHEMA_VERSION,
+            "unsupported lifecycle schema; clean instance required"
+        );
+        version
+    }
+
+    fn accounting_or_panic(&self, event_id: &str) -> EventAccounting {
+        self.accounting().get(&event_id.to_string()).unwrap_or_else(|| {
+            env::panic_str(
+                "event accounting missing; clean lifecycle instance or explicit migration required",
+            )
+        })
+    }
+
+    fn claim_record_or_panic(&self, registration_id: &str) -> ClaimRecord {
+        self.claims()
+            .get(&registration_id.to_string())
+            .unwrap_or_else(|| {
+                env::panic_str(
+                    "claim record missing; clean lifecycle instance or explicit migration required",
+                )
+            })
+    }
+
+    fn claim_view(
+        &self,
+        registration: &Registration,
+        record: &ClaimRecord,
+        event: &Event,
+    ) -> ClaimView {
+        // Terminal cancellation/refund-only does not rewrite historical claim
+        // records; the full-D entitlement is derived until first claim.
+        let (amount, payout_state) = if record.payout_state == FinancialStatus::Committed
+            && terminal_event(&event.state)
+        {
+            (event.deposit, FinancialStatus::Claimable)
+        } else {
+            (record.amount, record.payout_state.clone())
+        };
+        let pending_payout_id =
+            if payout_state == FinancialStatus::Pending && record.pending_attempt > 0 {
+                Some(payout_id_for(
+                    &registration.registration_id,
+                    record.pending_attempt,
+                ))
+            } else {
+                None
+            };
+        ClaimView {
+            registration_id: registration.registration_id.clone(),
+            event_id: registration.event_id.clone(),
+            beneficiary: registration.beneficiary.clone(),
+            amount,
+            payout_state,
+            pending_payout_id,
+            paid_amount: record.paid_amount,
+            withdrawn_at: record.withdrawn_at,
+        }
+    }
+
+    fn payout_view(
+        &self,
+        payout_id: &str,
+        attempt: u32,
+        registration: &Registration,
+        record: &ClaimRecord,
+    ) -> PayoutView {
+        let state = if record.payout_state == FinancialStatus::Pending
+            && record.pending_attempt == attempt
+        {
+            PayoutState::Pending
+        } else if record.payout_state == FinancialStatus::Paid && record.attempts == attempt {
+            PayoutState::Succeeded
+        } else if record.payout_state == FinancialStatus::Claimable && record.attempts == attempt {
+            PayoutState::Failed
+        } else {
+            env::panic_str("payout not found or stale")
+        };
+        PayoutView {
+            payout_id: payout_id.to_string(),
+            registration_id: registration.registration_id.clone(),
+            event_id: registration.event_id.clone(),
+            beneficiary: registration.beneficiary.clone(),
+            amount: record.amount,
+            state,
+            attempt,
+        }
+    }
+
+    /// O(1) totals from the per-event accounting entry. Cancellation, timeout
+    /// activation and this view never walk registrations, so the capacity-200
+    /// registration set cannot exhaust gas.
+    fn event_totals(&self, event: &Event) -> EventTotalsView {
+        self.schema_or_panic(&event.event_id);
+        let accounting = self.accounting_or_panic(&event.event_id);
+        let accepted = event.accepted_principal.0;
+        let paid = accounting.paid.0;
+        let pending = accounting.pending.0;
+        let settled = paid
+            .checked_add(pending)
+            .unwrap_or_else(|| env::panic_str("settled total overflow"));
+        require!(settled <= accepted, "event totals exceed accepted principal");
+        let withdrawn = event
+            .total_registrations
+            .saturating_sub(u64::from(event.active_registrations));
+        EventTotalsView {
+            event_id: event.event_id.clone(),
+            state: event.state.clone(),
+            registrations: event.total_registrations,
+            active_registrations: event.active_registrations,
+            withdrawn_registrations: withdrawn,
+            accepted_principal: event.accepted_principal,
+            paid: U128(paid),
+            pending: U128(pending),
+            liability: U128(accepted - settled),
+        }
+    }
+
     fn event_view(&self, event: &Event) -> EventView {
         EventView {
             event_id: event.event_id.clone(),
@@ -833,6 +1441,9 @@ impl Contract {
             phase: event_phase(event, env::block_timestamp_ms()),
             active_registrations: event.active_registrations,
             total_registrations: event.total_registrations,
+            withdrawn_registrations: event
+                .total_registrations
+                .saturating_sub(u64::from(event.active_registrations)),
             accepted_principal: event.accepted_principal,
             created_at: event.created_at,
         }
@@ -840,16 +1451,54 @@ impl Contract {
 }
 
 fn event_phase(event: &Event, now: u64) -> EventPhase {
-    if now < event.reg_open {
-        EventPhase::Scheduled
-    } else if now < event.reg_close {
-        EventPhase::RegistrationOpen
-    } else {
-        EventPhase::RegistrationClosed
+    match event.state {
+        EventState::Cancelled => EventPhase::Cancelled,
+        EventState::RefundOnly => EventPhase::RefundOnly,
+        EventState::Published => {
+            if now < event.reg_open {
+                EventPhase::Scheduled
+            } else if now < event.reg_close {
+                EventPhase::RegistrationOpen
+            } else {
+                EventPhase::RegistrationClosed
+            }
+        }
     }
 }
 
-fn registration_view(registration: &Registration) -> RegistrationView {
+fn payout_id_for(registration_id: &str, attempt: u32) -> String {
+    format!("pay-{registration_id}-{attempt}")
+}
+
+fn parse_payout_id(payout_id: &str) -> Option<(String, u32)> {
+    let rest = payout_id.strip_prefix("pay-")?;
+    let (registration_id, attempt) = rest.rsplit_once('-')?;
+    let attempt: u32 = attempt.parse().ok()?;
+    if registration_id.is_empty() || attempt == 0 {
+        return None;
+    }
+    Some((registration_id.to_string(), attempt))
+}
+
+fn terminal_event(state: &EventState) -> bool {
+    matches!(state, EventState::Cancelled | EventState::RefundOnly)
+}
+
+/// Stored `Committed` becomes an effective `Claimable` once the event is
+/// terminal. Cancellation/refund-only does not rewrite historical records;
+/// views and `claim` derive the entitlement from the event state.
+fn effective_financial_status(
+    state: &EventState,
+    stored: &FinancialStatus,
+) -> FinancialStatus {
+    if *stored == FinancialStatus::Committed && terminal_event(state) {
+        FinancialStatus::Claimable
+    } else {
+        stored.clone()
+    }
+}
+
+fn registration_view(registration: &Registration, event: &Event) -> RegistrationView {
     RegistrationView {
         registration_id: registration.registration_id.clone(),
         event_id: registration.event_id.clone(),
@@ -861,12 +1510,15 @@ fn registration_view(registration: &Registration) -> RegistrationView {
         event_sequence: registration.event_sequence,
         registration_status: registration.registration_status.clone(),
         attendance_status: registration.attendance_status.clone(),
-        financial_status: registration.financial_status.clone(),
+        financial_status: effective_financial_status(
+            &event.state,
+            &registration.financial_status,
+        ),
         registered_at: registration.registered_at,
     }
 }
 
-fn pass_view(pass: &Pass) -> PassView {
+fn pass_view(pass: &Pass, event: &Event) -> PassView {
     PassView {
         pass_id: pass.pass_id.clone(),
         event_id: pass.event_id.clone(),
@@ -875,7 +1527,7 @@ fn pass_view(pass: &Pass) -> PassView {
         issued_at: pass.issued_at,
         registration_status: pass.registration_status.clone(),
         attendance_status: pass.attendance_status.clone(),
-        financial_status: pass.financial_status.clone(),
+        financial_status: effective_financial_status(&event.state, &pass.financial_status),
         policy_version: pass.policy_version.clone(),
     }
 }

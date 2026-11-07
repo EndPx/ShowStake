@@ -5,9 +5,10 @@
 // temporary local NEAR Sandbox with the existing FT fixture.
 
 use near_sdk::json_types::U128;
-use near_sdk::test_utils::VMContextBuilder;
+#[allow(deprecated)]
+use near_sdk::test_utils::{testing_env_with_promise_results, VMContextBuilder};
 use near_sdk::testing_env;
-use near_sdk::{env, AccountId, NearToken, PromiseOrValue};
+use near_sdk::{env, AccountId, NearToken, PromiseOrValue, PromiseResult};
 use showstake::{Contract, EventRules};
 
 const NOW: u64 = 1_700_000_000_000;
@@ -42,7 +43,7 @@ fn new_contract() -> Contract {
         acct("organizer.sandbox"),
         ft(),
         "sandbox-local".to_string(),
-        "showstake-v2/1".to_string(),
+        showstake::POLICY_IDENTITY.to_string(),
     )
 }
 
@@ -117,6 +118,36 @@ fn assert_refunded(result: PromiseOrValue<U128>, amount: u128) {
     }
 }
 
+fn first_registration(contract: &Contract, event_id: &str) -> showstake::RegistrationView {
+    contract
+        .list_event_registrations(event_id.to_string(), 0, 10)
+        .into_iter()
+        .next()
+        .expect("expected one registration")
+}
+
+fn claim_as(contract: &mut Contract, account: &AccountId, registration_id: &str, now_ms: u64) {
+    testing_env!(context(account, 1, now_ms).build());
+    let _ = contract.claim(registration_id.to_string());
+}
+
+#[allow(deprecated)]
+fn callback_result(success: bool, now_ms: u64) {
+    let result = if success {
+        PromiseResult::Successful(Vec::new())
+    } else {
+        PromiseResult::Failed
+    };
+    testing_env_with_promise_results(context(&acct(CONTRACT), 0, now_ms).build(), result);
+}
+
+fn assert_panics<F: FnOnce()>(f: F) {
+    assert!(
+        std::panic::catch_unwind(std::panic::AssertUnwindSafe(f)).is_err(),
+        "expected the call to panic"
+    );
+}
+
 fn accepted_setup() -> (Contract, AccountId, AccountId) {
     let mut contract = new_contract();
     let organizer = acct("organizer.sandbox");
@@ -135,7 +166,21 @@ fn new_sets_immutable_config() {
     assert_eq!(config.organizer, acct("organizer.sandbox"));
     assert_eq!(config.canonical_ft, ft());
     assert_eq!(config.network, "sandbox-local");
-    assert_eq!(config.policy_version, "showstake-v2/1");
+    assert_eq!(config.policy_version, showstake::POLICY_IDENTITY);
+    assert_ne!(showstake::POLICY_IDENTITY, "showstake-v2/1");
+}
+
+#[test]
+fn legacy_policy_identity_is_rejected() {
+    testing_env!(context(&acct("organizer.sandbox"), 0, NOW).build());
+    assert_panics(|| {
+        Contract::new(
+            acct("organizer.sandbox"),
+            ft(),
+            "sandbox-local".to_string(),
+            "showstake-v2/1".to_string(),
+        );
+    });
 }
 
 #[test]
@@ -223,7 +268,7 @@ fn exact_deposit_creates_one_registration_and_pass_in_one_value_return() {
     assert_eq!(pass.event_id, "evt-1");
     assert_eq!(pass.attendance_status, showstake::AttendanceStatus::NotMarked);
     assert_eq!(pass.financial_status, showstake::FinancialStatus::Committed);
-    assert_eq!(pass.policy_version, "showstake-v2/1");
+    assert_eq!(pass.policy_version, showstake::POLICY_IDENTITY);
 }
 
 #[test]
@@ -704,4 +749,523 @@ fn burn_is_rejected() {
     let registration = contract.list_event_registrations("evt-1".to_string(), 0, 1)[0].clone();
     testing_env!(context(&alice, 1, NOW + 2).build());
     contract.burn(registration.pass_id);
+}
+
+// ------------------------------------------- cancellation / timeout / claim
+
+fn register_capacity(
+    contract: &mut Contract,
+    event_id: &str,
+    capacity: u32,
+) -> Vec<AccountId> {
+    let mut accounts = Vec::new();
+    for index in 0..capacity {
+        let account = acct(&format!("p{index}.sandbox"));
+        prepay(
+            contract,
+            &account,
+            NearToken::from_millinear(500).as_yoctonear(),
+        );
+        assert_accepted(ft_deposit(
+            contract,
+            &account,
+            100,
+            &commit_msg(event_id, &format!("p{index}-c1")),
+            NOW + 1 + u64::from(index),
+        ));
+        accounts.push(account);
+    }
+    accounts
+}
+
+#[test]
+fn withdrawal_is_disabled_before_mutation() {
+    let (mut contract, _organizer, alice) = accepted_setup();
+    let registration = first_registration(&contract, "evt-1");
+    let before_event = contract.get_event("evt-1".to_string());
+    let before_totals = contract.get_event_totals("evt-1".to_string());
+    let before_claim = contract.get_claim(registration.registration_id.clone());
+
+    assert_panics(|| {
+        testing_env!(context(&alice, 0, NOW + 2).build());
+        contract.withdraw_registration(registration.registration_id.clone());
+    });
+
+    let after_event = contract.get_event("evt-1".to_string());
+    assert_eq!(after_event.state, before_event.state);
+    assert_eq!(after_event.active_registrations, before_event.active_registrations);
+    assert_eq!(after_event.total_registrations, before_event.total_registrations);
+    assert_eq!(after_event.accepted_principal, before_event.accepted_principal);
+    assert_eq!(contract.get_event_totals("evt-1".to_string()), before_totals);
+    let after_claim = contract.get_claim(registration.registration_id);
+    assert_eq!(after_claim.amount, before_claim.amount);
+    assert_eq!(after_claim.payout_state, before_claim.payout_state);
+    assert_eq!(after_claim.paid_amount, before_claim.paid_amount);
+    assert_eq!(contract.get_escrow_principal(), U128(100));
+}
+
+#[test]
+fn one_lifetime_registration_per_account() {
+    let (mut contract, _organizer, alice) = accepted_setup();
+    assert_refunded(
+        ft_deposit(
+            &mut contract,
+            &alice,
+            100,
+            &commit_msg("evt-1", "alice-c2"),
+            NOW + 2,
+        ),
+        100,
+    );
+    let event = contract.get_event("evt-1".to_string());
+    assert_eq!(event.active_registrations, 1);
+    assert_eq!(event.total_registrations, 1);
+    assert_eq!(event.withdrawn_registrations, 0);
+    assert_eq!(contract.get_escrow_principal(), U128(100));
+    assert_eq!(
+        contract.get_claim("reg-0".to_string()).payout_state,
+        showstake::FinancialStatus::Committed
+    );
+}
+
+#[test]
+fn cancel_with_zero_registrations_is_consistent() {
+    let mut contract = new_contract();
+    let organizer = acct("organizer.sandbox");
+    publish(&mut contract, &organizer, "evt-empty");
+
+    testing_env!(context(&organizer, 0, NOW + 1).build());
+    let event = contract.cancel_event("evt-empty".to_string());
+    assert_eq!(event.state, showstake::EventState::Cancelled);
+    let totals = contract.get_event_totals("evt-empty".to_string());
+    assert_eq!(totals.registrations, 0);
+    assert_eq!(totals.active_registrations, 0);
+    assert_eq!(totals.withdrawn_registrations, 0);
+    assert_eq!(totals.accepted_principal, U128(0));
+    assert_eq!(totals.paid, U128(0));
+    assert_eq!(totals.pending, U128(0));
+    assert_eq!(totals.liability, U128(0));
+    assert_eq!(contract.get_escrow_principal(), U128(0));
+    assert!(contract
+        .list_event_registrations("evt-empty".to_string(), 0, 10)
+        .is_empty());
+}
+
+#[test]
+fn timeout_with_zero_registrations_is_consistent() {
+    let mut contract = new_contract();
+    let organizer = acct("organizer.sandbox");
+    let dave = acct("dave.sandbox");
+    publish(&mut contract, &organizer, "evt-empty");
+    let deadline = NOW + 2 * HOUR_MS + DAY_MS;
+
+    testing_env!(context(&dave, 0, deadline).build());
+    let event = contract.activate_timeout_refund("evt-empty".to_string());
+    assert_eq!(event.state, showstake::EventState::RefundOnly);
+    let totals = contract.get_event_totals("evt-empty".to_string());
+    assert_eq!(totals.registrations, 0);
+    assert_eq!(totals.accepted_principal, U128(0));
+    assert_eq!(totals.paid, U128(0));
+    assert_eq!(totals.pending, U128(0));
+    assert_eq!(totals.liability, U128(0));
+    assert_eq!(contract.get_escrow_principal(), U128(0));
+}
+
+#[test]
+fn cancel_grants_full_principal_claims_and_pays_once() {
+    let mut contract = new_contract();
+    let organizer = acct("organizer.sandbox");
+    let alice = acct("alice.sandbox");
+    let bob = acct("bob.sandbox");
+    publish_with(&mut contract, &organizer, "evt-1", default_rules(100, 3));
+    prepay(&mut contract, &alice, NearToken::from_millinear(500).as_yoctonear());
+    prepay(&mut contract, &bob, NearToken::from_millinear(500).as_yoctonear());
+    assert_accepted(ft_deposit(&mut contract, &alice, 100, &commit_msg("evt-1", "alice-c1"), NOW + 1));
+    assert_accepted(ft_deposit(&mut contract, &bob, 100, &commit_msg("evt-1", "bob-c1"), NOW + 2));
+
+    testing_env!(context(&organizer, 0, NOW + 3).build());
+    let event = contract.cancel_event("evt-1".to_string());
+    assert_eq!(event.state, showstake::EventState::Cancelled);
+    assert_eq!(event.phase, showstake::EventPhase::Cancelled);
+    assert_eq!(event.active_registrations, 2);
+    assert_eq!(event.total_registrations, 2);
+    assert_eq!(event.withdrawn_registrations, 0);
+
+    for registration in contract.list_event_registrations("evt-1".to_string(), 0, 10) {
+        assert_eq!(registration.financial_status, showstake::FinancialStatus::Claimable);
+        assert_eq!(registration.registration_status, showstake::RegistrationStatus::Active);
+        let pass = contract.get_pass(registration.pass_id.clone());
+        assert_eq!(pass.financial_status, showstake::FinancialStatus::Claimable);
+        let claim = contract.get_claim(registration.registration_id);
+        assert_eq!(claim.amount, U128(100));
+        assert_eq!(claim.payout_state, showstake::FinancialStatus::Claimable);
+    }
+    let totals = contract.get_event_totals("evt-1".to_string());
+    assert_eq!(totals.accepted_principal, U128(200));
+    assert_eq!(totals.paid, U128(0));
+    assert_eq!(totals.pending, U128(0));
+    assert_eq!(totals.liability, U128(200));
+    assert_eq!(contract.get_escrow_principal(), U128(200));
+
+    claim_as(&mut contract, &alice, "reg-0", NOW + 4);
+    let pending = contract.get_claim("reg-0".to_string());
+    assert_eq!(pending.payout_state, showstake::FinancialStatus::Pending);
+    let payout = pending.pending_payout_id.expect("pending payout");
+    assert_panics(|| claim_as(&mut contract, &alice, "reg-0", NOW + 5));
+    callback_result(true, NOW + 6);
+    contract.on_payout_result(payout);
+    let paid = contract.get_claim("reg-0".to_string());
+    assert_eq!(paid.payout_state, showstake::FinancialStatus::Paid);
+    assert_eq!(paid.paid_amount, U128(100));
+    let totals = contract.get_event_totals("evt-1".to_string());
+    assert_eq!(totals.paid, U128(100));
+    assert_eq!(totals.liability, U128(100));
+    assert_eq!(contract.get_escrow_principal(), U128(100));
+}
+
+#[test]
+fn unauthorized_cancel_is_rejected_without_state_change() {
+    let (mut contract, _organizer, alice) = accepted_setup();
+    let registration = first_registration(&contract, "evt-1");
+    let before = contract.get_event_totals("evt-1".to_string());
+    assert_panics(|| {
+        testing_env!(context(&alice, 0, NOW + 2).build());
+        contract.cancel_event("evt-1".to_string());
+    });
+    let after = contract.get_event("evt-1".to_string());
+    assert_eq!(after.state, showstake::EventState::Published);
+    assert_eq!(after.total_registrations, 1);
+    assert_eq!(
+        contract.get_claim(registration.registration_id).payout_state,
+        showstake::FinancialStatus::Committed
+    );
+    assert_eq!(contract.get_event_totals("evt-1".to_string()), before);
+}
+
+#[test]
+fn timeout_refund_only_is_permissionless_and_deadline_inclusive() {
+    let mut contract = new_contract();
+    let organizer = acct("organizer.sandbox");
+    let alice = acct("alice.sandbox");
+    let dave = acct("dave.sandbox");
+    publish_with(&mut contract, &organizer, "evt-1", default_rules(100, 2));
+    prepay(&mut contract, &alice, NearToken::from_millinear(500).as_yoctonear());
+    assert_accepted(ft_deposit(&mut contract, &alice, 100, &commit_msg("evt-1", "alice-c1"), NOW + 1));
+    let deadline = NOW + 2 * HOUR_MS + DAY_MS;
+
+    assert_panics(|| {
+        testing_env!(context(&dave, 0, deadline - 1).build());
+        contract.activate_timeout_refund("evt-1".to_string());
+    });
+    assert_eq!(
+        contract.get_event("evt-1".to_string()).state,
+        showstake::EventState::Published
+    );
+
+    testing_env!(context(&dave, 0, deadline).build());
+    let event = contract.activate_timeout_refund("evt-1".to_string());
+    assert_eq!(event.state, showstake::EventState::RefundOnly);
+    assert_eq!(event.phase, showstake::EventPhase::RefundOnly);
+    let claim = contract.get_claim("reg-0".to_string());
+    assert_eq!(claim.amount, U128(100));
+    assert_eq!(claim.payout_state, showstake::FinancialStatus::Claimable);
+    let totals = contract.get_event_totals("evt-1".to_string());
+    assert_eq!(totals.accepted_principal, U128(100));
+    assert_eq!(totals.paid, U128(0));
+    assert_eq!(totals.pending, U128(0));
+    assert_eq!(totals.liability, U128(100));
+
+    assert_panics(|| {
+        testing_env!(context(&dave, 0, deadline + 1).build());
+        contract.activate_timeout_refund("evt-1".to_string());
+    });
+    assert_panics(|| {
+        testing_env!(context(&organizer, 0, deadline + 2).build());
+        contract.cancel_event("evt-1".to_string());
+    });
+}
+
+#[test]
+fn claim_requires_claimable_state_and_immutable_beneficiary() {
+    let (mut contract, _organizer, alice) = accepted_setup();
+    let registration = first_registration(&contract, "evt-1");
+    assert_panics(|| {
+        claim_as(&mut contract, &alice, &registration.registration_id, NOW + 2);
+    });
+    testing_env!(context(&acct("organizer.sandbox"), 0, NOW + 3).build());
+    contract.cancel_event("evt-1".to_string());
+
+    assert_panics(|| {
+        claim_as(
+            &mut contract,
+            &acct("bob.sandbox"),
+            &registration.registration_id,
+            NOW + 4,
+        );
+    });
+    assert_panics(|| {
+        testing_env!(context(&alice, 2, NOW + 4).build());
+        let _ = contract.claim(registration.registration_id.clone());
+    });
+    assert_panics(|| {
+        testing_env!(context(&alice, 0, NOW + 4).build());
+        let _ = contract.claim(registration.registration_id.clone());
+    });
+    assert_eq!(
+        contract.get_claim(registration.registration_id).payout_state,
+        showstake::FinancialStatus::Claimable
+    );
+}
+
+#[test]
+fn claim_reserves_once_then_callback_pays_exactly_once() {
+    let (mut contract, _organizer, alice) = accepted_setup();
+    testing_env!(context(&acct("organizer.sandbox"), 0, NOW + 2).build());
+    contract.cancel_event("evt-1".to_string());
+    let registration = first_registration(&contract, "evt-1");
+    claim_as(&mut contract, &alice, &registration.registration_id, NOW + 3);
+    let pending = contract.get_claim(registration.registration_id.clone());
+    assert_eq!(pending.payout_state, showstake::FinancialStatus::Pending);
+    let payout_id = pending.pending_payout_id.clone().expect("pending payout id");
+    let totals = contract.get_event_totals("evt-1".to_string());
+    assert_eq!(totals.paid, U128(0));
+    assert_eq!(totals.pending, U128(100));
+    assert_eq!(totals.liability, U128(0));
+    assert_eq!(contract.get_escrow_principal(), U128(100));
+
+    assert_panics(|| claim_as(&mut contract, &alice, &registration.registration_id, NOW + 4));
+    callback_result(true, NOW + 5);
+    let payout = contract.on_payout_result(payout_id.clone());
+    assert_eq!(payout.state, showstake::PayoutState::Succeeded);
+    let paid = contract.get_claim(registration.registration_id.clone());
+    assert_eq!(paid.payout_state, showstake::FinancialStatus::Paid);
+    assert_eq!(paid.paid_amount, U128(100));
+    assert_eq!(contract.get_event_totals("evt-1".to_string()).liability, U128(0));
+    assert_eq!(contract.get_escrow_principal(), U128(0));
+
+    assert_panics(|| {
+        callback_result(true, NOW + 6);
+        contract.on_payout_result(payout_id.clone());
+    });
+    assert_panics(|| claim_as(&mut contract, &alice, &registration.registration_id, NOW + 7));
+}
+
+#[test]
+fn failed_payout_restores_claim_and_retry_succeeds() {
+    let (mut contract, _organizer, alice) = accepted_setup();
+    testing_env!(context(&acct("organizer.sandbox"), 0, NOW + 2).build());
+    contract.cancel_event("evt-1".to_string());
+    let registration = first_registration(&contract, "evt-1");
+    claim_as(&mut contract, &alice, &registration.registration_id, NOW + 3);
+    let first_payout = contract
+        .get_claim(registration.registration_id.clone())
+        .pending_payout_id
+        .expect("first pending payout");
+    callback_result(false, NOW + 4);
+    let failed = contract.on_payout_result(first_payout.clone());
+    assert_eq!(failed.state, showstake::PayoutState::Failed);
+
+    let restored = contract.get_claim(registration.registration_id.clone());
+    assert_eq!(restored.payout_state, showstake::FinancialStatus::Claimable);
+    assert_eq!(restored.pending_payout_id, None);
+    let totals = contract.get_event_totals("evt-1".to_string());
+    assert_eq!(totals.paid, U128(0));
+    assert_eq!(totals.pending, U128(0));
+    assert_eq!(totals.liability, U128(100));
+    assert_eq!(contract.get_escrow_principal(), U128(100));
+
+    claim_as(&mut contract, &alice, &registration.registration_id, NOW + 5);
+    let retry_payout = contract
+        .get_claim(registration.registration_id.clone())
+        .pending_payout_id
+        .expect("retry pending payout");
+    assert_ne!(retry_payout, first_payout);
+    callback_result(true, NOW + 6);
+    contract.on_payout_result(retry_payout);
+    let totals = contract.get_event_totals("evt-1".to_string());
+    assert_eq!(totals.paid, U128(100));
+    assert_eq!(totals.liability, U128(0));
+    assert_eq!(contract.get_escrow_principal(), U128(0));
+}
+
+#[test]
+fn spoofed_payout_callback_is_rejected_without_state_change() {
+    let (mut contract, _organizer, alice) = accepted_setup();
+    testing_env!(context(&acct("organizer.sandbox"), 0, NOW + 2).build());
+    contract.cancel_event("evt-1".to_string());
+    let registration = first_registration(&contract, "evt-1");
+    claim_as(&mut contract, &alice, &registration.registration_id, NOW + 3);
+    let payout_id = contract
+        .get_claim(registration.registration_id.clone())
+        .pending_payout_id
+        .expect("pending payout");
+    assert_panics(|| {
+        testing_env!(context(&alice, 0, NOW + 4).build());
+        contract.on_payout_result(payout_id.clone());
+    });
+    assert_eq!(
+        contract.get_claim(registration.registration_id.clone()).payout_state,
+        showstake::FinancialStatus::Pending
+    );
+    callback_result(true, NOW + 5);
+    contract.on_payout_result(payout_id);
+    assert_eq!(
+        contract.get_claim(registration.registration_id).payout_state,
+        showstake::FinancialStatus::Paid
+    );
+}
+
+#[test]
+fn overlapping_claims_on_two_registrations_resolve_exactly_once() {
+    let mut contract = new_contract();
+    let organizer = acct("organizer.sandbox");
+    let alice = acct("alice.sandbox");
+    let bob = acct("bob.sandbox");
+    publish_with(&mut contract, &organizer, "evt-1", default_rules(100, 2));
+    prepay(&mut contract, &alice, NearToken::from_millinear(500).as_yoctonear());
+    prepay(&mut contract, &bob, NearToken::from_millinear(500).as_yoctonear());
+    assert_accepted(ft_deposit(&mut contract, &alice, 100, &commit_msg("evt-1", "alice-c1"), NOW + 1));
+    assert_accepted(ft_deposit(&mut contract, &bob, 100, &commit_msg("evt-1", "bob-c1"), NOW + 2));
+    testing_env!(context(&organizer, 0, NOW + 3).build());
+    contract.cancel_event("evt-1".to_string());
+
+    claim_as(&mut contract, &alice, "reg-0", NOW + 4);
+    claim_as(&mut contract, &bob, "reg-1", NOW + 5);
+    let alice_payout = contract
+        .get_claim("reg-0".to_string())
+        .pending_payout_id
+        .expect("alice pending payout");
+    let bob_payout = contract
+        .get_claim("reg-1".to_string())
+        .pending_payout_id
+        .expect("bob pending payout");
+    let both_pending = contract.get_event_totals("evt-1".to_string());
+    assert_eq!(both_pending.paid, U128(0));
+    assert_eq!(both_pending.pending, U128(200));
+    assert_eq!(both_pending.liability, U128(0));
+    assert_eq!(contract.get_escrow_principal(), U128(200));
+
+    callback_result(true, NOW + 6);
+    contract.on_payout_result(alice_payout.clone());
+    let one_paid = contract.get_event_totals("evt-1".to_string());
+    assert_eq!(one_paid.paid, U128(100));
+    assert_eq!(one_paid.pending, U128(100));
+    assert_eq!(contract.get_escrow_principal(), U128(100));
+
+    callback_result(true, NOW + 7);
+    contract.on_payout_result(bob_payout.clone());
+    let both_paid = contract.get_event_totals("evt-1".to_string());
+    assert_eq!(both_paid.paid, U128(200));
+    assert_eq!(both_paid.pending, U128(0));
+    assert_eq!(both_paid.liability, U128(0));
+    assert_eq!(contract.get_escrow_principal(), U128(0));
+
+    assert_panics(|| {
+        callback_result(true, NOW + 8);
+        contract.on_payout_result(alice_payout);
+    });
+    assert_panics(|| {
+        callback_result(true, NOW + 9);
+        contract.on_payout_result(bob_payout);
+    });
+}
+
+#[test]
+fn cancel_is_o1_at_capacity_200() {
+    let mut contract = new_contract();
+    let organizer = acct("organizer.sandbox");
+    publish_with(&mut contract, &organizer, "evt-max", default_rules(100, 200));
+    let accounts = register_capacity(&mut contract, "evt-max", 200);
+    let event = contract.get_event("evt-max".to_string());
+    assert_eq!(event.active_registrations, 200);
+    assert_eq!(event.total_registrations, 200);
+    assert_eq!(event.withdrawn_registrations, 0);
+
+    testing_env!(context(&organizer, 0, NOW + 1000).build());
+    let before = env::storage_usage();
+    contract.cancel_event("evt-max".to_string());
+    let after = env::storage_usage();
+    assert_eq!(after, before, "cancel must not rewrite 200 registrations");
+    let totals = contract.get_event_totals("evt-max".to_string());
+    assert_eq!(totals.accepted_principal, U128(20000));
+    assert_eq!(totals.paid, U128(0));
+    assert_eq!(totals.pending, U128(0));
+    assert_eq!(totals.liability, U128(20000));
+    assert_eq!(contract.get_escrow_principal(), U128(20000));
+
+    claim_as(&mut contract, &accounts[0], "reg-0", NOW + 1001);
+    let payout = contract
+        .get_claim("reg-0".to_string())
+        .pending_payout_id
+        .expect("capacity-200 pending payout");
+    callback_result(true, NOW + 1002);
+    contract.on_payout_result(payout);
+    let totals = contract.get_event_totals("evt-max".to_string());
+    assert_eq!(totals.paid, U128(100));
+    assert_eq!(totals.pending, U128(0));
+    assert_eq!(totals.liability, U128(19900));
+    assert_eq!(contract.get_escrow_principal(), U128(19900));
+}
+
+#[test]
+fn timeout_refund_is_o1_at_capacity_200() {
+    let mut contract = new_contract();
+    let organizer = acct("organizer.sandbox");
+    let dave = acct("dave.sandbox");
+    publish_with(&mut contract, &organizer, "evt-max", default_rules(100, 200));
+    let accounts = register_capacity(&mut contract, "evt-max", 200);
+    let deadline = NOW + 2 * HOUR_MS + DAY_MS;
+
+    assert_panics(|| {
+        testing_env!(context(&dave, 0, deadline - 1).build());
+        contract.activate_timeout_refund("evt-max".to_string());
+    });
+    testing_env!(context(&dave, 0, deadline).build());
+    let before = env::storage_usage();
+    contract.activate_timeout_refund("evt-max".to_string());
+    let after = env::storage_usage();
+    assert_eq!(after, before, "timeout must not rewrite 200 registrations");
+    let event = contract.get_event("evt-max".to_string());
+    assert_eq!(event.state, showstake::EventState::RefundOnly);
+    let totals = contract.get_event_totals("evt-max".to_string());
+    assert_eq!(totals.accepted_principal, U128(20000));
+    assert_eq!(totals.paid, U128(0));
+    assert_eq!(totals.pending, U128(0));
+    assert_eq!(totals.liability, U128(20000));
+
+    claim_as(&mut contract, &accounts[199], "reg-199", deadline + 1);
+    let payout = contract
+        .get_claim("reg-199".to_string())
+        .pending_payout_id
+        .expect("capacity-200 timeout payout");
+    callback_result(true, deadline + 2);
+    contract.on_payout_result(payout);
+    let totals = contract.get_event_totals("evt-max".to_string());
+    assert_eq!(totals.paid, U128(100));
+    assert_eq!(totals.liability, U128(19900));
+    assert_eq!(contract.get_escrow_principal(), U128(19900));
+}
+
+#[test]
+fn deposit_after_cancel_is_rejected_without_state_change() {
+    let mut contract = new_contract();
+    let organizer = acct("organizer.sandbox");
+    let alice = acct("alice.sandbox");
+    let bob = acct("bob.sandbox");
+    publish_with(&mut contract, &organizer, "evt-1", default_rules(100, 2));
+    prepay(&mut contract, &alice, NearToken::from_millinear(500).as_yoctonear());
+    prepay(&mut contract, &bob, NearToken::from_millinear(500).as_yoctonear());
+    assert_accepted(ft_deposit(&mut contract, &alice, 100, &commit_msg("evt-1", "alice-c1"), NOW + 1));
+    testing_env!(context(&organizer, 0, NOW + 2).build());
+    contract.cancel_event("evt-1".to_string());
+    let before = contract.get_event_totals("evt-1".to_string());
+    assert_refunded(
+        ft_deposit(&mut contract, &bob, 100, &commit_msg("evt-1", "bob-c1"), NOW + 3),
+        100,
+    );
+    let after = contract.get_event_totals("evt-1".to_string());
+    assert_eq!(before, after);
+    assert_eq!(after.registrations, 1);
+    assert_eq!(after.liability, U128(100));
+    assert_eq!(contract.get_escrow_principal(), U128(100));
 }

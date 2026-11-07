@@ -149,3 +149,18 @@ Codex direct APIverification found incomplete exit0: only17 checks, no finalsumm
 
 
 2026-11-08 bounded API increment accepted PASS_LOCAL by Codex:40local and25realPostgreSQL checks (run api-run-20261107T173356Z-607483), actualloopbackHTTP, restrictedLOGIN, RESETROLE denial, operatorrejection, post-lock expiry denial and serverstop/cleanup verified. Failclosed verifier negativecontrol exits1; OpenAPI21 validates. Source snapshot excludes pendingfrontend/intents, frozenofflineinstall/build/40checks exit0. Codex authored/reviewed finalintegration (D037), no independentexternal audit. Review api-codex-integration-review.json. FullT05 remains partial: no ingestionworker, no testnet/APIwalletlogin, pass/organizer/content/funding API integration pending.
+
+
+HUMAN HOLD: all ShowStake project work stopped at explicit human request. Latest ZCode ctx_74978d0ea9c2 guarded-stop confirmed closed_agent_terminal/ptyKilled; Harness API attempt already stopped/released. Preserve all partial files/evidence. Do not auto-resume assignments, retry providers, commit/push, deploy or transact until human explicitly resumes.
+
+
+HUMAN RESUME supersedes prior HOLD. Preserve acceptedT00/T01/API59ac44a/testnetminimum; ZCode sameD036revision task_ea9a46a43699 recovered ctx_47d4c5001b1b, CloudNearDeepSeek/max runtime verified. New independent worker-indexing assignment prepared with receipt/projection/cursor atomicity, existing schema and no financialsigning, distinctpaths. No lifecycle acceptance inferred from historicalv3manifest.
+
+
+Resume orchestration: ZCode D036 ctx_47d4c5001b1b runtime CloudNearDeepSeek/max verified. New indexing task_3bd75d84d120/ctx_f9f7e288999f initially hitGATER403ip_limit_reached beforeimplementation; no Telegramwindowavailable, no command sent. Human thenreportsunbind; same-dispatch resume sent. No provider recovery/worker acceptance inferred. C free~9.15GiB now, priorlowdiskwarningnotcurrent.
+
+
+Workerprojection candidate received29fixture/23PG/17testnet workerreport. Codex independently29fixtures/build/typecheck pass, but NOT ACCEPTED: reproduced missing/emptyshard accepting receipt0; source shows cursorregression/gap/concurrency guards missing, canonicalRPCcheck outside runtime, testnetproof skippingblockrange, deploymentstart/tokenmetadata validation gaps. Sameworker revisions requested; preserve allpriorproof. See worker-codex-review-round1.json. No newworker source pushed.
+
+
+D036 lifecyclev5 accepted PASS_LOCAL byCodex: independent50unit tests exit0; source/artifact/run hashes and984Sandbox checks/898receipttransactions verified, teardownproven. Wasmd79ef24c72d2eea762d4c3e78a1990a21bf13458b0bf07c908a68fc6ca1d5bee, policyshowstake-v2-d036/1, O(1) cancel200~2.265Tgas/timeout200~2.284Tgas. Deposit->shortened labelledSandboxdeadline->actualclocktimeout->refundclaim proven; real24h wallclock notclaimed. No attendance/finalization/settlement/factory acceptance. Newclean testnetinstance required; oldfc49 deployment unchanged. Workerindexing revisionctx_8e6fdcbe7e33 blockedGATERiplimit; no retryloop.
