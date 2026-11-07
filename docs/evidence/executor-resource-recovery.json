@@ -1,0 +1,30 @@
+{
+  "reviewer": "Codex",
+  "classifier": "BLOCKED_EXTERNAL",
+  "capabilities": {
+    "local_disk": {
+      "status": "RECOVERED",
+      "C_available_bytes": 9342357504,
+      "D_available_bytes": 4713820160,
+      "observation": "C was previously0; capacity now independently rechecked, no Codex cleanup performed"
+    },
+    "deepseek_gater": {
+      "status": "BLOCKED_EXTERNAL",
+      "last_error": "403 ip_limit_reached",
+      "task": "task_6843b3ded59f",
+      "dispatch": "ctx_1fd920f8ddf5",
+      "minimum_action": "release unused GATER IP binding; repeated rebind needs account admin inspection; no key in chat"
+    },
+    "sandbox": {
+      "status": "RESUMED_NOT_ACCEPTED",
+      "task": "task_3fd0148abbbe",
+      "previous_dispatch": "ctx_404a061c4932",
+      "previous_stop_proven": true,
+      "new_dispatch": "ctx_9937fc099adf",
+      "resource_guard": "minimum3GiB C and2GiB D before each heavy phase; no WSL/distro/shared-cache changes",
+      "wasm_status": "prior ft_fixture.wasm0bytes, not compile proof"
+    }
+  },
+  "independent_work": "same ZCode Cloud Near sandbox test task resumed; main unaccepted source preserved",
+  "limits": "No core wallet/contract acceptance implied; no scope/provider change."
+}
