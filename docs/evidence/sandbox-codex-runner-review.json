@@ -1,0 +1,44 @@
+{
+  "reviewer": "Codex",
+  "classifier": "FAILED",
+  "scope": "runner acceptance review; existing fixture receipt evidence acknowledged, no independent sandbox execution yet",
+  "worker_run": "20261107T062947Z-61484-52b281e6",
+  "independent_evidence_validation": {
+    "command": "node scripts/verify-evidence.mjs",
+    "exit": 0,
+    "checks": 208,
+    "passed": 208,
+    "scope": "cross-checks recorded receipts/balances/files; does not rerun chain"
+  },
+  "findings": [
+    {
+      "id": "SANDBOX_PROCESS_OWNERSHIP",
+      "severity": "blocking",
+      "observed": "global pgrep before/after difference is used as kill list; unrelated concurrent sandbox can be targeted",
+      "required": "exact owned child identity/process group and run-specific home; trap cleanup and foreign sentinel regression"
+    },
+    {
+      "id": "LOCKFILE_FAIL_OPEN",
+      "severity": "blocking",
+      "observed": "metadata --locked failure triggers automatic cargo generate-lockfile",
+      "required": "reject missing/drifted lock without changing source; explicit separate maintenance only"
+    },
+    {
+      "id": "HIDDEN_BOOTSTRAP_DEPENDENCY",
+      "severity": "blocking",
+      "observed": "fresh checkout has no .toolchain/cargo/bin/rustup, but setup invokes it before installing",
+      "required": "verified official isolated bootstrap or explicit reusable tool path, relocation proof"
+    }
+  ],
+  "reviewed_file_hashes": {
+    "scripts\\run-all.sh": "da54da27b30255e0e8dcd7c3f0933c2b713dae83856c6d7949d7242c3ef39ce7",
+    "scripts\\build-fixtures.sh": "9f3f4f862c8d24dff5912aabe402a4cbf99669e8d4e5ad8066ae3f12f34529f4",
+    "scripts\\setup-toolchain.sh": "2c833da15e5f14b715b06dd107f89078307ba7918577c712417643e93c51b190"
+  },
+  "fix_guidance_message": "msg_0e222cf32746",
+  "limits": [
+    "No source integrated or runner acceptance granted",
+    "Fixture receipt tests are not T03/T04/G09",
+    "No broad cleanup or public network transaction performed by Codex"
+  ]
+}
