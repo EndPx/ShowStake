@@ -1,0 +1,56 @@
+{
+  "reviewer": "Codex",
+  "implementation_author": "ZCode/Cloud Near DeepSeek",
+  "classification": "PASS_LOCAL",
+  "accepted": true,
+  "scope": "D036 organizer attendance/finalization, bounded settlement and beneficiary claims with exact reward retry",
+  "wasm_sha256": "f462ddcbb8b47ff03f4bea71c054cefe0d0a576b1346a0f9a55688c43307fd59",
+  "policy": "showstake-v2-d036-settle/1",
+  "independent_tests": {
+    "full_before_supplement": {
+      "passed": 63,
+      "exit": 0
+    },
+    "focused_new_reward_failure": {
+      "passed": 1,
+      "exit": 0,
+      "name": "settlement_failed_payout_restores_allocated_share_not_principal"
+    }
+  },
+  "sandbox_review": {
+    "full": {
+      "checks": 2328,
+      "hashes_teardown_verified": true,
+      "run": "20261108T005435Z-1890976-5a5eacd9"
+    },
+    "supplement": {
+      "checks": 103,
+      "transactions": 38,
+      "hashes_teardown_verified": true,
+      "run": "20261108T014607Z-2373503-ae2e1e97",
+      "five_normal_ft_transfer_call_deposits": true,
+      "failure_restored": {
+        "claim": 17,
+        "paid": 0,
+        "pending": 0,
+        "liability": 50,
+        "escrow": 50
+      },
+      "retry_paid_once": {
+        "paid": 17,
+        "pending": 0,
+        "liability": 33,
+        "escrow": 33,
+        "beneficiary": 17
+      }
+    }
+  },
+  "limits": [
+    "No full testnet/browser acceptance",
+    "Real24h deadline unit tested, shortened labelledSandbox deadline used for late case",
+    "Capacity200 gas case includes199 explicitly synthetic receiver registrations",
+    "No factory or lifecycle API/worker projections accepted",
+    "Clean instance required, no automatic migration of v5/oldminimum",
+    "Ignored local support/toolchain dependency remains release-packaging limitation"
+  ]
+}

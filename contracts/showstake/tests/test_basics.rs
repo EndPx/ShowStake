@@ -168,6 +168,7 @@ fn new_sets_immutable_config() {
     assert_eq!(config.network, "sandbox-local");
     assert_eq!(config.policy_version, showstake::POLICY_IDENTITY);
     assert_ne!(showstake::POLICY_IDENTITY, "showstake-v2/1");
+    assert_ne!(showstake::POLICY_IDENTITY, "showstake-v2-d036/1");
 }
 
 #[test]
@@ -179,6 +180,16 @@ fn legacy_policy_identity_is_rejected() {
             ft(),
             "sandbox-local".to_string(),
             "showstake-v2/1".to_string(),
+        );
+    });
+    // The accepted v5 identity is also a different generation: the settlement
+    // build must not be silently labelled with it.
+    assert_panics(|| {
+        Contract::new(
+            acct("organizer.sandbox"),
+            ft(),
+            "sandbox-local".to_string(),
+            "showstake-v2-d036/1".to_string(),
         );
     });
 }
@@ -1268,4 +1279,499 @@ fn deposit_after_cancel_is_rejected_without_state_change() {
     assert_eq!(after.registrations, 1);
     assert_eq!(after.liability, U128(100));
     assert_eq!(contract.get_escrow_principal(), U128(100));
+}
+
+
+// --------------------------------- attendance / finalize / settle (v6)
+
+fn register_many(
+    contract: &mut Contract,
+    event_id: &str,
+    deposit: u128,
+    count: u32,
+) -> Vec<AccountId> {
+    let mut accounts = Vec::new();
+    for index in 0..count {
+        let account = acct(&format!("s{index}.sandbox"));
+        prepay(
+            contract,
+            &account,
+            NearToken::from_millinear(500).as_yoctonear(),
+        );
+        assert_accepted(ft_deposit(
+            contract,
+            &account,
+            deposit,
+            &commit_msg(event_id, &format!("s{index}-c1")),
+            NOW + 1 + u64::from(index),
+        ));
+        accounts.push(account);
+    }
+    accounts
+}
+
+fn settlement_setup(deposit: u128, count: u32) -> (Contract, AccountId, Vec<AccountId>) {
+    let mut contract = new_contract();
+    let organizer = acct("organizer.sandbox");
+    publish_with(
+        &mut contract,
+        &organizer,
+        "evt-settle",
+        default_rules(deposit, count),
+    );
+    let accounts = register_many(&mut contract, "evt-settle", deposit, count);
+    (contract, organizer, accounts)
+}
+
+fn settlement_ids(contract: &Contract, count: u32) -> Vec<String> {
+    contract
+        .list_event_registrations("evt-settle".to_string(), 0, count)
+        .into_iter()
+        .map(|registration| registration.registration_id)
+        .collect()
+}
+
+#[test]
+fn attendance_marking_is_organizer_only_and_window_bounded() {
+    let (mut contract, organizer, _accounts) = settlement_setup(10, 2);
+    let registration = first_registration(&contract, "evt-settle");
+    let checkin_open = NOW + HOUR_MS;
+    let checkin_close = NOW + 2 * HOUR_MS;
+
+    assert_panics(|| {
+        testing_env!(context(&organizer, 0, checkin_open - 1).build());
+        contract.mark_attendance(registration.registration_id.clone(), true);
+    });
+    let outsider = acct("outsider.sandbox");
+    assert_panics(|| {
+        testing_env!(context(&outsider, 0, checkin_open).build());
+        contract.mark_attendance(registration.registration_id.clone(), true);
+    });
+    assert_panics(|| {
+        testing_env!(context(&organizer, 0, checkin_close).build());
+        contract.mark_attendance(registration.registration_id.clone(), true);
+    });
+
+    testing_env!(context(&organizer, 0, checkin_open).build());
+    let view = contract.mark_attendance(registration.registration_id.clone(), true);
+    assert_eq!(
+        view.attendance_status,
+        showstake::AttendanceStatus::Attended
+    );
+    let pass = contract.get_pass(view.pass_id.clone());
+    assert_eq!(
+        pass.attendance_status,
+        showstake::AttendanceStatus::Attended
+    );
+}
+
+#[test]
+fn attendance_marking_is_idempotent_and_correctable() {
+    let (mut contract, organizer, _accounts) = settlement_setup(10, 3);
+    let registration = first_registration(&contract, "evt-settle");
+    let at = NOW + HOUR_MS + 1;
+
+    testing_env!(context(&organizer, 0, at).build());
+    let first = contract.mark_attendance(registration.registration_id.clone(), true);
+    assert_eq!(
+        first.attendance_status,
+        showstake::AttendanceStatus::Attended
+    );
+
+    let before = env::storage_usage();
+    testing_env!(context(&organizer, 0, at).build());
+    let duplicate = contract.mark_attendance(registration.registration_id.clone(), true);
+    let after = env::storage_usage();
+    assert_eq!(after, before, "duplicate mark must not write state");
+    assert_eq!(
+        duplicate.attendance_status,
+        showstake::AttendanceStatus::Attended
+    );
+
+    testing_env!(context(&organizer, 0, at).build());
+    let corrected = contract.mark_attendance(registration.registration_id.clone(), false);
+    assert_eq!(
+        corrected.attendance_status,
+        showstake::AttendanceStatus::NotMarked
+    );
+    let again_before = env::storage_usage();
+    testing_env!(context(&organizer, 0, at).build());
+    contract.mark_attendance(registration.registration_id.clone(), false);
+    assert_eq!(
+        env::storage_usage(),
+        again_before,
+        "duplicate correction must not write state"
+    );
+}
+
+#[test]
+fn finalize_is_window_bounded_immutable_and_counts_attendees() {
+    let (mut contract, organizer, _accounts) = settlement_setup(10, 3);
+    let ids = settlement_ids(&contract, 3);
+    testing_env!(context(&organizer, 0, NOW + HOUR_MS).build());
+    contract.mark_attendance(ids[0].clone(), true);
+    contract.mark_attendance(ids[2].clone(), true);
+
+    assert_panics(|| {
+        testing_env!(context(&organizer, 0, NOW + 2 * HOUR_MS - 1).build());
+        contract.finalize_event("evt-settle".to_string());
+    });
+    assert_panics(|| {
+        testing_env!(context(&acct("outsider.sandbox"), 0, NOW + 2 * HOUR_MS).build());
+        contract.finalize_event("evt-settle".to_string());
+    });
+
+    testing_env!(context(&organizer, 0, NOW + 2 * HOUR_MS).build());
+    let view = contract.finalize_event("evt-settle".to_string());
+    assert_eq!(view.state, showstake::EventState::AttendanceFinalized);
+    assert_eq!(view.phase, showstake::EventPhase::AttendanceFinalized);
+    let settlement = contract.get_settlement("evt-settle".to_string());
+    assert_eq!(settlement.attendee_count, 2);
+    assert_eq!(settlement.no_show_count, 1);
+    assert!(settlement.attendance_frozen);
+
+    assert_panics(|| {
+        testing_env!(context(&organizer, 0, NOW + 2 * HOUR_MS).build());
+        contract.mark_attendance(ids[1].clone(), true);
+    });
+    assert_panics(|| {
+        testing_env!(context(&organizer, 0, NOW + 2 * HOUR_MS).build());
+        contract.finalize_event("evt-settle".to_string());
+    });
+    let no_show = contract.get_registration(ids[1].clone());
+    assert_eq!(
+        no_show.attendance_status,
+        showstake::AttendanceStatus::NoShow
+    );
+}
+
+#[test]
+fn finalize_at_deadline_is_denied_and_late_timeout_refunds() {
+    let (mut contract, organizer, _accounts) = settlement_setup(10, 2);
+    let deadline = NOW + 2 * HOUR_MS + DAY_MS;
+    assert_panics(|| {
+        testing_env!(context(&organizer, 0, deadline).build());
+        contract.finalize_event("evt-settle".to_string());
+    });
+    testing_env!(context(&acct("keeper.sandbox"), 0, deadline).build());
+    let view = contract.activate_timeout_refund("evt-settle".to_string());
+    assert_eq!(view.state, showstake::EventState::RefundOnly);
+    let claim = contract.get_claim("reg-0".to_string());
+    assert_eq!(claim.amount, U128(10));
+    assert_eq!(claim.payout_state, showstake::FinancialStatus::Claimable);
+}
+
+#[test]
+fn timeout_is_denied_after_finalization_but_settlement_is_not() {
+    let (mut contract, organizer, _accounts) = settlement_setup(10, 2);
+    testing_env!(context(&organizer, 0, NOW + 2 * HOUR_MS).build());
+    contract.finalize_event("evt-settle".to_string());
+    let deadline = NOW + 2 * HOUR_MS + DAY_MS;
+    assert_panics(|| {
+        testing_env!(context(&acct("keeper.sandbox"), 0, deadline).build());
+        contract.activate_timeout_refund("evt-settle".to_string());
+    });
+    testing_env!(context(&acct("keeper.sandbox"), 0, deadline).build());
+    let view = contract.settle("evt-settle".to_string());
+    assert_eq!(view.state, showstake::EventState::Settled);
+}
+
+#[test]
+fn settle_before_finalization_is_denied() {
+    let (mut contract, organizer, _accounts) = settlement_setup(10, 2);
+    assert_panics(|| {
+        testing_env!(context(&organizer, 0, NOW + HOUR_MS).build());
+        contract.settle("evt-settle".to_string());
+    });
+}
+
+#[test]
+fn settlement_returns_each_attendee_own_principal() {
+    let (mut contract, organizer, accounts) = settlement_setup(10, 3);
+    testing_env!(context(&organizer, 0, NOW + HOUR_MS).build());
+    for index in 0..3 {
+        contract.mark_attendance(format!("reg-{index}"), true);
+    }
+    testing_env!(context(&organizer, 0, NOW + 2 * HOUR_MS).build());
+    contract.finalize_event("evt-settle".to_string());
+    testing_env!(context(&acct("keeper.sandbox"), 0, NOW + 2 * HOUR_MS).build());
+    let settlement = contract.settle("evt-settle".to_string());
+    assert_eq!(settlement.state, showstake::EventState::Settled);
+    assert!(settlement.complete);
+    assert!(settlement.claims_enabled);
+    assert_eq!(settlement.pool, U128(0));
+    for index in 0..3 {
+        let claim = contract.get_claim(format!("reg-{index}"));
+        assert_eq!(claim.amount, U128(10));
+        assert_eq!(claim.payout_state, showstake::FinancialStatus::Claimable);
+    }
+    claim_as(&mut contract, &accounts[0], "reg-0", NOW + 2 * HOUR_MS + 1);
+    let payout = contract
+        .get_claim("reg-0".to_string())
+        .pending_payout_id
+        .expect("pending settlement payout");
+    callback_result(true, NOW + 2 * HOUR_MS + 2);
+    contract.on_payout_result(payout);
+    let totals = contract.get_event_totals("evt-settle".to_string());
+    assert_eq!(totals.paid, U128(10));
+    assert_eq!(totals.liability, U128(20));
+}
+
+#[test]
+fn settlement_splits_no_show_principal_with_sequence_remainder() {
+    let (mut contract, organizer, _accounts) = settlement_setup(10, 5);
+    let attended = [true, false, true, true, false];
+    testing_env!(context(&organizer, 0, NOW + HOUR_MS).build());
+    for (index, value) in attended.iter().enumerate() {
+        contract.mark_attendance(format!("reg-{index}"), *value);
+    }
+    testing_env!(context(&organizer, 0, NOW + 2 * HOUR_MS).build());
+    contract.finalize_event("evt-settle".to_string());
+    testing_env!(context(&acct("keeper.sandbox"), 0, NOW + 2 * HOUR_MS).build());
+    let settlement = contract.settle("evt-settle".to_string());
+    assert_eq!(settlement.state, showstake::EventState::Settled);
+    assert_eq!(settlement.pool, U128(20));
+    assert_eq!(settlement.base_share, U128(6));
+    assert_eq!(settlement.remainder, U128(2));
+
+    let expected = [U128(17), U128(0), U128(17), U128(16), U128(0)];
+    let expected_states = [
+        showstake::FinancialStatus::Claimable,
+        showstake::FinancialStatus::Forfeited,
+        showstake::FinancialStatus::Claimable,
+        showstake::FinancialStatus::Claimable,
+        showstake::FinancialStatus::Forfeited,
+    ];
+    for index in 0..5 {
+        let claim = contract.get_claim(format!("reg-{index}"));
+        assert_eq!(claim.amount, expected[index], "reg-{index}");
+        assert_eq!(claim.payout_state, expected_states[index], "reg-{index}");
+    }
+    assert_panics(|| {
+        testing_env!(context(&acct("s1.sandbox"), 1, NOW + 2 * HOUR_MS + 1).build());
+        contract.claim("reg-1".to_string());
+    });
+    let totals = contract.get_event_totals("evt-settle".to_string());
+    assert_eq!(totals.accepted_principal, U128(50));
+    assert_eq!(totals.liability, U128(50));
+}
+
+#[test]
+fn settlement_refunds_every_registration_when_nobody_attends() {
+    let (mut contract, organizer, _accounts) = settlement_setup(10, 3);
+    testing_env!(context(&organizer, 0, NOW + 2 * HOUR_MS).build());
+    contract.finalize_event("evt-settle".to_string());
+    testing_env!(context(&acct("keeper.sandbox"), 0, NOW + 2 * HOUR_MS).build());
+    let settlement = contract.settle("evt-settle".to_string());
+    assert_eq!(settlement.state, showstake::EventState::Settled);
+    assert_eq!(settlement.attendee_count, 0);
+    assert_eq!(settlement.pool, U128(0));
+    for index in 0..3 {
+        let claim = contract.get_claim(format!("reg-{index}"));
+        assert_eq!(claim.amount, U128(10));
+        assert_eq!(claim.payout_state, showstake::FinancialStatus::Claimable);
+    }
+}
+
+#[test]
+fn settlement_is_chunked_at_capacity_200_and_claims_are_gated() {
+    let (mut contract, organizer, _accounts) = settlement_setup(10, 200);
+    testing_env!(context(&organizer, 0, NOW + 2 * HOUR_MS).build());
+    contract.finalize_event("evt-settle".to_string());
+    let before_settle = env::storage_usage();
+
+    testing_env!(context(&acct("keeper.sandbox"), 0, NOW + 2 * HOUR_MS).build());
+    let first = contract.settle("evt-settle".to_string());
+    assert_eq!(first.state, showstake::EventState::Settling);
+    assert_eq!(first.cursor, 25);
+    assert!(!first.complete);
+    assert!(!first.claims_enabled);
+    assert_eq!(
+        env::storage_usage(),
+        before_settle,
+        "a settlement chunk must not grow storage"
+    );
+
+    assert_panics(|| {
+        testing_env!(context(&acct("s0.sandbox"), 1, NOW + 2 * HOUR_MS + 1).build());
+        contract.claim("reg-0".to_string());
+    });
+    assert_panics(|| {
+        testing_env!(context(&organizer, 0, NOW + 2 * HOUR_MS + 1).build());
+        contract.cancel_event("evt-settle".to_string());
+    });
+
+    let mut calls = 1u32;
+    loop {
+        testing_env!(context(&acct("keeper.sandbox"), 0, NOW + 2 * HOUR_MS).build());
+        let view = contract.settle("evt-settle".to_string());
+        calls += 1;
+        assert_eq!(
+            env::storage_usage(),
+            before_settle,
+            "every chunk must keep storage fixed"
+        );
+        if view.complete {
+            break;
+        }
+    }
+    assert_eq!(calls, 8, "capacity 200 completes in eight 25-entry chunks");
+
+    let settled = contract.get_settlement("evt-settle".to_string());
+    assert_eq!(settled.state, showstake::EventState::Settled);
+    assert_eq!(settled.cursor, 200);
+    assert_eq!(settled.allocated_count, 200);
+    assert_eq!(settled.allocated_total, U128(2000));
+    assert!(settled.complete);
+    assert!(settled.claims_enabled);
+
+    let replay_before = env::storage_usage();
+    testing_env!(context(&acct("keeper.sandbox"), 0, NOW + 2 * HOUR_MS).build());
+    let replay = contract.settle("evt-settle".to_string());
+    assert_eq!(replay.state, showstake::EventState::Settled);
+    assert_eq!(
+        env::storage_usage(),
+        replay_before,
+        "settle after completion must be a no-op"
+    );
+}
+
+#[test]
+fn settlement_remainder_is_sequence_deterministic_across_chunks() {
+    let (mut contract, organizer, _accounts) = settlement_setup(10, 30);
+    testing_env!(context(&organizer, 0, NOW + HOUR_MS).build());
+    for index in 0..7 {
+        contract.mark_attendance(format!("reg-{index}"), true);
+    }
+    testing_env!(context(&organizer, 0, NOW + 2 * HOUR_MS).build());
+    contract.finalize_event("evt-settle".to_string());
+    testing_env!(context(&acct("keeper.sandbox"), 0, NOW + 2 * HOUR_MS).build());
+    let first = contract.settle("evt-settle".to_string());
+    assert_eq!(first.cursor, 25);
+    assert_eq!(first.state, showstake::EventState::Settling);
+    for index in 0..7 {
+        let expected = if index < 6 { 43 } else { 42 };
+        let claim = contract.get_claim(format!("reg-{index}"));
+        assert_eq!(claim.amount, U128(expected), "reg-{index}");
+    }
+    testing_env!(context(&acct("keeper.sandbox"), 0, NOW + 2 * HOUR_MS).build());
+    let second = contract.settle("evt-settle".to_string());
+    assert_eq!(second.state, showstake::EventState::Settled);
+    assert_eq!(second.allocated_total, U128(300));
+}
+
+#[test]
+fn cancellation_after_finalization_refunds_full_principal_before_settlement() {
+    let (mut contract, organizer, _accounts) = settlement_setup(10, 3);
+    testing_env!(context(&organizer, 0, NOW + HOUR_MS).build());
+    contract.mark_attendance("reg-0".to_string(), true);
+    testing_env!(context(&organizer, 0, NOW + 2 * HOUR_MS).build());
+    contract.finalize_event("evt-settle".to_string());
+    testing_env!(context(&organizer, 0, NOW + 2 * HOUR_MS + 1).build());
+    let view = contract.cancel_event("evt-settle".to_string());
+    assert_eq!(view.state, showstake::EventState::Cancelled);
+    for index in 0..3 {
+        let claim = contract.get_claim(format!("reg-{index}"));
+        assert_eq!(claim.amount, U128(10));
+        assert_eq!(claim.payout_state, showstake::FinancialStatus::Claimable);
+    }
+}
+
+#[test]
+fn settlement_packet_example_two_of_five_attendees() {
+    let (mut contract, organizer, _accounts) = settlement_setup(2, 5);
+    testing_env!(context(&organizer, 0, NOW + HOUR_MS).build());
+    contract.mark_attendance("reg-0".to_string(), true);
+    contract.mark_attendance("reg-1".to_string(), true);
+    testing_env!(context(&organizer, 0, NOW + 2 * HOUR_MS).build());
+    contract.finalize_event("evt-settle".to_string());
+    testing_env!(context(&acct("keeper.sandbox"), 0, NOW + 2 * HOUR_MS).build());
+    let settlement = contract.settle("evt-settle".to_string());
+    assert_eq!(settlement.state, showstake::EventState::Settled);
+    assert_eq!(settlement.pool, U128(6));
+    assert_eq!(settlement.base_share, U128(3));
+    assert_eq!(settlement.remainder, U128(0));
+    for index in 0..2 {
+        let claim = contract.get_claim(format!("reg-{index}"));
+        assert_eq!(claim.amount, U128(5), "attendee reg-{index}");
+        assert_eq!(claim.payout_state, showstake::FinancialStatus::Claimable);
+    }
+    for index in 2..5 {
+        let claim = contract.get_claim(format!("reg-{index}"));
+        assert_eq!(claim.amount, U128(0), "no-show reg-{index}");
+        assert_eq!(claim.payout_state, showstake::FinancialStatus::Forfeited);
+    }
+    let totals = contract.get_event_totals("evt-settle".to_string());
+    assert_eq!(totals.accepted_principal, U128(10));
+    assert_eq!(totals.liability, U128(10));
+}
+
+#[test]
+fn settlement_failed_payout_restores_allocated_share_not_principal() {
+    let (mut contract, organizer, _accounts) = settlement_setup(10, 5);
+    let attended = [true, false, true, true, false];
+    testing_env!(context(&organizer, 0, NOW + HOUR_MS).build());
+    for (index, value) in attended.iter().enumerate() {
+        contract.mark_attendance(format!("reg-{index}"), *value);
+    }
+    testing_env!(context(&organizer, 0, NOW + 2 * HOUR_MS).build());
+    contract.finalize_event("evt-settle".to_string());
+    testing_env!(context(&acct("keeper.sandbox"), 0, NOW + 2 * HOUR_MS).build());
+    contract.settle("evt-settle".to_string());
+
+    let claimant = acct("s0.sandbox");
+    let allocated = contract.get_claim("reg-0".to_string());
+    assert_eq!(allocated.amount, U128(17));
+    assert_eq!(allocated.payout_state, showstake::FinancialStatus::Claimable);
+
+    claim_as(&mut contract, &claimant, "reg-0", NOW + 2 * HOUR_MS + 1);
+    let first_payout = contract
+        .get_claim("reg-0".to_string())
+        .pending_payout_id
+        .expect("first pending settled payout");
+    callback_result(false, NOW + 2 * HOUR_MS + 2);
+    let failed = contract.on_payout_result(first_payout.clone());
+    assert_eq!(failed.state, showstake::PayoutState::Failed);
+    assert_eq!(failed.amount, U128(17));
+
+    let restored = contract.get_claim("reg-0".to_string());
+    assert_eq!(
+        restored.amount,
+        U128(17),
+        "failure must restore the settled share, not the principal D"
+    );
+    assert_eq!(restored.payout_state, showstake::FinancialStatus::Claimable);
+    assert_eq!(restored.paid_amount, U128(0));
+    assert_eq!(restored.pending_payout_id, None);
+    let totals = contract.get_event_totals("evt-settle".to_string());
+    assert_eq!(totals.paid, U128(0));
+    assert_eq!(totals.pending, U128(0));
+    assert_eq!(totals.liability, U128(50));
+    assert_eq!(contract.get_escrow_principal(), U128(50));
+
+    claim_as(&mut contract, &claimant, "reg-0", NOW + 2 * HOUR_MS + 3);
+    let retry_payout = contract
+        .get_claim("reg-0".to_string())
+        .pending_payout_id
+        .expect("retry pending settled payout");
+    assert_ne!(retry_payout, first_payout);
+    callback_result(true, NOW + 2 * HOUR_MS + 4);
+    contract.on_payout_result(retry_payout);
+    let paid = contract.get_claim("reg-0".to_string());
+    assert_eq!(paid.payout_state, showstake::FinancialStatus::Paid);
+    assert_eq!(paid.paid_amount, U128(17));
+    let totals = contract.get_event_totals("evt-settle".to_string());
+    assert_eq!(totals.paid, U128(17));
+    assert_eq!(totals.pending, U128(0));
+    assert_eq!(totals.liability, U128(33));
+    assert_eq!(contract.get_escrow_principal(), U128(33));
+
+    assert_panics(|| {
+        testing_env!(context(&claimant, 1, NOW + 2 * HOUR_MS + 5).build());
+        contract.claim("reg-0".to_string());
+    });
+    assert_panics(|| {
+        callback_result(true, NOW + 2 * HOUR_MS + 6);
+        contract.on_payout_result(first_payout.clone());
+    });
 }

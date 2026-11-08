@@ -1,7 +1,7 @@
 {
   "schema": "showstake.product-runner.latest/1.1.0",
-  "run_id": "20261107T230211Z-1427450-f5f311e3",
+  "run_id": "20261108T005435Z-1890976-5a5eacd9",
   "status": "PASS_LOCAL",
-  "run": "/mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/test-support/contract-integration/evidence/runs/20261107T230211Z-1427450-f5f311e3/run.json",
+  "run": "/mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/test-support/contract-integration/evidence/runs/20261108T005435Z-1890976-5a5eacd9/run.json",
   "note": "Pointer to the current run only. Prior run folders are preserved."
 }

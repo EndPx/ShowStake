@@ -1,0 +1,379 @@
+{
+  "schema": "showstake.lifecycle.manifest/1.3.0",
+  "generated_at_utc": "2026-11-08T01:25:06Z",
+  "task": "task_8c183efb95cc",
+  "dispatch": "ctx_2eb83ce3f311",
+  "executor": "ZCode via Orca",
+  "runtime_confirmation": {
+    "provider": "new-provider",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash-1017-abliterated",
+    "source": "session model-I/O rollout metadata (modelId/providerId per request)",
+    "global_selector_present": "zai-api / GLM-5.3-Flash",
+    "global_selector_used": false,
+    "reasoning_level_max_verified": false
+  },
+  "status": "PASS_LOCAL",
+  "base_commit": "a632d3c",
+  "scope": [
+    "organizer attendance marking/correction inside the check-in window (idempotent)",
+    "organizer-only attendance finalization in [checkin_close, finalize_deadline)",
+    "permissionless bounded settlement with the exact D036 allocation",
+    "claims gated until allocation completion; cancellation locked once SETTLING",
+    "capacity-200 finalize/settlement gas measurement and oracle comparison"
+  ],
+  "abi_freeze": {
+    "document": "contracts/showstake/README.md",
+    "section": "Frozen proposal \u2014 attendance, finalization and settlement (candidate v6)",
+    "frozen_before_implementation": true,
+    "new_methods": [
+      "mark_attendance",
+      "finalize_event",
+      "settle",
+      "get_settlement"
+    ],
+    "changed_methods": [
+      "cancel_event",
+      "activate_timeout_refund",
+      "claim"
+    ],
+    "unchanged_existing_json_views": true
+  },
+  "deployed_artifact": {
+    "path": "test-support/contract-integration/wasm/showstake.wasm",
+    "bytes": 339957,
+    "sha256": "fc49fb85cc6e718086ddf81e9a936362a8c36ef9384a8444eadafa6ec0cdcd8e",
+    "unchanged_by_this_task": true
+  },
+  "candidate_artifact": {
+    "version": "v6",
+    "path": "test-support/contract-integration/wasm/showstake-lifecycle-v6.wasm",
+    "bytes": 420795,
+    "sha256": "f462ddcbb8b47ff03f4bea71c054cefe0d0a576b1346a0f9a55688c43307fd59",
+    "policy_identity": "showstake-v2-d036-settle/1",
+    "schema_version": 3,
+    "distinct_from_deployed": true,
+    "distinct_from_prior_candidates": true,
+    "reproducible": true,
+    "reproducibility_method": "rebuild with the same isolated toolchain/target reproduced the SHA-256 exactly",
+    "crate": "showstake 0.1.0",
+    "sdk": "near-sdk 5.30.1",
+    "toolchain": "1.95.0-x86_64-unknown-linux-gnu"
+  },
+  "prior_candidate_artifacts": [
+    {
+      "version": "v5",
+      "path": "test-support/contract-integration/wasm/showstake-lifecycle-v5.wasm",
+      "bytes": 390557,
+      "sha256": "d79ef24c72d2eea762d4c3e78a1990a21bf13458b0bf07c908a68fc6ca1d5bee",
+      "note": "accepted D036 bounded refund/claim candidate; preserved"
+    },
+    {
+      "version": "v4",
+      "path": "test-support/contract-integration/wasm/showstake-lifecycle-v4.wasm",
+      "bytes": 390430,
+      "sha256": "7b2735ef5d30986df828a3af024e3b3dc37e1ddd6d519088233a8bfc8405d707",
+      "note": "preserved"
+    },
+    {
+      "version": "v3",
+      "path": "test-support/contract-integration/wasm/showstake-lifecycle-v3.wasm",
+      "bytes": 389769,
+      "sha256": "5b3ae99db854a013368029ac4716ecd21893a3c93db6f7d8e0b3596b8bc0d34a",
+      "note": "preserved"
+    },
+    {
+      "version": "v2",
+      "path": "test-support/contract-integration/wasm/showstake-lifecycle-v2.wasm",
+      "bytes": 389769,
+      "sha256": "9211fe4c790e9eec5d9f8d070c83a40868abc0ab249929cd8aebbadc8e4d8f43",
+      "note": "preserved"
+    },
+    {
+      "version": "v1",
+      "path": "test-support/contract-integration/wasm/showstake-lifecycle.wasm",
+      "bytes": 388381,
+      "sha256": "4dde5f4bd2fbe0a6c7d3918d188cf2f06aafa03fd7a9f9b01dfbf6af0224187d",
+      "note": "preserved"
+    }
+  ],
+  "test_ft_fixture": {
+    "path": ".local/zcode-settlement-oracle/sandbox-probe/wasm/ft_fixture.wasm",
+    "bytes": 285025,
+    "sha256": "d1c7d009a2c49bee5ad4997fe7e3114899fa667a06876fb6e435d9a72fffb195",
+    "unchanged": true
+  },
+  "source_manifest": [
+    {
+      "path": "contracts/showstake/src/lib.rs",
+      "bytes": 82152,
+      "sha256": "3b72b03bb2f8e436f138028cbe08436312dbd5f64f8a39dfc375bf96f7f06539"
+    },
+    {
+      "path": "contracts/showstake/tests/test_basics.rs",
+      "bytes": 69653,
+      "sha256": "15613700652aeec3ea289b50965b253138d94f2bc67e36ba62dac57ae7f447f8"
+    },
+    {
+      "path": "contracts/showstake/README.md",
+      "bytes": 14649,
+      "sha256": "36acca6c3413b6e73b790d5f39d2e0f1eb771941aa9b6413e858efabcbbef976"
+    },
+    {
+      "path": "test-support/contract-integration/runner/src/main.rs",
+      "bytes": 188458,
+      "sha256": "a7fd58440d2f0a75f722d39c078ba971f949af18ce3a63d4652f0a96457604c2"
+    },
+    {
+      "path": "test-support/contract-integration/runner/Cargo.toml",
+      "bytes": 491,
+      "sha256": "b816976737cd0387796bf3f5cc1c3e89991946e2e3aed5e35377d5c4405455db"
+    },
+    {
+      "path": "test-support/contract-integration/run-product-integration.sh",
+      "bytes": 16040,
+      "sha256": "7f0359516c1bced6444120de1e95849f8aade0401f0e9fddf674dbf9a52cea7f"
+    },
+    {
+      "path": "test-support/contract-integration/oracle/generate-settlement-expected.mjs",
+      "bytes": 5130,
+      "sha256": "f3cfe1642ca7af1863dcb28fe83ab3f9821e77007858cd998a38ba01dd983c2d"
+    },
+    {
+      "path": "test-support/contract-integration/oracle/scenarios.json",
+      "bytes": 2224,
+      "sha256": "ddae4ffff0333abb1f23ab7ba33d4383b165374bf661af6c14a39a0292d4c94e"
+    }
+  ],
+  "abi": {
+    "verification": "Node WebAssembly.Module.exports on the frozen, v5 and v6 artifacts",
+    "deployed_export_count": 21,
+    "v5_export_count": 29,
+    "candidate_export_count": 33,
+    "added_vs_v5": [
+      "mark_attendance",
+      "finalize_event",
+      "settle",
+      "get_settlement"
+    ],
+    "removed_vs_v5": [],
+    "init": "new(organizer, canonical_ft, network, policy_version) \u2014 same signature; policy_version must equal showstake-v2-d036-settle/1",
+    "claim_rules": "exactly 1 yoctoNEAR, immutable beneficiary, >= 100 Tgas prepaid; Cancelled/RefundOnly full D, Settled cursor allocation, Settling/Finalized denied"
+  },
+  "state_compatibility": {
+    "root_layout": "field-for-field identical to v5 and deployed source (12 fields)",
+    "unchanged_structs": [
+      "Config",
+      "Event",
+      "Registration",
+      "Pass",
+      "ClaimRecord",
+      "EventAccounting"
+    ],
+    "append_only_enums": {
+      "EventState": [
+        "Published",
+        "Cancelled",
+        "RefundOnly",
+        "AttendanceFinalized",
+        "Settling",
+        "Settled"
+      ],
+      "AttendanceStatus": [
+        "NotMarked",
+        "Attended",
+        "NoShow"
+      ],
+      "FinancialStatus": [
+        "Committed",
+        "Claimable",
+        "Pending",
+        "Paid",
+        "Forfeited"
+      ]
+    },
+    "separate_maps": [
+      {
+        "prefix": "lc",
+        "type": "ClaimRecord",
+        "entry_created": "same measured write as registration"
+      },
+      {
+        "prefix": "ea",
+        "type": "EventAccounting",
+        "entry_created": "measured publish write"
+      },
+      {
+        "prefix": "st",
+        "type": "SettlementState",
+        "entry_created": "measured publish write"
+      },
+      {
+        "prefix": "sv",
+        "type": "u32 schema marker",
+        "entry_created": "measured publish write"
+      },
+      {
+        "prefix": "lr",
+        "type": "lifetime (event,account) index",
+        "entry_created": "same measured write as registration"
+      }
+    ],
+    "schema_version": 3,
+    "clean_instance": "required; fc49fb85, v1, v2, v3, v4 and the accepted v5 (schema 2) all fail closed",
+    "migration": "none implemented; no in-place reinterpretation"
+  },
+  "allocation": {
+    "formula": "N registrations, A attendees, M=N-A, deposit D. A>0: pool=M*D, q=floor(pool/A), r=pool%A; attendees in registration-sequence order get D+q+1 for the first r and D+q for the rest; no-shows 0. A=0: every registration refunded D.",
+    "packet_examples": {
+      "five_d2_two_attendees": {
+        "payouts": [
+          "5",
+          "5",
+          "0",
+          "0",
+          "0"
+        ],
+        "total": "10"
+      },
+      "five_d10_three_attendees": {
+        "payouts": [
+          "17",
+          "0",
+          "17",
+          "16",
+          "0"
+        ],
+        "total": "50"
+      }
+    },
+    "withdrawals": "not part of D036; the oracle's legacy withdrawal support is not a requirement",
+    "fees": "platform 0 / organizer 0",
+    "sum_invariant": "sum(allocation) == accepted_principal == N*D"
+  },
+  "oracle_comparison": {
+    "label": "independent accepted local settlement oracle; not chain evidence by itself",
+    "expected_path": "test-support/contract-integration/evidence/oracle-settlement-expected.json",
+    "expected_sha256": "d4b8a1cd98bdc328cbec54e14c2fe7e17b1433ef4794834f55f86a8e6aef048f",
+    "module_sha256": "61b926917a4b1c38295d689e5dc48094ee12081ea7cecdc26ed2c5018fffc6e8",
+    "formula": "A>0: pool=M*D, q=floor(pool/A), r=pool%A; attendees in registration-sequence order get D+q+1 for the first r and D+q for the rest; no-shows get 0. A=0: every registration is refunded D. Withdrawals are not part of D036.",
+    "scenarios": [
+      "settle-normal",
+      "settle-remainder",
+      "settle-zero",
+      "settle-late",
+      "settle-cap200"
+    ],
+    "compared_on_chain": [
+      "every registration claim amount per scenario",
+      "event allocated_total",
+      "pool/base_share/remainder",
+      "attendee and no-show counts"
+    ]
+  },
+  "build": {
+    "environment": {
+      "RUSTUP_HOME": ".local/zcode-settlement-oracle/sandbox-probe/.toolchain/rustup",
+      "CARGO_HOME": ".local/zcode-settlement-oracle/sandbox-probe/.toolchain/cargo",
+      "CARGO_TARGET_DIR": "/var/tmp/showstake-target-c3989af8ce837da4",
+      "CARGO_NET_OFFLINE": "true"
+    },
+    "unit_command": "cargo test --locked",
+    "build_command": "cargo build --locked --release --target wasm32-unknown-unknown",
+    "oracle_command": "node test-support/contract-integration/oracle/generate-settlement-expected.mjs",
+    "integration_command": "bash run-product-integration.sh",
+    "network_access": "none for Rust builds (offline); the oracle is a host Node import with no network",
+    "new_tooling": "none; existing isolated Rust cache and pinned near-sandbox only"
+  },
+  "evidence": {
+    "classification": "PASS_LOCAL",
+    "unit": {
+      "passed": 63,
+      "failed": 0,
+      "log_path": "test-support/contract-integration/evidence/lifecycle-v6-unit-tests.log",
+      "log_sha256": "4ea0bde62b814ad0f385769eca13713b2399ed06531fc16f9b6af3e4861af174",
+      "summary_path": "test-support/contract-integration/evidence/lifecycle-v6-unit-tests.json",
+      "summary_sha256": "6a2278e458fa5c26ee1bfd681ce6cb3a34b13f5c12ebb1a73867655277500dba"
+    },
+    "sandbox": {
+      "run_id": "20261108T005435Z-1890976-5a5eacd9",
+      "status": "PASS_LOCAL",
+      "checks_passed": 2328,
+      "checks_total": 2328,
+      "failed_checks": [],
+      "transactions": 1436,
+      "top_level_success": 1410,
+      "expected_failures": 26,
+      "snapshots": 17,
+      "settlement_sandbox": {
+        "version": "2.14.0",
+        "rpc_addr": "http://127.0.0.1:34733",
+        "home_dir": "/var/tmp/showstake-runs-c3989af8ce837da4/20261108T005435Z-1890976-5a5eacd9/.tmpBNlqd6",
+        "fixture_only": true,
+        "public_network_calls": false
+      },
+      "run_dir": "test-support/contract-integration/evidence/runs/20261108T005435Z-1890976-5a5eacd9",
+      "run_json_sha256": "ba70df302ebc54b9160a23f2143368ccdd4aace164880ae96b05fe57a5f31ce0",
+      "result_json_sha256": "d57fcd40211ba9c0e684b30ed29a451c8eda9880bfac719ec64e334db2995a9f",
+      "teardown_json_sha256": "3b653d6e8e4a878f38b75d70d7b02a630c9060a6c19f2ab7786c6a1bc0d41d46",
+      "candidate_wasm_sha256": "f462ddcbb8b47ff03f4bea71c054cefe0d0a576b1346a0f9a55688c43307fd59",
+      "frozen_deployed_sha256": "fc49fb85cc6e718086ddf81e9a936362a8c36ef9384a8444eadafa6ec0cdcd8e",
+      "sandbox_sha256": "797b9d7a9a23907048d68a427e86a55c94f1de232dbfb8b8a1eec09ecef3bf13"
+    },
+    "gas": {
+      "attached_settle_gas": "200 Tgas",
+      "attached_finalize_gas": "200 Tgas",
+      "finalize_cap200_receipt": 34235531615805,
+      "settle_chunk_receipts": [
+        20417114031177,
+        20311507570595,
+        20310779431535,
+        20311135107092,
+        20326649750928,
+        20326764343367,
+        20326764343367,
+        20467845028436
+      ],
+      "settle_chunk_max": 20467845028436,
+      "settle_chunk_total": 162798559606497,
+      "settle_chunk_count": 8,
+      "claim_normal_receipt": 3454113745143,
+      "claim_cap200_receipt": 3462000443960,
+      "cancel_200_receipt": 2299863203460,
+      "cancel_2_receipt": 2294634680315,
+      "timeout_200_receipt": 2318509391228
+    },
+    "teardown": {
+      "ownership_verified": true,
+      "proven_stopped": true,
+      "pgid": 1891096,
+      "remaining": []
+    }
+  },
+  "d036_preserved": {
+    "withdrawal_disabled": true,
+    "rejoin_disabled": true,
+    "one_registration_per_account_event": true,
+    "cancel_refund": true,
+    "timeout_refund": true,
+    "zero_attendee_safe": true,
+    "policy_identity": "showstake-v2-d036-settle/1"
+  },
+  "open_gates": [
+    "Codex review/acceptance of v6",
+    "testnet deployment NOT_RUN (fc49fb85 remains deployed; Codex owns clean testnet deploy)",
+    "real 24h deadline PARTIAL (unit-tested + labelled shortened stored deadline with real fast-forward)",
+    "attendance/finalization are contract-only; API/worker projection schema unchanged (DeepSeek/Codex decision)",
+    "settlement claim failure/retry uses the unchanged private callback path; the existing failed-payout retry checks remain in the same run",
+    "factory out of slice",
+    "oracle's legacy withdrawal support excluded from D036 acceptance"
+  ],
+  "authorization": {
+    "commit": false,
+    "push": false,
+    "deploy": false,
+    "keys": false,
+    "paid_resources": false,
+    "real_assets": false,
+    "api_web_worker_lockfile_touched": false
+  }
+}

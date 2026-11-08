@@ -1,0 +1,169 @@
+{
+  "schema": "showstake.lifecycle.settle-failure.manifest/1.0.0",
+  "generated_at_utc": "2026-11-08T01:50:00Z",
+  "task": "task_9f285f66a80f",
+  "dispatch": "ctx_12ed5877e0ef",
+  "executor": "ZCode via Orca",
+  "runtime_confirmation": {
+    "provider": "new-provider",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash-1017-abliterated",
+    "reasoning": "max",
+    "source": "current session model-usage metadata (new-provider / DeepSeek); global zai-api / GLM-5.3-Flash selector not used",
+    "global_selector_used": false
+  },
+  "status": "PASS_LOCAL",
+  "base_commit": "9326694",
+  "gap_closed": {
+    "description": "The existing failed-payout proof covered a cancellation/refund of exactly D=100. This supplemental proof covers a settled redistribution allocation greater than D (17 from D10): forced FT receiver storage failure, private callback restores exactly 17 (not D), FT storage restored, retry pays 17 exactly once, with paid/pending/liability/escrow/balances and stale/double attempts verified.",
+    "product_source_changed": false,
+    "product_wasm_changed": false,
+    "unchanged_candidate": {
+      "path": "test-support/contract-integration/wasm/showstake-lifecycle-v6.wasm",
+      "sha256": "f462ddcbb8b47ff03f4bea71c054cefe0d0a576b1346a0f9a55688c43307fd59",
+      "bytes": 420795,
+      "note": "accepted-review candidate remains frozen; the fix is test/runner evidence only"
+    }
+  },
+  "unit_regression": {
+    "name": "settlement_failed_payout_restores_allocated_share_not_principal",
+    "command": "cargo test --locked",
+    "passed": 64,
+    "failed": 0,
+    "log_path": "test-support/contract-integration/evidence/lifecycle-v6-settle-failure-unit-tests.log",
+    "log_sha256": "1440a47d36a336de",
+    "summary_path": "test-support/contract-integration/evidence/lifecycle-v6-settle-failure-unit-tests.json",
+    "asserted": [
+      "settled allocation is 17, not D=10",
+      "failed callback restores amount 17, Claimable, paid_amount 0, no pending payout",
+      "paid 0, pending 0, liability 50, escrow 50 after failure",
+      "retry pays exactly 17 once with paid 17, liability 33, escrow 33",
+      "double claim and stale first callback fail"
+    ]
+  },
+  "sandbox_narrow_run": {
+    "runner_case": "settle-failure",
+    "run_id": "20261108T014607Z-2373503-ae2e1e97",
+    "status": "PASS_LOCAL",
+    "checks_passed": 103,
+    "checks_total": 103,
+    "transactions": 38,
+    "top_level_success": 36,
+    "expected_failures": [
+      "settle_fail_stale_callback_denied",
+      "settle_claim_fail_double_after_paid"
+    ],
+    "run_dir": "test-support/contract-integration/evidence/runs/20261108T014607Z-2373503-ae2e1e97",
+    "run_json_sha256": "0961a6a48ed7a37f7afb8fb3252ba6b14d5dae956fb77129dd4601b14895b825",
+    "result_json_sha256": "a349761d158fce913d128442a24070faef7c8fd4b1236c527210f4f11d193c0d",
+    "teardown_json_sha256": "63abf3b3859256a0d50e0aa3b6993064dcf9aafcae174d337dc18df566ea03b9",
+    "sandbox": {
+      "version": "2.14.0",
+      "fixture_only": true,
+      "public_network_calls": false
+    },
+    "teardown": {
+      "ownership_verified": true,
+      "proven_stopped": true,
+      "pgid": 2373907,
+      "remaining": []
+    }
+  },
+  "oracle_comparison": {
+    "accepted_oracle_module": "test-support/settlement-oracle/src/settlement.mjs",
+    "accepted_oracle_module_sha256": "61b926917a4b1c38295d689e5dc48094ee12081ea7cecdc26ed2c5018fffc6e8",
+    "expected_file": "test-support/contract-integration/evidence/oracle-settlement-expected.json",
+    "expected_file_sha256": "d4b8a1cd98bdc328cbec54e14c2fe7e17b1433ef4794834f55f86a8e6aef048f",
+    "scenario": "settle-remainder",
+    "expected_payouts": ["17", "0", "17", "16", "0"],
+    "expected_total": "50",
+    "on_chain_compared": "all five registration allocations, allocated_total, pool/base/remainder",
+    "oracle_source_untouched": true
+  },
+  "receipts": {
+    "settled_before_claim": "17 Claimable at reg-0",
+    "failed_transfer_claim": {
+      "label": "settle_claim_fail_failed_transfer",
+      "tx_hash": "CkVsgkpLTtFn3J8CG6skt5cegNYAhtuLHozLbRSAsB7r",
+      "top_level_success": true,
+      "ft_receipt": "failed",
+      "callback_receipt": "succeeded",
+      "ft_receipt_gas": 1556796194092,
+      "callback_receipt_gas": 2612910427147
+    },
+    "stale_callback_denied": {
+      "label": "settle_fail_stale_callback_denied",
+      "tx_hash": "9mDjvR66NjYjue3W2GG5vLyxrqHNkGc74z9ZVdbzL2sb",
+      "top_level_failure": true
+    },
+    "storage_unregister": {
+      "label": "settle_fail_unregister_receiver_storage",
+      "tx_hash": "51GVVFY8G9kt4g4qYsf3goufSqPedw7aVF489Z6kbZZK"
+    },
+    "storage_restore": {
+      "label": "settle_fail_restore_receiver_storage",
+      "tx_hash": "5385W9JERuUeRrfXaJF4yUJx2E8xn5FoDjAUs8FrNz8G"
+    },
+    "retry_paid_17": {
+      "label": "settle_claim_fail_retry",
+      "tx_hash": "8qJez5BH7Y7YUfwz7MKAfo7JmQhvEtXUxiHhKQfPKbHi",
+      "top_level_success": true,
+      "ft_receipt": "succeeded",
+      "callback_receipt": "succeeded"
+    },
+    "double_claim_denied": {
+      "label": "settle_claim_fail_double_after_paid",
+      "tx_hash": "EZWe39aQF1LiHvGmQRaujpbucxQNsz5TR173QW7WcJW",
+      "top_level_failure": true
+    },
+    "payout_attempts": {
+      "pay-reg-0-1": "Failed amount 17",
+      "pay-reg-0-2": "Succeeded amount 17"
+    }
+  },
+  "gas": {
+    "settle_five_registrations_receipt": 5920869991316,
+    "finalize_five_registrations_receipt": 3036162812644,
+    "claim_failed_transfer_stake_receipt": 3452166636929,
+    "claim_retry_stake_receipt": 3452166636929,
+    "ft_failed_receipt": 1556796194092,
+    "ft_retry_receipt": 1861317988608,
+    "callback_after_failure_receipt": 2612910427147,
+    "callback_after_success_receipt": 2623046549482
+  },
+  "explicit_limits": [
+    "This narrow case uses five normal canonical-FT ft_transfer_call deposits; it uses no bulk-funded synthetic registrations and no shortened-deadline patch.",
+    "The preserved full 2,328-check run's capacity-200 settlement instance still uses one real FT registration plus 199 bulk-funded synthetic canonical-FT receiver registrations; those 199 deposits are not normal ft_transfer_call calls.",
+    "The preserved full run's late-settlement leg shortens only the stored finalize_deadline to checkin_close + 20s via sandbox_patch_state, then crosses it with a real clock fast-forward; the +24h derivation and exact boundary remain unit-tested.",
+    "The failed FT transfer is forced by the beneficiary unregistering FT storage at zero balance; the ShowStake claim receipt and private callback still succeed.",
+    "PASS_LOCAL only: local synthetic Sandbox, no testnet/mainnet deployment."
+  ],
+  "preserved": {
+    "full_run": "test-support/contract-integration/evidence/runs/20261108T005435Z-1890976-5a5eacd9 (2,328/2,328)",
+    "full_latest_pointer_unchanged": "test-support/contract-integration/evidence/latest.json still points at the full run",
+    "narrow_pointer": "test-support/contract-integration/evidence/latest-settle-failure.json",
+    "v5_accepted": "d79ef24c72d2eea762d4c3e78a1990a21bf13458b0bf07c908a68fc6ca1d5bee",
+    "frozen_deployed": "fc49fb85cc6e718086ddf81e9a936362a8c36ef9384a8444eadafa6ec0cdcd8e",
+    "prior_manifests_and_logs_untouched": true
+  },
+  "source_manifest": [
+    {"path": "contracts/showstake/src/lib.rs", "sha256": "3b72b03bb2f8e436f138028cbe08436312dbd5f64f8a39dfc375bf96f7f06539", "changed_by_this_task": false},
+    {"path": "contracts/showstake/tests/test_basics.rs", "sha256": "aaea5b402b2b6a28d3cc3bf3a61bf6a2a0d23c368b131cac8548cc34b2e892fb", "changed_by_this_task": true},
+    {"path": "test-support/contract-integration/runner/src/main.rs", "sha256": "53854cef48a15d97f70b05bfb1af33d2b6efa4a47855121c839de3796892d98b", "changed_by_this_task": true},
+    {"path": "test-support/contract-integration/run-product-integration.sh", "sha256": "fbbfc8fd98e07073c6a7c6f47f4d3688c2c26517c7649fc487e58602a32637ef", "changed_by_this_task": true}
+  ],
+  "open_gates": [
+    "Codex acceptance of v6 with this supplemental 17-share failure proof",
+    "testnet deployment remains Codex-owned and NOT_RUN here; v5 testnet instance remains valid",
+    "real 24-hour deadline remains PARTIAL (unit-tested plus labelled shortened stored deadline)",
+    "API/worker projection schema unchanged"
+  ],
+  "authorization": {
+    "commit": false,
+    "push": false,
+    "deploy": false,
+    "keys": false,
+    "paid_resources": false,
+    "real_assets": false,
+    "api_web_worker_node_edited": false
+  }
+}

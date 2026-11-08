@@ -1,0 +1,8 @@
+{
+  "schema": "showstake.product-runner.latest/1.1.0",
+  "run_id": "20261108T014607Z-2373503-ae2e1e97",
+  "status": "PASS_LOCAL",
+  "runner_case": "settle-failure",
+  "run": "/mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/test-support/contract-integration/evidence/runs/20261108T014607Z-2373503-ae2e1e97/run.json",
+  "note": "Pointer to the current run of this runner case; the full-run pointer is only replaced by a full run."
+}

@@ -1,0 +1,52 @@
+{
+  "schema": "showstake.oracle-scenarios/1.0.0",
+  "label": "LOCAL allocation vectors consumed by the accepted settlement oracle; no chain evidence by itself",
+  "scenarios": [
+    {
+      "name": "settle-normal",
+      "deposit": "10",
+      "attended": [true, true, true]
+    },
+    {
+      "name": "settle-remainder",
+      "deposit": "10",
+      "attended": [true, false, true, true, false]
+    },
+    {
+      "name": "settle-zero",
+      "deposit": "10",
+      "attended": [false, false, false]
+    },
+    {
+      "name": "settle-late",
+      "deposit": "10",
+      "attended": [true, false]
+    },
+    {
+      "name": "settle-cap200",
+      "deposit": "10",
+      "attended": [
+        true, true, true, true, true, true, true, true, true, true,
+        true, true, true, true, true, true, true, true, true, true,
+        true, true, true, true, true, true, true, true, true, true,
+        true, true, true, true, true, true, true, true, true, true,
+        false, false, false, false, false, false, false, false, false, false,
+        false, false, false, false, false, false, false, false, false, false,
+        false, false, false, false, false, false, false, false, false, false,
+        false, false, false, false, false, false, false, false, false, false,
+        false, false, false, false, false, false, false, false, false, false,
+        false, false, false, false, false, false, false, false, false, false,
+        false, false, false, false, false, false, false, false, false, false,
+        false, false, false, false, false, false, false, false, false, false,
+        false, false, false, false, false, false, false, false, false, false,
+        false, false, false, false, false, false, false, false, false, false,
+        false, false, false, false, false, false, false, false, false, false,
+        false, false, false, false, false, false, false, false, false, false,
+        false, false, false, false, false, false, false, false, false, false,
+        false, false, false, false, false, false, false, false, false, false,
+        false, false, false, false, false, false, false, false, false, false,
+        false, false, false, false, false, false, false, false, false, false
+      ]
+    }
+  ]
+}

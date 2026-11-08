@@ -30,9 +30,10 @@ const SANDBOX_VERSION: &str = "2.14.0";
 const DEPOSIT: u128 = 100;
 const HOUR_MS: u64 = 3_600_000;
 const DAY_MS: u64 = 86_400_000;
-/// D036 published policy identity (final commit, no voluntary withdrawal or
-/// rejoin). The contract rejects the earlier `showstake-v2/1` label.
-const POLICY_IDENTITY: &str = "showstake-v2-d036/1";
+/// Published policy identity for this generation (D036 final commit + organizer
+/// attendance finalization + permissionless bounded settlement). The contract
+/// rejects earlier identities.
+const POLICY_IDENTITY: &str = "showstake-v2-d036-settle/1";
 
 const EVENT_OPEN: &str = "evt-open";
 const EVENT_OPEN2: &str = "evt-open-2";
@@ -75,12 +76,17 @@ struct EventStorageMirror {
 struct Evidence {
     schema: &'static str,
     label: &'static str,
+    runner_case: String,
     run_id: String,
     status: String,
     error: Option<String>,
     sandbox: SandboxEvidence,
     #[serde(skip_serializing_if = "Option::is_none")]
     deadline_sandbox: Option<SandboxEvidence>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    settlement_sandbox: Option<SandboxEvidence>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    oracle: Option<OracleEvidence>,
     accounts: BTreeMap<String, String>,
     contracts: BTreeMap<String, String>,
     wasm: WasmEvidence,
@@ -90,6 +96,61 @@ struct Evidence {
     snapshots: Vec<Snapshot>,
     checks: Vec<Check>,
     limits: Vec<&'static str>,
+}
+
+#[derive(Serialize, Default, Debug)]
+struct OracleEvidence {
+    path: String,
+    sha256: String,
+    schema: String,
+    oracle_module_sha256: String,
+    formula: String,
+    scenarios: Vec<String>,
+}
+
+#[derive(Deserialize, Debug)]
+struct OracleExpected {
+    schema: String,
+    oracle: OracleSource,
+    scenarios: Vec<OracleScenario>,
+}
+
+#[derive(Deserialize, Debug)]
+struct OracleSource {
+    formula: String,
+    settlement_module_sha256: String,
+}
+
+#[derive(Deserialize, Clone, Debug)]
+struct OracleScenario {
+    name: String,
+    deposit: String,
+    attended: Vec<bool>,
+    pool: String,
+    q: String,
+    r: String,
+    payouts: Vec<String>,
+    total: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct SettlementViewJson {
+    event_id: String,
+    state: String,
+    attendance_frozen: bool,
+    attendee_count: u32,
+    no_show_count: u64,
+    registrations: u64,
+    pool: String,
+    base_share: String,
+    remainder: String,
+    cursor: u64,
+    allocated_count: u64,
+    allocated_total: String,
+    complete: bool,
+    claims_enabled: bool,
+    finalized_at: u64,
+    completed_at: u64,
 }
 
 #[derive(Serialize, Default, Debug)]
@@ -2792,6 +2853,29 @@ async fn run_case(evidence: &mut Evidence, ft_wasm: &Path, showstake_wasm: &Path
         format!("now={timeout_clock} event={timeout_event_before:?}"),
     );
     let timeout_before = lifecycle_state(&env, &timeout_stake, EVENT_TIMEOUT, &[]).await?;
+    // Late finalization is denied at/after finalize_deadline; only refund-only remains.
+    let late_finalize = call(
+        &timeout_stake,
+        "finalize_event",
+        serde_json::json!({"event_id": EVENT_TIMEOUT}),
+        &organizer,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(0),
+        NearGas::from_tgas(200),
+        "timeout_late_finalize_denied",
+        "organizer finalization at/after the deadline must fail",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "timeout_late_finalize_denied_receipt",
+        "late finalization fails on the contract receipt and leaves the event unfinalized",
+        late_finalize.top_level_failure
+            && event_view(&env, &timeout_stake, EVENT_TIMEOUT).await?.state == "Published",
+        format!("{late_finalize:?}"),
+    );
+    evidence.transactions.push(late_finalize);
     let tx = call(
         &timeout_stake,
         "activate_timeout_refund",
@@ -3183,6 +3267,8 @@ async fn run_case(evidence: &mut Evidence, ft_wasm: &Path, showstake_wasm: &Path
     );
 
     run_deadline_case(evidence, ft_wasm, showstake_wasm).await?;
+
+    run_settlement_case(evidence, ft_wasm, showstake_wasm).await?;
 
     Ok(())
 }
@@ -3774,11 +3860,14 @@ async fn main() {
     let mut evidence = Evidence {
         schema: "showstake.product-runner/1.1.0",
         label: "LOCAL PRODUCT SLICE ONLY — real sandbox receipts/balances, not production/testnet settlement",
+        runner_case: "full".to_string(),
         run_id: run_id.clone(),
         status: "INCOMPLETE".to_string(),
         error: None,
         sandbox: SandboxEvidence::default(),
         deadline_sandbox: None,
+        settlement_sandbox: None,
+        oracle: None,
         accounts: BTreeMap::new(),
         contracts: BTreeMap::new(),
         wasm: WasmEvidence {
@@ -3797,20 +3886,35 @@ async fn main() {
         limits: vec![
             "Local synthetic NEAR Sandbox only; no testnet/mainnet, faucet, public deployment, wallet or real asset.",
             "Reviewed artifact is one event per contract instance; distinct events are separate instances.",
-            "Implemented product slice: publish, native storage prepay, canonical-FT registration/pass, one lifetime registration per account/event (no voluntary withdrawal or rejoin), organizer cancellation, permissionless timeout refund-only, and exactly-once beneficiary claims via private FT callback.",
-            "Attendance, finalization, settlement/redistribution and factory are NOT implemented in this slice.",
+            "Implemented product slice: publish, native storage prepay, canonical-FT registration/pass, one lifetime registration per account/event (no voluntary withdrawal or rejoin), organizer cancellation, permissionless timeout refund-only, organizer attendance finalization, permissionless bounded settlement and exactly-once beneficiary claims via private FT callback.",
+            "Attendance is organizer-marked only inside the check-in window and frozen at finalization; settlement is permissionless, chunked at 25 registrations per call, and claims stay disabled until the allocation completes.",
+            "The settlement allocation is compared registration-by-registration against the accepted independent test-support oracle; the oracle's legacy withdrawal support is not a D036 requirement.",
             "Timeout is proved twice: zero-registration activation on the default Sandbox, and a capacity-200 event with a real nonzero deposit -> shortened stored deadline (checkin_close + 20s via sandbox_patch_state) -> real fast-forward over it -> permissionless refund-only -> claim; the +24h derivation and exact deadline-1/at-deadline are unit-tested.",
             "Capacity 200 is the total-registration bound on a clean instance: no withdrawal frees seats and a second registration by the same account/event is rejected.",
-            "The max-capacity Sandbox instances use one real FT registration plus 199 bulk-funded synthetic canonical-FT receiver registrations to measure 200-registration cancel/timeout activation gas; the claimed registration uses real FT and balances.",
+            "The max-capacity Sandbox instances use one real FT registration plus 199 bulk-funded synthetic canonical-FT receiver registrations to measure 200-registration cancel, timeout, finalize and settlement gas; the claimed registrations use real FT and balances.",
             "Pass is custom and account-bound; no NEP-171/NEP-393 conformance is claimed.",
-            "Cancellation and timeout activation are O(1) and measured at 200 registrations; settlement/redistribution max-200 gas remains NOT_RUN.",
-            "Voluntary withdrawal traps before mutation; legacy states without the schema marker fail closed and require a clean instance.",
+            "Cancellation and timeout activation are O(1); settlement is a bounded resumable cursor. Attestation of max-200 settlement gas is in the settlement checks, not a production gas guarantee.",
+            "Voluntary withdrawal traps before mutation; legacy states without the schema marker fail closed and require a clean instance (schema 3).",
             "Invalid deposits rely on real FT resolver refund receipts and restored balances; no in-memory model is evidence.",
             "Teardown is limited to this run's PGID + pinned near-sandbox binary and run-owned --home.",
         ],
     };
 
-    let result = run_case(&mut evidence, &ft_wasm, &showstake_wasm).await;
+    // Clearly labelled runner mode: the default `full` run keeps the complete
+    // 2,328-check suite; `settlement` and `settle-failure` are narrow
+    // supplemental modes used only with the matching wrapper RUNNER_CASE.
+    let runner_case =
+        std::env::var("RUNNER_CASE").unwrap_or_else(|_| "full".to_string());
+    evidence.runner_case = runner_case.clone();
+    let result = match runner_case.as_str() {
+        "settle-failure" => {
+            run_settlement_failure_case(&mut evidence, &ft_wasm, &showstake_wasm).await
+        }
+        "settlement" => {
+            run_settlement_case(&mut evidence, &ft_wasm, &showstake_wasm).await
+        }
+        _ => run_case(&mut evidence, &ft_wasm, &showstake_wasm).await,
+    };
     if let Err(error) = result {
         evidence.error = Some(format!("{error:#}"));
     }
@@ -3860,4 +3964,2026 @@ async fn main() {
         }
         std::process::exit(1);
     }
+}
+
+// ------------------------------------------------ settlement Sandbox case
+//
+// A third, isolated Sandbox owns the attendance/finalization/settlement
+// lifecycle so the clock can be advanced through the check-in and finalization
+// windows without disturbing the earlier registration/refund/timeout evidence.
+// Every allocation is compared against the accepted independent settlement
+// oracle JSON (ORACLE_EXPECTATIONS), which the wrapper hashes into the run.
+
+const EVENT_SETTLE_NORMAL: &str = "evt-settle-normal";
+const EVENT_SETTLE_REMAINDER: &str = "evt-settle-remainder";
+const EVENT_SETTLE_ZERO: &str = "evt-settle-zero";
+const EVENT_SETTLE_LATE: &str = "evt-settle-late";
+const EVENT_SETTLE_CAP: &str = "evt-settle-cap";
+const SETTLE_DEPOSIT: u128 = 10;
+const SETTLE_MAX_RECEIPT_GAS: u64 = 30_000_000_000_000;
+/// Finalization is one organizer call that reads the bounded 200-registration
+/// index; it must stay well inside the 200 Tgas attached with a 4x margin.
+const SETTLE_FINALIZE_MAX_RECEIPT_GAS: u64 = 50_000_000_000_000;
+const SETTLE_CAP_CHUNK_SIZE: u64 = 25;
+
+struct SettlementInstance {
+    label: &'static str,
+    contract: Contract,
+    contract_id: AccountId,
+    event_id: &'static str,
+}
+
+fn settlement_rules(
+    deposit: u128,
+    rules_hash: &str,
+    capacity: u32,
+    reg_open: u64,
+    reg_close: u64,
+    checkin_close: u64,
+) -> serde_json::Value {
+    serde_json::json!({
+        "rules_hash": rules_hash,
+        "deposit": deposit.to_string(),
+        "capacity": capacity,
+        "reg_open": reg_open,
+        "reg_close": reg_close,
+        "cancel_cutoff": reg_close,
+        "checkin_open": reg_close,
+        "checkin_close": checkin_close,
+    })
+}
+
+fn load_oracle_expected() -> anyhow::Result<(String, String, OracleExpected)> {
+    let path = std::env::var("ORACLE_EXPECTATIONS")
+        .map_err(|_| anyhow!("ORACLE_EXPECTATIONS must point to the oracle expected JSON"))?;
+    let sha256 = std::env::var("ORACLE_EXPECTATIONS_SHA256").unwrap_or_default();
+    let data = std::fs::read_to_string(&path)
+        .map_err(|error| anyhow!("read oracle expectations {path}: {error}"))?;
+    let parsed: OracleExpected = serde_json::from_str(&data)
+        .map_err(|error| anyhow!("parse oracle expectations {path}: {error}"))?;
+    if parsed.schema != "showstake.oracle-expected/1.0.0" {
+        anyhow::bail!("unexpected oracle expectation schema: {}", parsed.schema);
+    }
+    Ok((path, sha256, parsed))
+}
+
+fn oracle_scenario<'a>(
+    oracle: &'a OracleExpected,
+    name: &str,
+) -> anyhow::Result<&'a OracleScenario> {
+    oracle
+        .scenarios
+        .iter()
+        .find(|scenario| scenario.name == name)
+        .ok_or_else(|| anyhow!("oracle scenario missing: {name}"))
+}
+
+fn oracle_inputs_match(scenario: &OracleScenario, deposit: u128, attended: &[bool]) -> bool {
+    scenario.deposit == deposit.to_string()
+        && scenario.attended == attended
+        && scenario.payouts.len() == attended.len()
+}
+
+async fn settlement_view(
+    env: &Env,
+    stake: &Contract,
+    event_id: &str,
+) -> anyhow::Result<SettlementViewJson> {
+    view::<SettlementViewJson>(
+        stake,
+        "get_settlement",
+        serde_json::json!({"event_id": event_id}),
+        &env.network,
+    )
+    .await
+}
+
+async fn advance_settlement_clock(
+    sandbox: &near_sandbox::Sandbox,
+    env: &Env,
+    stake: &Contract,
+    target: u64,
+    label: &str,
+) -> anyhow::Result<u64> {
+    let mut now = view::<u64>(
+        stake,
+        "get_block_timestamp_ms",
+        serde_json::json!({}),
+        &env.network,
+    )
+    .await?;
+    let mut attempts = 0;
+    let mut trace = Vec::new();
+    while now < target && attempts < 16 {
+        let remaining = target.saturating_sub(now);
+        let blocks = (remaining / 800).clamp(1, 3000);
+        let before = now;
+        sandbox.fast_forward(blocks).await?;
+        now = view::<u64>(
+            stake,
+            "get_block_timestamp_ms",
+            serde_json::json!({}),
+            &env.network,
+        )
+        .await?;
+        attempts += 1;
+        trace.push(format!("blocks={blocks} before={before} after={now}"));
+        if now <= before {
+            break;
+        }
+    }
+    if now < target {
+        anyhow::bail!(
+            "{label}: clock did not reach {target} (now={now}; {})",
+            trace.join("; ")
+        );
+    }
+    Ok(now)
+}
+
+#[allow(clippy::too_many_arguments)]
+async fn settlement_checked_call(
+    evidence: &mut Evidence,
+    contract: &Contract,
+    contract_id: &AccountId,
+    method: &str,
+    args: serde_json::Value,
+    signer_id: &AccountId,
+    signer: Arc<Signer>,
+    network: &NetworkConfig,
+    deposit: NearToken,
+    gas: NearGas,
+    label: &str,
+    note: &str,
+    expect_success: bool,
+) -> anyhow::Result<TxEvidence> {
+    let tx = call(
+        contract, method, args, signer_id, signer, network, deposit, gas, label, note,
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        &format!("{label}_top_level"),
+        if expect_success {
+            "call succeeds at the top level"
+        } else {
+            "call fails at the top level"
+        },
+        if expect_success {
+            tx.top_level_success
+        } else {
+            tx.top_level_failure
+        },
+        format!("{tx:?}"),
+    );
+    if expect_success {
+        check(
+            &mut evidence.checks,
+            &format!("{label}_contract_receipt"),
+            "the ShowStake contract receipt succeeds",
+            has_receipt_success(&tx, contract_id),
+            format!("{tx:?}"),
+        );
+    }
+    evidence.transactions.push(tx.clone());
+    Ok(tx)
+}
+
+async fn settlement_mark(
+    evidence: &mut Evidence,
+    env: &Env,
+    instance: &SettlementInstance,
+    organizer: &AccountId,
+    signer: Arc<Signer>,
+    tag: &str,
+    registration_id: &str,
+    attended: bool,
+    expect_success: bool,
+) -> anyhow::Result<TxEvidence> {
+    settlement_checked_call(
+        evidence,
+        &instance.contract,
+        &instance.contract_id,
+        "mark_attendance",
+        serde_json::json!({"registration_id": registration_id, "attended": attended}),
+        organizer,
+        signer,
+        &env.network,
+        NearToken::from_yoctonear(0),
+        NearGas::from_tgas(30),
+        &format!("settle_mark_{instance_tag}_{tag}", instance_tag = instance.label),
+        "organizer attendance attestation inside the check-in window",
+        expect_success,
+    )
+    .await
+}
+
+async fn settlement_finalize(
+    evidence: &mut Evidence,
+    env: &Env,
+    instance: &SettlementInstance,
+    organizer: &AccountId,
+    signer: Arc<Signer>,
+    tag: &str,
+    expect_success: bool,
+) -> anyhow::Result<TxEvidence> {
+    settlement_checked_call(
+        evidence,
+        &instance.contract,
+        &instance.contract_id,
+        "finalize_event",
+        serde_json::json!({"event_id": instance.event_id}),
+        organizer,
+        signer,
+        &env.network,
+        NearToken::from_yoctonear(0),
+        NearGas::from_tgas(200),
+        &format!("settle_finalize_{}_{}", instance.label, tag),
+        "organizer attendance finalization",
+        expect_success,
+    )
+    .await
+}
+
+async fn settlement_settle(
+    evidence: &mut Evidence,
+    env: &Env,
+    instance: &SettlementInstance,
+    actor: &AccountId,
+    signer: Arc<Signer>,
+    tag: &str,
+    expect_success: bool,
+) -> anyhow::Result<TxEvidence> {
+    settlement_checked_call(
+        evidence,
+        &instance.contract,
+        &instance.contract_id,
+        "settle",
+        serde_json::json!({"event_id": instance.event_id}),
+        actor,
+        signer,
+        &env.network,
+        NearToken::from_yoctonear(0),
+        NearGas::from_tgas(200),
+        &format!("settle_run_{}_{}", instance.label, tag),
+        "permissionless bounded settlement chunk",
+        expect_success,
+    )
+    .await
+}
+
+async fn settlement_claim(
+    evidence: &mut Evidence,
+    env: &Env,
+    instance: &SettlementInstance,
+    beneficiary: &AccountId,
+    signer: Arc<Signer>,
+    registration_id: &str,
+    tag: &str,
+    expect_success: bool,
+) -> anyhow::Result<TxEvidence> {
+    settlement_checked_call(
+        evidence,
+        &instance.contract,
+        &instance.contract_id,
+        "claim",
+        serde_json::json!({"registration_id": registration_id}),
+        beneficiary,
+        signer,
+        &env.network,
+        NearToken::from_yoctonear(1),
+        NearGas::from_tgas(100),
+        &format!("settle_claim_{}_{}", instance.label, tag),
+        "beneficiary claim through the canonical FT and private callback",
+        expect_success,
+    )
+    .await
+}
+
+async fn compare_settlement_to_oracle(
+    evidence: &mut Evidence,
+    env: &Env,
+    instance: &SettlementInstance,
+    scenario: &OracleScenario,
+) -> anyhow::Result<()> {
+    let state = settlement_view(env, &instance.contract, instance.event_id).await?;
+    let expected_count = scenario.payouts.len() as u64;
+    let expected_attendees = scenario.attended.iter().filter(|value| **value).count() as u32;
+    check(
+        &mut evidence.checks,
+        &format!("oracle_state_{}", instance.label),
+        "settlement is complete with the oracle registration/attendee counts",
+        state.state == "Settled"
+            && state.complete
+            && state.claims_enabled
+            && state.registrations == expected_count
+            && state.attendee_count == expected_attendees,
+        format!("{state:?}"),
+    );
+    check(
+        &mut evidence.checks,
+        &format!("oracle_total_{}", instance.label),
+        "on-chain allocated total equals the accepted oracle total",
+        state.allocated_total == scenario.total,
+        format!("on_chain={} oracle={}", state.allocated_total, scenario.total),
+    );
+    check(
+        &mut evidence.checks,
+        &format!("oracle_terms_{}", instance.label),
+        "on-chain pool/base/remainder equal the accepted oracle terms",
+        state.pool == scenario.pool
+            && state.base_share == scenario.q
+            && state.remainder == scenario.r,
+        format!(
+            "on_chain=({},{},{}) oracle=({},{},{})",
+            state.pool, state.base_share, state.remainder, scenario.pool, scenario.q, scenario.r
+        ),
+    );
+    for (sequence, expected) in scenario.payouts.iter().enumerate() {
+        let registration_id = format!("reg-{sequence}");
+        let claim = claim_view(env, &instance.contract, &registration_id).await?;
+        check(
+            &mut evidence.checks,
+            &format!("oracle_payout_{}_{sequence}", instance.label),
+            "on-chain allocation equals the accepted oracle payout",
+            claim.amount == *expected,
+            format!("claim={} oracle={expected}", claim.amount),
+        );
+    }
+    Ok(())
+}
+
+async fn claim_and_verify(
+    evidence: &mut Evidence,
+    env: &Env,
+    instance: &SettlementInstance,
+    beneficiary: &AccountId,
+    signer: Arc<Signer>,
+    registration_id: &str,
+    expected_amount: u128,
+    tag: &str,
+) -> anyhow::Result<()> {
+    let before = ft_balance(env, &env.ft_a, beneficiary).await?;
+    let tx = settlement_claim(
+        evidence,
+        env,
+        instance,
+        beneficiary,
+        signer,
+        registration_id,
+        tag,
+        true,
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        &format!("settle_claim_{}_{}_receipts", instance.label, tag),
+        "claim produced successful FT transfer and private callback receipts",
+        tx.top_level_success
+            && has_receipt_success(&tx, &env.ft_a.0)
+            && has_receipt_success(&tx, &instance.contract_id),
+        format!("{tx:?}"),
+    );
+    let after = ft_balance(env, &env.ft_a, beneficiary).await?;
+    check(
+        &mut evidence.checks,
+        &format!("settle_claim_{}_{}_balance", instance.label, tag),
+        "beneficiary balance increased by the oracle allocation",
+        parse_u128(&after) == parse_u128(&before) + expected_amount,
+        format!("before={before} after={after} amount={expected_amount}"),
+    );
+    let claim = claim_view(env, &instance.contract, registration_id).await?;
+    check(
+        &mut evidence.checks,
+        &format!("settle_claim_{}_{}_paid_once", instance.label, tag),
+        "claim is Paid with exactly the allocated amount",
+        claim.payout_state == "Paid"
+            && claim.paid_amount == expected_amount.to_string()
+            && claim.amount == expected_amount.to_string(),
+        format!("{claim:?}"),
+    );
+    let totals = event_totals(env, &instance.contract, instance.event_id).await?;
+    let accepted = parse_u128(&totals.accepted_principal);
+    let paid = parse_u128(&totals.paid);
+    check(
+        &mut evidence.checks,
+        &format!("settle_claim_{}_{}_conservation", instance.label, tag),
+        "paid principal and remaining liability conserve accepted principal",
+        paid == expected_amount && totals.liability == (accepted - paid).to_string(),
+        format!("{totals:?}"),
+    );
+    Ok(())
+}
+
+async fn run_settlement_case(
+    evidence: &mut Evidence,
+    ft_wasm: &Path,
+    showstake_wasm: &Path,
+) -> anyhow::Result<()> {
+    let (oracle_path, oracle_sha256, oracle) = load_oracle_expected()?;
+    evidence.oracle = Some(OracleEvidence {
+        path: oracle_path,
+        sha256: oracle_sha256,
+        schema: oracle.schema.clone(),
+        oracle_module_sha256: oracle.oracle.settlement_module_sha256.clone(),
+        formula: oracle.oracle.formula.clone(),
+        scenarios: oracle
+            .scenarios
+            .iter()
+            .map(|scenario| scenario.name.clone())
+            .collect(),
+    });
+
+    let sandbox = near_sandbox::Sandbox::start_sandbox_with_version(SANDBOX_VERSION).await?;
+    let network = NetworkConfig::from_rpc_url("sandbox", sandbox.rpc_addr.parse()?);
+    evidence.settlement_sandbox = Some(SandboxEvidence {
+        version: SANDBOX_VERSION.to_string(),
+        rpc_addr: sandbox.rpc_addr.clone(),
+        home_dir: sandbox.home_dir.path().display().to_string(),
+        fixture_only: true,
+        public_network_calls: false,
+    });
+    let signer = Signer::from_secret_key(
+        near_sandbox::config::DEFAULT_GENESIS_ACCOUNT_PRIVATE_KEY.parse()?,
+    )?;
+
+    let organizer = create_account(&sandbox, "settle-organizer.sandbox").await?;
+    let alice = create_account(&sandbox, "settle-alice.sandbox").await?;
+    let bob = create_account(&sandbox, "settle-bob.sandbox").await?;
+    let carol = create_account(&sandbox, "settle-carol.sandbox").await?;
+    let dave = create_account(&sandbox, "settle-dave.sandbox").await?;
+    let frank = create_account(&sandbox, "settle-frank.sandbox").await?;
+    let owner = create_account(&sandbox, "settle-owner.sandbox").await?;
+    let ft_id = create_account(&sandbox, "settle-ft.sandbox").await?;
+    let normal_id = create_account(&sandbox, "settle-normal.sandbox").await?;
+    let remainder_id = create_account(&sandbox, "settle-remainder.sandbox").await?;
+    let zero_id = create_account(&sandbox, "settle-zero.sandbox").await?;
+    let late_id = create_account(&sandbox, "settle-late.sandbox").await?;
+    let cap_id = create_account(&sandbox, "settle-cap.sandbox").await?;
+    evidence.accounts.extend([
+        ("settle_organizer".to_string(), organizer.to_string()),
+        ("settle_alice".to_string(), alice.to_string()),
+        ("settle_bob".to_string(), bob.to_string()),
+        ("settle_carol".to_string(), carol.to_string()),
+        ("settle_dave".to_string(), dave.to_string()),
+        ("settle_frank".to_string(), frank.to_string()),
+        ("settle_owner".to_string(), owner.to_string()),
+    ]);
+    evidence.contracts.extend([
+        ("settle_ft".to_string(), ft_id.to_string()),
+        ("settle_normal".to_string(), normal_id.to_string()),
+        ("settle_remainder".to_string(), remainder_id.to_string()),
+        ("settle_zero".to_string(), zero_id.to_string()),
+        ("settle_late".to_string(), late_id.to_string()),
+        ("settle_cap".to_string(), cap_id.to_string()),
+    ]);
+
+    let ft = Contract(ft_id.clone());
+    let normal = SettlementInstance {
+        label: "normal",
+        contract: Contract(normal_id.clone()),
+        contract_id: normal_id.clone(),
+        event_id: EVENT_SETTLE_NORMAL,
+    };
+    let remainder = SettlementInstance {
+        label: "remainder",
+        contract: Contract(remainder_id.clone()),
+        contract_id: remainder_id.clone(),
+        event_id: EVENT_SETTLE_REMAINDER,
+    };
+    let zero = SettlementInstance {
+        label: "zero",
+        contract: Contract(zero_id.clone()),
+        contract_id: zero_id.clone(),
+        event_id: EVENT_SETTLE_ZERO,
+    };
+    let late = SettlementInstance {
+        label: "late",
+        contract: Contract(late_id.clone()),
+        contract_id: late_id.clone(),
+        event_id: EVENT_SETTLE_LATE,
+    };
+    let cap = SettlementInstance {
+        label: "cap",
+        contract: Contract(cap_id.clone()),
+        contract_id: cap_id.clone(),
+        event_id: EVENT_SETTLE_CAP,
+    };
+    let env = Env {
+        ft_a: ft.clone(),
+        ft_b: ft.clone(),
+        open_stake: normal.contract.clone(),
+        open2_stake: remainder.contract.clone(),
+        closed_stake: zero.contract.clone(),
+        open_id: normal_id.clone(),
+        open2_id: remainder_id.clone(),
+        closed_id: zero_id.clone(),
+        life_id: late_id.clone(),
+        timeout_id: cap_id.clone(),
+        fail_id: cap_id.clone(),
+        organizer: organizer.clone(),
+        alice: alice.clone(),
+        bob: bob.clone(),
+        carol: carol.clone(),
+        dave: dave.clone(),
+        frank: frank.clone(),
+        owner_a: owner.clone(),
+        owner_b: owner.clone(),
+        network: network.clone(),
+    };
+
+    let metadata = serde_json::json!({
+        "spec": "ft-1.0.0", "name": "Sandbox FT Settlement", "symbol": "SFT-S",
+        "icon": null, "reference": null, "reference_hash": null, "decimals": 0
+    });
+    let tx = deploy(
+        &ft_id,
+        ft_wasm,
+        "new",
+        serde_json::json!({"owner_id": owner, "total_supply": "1000000", "metadata": metadata}),
+        signer.clone(),
+        &network,
+        "deploy_settle_ft",
+        "settlement Sandbox canonical FT fixture",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "deploy_settle_ft_success",
+        "settlement Sandbox FT deploy succeeds",
+        tx.top_level_success,
+        tx.tx_hash.clone(),
+    );
+    evidence.transactions.push(tx);
+
+    for (label, target) in [
+        ("settle_ft_storage_normal", normal_id.clone()),
+        ("settle_ft_storage_remainder", remainder_id.clone()),
+        ("settle_ft_storage_zero", zero_id.clone()),
+        ("settle_ft_storage_late", late_id.clone()),
+        ("settle_ft_storage_cap", cap_id.clone()),
+        ("settle_ft_storage_alice", alice.clone()),
+        ("settle_ft_storage_bob", bob.clone()),
+        ("settle_ft_storage_carol", carol.clone()),
+        ("settle_ft_storage_dave", dave.clone()),
+        ("settle_ft_storage_frank", frank.clone()),
+        ("settle_ft_storage_owner", owner.clone()),
+    ] {
+        settlement_checked_call(
+            evidence,
+            &ft,
+            &ft_id,
+            "storage_deposit",
+            serde_json::json!({"account_id": target, "registration_only": true}),
+            &organizer,
+            signer.clone(),
+            &network,
+            NearToken::from_millinear(10),
+            NearGas::from_tgas(30),
+            label,
+            "register FT storage for a settlement participant or instance",
+            true,
+        )
+        .await?;
+    }
+    for (label, account) in [
+        ("settle_fund_alice", &alice),
+        ("settle_fund_bob", &bob),
+        ("settle_fund_carol", &carol),
+        ("settle_fund_dave", &dave),
+        ("settle_fund_frank", &frank),
+    ] {
+        settlement_checked_call(
+            evidence,
+            &ft,
+            &ft_id,
+            "ft_transfer",
+            serde_json::json!({"receiver_id": account, "amount": "1000", "memo": null}),
+            &owner,
+            signer.clone(),
+            &network,
+            NearToken::from_yoctonear(1),
+            NearGas::from_tgas(30),
+            label,
+            "fund a settlement participant with canonical FT",
+            true,
+        )
+        .await?;
+    }
+
+    for instance in [&normal, &remainder, &zero, &late, &cap] {
+        let tx = deploy(
+            &instance.contract_id,
+            showstake_wasm,
+            "new",
+            serde_json::json!({
+                "organizer": organizer,
+                "canonical_ft": ft_id,
+                "network": "sandbox-local",
+                "policy_version": POLICY_IDENTITY,
+            }),
+            signer.clone(),
+            &network,
+            &format!("deploy_settle_{}", instance.label),
+            "settlement ShowStake instance with the current policy identity",
+        )
+        .await?;
+        check(
+            &mut evidence.checks,
+            &format!("deploy_settle_{}_success", instance.label),
+            "settlement ShowStake deploy succeeds",
+            tx.top_level_success,
+            tx.tx_hash.clone(),
+        );
+        evidence.transactions.push(tx);
+    }
+
+    let t0 = view::<u64>(
+        &normal.contract,
+        "get_block_timestamp_ms",
+        serde_json::json!({}),
+        &network,
+    )
+    .await?;
+    let reg_close = t0 + 180_000;
+    let checkin_close = t0 + 360_000;
+    for (instance, rules_hash, capacity) in [
+        (&normal, "local-rules-settle-normal-v1", 3u32),
+        (&remainder, "local-rules-settle-remainder-v1", 5),
+        (&zero, "local-rules-settle-zero-v1", 3),
+        (&late, "local-rules-settle-late-v1", 2),
+    ] {
+        settlement_checked_call(
+            evidence,
+            &instance.contract,
+            &instance.contract_id,
+            "publish_event",
+            serde_json::json!({
+                "event_id": instance.event_id,
+                "rules": settlement_rules(
+                    SETTLE_DEPOSIT,
+                    rules_hash,
+                    capacity,
+                    t0 - 60_000,
+                    reg_close,
+                    checkin_close,
+                ),
+            }),
+            &organizer,
+            signer.clone(),
+            &network,
+            NearToken::from_near(1),
+            NearGas::from_tgas(100),
+            &format!("publish_settle_{}", instance.label),
+            "publish a settlement event with real check-in/finalize windows",
+            true,
+        )
+        .await?;
+    }
+
+    let registration_plan: [(&SettlementInstance, &[&AccountId]); 4] = [
+        (&normal, &[&alice, &bob, &carol]),
+        (&remainder, &[&alice, &bob, &carol, &dave, &frank]),
+        (&zero, &[&alice, &bob, &carol]),
+        (&late, &[&alice, &bob]),
+    ];
+    for (instance, participants) in registration_plan {
+        for (index, participant) in participants.iter().enumerate() {
+            settlement_checked_call(
+                evidence,
+                &instance.contract,
+                &instance.contract_id,
+                "storage_deposit",
+                serde_json::json!({"account_id": participant}),
+                &organizer,
+                signer.clone(),
+                &network,
+                NearToken::from_millinear(25),
+                NearGas::from_tgas(30),
+                &format!("settle_prepay_{}_{index}", instance.label),
+                "prepay participant storage credit on the settlement instance",
+                true,
+            )
+            .await?;
+            settlement_checked_call(
+                evidence,
+                &ft,
+                &ft_id,
+                "ft_transfer_call",
+                serde_json::json!({
+                    "receiver_id": instance.contract_id,
+                    "amount": SETTLE_DEPOSIT.to_string(),
+                    "memo": null,
+                    "msg": commit_msg(instance.event_id, &format!("{}-{index}", instance.label)),
+                }),
+                participant,
+                signer.clone(),
+                &network,
+                NearToken::from_yoctonear(1),
+                NearGas::from_tgas(120),
+                &format!("settle_register_{}_{index}", instance.label),
+                "real canonical-FT registration on the settlement instance",
+                true,
+            )
+            .await?;
+        }
+    }
+
+    for (instance, expected) in [(&normal, 3u64), (&remainder, 5), (&zero, 3), (&late, 2)] {
+        let event = event_view(&env, &instance.contract, instance.event_id).await?;
+        check(
+            &mut evidence.checks,
+            &format!("settle_registrations_{}", instance.label),
+            "all planned registrations were accepted with exact principal",
+            event.total_registrations == expected
+                && event.active_registrations == expected as u32
+                && event.accepted_principal == (SETTLE_DEPOSIT * expected as u128).to_string(),
+            format!("{event:?}"),
+        );
+    }
+
+    for (name, attended) in [
+        ("settle-normal", vec![true, true, true]),
+        ("settle-remainder", vec![true, false, true, true, false]),
+        ("settle-zero", vec![false, false, false]),
+        ("settle-late", vec![true, false]),
+    ] {
+        let scenario = oracle_scenario(&oracle, name)?;
+        check(
+            &mut evidence.checks,
+            &format!("oracle_inputs_{}", name.replace('-', "_")),
+            "the Sandbox attendance vector is exactly the oracle scenario input",
+            oracle_inputs_match(scenario, SETTLE_DEPOSIT, &attended),
+            format!("oracle={scenario:?} sandbox={attended:?}"),
+        );
+    }
+
+    let checkin_now = advance_settlement_clock(
+        &sandbox,
+        &env,
+        &normal.contract,
+        reg_close + 1000,
+        "settle_checkin_advance",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "settle_checkin_window_open",
+        "the real Sandbox clock reached the check-in window",
+        checkin_now >= reg_close,
+        format!("now={checkin_now} checkin_open={reg_close}"),
+    );
+
+    settlement_mark(
+        evidence, &env, &normal, &bob, signer.clone(), "unauthorized", "reg-0", true, false,
+    )
+    .await?;
+
+    for (instance, registration_id, attended, tag) in [
+        (&normal, "reg-0", true, "a0"),
+        (&normal, "reg-1", true, "a1"),
+        (&normal, "reg-2", true, "a2"),
+        (&remainder, "reg-0", true, "a0"),
+        (&remainder, "reg-1", false, "a1"),
+        (&remainder, "reg-2", true, "a2"),
+        (&remainder, "reg-3", true, "a3"),
+        (&remainder, "reg-4", false, "a4"),
+        (&late, "reg-0", true, "a0"),
+        (&late, "reg-1", false, "a1"),
+    ] {
+        settlement_mark(
+            evidence,
+            &env,
+            instance,
+            &organizer,
+            signer.clone(),
+            tag,
+            registration_id,
+            attended,
+            true,
+        )
+        .await?;
+    }
+
+    let duplicate_before =
+        lifecycle_state(&env, &normal.contract, EVENT_SETTLE_NORMAL, &["reg-0".to_string()])
+            .await?;
+    let duplicate_tx = settlement_mark(
+        evidence,
+        &env,
+        &normal,
+        &organizer,
+        signer.clone(),
+        "duplicate",
+        "reg-0",
+        true,
+        true,
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "settle_mark_duplicate_idempotent_state",
+        "a duplicate identical mark succeeds and changes no lifecycle state",
+        duplicate_tx.top_level_success
+            && lifecycle_state(
+                &env,
+                &normal.contract,
+                EVENT_SETTLE_NORMAL,
+                &["reg-0".to_string()],
+            )
+            .await?
+                == duplicate_before,
+        format!("tx={duplicate_tx:?}"),
+    );
+
+    let finalize_now = advance_settlement_clock(
+        &sandbox,
+        &env,
+        &normal.contract,
+        checkin_close + 1000,
+        "settle_finalize_advance",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "settle_finalize_window_open",
+        "the real Sandbox clock reached the finalization window",
+        finalize_now >= checkin_close && finalize_now < checkin_close + DAY_MS,
+        format!("now={finalize_now} checkin_close={checkin_close}"),
+    );
+    settlement_mark(
+        evidence,
+        &env,
+        &normal,
+        &organizer,
+        signer.clone(),
+        "after_close",
+        "reg-1",
+        true,
+        false,
+    )
+    .await?;
+    settlement_finalize(
+        evidence,
+        &env,
+        &normal,
+        &bob,
+        signer.clone(),
+        "unauthorized",
+        false,
+    )
+    .await?;
+
+    for (instance, oracle_name) in [
+        (&normal, "settle-normal"),
+        (&remainder, "settle-remainder"),
+        (&zero, "settle-zero"),
+    ] {
+        let tx = settlement_finalize(
+            evidence,
+            &env,
+            instance,
+            &organizer,
+            signer.clone(),
+            "organizer",
+            true,
+        )
+        .await?;
+        let scenario = oracle_scenario(&oracle, oracle_name)?;
+        let state = settlement_view(&env, &instance.contract, instance.event_id).await?;
+        check(
+            &mut evidence.checks,
+            &format!("settle_finalized_{}", instance.label),
+            "finalization freezes the attendance count and turns the claim path off",
+            tx.top_level_success
+                && state.attendance_frozen
+                && state.attendee_count
+                    == scenario.attended.iter().filter(|value| **value).count() as u32
+                && state.state == "AttendanceFinalized",
+            format!("state={state:?}"),
+        );
+    }
+    settlement_finalize(
+        evidence,
+        &env,
+        &normal,
+        &organizer,
+        signer.clone(),
+        "duplicate",
+        false,
+    )
+    .await?;
+
+    for (instance, oracle_name) in [
+        (&normal, "settle-normal"),
+        (&remainder, "settle-remainder"),
+        (&zero, "settle-zero"),
+    ] {
+        settlement_settle(
+            evidence,
+            &env,
+            instance,
+            &bob,
+            signer.clone(),
+            "permissionless",
+            true,
+        )
+        .await?;
+        let scenario = oracle_scenario(&oracle, oracle_name)?;
+        compare_settlement_to_oracle(evidence, &env, instance, scenario).await?;
+    }
+
+    claim_and_verify(
+        evidence, &env, &normal, &alice, signer.clone(), "reg-0", 10, "alice",
+    )
+    .await?;
+    claim_and_verify(
+        evidence,
+        &env,
+        &remainder,
+        &carol,
+        signer.clone(),
+        "reg-2",
+        17,
+        "carol",
+    )
+    .await?;
+    settlement_claim(
+        evidence,
+        &env,
+        &remainder,
+        &bob,
+        signer.clone(),
+        "reg-1",
+        "no_show",
+        false,
+    )
+    .await?;
+    settlement_claim(
+        evidence,
+        &env,
+        &normal,
+        &bob,
+        signer.clone(),
+        "reg-0",
+        "wrong_beneficiary",
+        false,
+    )
+    .await?;
+    claim_and_verify(
+        evidence, &env, &zero, &alice, signer.clone(), "reg-0", 10, "alice",
+    )
+    .await?;
+
+    // Late settlement: finalized before the deadline, stored deadline shortened
+    // only for a bounded real-clock crossing, then settled after it.
+    settlement_finalize(
+        evidence,
+        &env,
+        &late,
+        &organizer,
+        signer.clone(),
+        "organizer",
+        true,
+    )
+    .await?;
+    let late_event = event_view(&env, &late.contract, EVENT_SETTLE_LATE).await?;
+    let patched_deadline = late_event.checkin_close + 20_000;
+    patch_event_deadline(&sandbox, &late_id, EVENT_SETTLE_LATE, patched_deadline).await?;
+    check(
+        &mut evidence.checks,
+        "settle_late_stored_deadline_patched",
+        "only the stored finalize_deadline was shortened (checkin_close + 20s) for a real clock crossing",
+        late_event.finalize_deadline
+            == late_event.checkin_close + DAY_MS
+            && patched_deadline > late_event.checkin_close,
+        format!(
+            "original={} patched={patched_deadline} checkin_close={}",
+            late_event.finalize_deadline, late_event.checkin_close
+        ),
+    );
+    let late_now = advance_settlement_clock(
+        &sandbox,
+        &env,
+        &late.contract,
+        patched_deadline + 1000,
+        "settle_late_deadline_crossing",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "settle_late_clock_crossed_deadline",
+        "the real Sandbox clock is past the stored deadline",
+        late_now >= patched_deadline,
+        format!("now={late_now} deadline={patched_deadline}"),
+    );
+    settlement_checked_call(
+        evidence,
+        &late.contract,
+        &late_id,
+        "activate_timeout_refund",
+        serde_json::json!({"event_id": EVENT_SETTLE_LATE}),
+        &bob,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(0),
+        NearGas::from_tgas(30),
+        "settle_late_timeout_denied",
+        "a finalized event must settle, not switch to refund-only",
+        false,
+    )
+    .await?;
+    settlement_settle(
+        evidence,
+        &env,
+        &late,
+        &bob,
+        signer.clone(),
+        "after_deadline",
+        true,
+    )
+    .await?;
+    compare_settlement_to_oracle(
+        evidence,
+        &env,
+        &late,
+        oracle_scenario(&oracle, "settle-late")?,
+    )
+    .await?;
+    claim_and_verify(
+        evidence, &env, &late, &alice, signer.clone(), "reg-0", 20, "alice",
+    )
+    .await?;
+
+    // ------------------------------------------------ capacity-200 settlement
+    let t1 = view::<u64>(
+        &cap.contract,
+        "get_block_timestamp_ms",
+        serde_json::json!({}),
+        &network,
+    )
+    .await?;
+    let cap_reg_close = t1 + 720_000;
+    let cap_checkin_close = t1 + 1_320_000;
+    settlement_checked_call(
+        evidence,
+        &cap.contract,
+        &cap_id,
+        "publish_event",
+        serde_json::json!({
+            "event_id": EVENT_SETTLE_CAP,
+            "rules": settlement_rules(
+                SETTLE_DEPOSIT,
+                "local-rules-settle-cap-v1",
+                200,
+                t1 - 60_000,
+                cap_reg_close,
+                cap_checkin_close,
+            ),
+        }),
+        &organizer,
+        signer.clone(),
+        &network,
+        NearToken::from_near(1),
+        NearGas::from_tgas(100),
+        "publish_settle_cap",
+        "publish the capacity-200 settlement event",
+        true,
+    )
+    .await?;
+
+    let synthetic_count = 199u32;
+    let tx = settlement_checked_call(
+        evidence,
+        &ft,
+        &ft_id,
+        "ft_transfer",
+        serde_json::json!({
+            "receiver_id": cap_id,
+            "amount": (SETTLE_DEPOSIT * u128::from(synthetic_count)).to_string(),
+            "memo": null,
+        }),
+        &owner,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(1),
+        NearGas::from_tgas(30),
+        "settle_cap_bulk_funding",
+        "fund the capacity-200 settlement instance with synthetic principals",
+        true,
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "settle_cap_bulk_funding_receipt",
+        "capacity-200 bulk FT funding succeeds",
+        tx.top_level_success && has_receipt_success(&tx, &ft_id),
+        format!("{tx:?}"),
+    );
+
+    settlement_checked_call(
+        evidence,
+        &cap.contract,
+        &cap_id,
+        "storage_deposit",
+        serde_json::json!({"account_id": bob}),
+        &organizer,
+        signer.clone(),
+        &network,
+        NearToken::from_millinear(25),
+        NearGas::from_tgas(30),
+        "settle_cap_prepay_bob",
+        "prepay the real capacity-200 registration",
+        true,
+    )
+    .await?;
+    settlement_checked_call(
+        evidence,
+        &ft,
+        &ft_id,
+        "ft_transfer_call",
+        serde_json::json!({
+            "receiver_id": cap_id,
+            "amount": SETTLE_DEPOSIT.to_string(),
+            "memo": null,
+            "msg": commit_msg(EVENT_SETTLE_CAP, "cap-real"),
+        }),
+        &bob,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(1),
+        NearGas::from_tgas(120),
+        "settle_cap_real_registration",
+        "real canonical-FT registration at sequence 0",
+        true,
+    )
+    .await?;
+
+    for index in 0..synthetic_count {
+        let fake: AccountId = format!("settle-cap-p{index:03}.sandbox").parse()?;
+        settlement_checked_call(
+            evidence,
+            &cap.contract,
+            &cap_id,
+            "storage_deposit",
+            serde_json::json!({"account_id": fake}),
+            &organizer,
+            signer.clone(),
+            &network,
+            NearToken::from_millinear(20),
+            NearGas::from_tgas(30),
+            &format!("settle_cap_prepay_{index}"),
+            "prepay a synthetic capacity-200 registration",
+            true,
+        )
+        .await?;
+        settlement_checked_call(
+            evidence,
+            &cap.contract,
+            &cap_id,
+            "ft_on_transfer",
+            serde_json::json!({
+                "sender_id": fake,
+                "amount": SETTLE_DEPOSIT.to_string(),
+                "msg": commit_msg(EVENT_SETTLE_CAP, &format!("cap-{index}")),
+            }),
+            &ft_id,
+            signer.clone(),
+            &network,
+            NearToken::from_yoctonear(0),
+            NearGas::from_tgas(60),
+            &format!("settle_cap_register_{index}"),
+            "synthetic canonical-FT receiver registration at capacity",
+            true,
+        )
+        .await?;
+    }
+    let cap_event = event_view(&env, &cap.contract, EVENT_SETTLE_CAP).await?;
+    check(
+        &mut evidence.checks,
+        "settle_cap_counts",
+        "capacity 200 is reached with one real plus 199 synthetic registrations",
+        cap_event.total_registrations == 200
+            && cap_event.active_registrations == 200
+            && cap_event.accepted_principal == (SETTLE_DEPOSIT * 200).to_string(),
+        format!("{cap_event:?}"),
+    );
+
+    let cap_checkin = advance_settlement_clock(
+        &sandbox,
+        &env,
+        &cap.contract,
+        cap_reg_close + 1000,
+        "settle_cap_checkin_advance",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "settle_cap_checkin_window_open",
+        "the real Sandbox clock reached the capacity-200 check-in window",
+        cap_checkin >= cap_reg_close,
+        format!("now={cap_checkin} checkin_open={cap_reg_close}"),
+    );
+    for index in 0..40u32 {
+        settlement_mark(
+            evidence,
+            &env,
+            &cap,
+            &organizer,
+            signer.clone(),
+            &format!("cap{index}"),
+            &format!("reg-{index}"),
+            true,
+            true,
+        )
+        .await?;
+    }
+    let cap_finalize_now = advance_settlement_clock(
+        &sandbox,
+        &env,
+        &cap.contract,
+        cap_checkin_close + 1000,
+        "settle_cap_finalize_advance",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "settle_cap_finalize_window_open",
+        "the real Sandbox clock reached the capacity-200 finalization window",
+        cap_finalize_now >= cap_checkin_close,
+        format!("now={cap_finalize_now} checkin_close={cap_checkin_close}"),
+    );
+    let finalize_tx = settlement_finalize(
+        evidence,
+        &env,
+        &cap,
+        &organizer,
+        signer.clone(),
+        "organizer",
+        true,
+    )
+    .await?;
+    let finalize_gas = receipt_gas(&finalize_tx, &cap_id).unwrap_or(u64::MAX);
+    check(
+        &mut evidence.checks,
+        "settle_finalize_cap200_gas",
+        "finalization at 200 registrations stays below the 50 Tgas receipt bound (200 Tgas attached)",
+        finalize_gas <= SETTLE_FINALIZE_MAX_RECEIPT_GAS,
+        format!("finalize_gas={finalize_gas}"),
+    );
+    let cap_state = settlement_view(&env, &cap.contract, EVENT_SETTLE_CAP).await?;
+    check(
+        &mut evidence.checks,
+        "settle_cap_finalized_counts",
+        "finalization froze 40 attendees and 160 no-shows at capacity 200",
+        cap_state.attendance_frozen
+            && cap_state.attendee_count == 40
+            && cap_state.no_show_count == 160
+            && cap_state.state == "AttendanceFinalized",
+        format!("{cap_state:?}"),
+    );
+
+    let first_chunk = settlement_settle(
+        evidence,
+        &env,
+        &cap,
+        &bob,
+        signer.clone(),
+        "chunk1",
+        true,
+    )
+    .await?;
+    let first_chunk_gas = receipt_gas(&first_chunk, &cap_id).unwrap_or(u64::MAX);
+    let first_state = settlement_view(&env, &cap.contract, EVENT_SETTLE_CAP).await?;
+    check(
+        &mut evidence.checks,
+        "settle_cap_chunk1_state",
+        "the first permissionless chunk enters SETTLING and advances the frozen cursor to 25",
+        first_state.state == "Settling"
+            && first_state.cursor == SETTLE_CAP_CHUNK_SIZE
+            && !first_state.complete
+            && !first_state.claims_enabled
+            && first_state.allocated_count == SETTLE_CAP_CHUNK_SIZE,
+        format!("gas={first_chunk_gas} state={first_state:?}"),
+    );
+    check(
+        &mut evidence.checks,
+        "settle_cap_chunk_gas",
+        "each settlement chunk stays below the 30 Tgas receipt bound at capacity 200",
+        first_chunk_gas <= SETTLE_MAX_RECEIPT_GAS,
+        format!("chunk1_gas={first_chunk_gas}"),
+    );
+    settlement_claim(
+        evidence,
+        &env,
+        &cap,
+        &bob,
+        signer.clone(),
+        "reg-0",
+        "during_settling",
+        false,
+    )
+    .await?;
+    settlement_checked_call(
+        evidence,
+        &cap.contract,
+        &cap_id,
+        "cancel_event",
+        serde_json::json!({"event_id": EVENT_SETTLE_CAP}),
+        &organizer,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(0),
+        NearGas::from_tgas(30),
+        "settle_cap_cancel_locked",
+        "cancellation is locked once SETTLING starts",
+        false,
+    )
+    .await?;
+
+    let mut cap_cursor = SETTLE_CAP_CHUNK_SIZE;
+    let mut cap_chunk_gas = vec![first_chunk_gas];
+    let mut cap_calls = 1u32;
+    while cap_cursor < 200 && cap_calls < 12 {
+        let tx = settlement_settle(
+            evidence,
+            &env,
+            &cap,
+            &bob,
+            signer.clone(),
+            &format!("chunk{}", cap_calls + 1),
+            true,
+        )
+        .await?;
+        cap_chunk_gas.push(receipt_gas(&tx, &cap_id).unwrap_or(u64::MAX));
+        cap_calls += 1;
+        let state = settlement_view(&env, &cap.contract, EVENT_SETTLE_CAP).await?;
+        let expected_cursor = SETTLE_CAP_CHUNK_SIZE * u64::from(cap_calls);
+        check(
+            &mut evidence.checks,
+            &format!("settle_cap_cursor_{cap_calls}"),
+            "the frozen cursor advances by exactly one bounded chunk",
+            state.cursor == expected_cursor.min(200),
+            format!("cursor={} expected={expected_cursor}", state.cursor),
+        );
+        cap_cursor = state.cursor;
+    }
+    check(
+        &mut evidence.checks,
+        "settle_cap_chunk_count",
+        "capacity 200 completes in eight chunks of 25",
+        cap_calls == 8 && cap_cursor == 200,
+        format!("calls={cap_calls} cursor={cap_cursor}"),
+    );
+    let max_chunk_gas = cap_chunk_gas.iter().copied().max().unwrap_or(u64::MAX);
+    check(
+        &mut evidence.checks,
+        "settle_cap_chunk_gas_max",
+        "every capacity-200 settlement chunk stays below the 30 Tgas receipt bound",
+        max_chunk_gas <= SETTLE_MAX_RECEIPT_GAS,
+        format!("chunk_gas={cap_chunk_gas:?}"),
+    );
+    let cap_settled = settlement_view(&env, &cap.contract, EVENT_SETTLE_CAP).await?;
+    check(
+        &mut evidence.checks,
+        "settle_cap_complete",
+        "settlement completes with verified total and claims enabled",
+        cap_settled.state == "Settled"
+            && cap_settled.complete
+            && cap_settled.claims_enabled
+            && cap_settled.cursor == 200
+            && cap_settled.allocated_count == 200
+            && cap_settled.allocated_total == "2000",
+        format!("{cap_settled:?}"),
+    );
+    settlement_settle(
+        evidence,
+        &env,
+        &cap,
+        &bob,
+        signer.clone(),
+        "replay",
+        true,
+    )
+    .await?;
+    let cap_replay = settlement_view(&env, &cap.contract, EVENT_SETTLE_CAP).await?;
+    check(
+        &mut evidence.checks,
+        "settle_cap_idempotent_replay",
+        "settle after completion is an idempotent no-op",
+        cap_replay.state == "Settled" && cap_replay.cursor == 200,
+        format!("{cap_replay:?}"),
+    );
+    claim_and_verify(
+        evidence, &env, &cap, &bob, signer.clone(), "reg-0", 50, "bob",
+    )
+    .await?;
+    compare_settlement_to_oracle(
+        evidence,
+        &env,
+        &cap,
+        oracle_scenario(&oracle, "settle-cap200")?,
+    )
+    .await?;
+
+    let supply = view::<String>(
+        &ft,
+        "ft_total_supply",
+        serde_json::json!({}),
+        &network,
+    )
+    .await?;
+    let mut holders = parse_u128(&ft_balance(&env, &ft, &owner).await?);
+    for account in [&alice, &bob, &carol, &dave, &frank] {
+        holders += parse_u128(&ft_balance(&env, &ft, account).await?);
+    }
+    for instance in [&normal, &remainder, &zero, &late, &cap] {
+        holders += parse_u128(&ft_balance(&env, &ft, &instance.contract_id).await?);
+    }
+    check(
+        &mut evidence.checks,
+        "settle_ft_supply_conserved",
+        "every canonical-FT holder plus the settlement instances equals the immutable supply",
+        holders == parse_u128(&supply) && supply == "1000000",
+        format!("holders={holders} supply={supply}"),
+    );
+
+    Ok(())
+}
+
+// --------------------------- settled redistribution payout-failure case
+//
+// Narrow supplemental mode (`RUNNER_CASE=settle-failure`). A real settled
+// allocation greater than D (17 from D10) is forced through an FT receiver
+// storage failure, the private callback must restore exactly the settled share
+// (17, not the D=10 principal), FT storage is restored and the retry pays 17
+// exactly once. All five deposits are normal canonical-FT `ft_transfer_call`
+// registrations; this case uses no synthetic bulk-funded registrations and no
+// shortened-deadline patch.
+
+const EVENT_SETTLE_FAIL: &str = "evt-settle-fail";
+
+async fn run_settlement_failure_case(
+    evidence: &mut Evidence,
+    ft_wasm: &Path,
+    showstake_wasm: &Path,
+) -> anyhow::Result<()> {
+    let (oracle_path, oracle_sha256, oracle) = load_oracle_expected()?;
+    evidence.oracle = Some(OracleEvidence {
+        path: oracle_path,
+        sha256: oracle_sha256,
+        schema: oracle.schema.clone(),
+        oracle_module_sha256: oracle.oracle.settlement_module_sha256.clone(),
+        formula: oracle.oracle.formula.clone(),
+        scenarios: oracle
+            .scenarios
+            .iter()
+            .map(|scenario| scenario.name.clone())
+            .collect(),
+    });
+
+    let sandbox = near_sandbox::Sandbox::start_sandbox_with_version(SANDBOX_VERSION).await?;
+    let network = NetworkConfig::from_rpc_url("sandbox", sandbox.rpc_addr.parse()?);
+    evidence.settlement_sandbox = Some(SandboxEvidence {
+        version: SANDBOX_VERSION.to_string(),
+        rpc_addr: sandbox.rpc_addr.clone(),
+        home_dir: sandbox.home_dir.path().display().to_string(),
+        fixture_only: true,
+        public_network_calls: false,
+    });
+    let signer = Signer::from_secret_key(
+        near_sandbox::config::DEFAULT_GENESIS_ACCOUNT_PRIVATE_KEY.parse()?,
+    )?;
+
+    let organizer = create_account(&sandbox, "settle-fail-organizer.sandbox").await?;
+    let owner = create_account(&sandbox, "settle-fail-owner.sandbox").await?;
+    let alice = create_account(&sandbox, "settle-fail-alice.sandbox").await?;
+    let bob = create_account(&sandbox, "settle-fail-bob.sandbox").await?;
+    let carol = create_account(&sandbox, "settle-fail-carol.sandbox").await?;
+    let dave = create_account(&sandbox, "settle-fail-dave.sandbox").await?;
+    let frank = create_account(&sandbox, "settle-fail-frank.sandbox").await?;
+    let ft_id = create_account(&sandbox, "settle-fail-ft.sandbox").await?;
+    let stake_id = create_account(&sandbox, "settle-fail-contract.sandbox").await?;
+    evidence.accounts.extend([
+        ("settle_fail_organizer".to_string(), organizer.to_string()),
+        ("settle_fail_owner".to_string(), owner.to_string()),
+        ("settle_fail_alice".to_string(), alice.to_string()),
+        ("settle_fail_bob".to_string(), bob.to_string()),
+        ("settle_fail_carol".to_string(), carol.to_string()),
+        ("settle_fail_dave".to_string(), dave.to_string()),
+        ("settle_fail_frank".to_string(), frank.to_string()),
+    ]);
+    evidence.contracts.extend([
+        ("settle_fail_ft".to_string(), ft_id.to_string()),
+        ("settle_fail_contract".to_string(), stake_id.to_string()),
+    ]);
+
+    let ft = Contract(ft_id.clone());
+    let instance = SettlementInstance {
+        label: "fail",
+        contract: Contract(stake_id.clone()),
+        contract_id: stake_id.clone(),
+        event_id: EVENT_SETTLE_FAIL,
+    };
+    let env = Env {
+        ft_a: ft.clone(),
+        ft_b: ft.clone(),
+        open_stake: instance.contract.clone(),
+        open2_stake: instance.contract.clone(),
+        closed_stake: instance.contract.clone(),
+        open_id: stake_id.clone(),
+        open2_id: stake_id.clone(),
+        closed_id: stake_id.clone(),
+        life_id: stake_id.clone(),
+        timeout_id: stake_id.clone(),
+        fail_id: stake_id.clone(),
+        organizer: organizer.clone(),
+        alice: alice.clone(),
+        bob: bob.clone(),
+        carol: carol.clone(),
+        dave: dave.clone(),
+        frank: frank.clone(),
+        owner_a: owner.clone(),
+        owner_b: owner.clone(),
+        network: network.clone(),
+    };
+
+    let metadata = serde_json::json!({
+        "spec": "ft-1.0.0", "name": "Sandbox FT PayoutFailure", "symbol": "SFT-F",
+        "icon": null, "reference": null, "reference_hash": null, "decimals": 0
+    });
+    let tx = deploy(
+        &ft_id,
+        ft_wasm,
+        "new",
+        serde_json::json!({"owner_id": owner, "total_supply": "1000000", "metadata": metadata}),
+        signer.clone(),
+        &network,
+        "settle_fail_deploy_ft",
+        "payout-failure Sandbox canonical FT fixture",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "settle_fail_deploy_ft_success",
+        "payout-failure Sandbox FT deploy succeeds",
+        tx.top_level_success,
+        tx.tx_hash.clone(),
+    );
+    evidence.transactions.push(tx);
+
+    for (label, target) in [
+        ("settle_fail_ft_storage_stake", stake_id.clone()),
+        ("settle_fail_ft_storage_alice", alice.clone()),
+        ("settle_fail_ft_storage_bob", bob.clone()),
+        ("settle_fail_ft_storage_carol", carol.clone()),
+        ("settle_fail_ft_storage_dave", dave.clone()),
+        ("settle_fail_ft_storage_frank", frank.clone()),
+        ("settle_fail_ft_storage_owner", owner.clone()),
+    ] {
+        settlement_checked_call(
+            evidence,
+            &ft,
+            &ft_id,
+            "storage_deposit",
+            serde_json::json!({"account_id": target, "registration_only": true}),
+            &organizer,
+            signer.clone(),
+            &network,
+            NearToken::from_millinear(10),
+            NearGas::from_tgas(30),
+            label,
+            "register FT storage for the payout-failure participants",
+            true,
+        )
+        .await?;
+    }
+    for (label, account) in [
+        ("settle_fail_fund_alice", &alice),
+        ("settle_fail_fund_bob", &bob),
+        ("settle_fail_fund_carol", &carol),
+        ("settle_fail_fund_dave", &dave),
+        ("settle_fail_fund_frank", &frank),
+    ] {
+        settlement_checked_call(
+            evidence,
+            &ft,
+            &ft_id,
+            "ft_transfer",
+            serde_json::json!({"receiver_id": account, "amount": SETTLE_DEPOSIT.to_string(), "memo": null}),
+            &owner,
+            signer.clone(),
+            &network,
+            NearToken::from_yoctonear(1),
+            NearGas::from_tgas(30),
+            label,
+            "fund exactly D so the beneficiary can unregister FT storage after depositing",
+            true,
+        )
+        .await?;
+        check(
+            &mut evidence.checks,
+            &format!("{label}_exact_d"),
+            "participant holds exactly D before the deposit",
+            ft_balance(&env, &ft, account).await? == SETTLE_DEPOSIT.to_string(),
+            ft_balance(&env, &ft, account).await?,
+        );
+    }
+
+    let tx = deploy(
+        &stake_id,
+        showstake_wasm,
+        "new",
+        serde_json::json!({
+            "organizer": organizer,
+            "canonical_ft": ft_id,
+            "network": "sandbox-local",
+            "policy_version": POLICY_IDENTITY,
+        }),
+        signer.clone(),
+        &network,
+        "settle_fail_deploy_showstake",
+        "payout-failure ShowStake instance with the current policy identity",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "settle_fail_deploy_showstake_success",
+        "payout-failure ShowStake deploy succeeds",
+        tx.top_level_success,
+        tx.tx_hash.clone(),
+    );
+    evidence.transactions.push(tx);
+
+    let t0 = view::<u64>(
+        &instance.contract,
+        "get_block_timestamp_ms",
+        serde_json::json!({}),
+        &network,
+    )
+    .await?;
+    let reg_close = t0 + 120_000;
+    let checkin_close = t0 + 240_000;
+    settlement_checked_call(
+        evidence,
+        &instance.contract,
+        &stake_id,
+        "publish_event",
+        serde_json::json!({
+            "event_id": EVENT_SETTLE_FAIL,
+            "rules": settlement_rules(
+                SETTLE_DEPOSIT,
+                "local-rules-settle-failure-v1",
+                5,
+                t0 - 60_000,
+                reg_close,
+                checkin_close,
+            ),
+        }),
+        &organizer,
+        signer.clone(),
+        &network,
+        NearToken::from_near(1),
+        NearGas::from_tgas(100),
+        "settle_fail_publish",
+        "publish the payout-failure event",
+        true,
+    )
+    .await?;
+
+    for (index, participant) in [&alice, &bob, &carol, &dave, &frank].iter().enumerate() {
+        settlement_checked_call(
+            evidence,
+            &instance.contract,
+            &stake_id,
+            "storage_deposit",
+            serde_json::json!({"account_id": participant}),
+            &organizer,
+            signer.clone(),
+            &network,
+            NearToken::from_millinear(25),
+            NearGas::from_tgas(30),
+            &format!("settle_fail_prepay_{index}"),
+            "prepay participant storage credit",
+            true,
+        )
+        .await?;
+        settlement_checked_call(
+            evidence,
+            &ft,
+            &ft_id,
+            "ft_transfer_call",
+            serde_json::json!({
+                "receiver_id": stake_id,
+                "amount": SETTLE_DEPOSIT.to_string(),
+                "memo": null,
+                "msg": commit_msg(EVENT_SETTLE_FAIL, &format!("fail-{index}")),
+            }),
+            participant,
+            signer.clone(),
+            &network,
+            NearToken::from_yoctonear(1),
+            NearGas::from_tgas(120),
+            &format!("settle_fail_register_{index}"),
+            "normal canonical-FT deposit on the payout-failure event",
+            true,
+        )
+        .await?;
+    }
+    let event = event_view(&env, &instance.contract, EVENT_SETTLE_FAIL).await?;
+    check(
+        &mut evidence.checks,
+        "settle_fail_registrations",
+        "all five registrations are normal FT deposits with exact principal",
+        event.total_registrations == 5
+            && event.accepted_principal == (SETTLE_DEPOSIT * 5).to_string(),
+        format!("{event:?}"),
+    );
+    for (label, participant) in [
+        ("settle_fail_zero_after_deposit_alice", &alice),
+        ("settle_fail_zero_after_deposit_bob", &bob),
+        ("settle_fail_zero_after_deposit_carol", &carol),
+        ("settle_fail_zero_after_deposit_dave", &dave),
+        ("settle_fail_zero_after_deposit_frank", &frank),
+    ] {
+        check(
+            &mut evidence.checks,
+            label,
+            "participant FT balance is zero after the normal deposit",
+            ft_balance(&env, &ft, participant).await? == "0",
+            ft_balance(&env, &ft, participant).await?,
+        );
+    }
+
+    let checkin_now = advance_settlement_clock(
+        &sandbox,
+        &env,
+        &instance.contract,
+        reg_close + 1000,
+        "settle_fail_checkin_advance",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "settle_fail_checkin_window_open",
+        "the real Sandbox clock reached the check-in window",
+        checkin_now >= reg_close,
+        format!("now={checkin_now} checkin_open={reg_close}"),
+    );
+    for (index, attended) in [true, false, true, true, false].iter().enumerate() {
+        settlement_mark(
+            evidence,
+            &env,
+            &instance,
+            &organizer,
+            signer.clone(),
+            &format!("a{index}"),
+            &format!("reg-{index}"),
+            *attended,
+            true,
+        )
+        .await?;
+    }
+    let finalize_now = advance_settlement_clock(
+        &sandbox,
+        &env,
+        &instance.contract,
+        checkin_close + 1000,
+        "settle_fail_finalize_advance",
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "settle_fail_finalize_window_open",
+        "the real Sandbox clock reached the finalization window",
+        finalize_now >= checkin_close,
+        format!("now={finalize_now} checkin_close={checkin_close}"),
+    );
+    settlement_finalize(
+        evidence,
+        &env,
+        &instance,
+        &organizer,
+        signer.clone(),
+        "organizer",
+        true,
+    )
+    .await?;
+    settlement_settle(
+        evidence,
+        &env,
+        &instance,
+        &bob,
+        signer.clone(),
+        "permissionless",
+        true,
+    )
+    .await?;
+
+    let scenario = oracle_scenario(&oracle, "settle-remainder")?;
+    check(
+        &mut evidence.checks,
+        "settle_fail_oracle_inputs",
+        "the failure case uses the accepted oracle's remainder vector",
+        oracle_inputs_match(
+            scenario,
+            SETTLE_DEPOSIT,
+            &[true, false, true, true, false],
+        ),
+        format!("{scenario:?}"),
+    );
+    check(
+        &mut evidence.checks,
+        "settle_fail_oracle_expected_17",
+        "the accepted oracle allocates 17 to the first attendee from D10",
+        scenario.payouts.first().map(String::as_str) == Some("17"),
+        format!("payouts={:?}", scenario.payouts),
+    );
+    compare_settlement_to_oracle(evidence, &env, &instance, scenario).await?;
+
+    let claim = claim_view(&env, &instance.contract, "reg-0").await?;
+    check(
+        &mut evidence.checks,
+        "settle_fail_allocated_17_before_claim",
+        "the settled claim allocation is 17, not the 10 principal",
+        claim.amount == "17"
+            && claim.payout_state == "Claimable"
+            && claim.paid_amount == "0",
+        format!("{claim:?}"),
+    );
+
+    settlement_checked_call(
+        evidence,
+        &ft,
+        &ft_id,
+        "storage_unregister",
+        serde_json::json!({"force": null}),
+        &alice,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(1),
+        NearGas::from_tgas(30),
+        "settle_fail_unregister_receiver_storage",
+        "remove the 17-recipient FT storage before claim to force the payout failure",
+        true,
+    )
+    .await?;
+
+    let failure_tx = settlement_claim(
+        evidence,
+        &env,
+        &instance,
+        &alice,
+        signer.clone(),
+        "reg-0",
+        "failed_transfer",
+        true,
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "settle_fail_failed_transfer_receipts",
+        "FT transfer failed while the private callback receipt succeeded",
+        has_receipt_failure(&failure_tx, &ft_id)
+            && has_receipt_success(&failure_tx, &stake_id),
+        format!("{failure_tx:?}"),
+    );
+    let restored = claim_view(&env, &instance.contract, "reg-0").await?;
+    let restored_totals = event_totals(&env, &instance.contract, EVENT_SETTLE_FAIL).await?;
+    check(
+        &mut evidence.checks,
+        "settle_fail_callback_restores_17",
+        "the private callback restores exactly the settled 17 share, not the D principal",
+        restored.amount == "17"
+            && restored.payout_state == "Claimable"
+            && restored.paid_amount == "0"
+            && restored.pending_payout_id.is_none(),
+        format!("{restored:?}"),
+    );
+    check(
+        &mut evidence.checks,
+        "settle_fail_state_after_failure",
+        "paid/pending/liability/escrow/balances all reflect an unpaid 17 claim",
+        restored_totals.paid == "0"
+            && restored_totals.pending == "0"
+            && restored_totals.liability == (SETTLE_DEPOSIT * 5).to_string()
+            && instance_escrow(&env, &instance.contract).await? == (SETTLE_DEPOSIT * 5).to_string()
+            && ft_balance(&env, &ft, &stake_id).await? == (SETTLE_DEPOSIT * 5).to_string()
+            && ft_balance(&env, &ft, &alice).await? == "0",
+        format!("claim={restored:?} totals={restored_totals:?}"),
+    );
+    let failed_payout = view::<serde_json::Value>(
+        &instance.contract,
+        "get_payout",
+        serde_json::json!({"payout_id": "pay-reg-0-1"}),
+        &network,
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "settle_fail_attempt1_resolved_failed",
+        "the first payout attempt resolves as Failed and is not payable twice",
+        failed_payout.get("state").and_then(|value| value.as_str()) == Some("Failed")
+            && failed_payout.get("amount").and_then(|value| value.as_str()) == Some("17"),
+        format!("{failed_payout:?}"),
+    );
+    settlement_checked_call(
+        evidence,
+        &instance.contract,
+        &stake_id,
+        "on_payout_result",
+        serde_json::json!({"payout_id": "pay-reg-0-1"}),
+        &alice,
+        signer.clone(),
+        &network,
+        NearToken::from_yoctonear(0),
+        NearGas::from_tgas(60),
+        "settle_fail_stale_callback_denied",
+        "the private callback cannot be replayed by a participant",
+        false,
+    )
+    .await?;
+
+    settlement_checked_call(
+        evidence,
+        &ft,
+        &ft_id,
+        "storage_deposit",
+        serde_json::json!({"account_id": alice, "registration_only": true}),
+        &organizer,
+        signer.clone(),
+        &network,
+        NearToken::from_millinear(10),
+        NearGas::from_tgas(30),
+        "settle_fail_restore_receiver_storage",
+        "re-register the 17-recipient FT storage before retry",
+        true,
+    )
+    .await?;
+    let retry_tx = settlement_claim(
+        evidence,
+        &env,
+        &instance,
+        &alice,
+        signer.clone(),
+        "reg-0",
+        "retry",
+        true,
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "settle_fail_retry_receipts",
+        "retry produced successful FT transfer and private callback receipts",
+        has_receipt_success(&retry_tx, &ft_id)
+            && has_receipt_success(&retry_tx, &stake_id),
+        format!("{retry_tx:?}"),
+    );
+    let paid = claim_view(&env, &instance.contract, "reg-0").await?;
+    let paid_totals = event_totals(&env, &instance.contract, EVENT_SETTLE_FAIL).await?;
+    check(
+        &mut evidence.checks,
+        "settle_fail_retry_pays_17_once",
+        "retry pays exactly 17 once and leaves the correct paid/liability/escrow/balances",
+        paid.payout_state == "Paid"
+            && paid.paid_amount == "17"
+            && paid.amount == "17"
+            && paid_totals.paid == "17"
+            && paid_totals.pending == "0"
+            && paid_totals.liability == (SETTLE_DEPOSIT * 5 - 17).to_string()
+            && instance_escrow(&env, &instance.contract).await?
+                == (SETTLE_DEPOSIT * 5 - 17).to_string()
+            && ft_balance(&env, &ft, &stake_id).await?
+                == (SETTLE_DEPOSIT * 5 - 17).to_string()
+            && ft_balance(&env, &ft, &alice).await? == "17",
+        format!("claim={paid:?} totals={paid_totals:?}"),
+    );
+    let retry_payout = view::<serde_json::Value>(
+        &instance.contract,
+        "get_payout",
+        serde_json::json!({"payout_id": "pay-reg-0-2"}),
+        &network,
+    )
+    .await?;
+    check(
+        &mut evidence.checks,
+        "settle_fail_attempt2_resolved_succeeded",
+        "the retry attempt resolves as Succeeded with the 17 amount",
+        retry_payout.get("state").and_then(|value| value.as_str()) == Some("Succeeded")
+            && retry_payout.get("amount").and_then(|value| value.as_str()) == Some("17"),
+        format!("{retry_payout:?}"),
+    );
+    settlement_claim(
+        evidence,
+        &env,
+        &instance,
+        &alice,
+        signer.clone(),
+        "reg-0",
+        "double_after_paid",
+        false,
+    )
+    .await?;
+
+    Ok(())
 }

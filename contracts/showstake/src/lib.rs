@@ -12,11 +12,15 @@
 //!   * bounded views, and explicit rejection of transfer/approval/reassignment,
 //!   * one lifetime registration per account/event (no voluntary
 //!     withdrawal/rejoin), O(1) organizer cancellation and timeout
-//!     refund-only, and exactly-once beneficiary claims materialized lazily.
+//!     refund-only, and exactly-once beneficiary claims materialized lazily,
+//!   * organizer attendance marking inside the check-in window, an immutable
+//!     attendance snapshot at finalization, and permissionless bounded
+//!     settlement that redistributes no-show principal to attendees with a
+//!     deterministic registration-sequence remainder. Claims stay disabled
+//!     until the allocation is complete.
 //!
-//! Out of scope here (next assignment): attendance, finalization,
-//! settlement/redistribution and the factory. The state retained below is only
-//! what those stages need.
+//! Out of scope here: the factory. The state retained below is only what the
+//! settlement/claim stages need.
 //!
 //! This is NOT a NEP-171 or NEP-393 implementation. The pass is a custom,
 //! account-bound event credential; every transfer/approval/burn/admin-reassign
@@ -41,6 +45,9 @@ pub enum EventState {
     Published,
     Cancelled,
     RefundOnly,
+    AttendanceFinalized,
+    Settling,
+    Settled,
 }
 
 /// Registration lifecycle in this slice: accepted registrations are Active.
@@ -51,11 +58,14 @@ pub enum RegistrationStatus {
     Withdrawn,
 }
 
-/// Attendance is not implemented in this slice; every pass starts NotMarked.
+/// Organizer-marked attendance. `NoShow` is derived once attendance is frozen;
+/// only `NotMarked`/`Attended` are ever written.
 #[near(serializers = [borsh, json])]
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum AttendanceStatus {
     NotMarked,
+    Attended,
+    NoShow,
 }
 
 /// Registration/pass financial lifecycle. Variants are append-only so Borsh
@@ -67,6 +77,7 @@ pub enum FinancialStatus {
     Claimable,
     Pending,
     Paid,
+    Forfeited,
 }
 
 /// Derived from immutable times and block time (plus terminal event state);
@@ -79,6 +90,9 @@ pub enum EventPhase {
     RegistrationClosed,
     Cancelled,
     RefundOnly,
+    AttendanceFinalized,
+    Settling,
+    Settled,
 }
 
 /// Outcome of one FT payout attempt. Not stored directly; derived from the
@@ -179,6 +193,27 @@ pub struct ClaimRecord {
 pub struct EventAccounting {
     pub paid: U128,
     pub pending: U128,
+}
+
+/// Fixed-size per-event attendance/settlement state. Created in the measured
+/// `publish_event` write, so finalize/settle never create uncharged storage.
+/// `cursor`, `attendee_cursor`, `allocated_count` and `allocated_total` are the
+/// frozen resumable chunk cursor plus the independent sum verification basis.
+#[near(serializers = [borsh, json])]
+#[derive(Clone, Debug)]
+pub struct SettlementState {
+    pub attendance_frozen: bool,
+    pub finalized_at: u64,
+    pub attendee_count: u32,
+    pub pool: U128,
+    pub base_share: U128,
+    pub remainder: U128,
+    pub cursor: u64,
+    pub attendee_cursor: u32,
+    pub allocated_count: u64,
+    pub allocated_total: U128,
+    pub complete: bool,
+    pub completed_at: u64,
 }
 
 /// Bounded, versioned `ft_on_transfer` message. No owner/beneficiary/recipient
@@ -309,6 +344,29 @@ pub struct EventTotalsView {
     pub liability: U128,
 }
 
+/// O(1) attendance/settlement view. Additive: existing view JSON is
+/// unchanged.
+#[near(serializers = [json])]
+#[derive(Clone, Debug)]
+pub struct SettlementView {
+    pub event_id: String,
+    pub state: EventState,
+    pub attendance_frozen: bool,
+    pub attendee_count: u32,
+    pub no_show_count: u64,
+    pub registrations: u64,
+    pub pool: U128,
+    pub base_share: U128,
+    pub remainder: U128,
+    pub cursor: u64,
+    pub allocated_count: u64,
+    pub allocated_total: U128,
+    pub complete: bool,
+    pub claims_enabled: bool,
+    pub finalized_at: u64,
+    pub completed_at: u64,
+}
+
 const DAY_MS: u64 = 24 * 60 * 60 * 1000;
 const FT_TRANSFER_GAS: u64 = 50_000_000_000_000;
 const PAYOUT_CALLBACK_GAS: u64 = 40_000_000_000_000;
@@ -322,14 +380,20 @@ const MAX_MSG_LEN: usize = 512;
 const MAX_LIST_LIMIT: u32 = 50;
 const MAX_TEXT_LEN: usize = 64;
 /// Product state schema. Old candidates lack the `sv` marker and must use a
-/// clean instance; v4 never upgrades their claims in place.
-const SCHEMA_VERSION: u32 = 2;
+/// clean instance; the settlement generation never upgrades them in place.
+const SCHEMA_VERSION: u32 = 3;
 
-/// Published policy identity. D036 removes voluntary withdrawal/rejoin, so an
-/// instance built from this source must not be labelled with the earlier
-/// voluntary-withdrawal identity (`showstake-v2/1`): the init argument is
-/// validated against this constant instead of accepting a free-form label.
-pub const POLICY_IDENTITY: &str = "showstake-v2-d036/1";
+/// Bounded settlement chunk. Each `settle` call allocates at most this many
+/// registrations from the frozen registration-sequence cursor, so a
+/// capacity-200 event completes in eight permissionless calls without a
+/// history walk in any single receipt.
+const SETTLE_CHUNK: u64 = 25;
+
+/// Published policy identity. D036 removes voluntary withdrawal/rejoin and
+/// this generation adds organizer attendance finalization plus permissionless
+/// bounded settlement, so an instance built from this source must not be
+/// labelled with an earlier identity.
+pub const POLICY_IDENTITY: &str = "showstake-v2-d036-settle/1";
 
 #[near(contract_state)]
 #[derive(PanicOnDefault)]
@@ -420,13 +484,15 @@ impl Contract {
     pub fn get_registration(&self, registration_id: String) -> RegistrationView {
         let registration = self.registration_or_panic(&registration_id);
         let event = self.event_or_panic(&registration.event_id);
-        registration_view(&registration, &event)
+        let frozen = self.attendance_frozen_or_default(&event.event_id);
+        registration_view(&registration, &event, frozen)
     }
 
     pub fn get_pass(&self, pass_id: String) -> PassView {
         let pass = self.pass_or_panic(&pass_id);
         let event = self.event_or_panic(&pass.event_id);
-        pass_view(&pass, &event)
+        let frozen = self.attendance_frozen_or_default(&event.event_id);
+        pass_view(&pass, &event, frozen)
     }
 
     pub fn storage_balance_of(&self, account_id: AccountId) -> U128 {
@@ -460,6 +526,14 @@ impl Contract {
     pub fn get_event_totals(&self, event_id: String) -> EventTotalsView {
         let event = self.event_or_panic(&event_id);
         self.event_totals(&event)
+    }
+
+    /// O(1) attendance/settlement state for the single event instance.
+    pub fn get_settlement(&self, event_id: String) -> SettlementView {
+        let event = self.event_or_panic(&event_id);
+        self.schema_or_panic(&event.event_id);
+        let settlement = self.settlement_or_panic(&event.event_id);
+        self.settlement_view(&event, &settlement)
     }
 
     /// Chain clock in UTC milliseconds, used by local clients to build and
@@ -496,6 +570,7 @@ impl Contract {
     ) -> Vec<RegistrationView> {
         require!(limit >= 1 && limit <= MAX_LIST_LIMIT, "limit must be 1..=50");
         let event = self.event_or_panic(&event_id);
+        let attendance_frozen = self.attendance_frozen_or_default(&event.event_id);
         let mut out = Vec::new();
         let mut index = from;
         while out.len() < limit as usize && index < event.total_registrations {
@@ -505,7 +580,7 @@ impl Contract {
             let Some(registration) = self.registrations.get(&registration_id) else {
                 break;
             };
-            out.push(registration_view(&registration, &event));
+            out.push(registration_view(&registration, &event, attendance_frozen));
             index = match index.checked_add(1) {
                 Some(next) => next,
                 None => break,
@@ -633,6 +708,23 @@ impl Contract {
             &EventAccounting {
                 paid: U128(0),
                 pending: U128(0),
+            },
+        );
+        self.settlement().insert(
+            &event_id,
+            &SettlementState {
+                attendance_frozen: false,
+                finalized_at: 0,
+                attendee_count: 0,
+                pool: U128(0),
+                base_share: U128(0),
+                remainder: U128(0),
+                cursor: 0,
+                attendee_cursor: 0,
+                allocated_count: 0,
+                allocated_total: U128(0),
+                complete: false,
+                completed_at: 0,
             },
         );
         self.next_event_seq = seq.checked_add(1).unwrap_or_else(|| env::panic_str("event seq overflow"));
@@ -874,6 +966,314 @@ impl Contract {
         PromiseOrValue::Value(U128(0))
     }
 
+    // ---------------------------------- attendance / finalization / settle
+
+    /// Organizer-only attendance attestation inside the check-in window.
+    /// Repeated marks with the same value are idempotent and write nothing;
+    /// `attended=false` is a correction inside the same window. The
+    /// registration and its pass are updated together.
+    pub fn mark_attendance(
+        &mut self,
+        registration_id: String,
+        attended: bool,
+    ) -> RegistrationView {
+        let organizer = env::predecessor_account_id();
+        require!(
+            organizer == self.config.organizer,
+            "only the configured organizer may mark attendance"
+        );
+        let mut registration = self.registration_or_panic(&registration_id);
+        let event = self.event_or_panic(&registration.event_id);
+        require!(
+            event.state == EventState::Published,
+            "attendance can only be marked before finalization"
+        );
+        self.schema_or_panic(&event.event_id);
+        let now = env::block_timestamp_ms();
+        require!(
+            now >= event.checkin_open && now < event.checkin_close,
+            "attendance marking is only allowed inside the check-in window"
+        );
+        let mut pass = self.pass_or_panic(&registration.pass_id);
+        let desired = if attended {
+            AttendanceStatus::Attended
+        } else {
+            AttendanceStatus::NotMarked
+        };
+        let changed = registration.attendance_status != desired;
+        if changed {
+            registration.attendance_status = desired.clone();
+            pass.attendance_status = desired;
+            self.registrations.insert(&registration_id, &registration);
+            self.passes.insert(&registration.pass_id, &pass);
+        }
+        log_event(
+            "AttendanceMarked",
+            near_sdk::serde_json::json!({
+                "event_id": event.event_id,
+                "registration_id": registration_id,
+                "attended": attended,
+                "changed": changed,
+            }),
+        );
+        registration_view(&registration, &event, false)
+    }
+
+    /// Organizer-only attendance snapshot in `[checkin_close,
+    /// finalize_deadline)`. Walks the append-only registration index once
+    /// (bounded by capacity 200), freezes attendee count and moves the event to
+    /// ATTENDANCE_FINALIZED. Attendance cannot change afterwards.
+    pub fn finalize_event(&mut self, event_id: String) -> EventView {
+        let organizer = env::predecessor_account_id();
+        require!(
+            organizer == self.config.organizer,
+            "only the configured organizer may finalize"
+        );
+        let mut event = self.event_or_panic(&event_id);
+        require!(
+            event.state == EventState::Published,
+            "cannot finalize from the current event state"
+        );
+        self.schema_or_panic(&event.event_id);
+        let now = env::block_timestamp_ms();
+        require!(now >= event.checkin_close, "finalization opens at checkin_close");
+        require!(
+            now < event.finalize_deadline,
+            "finalization deadline reached; only refund-only remains"
+        );
+        let mut settlement = self.settlement_or_panic(&event.event_id);
+        require!(!settlement.attendance_frozen, "attendance already finalized");
+
+        let mut attended: u32 = 0;
+        let mut sequence: u64 = 0;
+        while sequence < event.total_registrations {
+            let Some(registration_id) = self
+                .event_index
+                .get(&(event.event_id.clone(), sequence))
+            else {
+                env::panic_str("registration index gap at finalization");
+            };
+            let Some(registration) = self.registrations.get(&registration_id) else {
+                env::panic_str("registration missing at finalization");
+            };
+            require!(
+                registration.event_id == event.event_id,
+                "registration index crossed an event boundary"
+            );
+            if registration.attendance_status == AttendanceStatus::Attended {
+                attended = attended
+                    .checked_add(1)
+                    .unwrap_or_else(|| env::panic_str("attendee count overflow"));
+            }
+            sequence = sequence
+                .checked_add(1)
+                .unwrap_or_else(|| env::panic_str("registration sequence overflow"));
+        }
+
+        settlement.attendance_frozen = true;
+        settlement.finalized_at = now;
+        settlement.attendee_count = attended;
+        settlement.pool = U128(0);
+        settlement.base_share = U128(0);
+        settlement.remainder = U128(0);
+        settlement.cursor = 0;
+        settlement.attendee_cursor = 0;
+        settlement.allocated_count = 0;
+        settlement.allocated_total = U128(0);
+        settlement.complete = false;
+        settlement.completed_at = 0;
+        event.state = EventState::AttendanceFinalized;
+        self.settlement().insert(&event.event_id, &settlement);
+        self.events.insert(&event.event_id, &event);
+        let no_show = event
+            .total_registrations
+            .saturating_sub(u64::from(attended));
+        log_event(
+            "EventFinalized",
+            near_sdk::serde_json::json!({
+                "event_id": event.event_id,
+                "attendee_count": attended,
+                "no_show_count": no_show,
+                "total_registrations": event.total_registrations,
+                "finalized_at": now,
+            }),
+        );
+        self.event_view(&event)
+    }
+
+    /// Permissionless bounded settlement. The first call freezes allocation
+    /// terms and enters SETTLING; every call allocates at most `SETTLE_CHUNK`
+    /// registrations in immutable registration-sequence order from the stored
+    /// cursor. Completion verifies count, sum and attendee cursor before
+    /// SETTLED. A call while SETTLED is an idempotent no-op. Claims are
+    /// disabled until the allocation is complete.
+    pub fn settle(&mut self, event_id: String) -> SettlementView {
+        let actor = env::predecessor_account_id();
+        let mut event = self.event_or_panic(&event_id);
+        self.schema_or_panic(&event.event_id);
+        let mut settlement = self.settlement_or_panic(&event.event_id);
+        if event.state == EventState::Settled {
+            log_event(
+                "SettlementChunk",
+                near_sdk::serde_json::json!({
+                    "event_id": event.event_id,
+                    "cursor": settlement.cursor,
+                    "total_registrations": event.total_registrations,
+                    "allocated_total": settlement.allocated_total.0.to_string(),
+                    "complete": true,
+                    "already_settled": true,
+                }),
+            );
+            return self.settlement_view(&event, &settlement);
+        }
+        if event.state == EventState::AttendanceFinalized {
+            require!(settlement.attendance_frozen, "attendance is not finalized");
+            let (pool, base_share, remainder) = allocation_terms(&event, &settlement);
+            settlement.pool = U128(pool);
+            settlement.base_share = U128(base_share);
+            settlement.remainder = U128(remainder);
+            settlement.cursor = 0;
+            settlement.attendee_cursor = 0;
+            settlement.allocated_count = 0;
+            settlement.allocated_total = U128(0);
+            settlement.complete = false;
+            settlement.completed_at = 0;
+            event.state = EventState::Settling;
+            self.events.insert(&event.event_id, &event);
+            log_event(
+                "SettlementStarted",
+                near_sdk::serde_json::json!({
+                    "event_id": event.event_id,
+                    "pool": pool.to_string(),
+                    "base_share": base_share.to_string(),
+                    "remainder": remainder.to_string(),
+                    "attendee_count": settlement.attendee_count,
+                    "actor": actor,
+                }),
+            );
+        } else {
+            require!(
+                event.state == EventState::Settling,
+                "attendance must be finalized before settlement"
+            );
+        }
+
+        let chunk_end = settlement
+            .cursor
+            .saturating_add(SETTLE_CHUNK)
+            .min(event.total_registrations);
+        let mut sequence = settlement.cursor;
+        let mut allocated_total = settlement.allocated_total.0;
+        let mut allocated_count = settlement.allocated_count;
+        let mut attendee_cursor = settlement.attendee_cursor;
+        while sequence < chunk_end {
+            let Some(registration_id) = self
+                .event_index
+                .get(&(event.event_id.clone(), sequence))
+            else {
+                env::panic_str("registration index gap at settlement");
+            };
+            let Some(mut registration) = self.registrations.get(&registration_id) else {
+                env::panic_str("registration missing at settlement");
+            };
+            require!(
+                registration.event_id == event.event_id,
+                "settlement index crossed an event boundary"
+            );
+            let mut pass = self.pass_or_panic(&registration.pass_id);
+            let mut claim = self.claim_record_or_panic(&registration_id);
+            let amount = if registration.attendance_status == AttendanceStatus::Attended {
+                let index = u128::from(attendee_cursor);
+                let bonus = if index < settlement.remainder.0 { 1 } else { 0 };
+                attendee_cursor = attendee_cursor
+                    .checked_add(1)
+                    .unwrap_or_else(|| env::panic_str("attendee cursor overflow"));
+                event
+                    .deposit
+                    .0
+                    .checked_add(settlement.base_share.0)
+                    .and_then(|value| value.checked_add(bonus))
+                    .unwrap_or_else(|| env::panic_str("settlement amount overflow"))
+            } else if settlement.attendee_count == 0 {
+                event.deposit.0
+            } else {
+                0
+            };
+            if amount > 0 {
+                claim.amount = U128(amount);
+                claim.payout_state = FinancialStatus::Claimable;
+                registration.financial_status = FinancialStatus::Claimable;
+                pass.financial_status = FinancialStatus::Claimable;
+            } else {
+                claim.amount = U128(0);
+                claim.payout_state = FinancialStatus::Forfeited;
+                registration.financial_status = FinancialStatus::Forfeited;
+                pass.financial_status = FinancialStatus::Forfeited;
+            }
+            allocated_total = allocated_total
+                .checked_add(amount)
+                .unwrap_or_else(|| env::panic_str("allocated total overflow"));
+            allocated_count = allocated_count
+                .checked_add(1)
+                .unwrap_or_else(|| env::panic_str("allocated count overflow"));
+            self.registrations.insert(&registration_id, &registration);
+            self.passes.insert(&registration.pass_id, &pass);
+            self.claims().insert(&registration_id, &claim);
+            sequence = sequence
+                .checked_add(1)
+                .unwrap_or_else(|| env::panic_str("settlement sequence overflow"));
+        }
+
+        settlement.cursor = sequence;
+        settlement.attendee_cursor = attendee_cursor;
+        settlement.allocated_count = allocated_count;
+        settlement.allocated_total = U128(allocated_total);
+        if settlement.cursor == event.total_registrations {
+            require!(
+                settlement.allocated_count == event.total_registrations,
+                "settlement count verification failed"
+            );
+            require!(
+                settlement.allocated_total.0 == event.accepted_principal.0,
+                "settlement sum verification failed"
+            );
+            require!(
+                settlement.attendee_count == 0
+                    || settlement.attendee_cursor == settlement.attendee_count,
+                "settlement attendee verification failed"
+            );
+            settlement.complete = true;
+            settlement.completed_at = env::block_timestamp_ms();
+            event.state = EventState::Settled;
+            self.events.insert(&event.event_id, &event);
+            log_event(
+                "EventSettled",
+                near_sdk::serde_json::json!({
+                    "event_id": event.event_id,
+                    "allocated_total": settlement.allocated_total.0.to_string(),
+                    "attendee_count": settlement.attendee_count,
+                    "no_show_count": event
+                        .total_registrations
+                        .saturating_sub(u64::from(settlement.attendee_count)),
+                    "total_registrations": event.total_registrations,
+                }),
+            );
+        } else {
+            log_event(
+                "SettlementChunk",
+                near_sdk::serde_json::json!({
+                    "event_id": event.event_id,
+                    "cursor": settlement.cursor,
+                    "total_registrations": event.total_registrations,
+                    "allocated_total": settlement.allocated_total.0.to_string(),
+                    "complete": false,
+                }),
+            );
+        }
+        self.settlement().insert(&event.event_id, &settlement);
+        self.settlement_view(&event, &settlement)
+    }
+
     // --------------------------------------- cancellation / timeout / claim
 
     /// D036 product policy: after a valid deposit/pass the participant cannot
@@ -887,11 +1287,11 @@ impl Contract {
         );
     }
 
-    /// Organizer cancellation while the event is still `Published` (no
-    /// settlement in this slice). Every registration becomes entitled to a
-    /// full-principal claim. The terminal transition is O(1): entitlement is
-    /// materialized lazily on `claim`, so total registration count cannot make
-    /// cancellation run out of gas.
+    /// Organizer cancellation before settlement starts. Allowed while the event
+    /// is `Published` or `AttendanceFinalized`; denied once `Settling` so a
+    /// partial allocation is never overwritten. Every registration becomes
+    /// entitled to a full-principal claim. The terminal transition is O(1):
+    /// entitlement is materialized lazily on `claim`.
     pub fn cancel_event(&mut self, event_id: String) -> EventView {
         let caller = env::predecessor_account_id();
         let mut event = self.event_or_panic(&event_id);
@@ -900,8 +1300,11 @@ impl Contract {
             "only the configured organizer may cancel"
         );
         require!(
-            event.state == EventState::Published,
-            "cannot cancel from the current event state"
+            matches!(
+                event.state,
+                EventState::Published | EventState::AttendanceFinalized
+            ),
+            "cancellation is allowed only before settlement starts"
         );
         // Fail closed on legacy state before writing the terminal flag.
         self.schema_or_panic(&event.event_id);
@@ -988,6 +1391,13 @@ impl Contract {
         );
         let mut record = self.claim_record_or_panic(&registration_id);
         let event = self.event_or_panic(&registration.event_id);
+        require!(
+            matches!(
+                event.state,
+                EventState::Cancelled | EventState::RefundOnly | EventState::Settled
+            ),
+            "claims are disabled until allocation completes"
+        );
         match record.payout_state.clone() {
             FinancialStatus::Committed => {
                 // Cancellation/refund-only is O(1) and does not rewrite every
@@ -1003,6 +1413,9 @@ impl Contract {
             FinancialStatus::Pending => env::panic_str("claim already pending"),
             FinancialStatus::Paid => env::panic_str("claim already paid"),
             FinancialStatus::Claimable => {}
+            FinancialStatus::Forfeited => {
+                env::panic_str("registration has no claimable allocation (no-show)")
+            }
         }
         require!(record.amount.0 > 0, "claim amount is zero");
         require!(
@@ -1284,6 +1697,12 @@ impl Contract {
         LookupMap::new(b"ea".to_vec())
     }
 
+    /// Fixed-prefix per-event attendance/settlement state, also outside the
+    /// root Borsh layout. One fixed-size entry per event, created at publish.
+    fn settlement(&self) -> LookupMap<String, SettlementState> {
+        LookupMap::new(b"st".to_vec())
+    }
+
     /// Fixed-prefix schema marker. Present only on state created by this
     /// product generation; legacy candidates fail closed instead of being
     /// upgraded in place.
@@ -1316,6 +1735,23 @@ impl Contract {
                 "event accounting missing; clean lifecycle instance or explicit migration required",
             )
         })
+    }
+
+    fn settlement_or_panic(&self, event_id: &str) -> SettlementState {
+        self.settlement().get(&event_id.to_string()).unwrap_or_else(|| {
+            env::panic_str(
+                "settlement state missing; clean lifecycle instance or explicit migration required",
+            )
+        })
+    }
+
+    /// Read-only view helper: legacy state without a settlement entry simply
+    /// has no frozen attendance, so views stay readable.
+    fn attendance_frozen_or_default(&self, event_id: &str) -> bool {
+        self.settlement()
+            .get(&event_id.to_string())
+            .map(|settlement| settlement.attendance_frozen)
+            .unwrap_or(false)
     }
 
     fn claim_record_or_panic(&self, registration_id: &str) -> ClaimRecord {
@@ -1422,6 +1858,34 @@ impl Contract {
         }
     }
 
+    /// O(1) attendance/settlement view derived from the frozen entry.
+    fn settlement_view(&self, event: &Event, settlement: &SettlementState) -> SettlementView {
+        let no_show = event
+            .total_registrations
+            .saturating_sub(u64::from(settlement.attendee_count));
+        SettlementView {
+            event_id: event.event_id.clone(),
+            state: event.state.clone(),
+            attendance_frozen: settlement.attendance_frozen,
+            attendee_count: settlement.attendee_count,
+            no_show_count: no_show,
+            registrations: event.total_registrations,
+            pool: settlement.pool,
+            base_share: settlement.base_share,
+            remainder: settlement.remainder,
+            cursor: settlement.cursor,
+            allocated_count: settlement.allocated_count,
+            allocated_total: settlement.allocated_total,
+            complete: settlement.complete,
+            claims_enabled: matches!(
+                event.state,
+                EventState::Cancelled | EventState::RefundOnly | EventState::Settled
+            ),
+            finalized_at: settlement.finalized_at,
+            completed_at: settlement.completed_at,
+        }
+    }
+
     fn event_view(&self, event: &Event) -> EventView {
         EventView {
             event_id: event.event_id.clone(),
@@ -1454,6 +1918,9 @@ fn event_phase(event: &Event, now: u64) -> EventPhase {
     match event.state {
         EventState::Cancelled => EventPhase::Cancelled,
         EventState::RefundOnly => EventPhase::RefundOnly,
+        EventState::AttendanceFinalized => EventPhase::AttendanceFinalized,
+        EventState::Settling => EventPhase::Settling,
+        EventState::Settled => EventPhase::Settled,
         EventState::Published => {
             if now < event.reg_open {
                 EventPhase::Scheduled
@@ -1463,6 +1930,35 @@ fn event_phase(event: &Event, now: u64) -> EventPhase {
                 EventPhase::RegistrationClosed
             }
         }
+    }
+}
+
+/// Frozen allocation terms. `A > 0`: only no-show principal is pooled
+/// (`M*D`), split evenly with the remainder to the earliest attendees.
+/// `A == 0`: every registration is refunded its own `D` (pool is unused).
+fn allocation_terms(event: &Event, settlement: &SettlementState) -> (u128, u128, u128) {
+    let attendees = u128::from(settlement.attendee_count);
+    if attendees == 0 {
+        return (0, 0, 0);
+    }
+    let registrations = u128::from(event.total_registrations);
+    let no_shows = registrations
+        .checked_sub(attendees)
+        .unwrap_or_else(|| env::panic_str("attendee count exceeds registrations"));
+    let pool = no_shows
+        .checked_mul(event.deposit.0)
+        .unwrap_or_else(|| env::panic_str("settlement pool overflow"));
+    (pool, pool / attendees, pool % attendees)
+}
+
+fn effective_attendance(
+    stored: &AttendanceStatus,
+    attendance_frozen: bool,
+) -> AttendanceStatus {
+    if attendance_frozen && *stored == AttendanceStatus::NotMarked {
+        AttendanceStatus::NoShow
+    } else {
+        stored.clone()
     }
 }
 
@@ -1498,7 +1994,11 @@ fn effective_financial_status(
     }
 }
 
-fn registration_view(registration: &Registration, event: &Event) -> RegistrationView {
+fn registration_view(
+    registration: &Registration,
+    event: &Event,
+    attendance_frozen: bool,
+) -> RegistrationView {
     RegistrationView {
         registration_id: registration.registration_id.clone(),
         event_id: registration.event_id.clone(),
@@ -1509,7 +2009,10 @@ fn registration_view(registration: &Registration, event: &Event) -> Registration
         amount: registration.amount,
         event_sequence: registration.event_sequence,
         registration_status: registration.registration_status.clone(),
-        attendance_status: registration.attendance_status.clone(),
+        attendance_status: effective_attendance(
+            &registration.attendance_status,
+            attendance_frozen,
+        ),
         financial_status: effective_financial_status(
             &event.state,
             &registration.financial_status,
@@ -1518,7 +2021,7 @@ fn registration_view(registration: &Registration, event: &Event) -> Registration
     }
 }
 
-fn pass_view(pass: &Pass, event: &Event) -> PassView {
+fn pass_view(pass: &Pass, event: &Event, attendance_frozen: bool) -> PassView {
     PassView {
         pass_id: pass.pass_id.clone(),
         event_id: pass.event_id.clone(),
@@ -1526,7 +2029,7 @@ fn pass_view(pass: &Pass, event: &Event) -> PassView {
         owner: pass.owner.clone(),
         issued_at: pass.issued_at,
         registration_status: pass.registration_status.clone(),
-        attendance_status: pass.attendance_status.clone(),
+        attendance_status: effective_attendance(&pass.attendance_status, attendance_frozen),
         financial_status: effective_financial_status(&event.state, &pass.financial_status),
         policy_version: pass.policy_version.clone(),
     }

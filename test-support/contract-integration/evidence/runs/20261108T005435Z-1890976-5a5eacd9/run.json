@@ -1,0 +1,131 @@
+{
+  "schema": "showstake.product-runner.run/1.1.0",
+  "run_id": "20261108T005435Z-1890976-5a5eacd9",
+  "overall_status": "PASS_LOCAL",
+  "started_at_utc": "2026-11-08T00:54:35Z",
+  "finished_at_utc": "2026-11-08T01:16:25Z",
+  "commands": {
+    "build_runner": "cd /mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/test-support/contract-integration/runner && CARGO_NET_OFFLINE=true /mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/.local/zcode-settlement-oracle/sandbox-probe/.toolchain/cargo/bin/rustup run 1.95.0-x86_64-unknown-linux-gnu cargo build --locked",
+    "run_sandbox": "bash /mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/.local/zcode-settlement-oracle/sandbox-probe/scripts/run-harness-owned.sh /var/tmp/showstake-target-c3989af8ce837da4/debug/showstake-product-runner 2700 /var/tmp/showstake-runs-c3989af8ce837da4/20261108T005435Z-1890976-5a5eacd9 /var/tmp/showstake-target-c3989af8ce837da4/debug/build/near-sandbox-43bc2d0c4452c183/out/.near/near-sandbox-2.14.0/near-sandbox /mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/test-support/contract-integration/evidence/runs/20261108T005435Z-1890976-5a5eacd9/teardown.json /mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/test-support/contract-integration/evidence/runs/20261108T005435Z-1890976-5a5eacd9/harness.log"
+  },
+  "wasm": {
+    "showstake_path": "/mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/test-support/contract-integration/wasm/showstake-lifecycle-v6.wasm",
+    "showstake_sha256": "f462ddcbb8b47ff03f4bea71c054cefe0d0a576b1346a0f9a55688c43307fd59",
+    "expected_showstake_sha256": "f462ddcbb8b47ff03f4bea71c054cefe0d0a576b1346a0f9a55688c43307fd59",
+    "ft_fixture_sha256": "d1c7d009a2c49bee5ad4997fe7e3114899fa667a06876fb6e435d9a72fffb195",
+    "expected_ft_fixture_sha256": "d1c7d009a2c49bee5ad4997fe7e3114899fa667a06876fb6e435d9a72fffb195",
+    "match": true
+  },
+  "oracle": {
+    "path": "/mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/test-support/contract-integration/evidence/runs/20261108T005435Z-1890976-5a5eacd9/oracle-settlement-expected.json",
+    "sha256": "d4b8a1cd98bdc328cbec54e14c2fe7e17b1433ef4794834f55f86a8e6aef048f",
+    "match": true,
+    "schema": "showstake.oracle-expected/1.0.0",
+    "scenarios": [
+      "settle-normal",
+      "settle-remainder",
+      "settle-zero",
+      "settle-late",
+      "settle-cap200"
+    ]
+  },
+  "frozen_deployed": {
+    "path": "/mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/test-support/contract-integration/wasm/showstake.wasm",
+    "sha256": "fc49fb85cc6e718086ddf81e9a936362a8c36ef9384a8444eadafa6ec0cdcd8e",
+    "expected_sha256": "fc49fb85cc6e718086ddf81e9a936362a8c36ef9384a8444eadafa6ec0cdcd8e",
+    "match": true,
+    "note": "The previously deployed fc49fb85 artifact is preserved unchanged; this run uses the separate lifecycle candidate."
+  },
+  "sandbox": {
+    "binary": "/var/tmp/showstake-target-c3989af8ce837da4/debug/build/near-sandbox-43bc2d0c4452c183/out/.near/near-sandbox-2.14.0/near-sandbox",
+    "sha256": "797b9d7a9a23907048d68a427e86a55c94f1de232dbfb8b8a1eec09ecef3bf13",
+    "expected_sha256": "797b9d7a9a23907048d68a427e86a55c94f1de232dbfb8b8a1eec09ecef3bf13",
+    "match": true
+  },
+  "runner": {
+    "binary": "/var/tmp/showstake-target-c3989af8ce837da4/debug/showstake-product-runner",
+    "sha256": "b59a6d06058c203ba7fc31f1f75bdaadf9d26a0cee904e57539d99cbdcf572a8",
+    "build_exit": 0,
+    "run_exit": 0
+  },
+  "result": {
+    "path": "/mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/test-support/contract-integration/evidence/runs/20261108T005435Z-1890976-5a5eacd9/result.json",
+    "status": "PASS_LOCAL",
+    "error": null,
+    "transactions": 1436,
+    "top_level_success": 1410,
+    "expected_failures": [
+      "storage_deposit_dave_one_yocto",
+      "publish_unauthorized",
+      "publish_second_event",
+      "deny_nft_transfer",
+      "deny_nft_transfer_call",
+      "deny_nft_approve",
+      "deny_admin_reassign",
+      "deny_burn",
+      "wrong_beneficiary_claim_before_cancel",
+      "voluntary_withdrawal_disabled",
+      "unauthorized_life_cancel",
+      "alice_double_claim_life",
+      "spoofed_payout_callback",
+      "timeout_late_finalize_denied",
+      "timeout_double_activation",
+      "cancel_after_refund_only",
+      "deadline_early_activation",
+      "settle_mark_normal_unauthorized",
+      "settle_mark_normal_after_close",
+      "settle_finalize_normal_unauthorized",
+      "settle_finalize_normal_duplicate",
+      "settle_claim_remainder_no_show",
+      "settle_claim_normal_wrong_beneficiary",
+      "settle_late_timeout_denied",
+      "settle_claim_cap_during_settling",
+      "settle_cap_cancel_locked"
+    ],
+    "checks_passed": 2328,
+    "checks_total": 2328,
+    "snapshots": 17,
+    "wasm_hashes_match": true
+  },
+  "teardown": {
+    "path": "/mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/test-support/contract-integration/evidence/runs/20261108T005435Z-1890976-5a5eacd9/teardown.json",
+    "ownership_verified": true,
+    "proven_stopped": true,
+    "owned": [],
+    "killed": [],
+    "remaining": [],
+    "unverified_remaining": [],
+    "pgid": 1891096,
+    "harness_pid": 1891096,
+    "strategy": "owned process group + exact pinned binary + run-owned --home prefix",
+    "limits": [
+      "Only processes in the run's own PGID with the exact pinned binary and a run-owned --home prefix are considered owned.",
+      "Unverified PGID members are recorded and never killed.",
+      "This proves teardown of this run's sandbox only; it says nothing about unrelated sandbox processes."
+    ]
+  },
+  "paths": {
+    "run_dir": "/mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/test-support/contract-integration/evidence/runs/20261108T005435Z-1890976-5a5eacd9",
+    "run_tmp": "/var/tmp/showstake-runs-c3989af8ce837da4/20261108T005435Z-1890976-5a5eacd9",
+    "result_json": "/mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/test-support/contract-integration/evidence/runs/20261108T005435Z-1890976-5a5eacd9/result.json",
+    "teardown_json": "/mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/test-support/contract-integration/evidence/runs/20261108T005435Z-1890976-5a5eacd9/teardown.json",
+    "harness_log": "/mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/test-support/contract-integration/evidence/runs/20261108T005435Z-1890976-5a5eacd9/harness.log",
+    "runner_log": "/mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/test-support/contract-integration/evidence/runs/20261108T005435Z-1890976-5a5eacd9/runner.log",
+    "build_runner_log": "/mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/test-support/contract-integration/evidence/runs/20261108T005435Z-1890976-5a5eacd9/build-runner.log"
+  },
+  "free_space_kb": {
+    "d_before": 7721336,
+    "c_before": 4289380,
+    "wsl_var_tmp_before": 978228632,
+    "d_after": 7716712,
+    "c_after": 3061648,
+    "wsl_var_tmp_after": 978228612
+  },
+  "failure_reasons": [],
+  "limits": [
+    "Local synthetic NEAR Sandbox only; no testnet/mainnet, public RPC, wallet, key or real asset.",
+    "The reviewed ShowStake Wasm is an input and was not rebuilt or modified by this run.",
+    "PASS_LOCAL is local sandbox receipt/balance evidence only; it is not a testnet deployment gate.",
+    "Teardown proves only this run's own PGID + pinned near-sandbox binary + run-owned --home."
+  ]
+}

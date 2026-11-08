@@ -6,9 +6,13 @@
 # script. It adds no bootstrap, framework, contract rebuild or new target.
 #
 # The reviewed contract source/Wasm are inputs only:
-#   test-support/contract-integration/wasm/showstake-lifecycle-v5.wasm
-#   (candidate d79ef24c..., D036 policy identity showstake-v2-d036/1) and the
+#   test-support/contract-integration/wasm/showstake-lifecycle-v6.wasm
+#   (candidate f462ddcb..., policy identity showstake-v2-d036-settle/1) and the
 #   frozen deployed fc49fb85... artifact.
+# The independent allocation expectations are generated on the host by
+#   node test-support/contract-integration/oracle/generate-settlement-expected.mjs
+# and are hashed into this run; the WSL runner compares every on-chain
+# allocation against them.
 # They are never rebuilt or modified here.
 set -euo pipefail
 
@@ -19,21 +23,39 @@ source "$PROBE_ROOT/scripts/lib.sh"
 
 ensure_owned_paths
 
-EXPECTED_SHOWSTAKE_SHA256="d79ef24c72d2eea762d4c3e78a1990a21bf13458b0bf07c908a68fc6ca1d5bee"
+EXPECTED_SHOWSTAKE_SHA256="f462ddcbb8b47ff03f4bea71c054cefe0d0a576b1346a0f9a55688c43307fd59"
 FROZEN_DEPLOYED_SHA256="fc49fb85cc6e718086ddf81e9a936362a8c36ef9384a8444eadafa6ec0cdcd8e"
 EXPECTED_FT_SHA256="d1c7d009a2c49bee5ad4997fe7e3114899fa667a06876fb6e435d9a72fffb195"
 EXPECTED_SANDBOX_SHA256="797b9d7a9a23907048d68a427e86a55c94f1de232dbfb8b8a1eec09ecef3bf13"
 
-RUN_TIMEOUT_SECONDS="${RUN_TIMEOUT_SECONDS:-1200}"
+RUN_TIMEOUT_SECONDS="${RUN_TIMEOUT_SECONDS:-2700}"
+# `full` keeps the complete 2,328-check suite. `settlement` and
+# `settle-failure` are narrow supplemental modes; they write their own run
+# folder and a separate latest pointer, never replacing the full-run pointer.
+RUNNER_CASE="${RUNNER_CASE:-full}"
+case "$RUNNER_CASE" in
+  full|settlement|settle-failure) ;;
+  *)
+    echo "INVALID_RUNNER_CASE: $RUNNER_CASE (expected full, settlement or settle-failure)" >&2
+    exit 6
+    ;;
+esac
 MIN_D_FREE_KB="${MIN_D_FREE_KB:-2097152}"     # 2 GiB
 MIN_C_FREE_KB="${MIN_C_FREE_KB:-524288}"       # 512 MiB; host C: ~528 MiB, builds/outputs on D/WSL
 MIN_TMP_FREE_KB="${MIN_TMP_FREE_KB:-5242880}" # 5 GiB ext4 (not tmpfs /tmp)
+
+ORACLE_EXPECTATIONS="${ORACLE_EXPECTATIONS:-$INTEGRATION_ROOT/evidence/oracle-settlement-expected.json}"
 
 RUN_ID="${RUN_ID:-$(date -u +%Y%m%dT%H%M%SZ)-$$-$(od -An -N4 -tx1 /dev/urandom | tr -d ' \n')}"
 RUN_DIR="$INTEGRATION_ROOT/evidence/runs/$RUN_ID"
 RUN_TMP="$RUNS_TMP_ROOT/$RUN_ID"
 STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 mkdir -p "$RUN_DIR" "$RUN_TMP"
+ORACLE_RUN_PATH="$RUN_DIR/oracle-settlement-expected.json"
+if [ -f "$ORACLE_EXPECTATIONS" ]; then
+  cp "$ORACLE_EXPECTATIONS" "$ORACLE_RUN_PATH"
+fi
+ORACLE_SHA256="$(sha256sum "$ORACLE_RUN_PATH" 2>/dev/null | awk '{print $1}')"
 export RUN_TMP RUN_ID
 
 RUN_OWNER_EXPECTED="$ROOT:$RUN_ID"
@@ -53,12 +75,18 @@ TMP_FREE_BEFORE="$(free_kb /var/tmp || echo 0)"
 
 log() { printf '%s\n' "$*" | tee -a "$RUN_DIR/runner.log"; }
 log "RUN_ID=$RUN_ID"
+log "RUNNER_CASE=$RUNNER_CASE"
 log "RUN_DIR=$RUN_DIR"
 log "WORKSPACE_ROOT=$WORKSPACE_ROOT"
 log "PROBE_ROOT=$PROBE_ROOT"
 log "WORKSPACE_ID=$WORKSPACE_ID"
 log "RUN_TMP=$RUN_TMP"
 log "disk_guard D=${D_FREE_BEFORE}KiB/min=${MIN_D_FREE_KB}KiB C=${C_FREE_BEFORE}KiB/min=${MIN_C_FREE_KB}KiB WSL_tmp=${TMP_FREE_BEFORE}KiB/min=${MIN_TMP_FREE_KB}KiB"
+log "oracle_expectations=$ORACLE_RUN_PATH sha256=${ORACLE_SHA256:-missing}"
+if [ -z "$ORACLE_SHA256" ]; then
+  log "ORACLE_EXPECTATIONS_MISSING: $ORACLE_EXPECTATIONS (generate it with node test-support/contract-integration/oracle/generate-settlement-expected.mjs)"
+  exit 5
+fi
 
 if [ "$D_FREE_BEFORE" -lt "$MIN_D_FREE_KB" ] || [ "$C_FREE_BEFORE" -lt "$MIN_C_FREE_KB" ] || [ "$TMP_FREE_BEFORE" -lt "$MIN_TMP_FREE_KB" ]; then
   log "BLOCKED_RESOURCE: D=${D_FREE_BEFORE}KiB C=${C_FREE_BEFORE}KiB WSL=/var/tmp=${TMP_FREE_BEFORE}KiB"
@@ -71,7 +99,7 @@ if ! toolchain_ready; then
   log "TOOLCHAIN_NOT_READY: $TOOLCHAIN under $TOOLCHAIN_ROOT (no bootstrap in this run)"
 fi
 
-SHOWSTAKE_WASM="$INTEGRATION_ROOT/wasm/showstake-lifecycle-v5.wasm"
+SHOWSTAKE_WASM="$INTEGRATION_ROOT/wasm/showstake-lifecycle-v6.wasm"
 FROZEN_DEPLOYED_WASM="$INTEGRATION_ROOT/wasm/showstake.wasm"
 FT_WASM="$PROBE_ROOT/wasm/ft_fixture.wasm"
 SHOWSTAKE_WASM_SHA256="$(sha256sum "$SHOWSTAKE_WASM" 2>/dev/null | awk '{print $1}')"
@@ -142,6 +170,9 @@ if [ "$TOOLCHAIN_EXIT" -eq 0 ] && [ "$WASM_OK" = true ] && [ "$RUNNER_BUILD_EXIT
     FT_WASM_SHA256="$FT_WASM_SHA256" \
     SHOWSTAKE_WASM="$SHOWSTAKE_WASM" \
     SHOWSTAKE_WASM_SHA256="$SHOWSTAKE_WASM_SHA256" \
+    ORACLE_EXPECTATIONS="$ORACLE_RUN_PATH" \
+    ORACLE_EXPECTATIONS_SHA256="$ORACLE_SHA256" \
+    RUNNER_CASE="$RUNNER_CASE" \
     EVIDENCE_OUT="$RUN_DIR/result.json" \
     RUN_ID="$RUN_ID" \
     bash "$PROBE_ROOT/scripts/run-harness-owned.sh" \
@@ -163,6 +194,7 @@ python3 - "$RUN_DIR/run.json" "$RUN_DIR/result.json" "$RUN_DIR/teardown.json" \
   "$SHOWSTAKE_WASM_SHA256" "$FT_WASM_SHA256" "$EXPECTED_SHOWSTAKE_SHA256" "$EXPECTED_FT_SHA256" \
   "$SANDBOX_BIN" "$SANDBOX_BIN_SHA256" "$EXPECTED_SANDBOX_SHA256" "$SANDBOX_BIN_OK" \
   "$RUNNER_BIN" "$RUNNER_SHA256" "$WASM_OK" "$RUN_DIR" "$RUN_TMP" "$SHOWSTAKE_WASM" \
+  "$ORACLE_RUN_PATH" "$ORACLE_SHA256" "$RUNNER_CASE" \
   "$BUILD_RUNNER_CMD" "${RUN_SANDBOX_CMD:-NOT_RUN}" \
   "$FROZEN_DEPLOYED_WASM" "${FROZEN_DEPLOYED_SHA256_ACTUAL:-}" "$FROZEN_DEPLOYED_SHA256" "$FROZEN_DEPLOYED_OK" \
   "$D_FREE_BEFORE" "$C_FREE_BEFORE" "$TMP_FREE_BEFORE" \
@@ -172,7 +204,7 @@ import hashlib, json, os, sys
 (out_path, result_path, teardown_path, run_id, started_at, finished_at,
  runner_exit, runner_build_exit, showstake_sha, ft_sha, expected_showstake_sha,
  expected_ft_sha, sandbox_bin, sandbox_sha, expected_sandbox_sha, sandbox_ok,
- runner_bin, runner_sha, wasm_ok, run_dir, run_tmp, showstake_path, build_cmd, run_cmd,
+ runner_bin, runner_sha, wasm_ok, run_dir, run_tmp, showstake_path, oracle_path, oracle_sha, runner_case, build_cmd, run_cmd,
  frozen_path, frozen_sha, expected_frozen_sha, frozen_ok,
  d_before, c_before, tmp_before, d_after, c_after, tmp_after) = sys.argv[1:]
 
@@ -217,6 +249,10 @@ if not txs:
     failed.append("no_transactions")
 if not result_wasm_ok:
     failed.append("result_wasm_hash_mismatch")
+if not oracle_sha:
+    failed.append("oracle_expectations_missing")
+if result.get("oracle", {}).get("sha256") != oracle_sha:
+    failed.append("oracle_expectations_hash_mismatch")
 if not proven_stopped:
     failed.append("teardown_not_proven")
 if not ownership_verified:
@@ -226,6 +262,7 @@ overall = "PASS_LOCAL" if not failed else "FAILED"
 record = {
     "schema": "showstake.product-runner.run/1.1.0",
     "run_id": run_id,
+    "runner_case": runner_case,
     "overall_status": overall,
     "started_at_utc": started_at,
     "finished_at_utc": finished_at,
@@ -240,6 +277,13 @@ record = {
         "ft_fixture_sha256": ft_sha,
         "expected_ft_fixture_sha256": expected_ft_sha,
         "match": wasm_ok == "true",
+    },
+    "oracle": {
+        "path": oracle_path,
+        "sha256": oracle_sha,
+        "match": result.get("oracle", {}).get("sha256") == oracle_sha,
+        "schema": result.get("oracle", {}).get("schema"),
+        "scenarios": result.get("oracle", {}).get("scenarios", []),
     },
     "frozen_deployed": {
         "path": frozen_path,
@@ -323,16 +367,21 @@ PY
 
 RUN_STATUS="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["overall_status"])' "$RUN_DIR/run.json")"
 mkdir -p "$INTEGRATION_ROOT/evidence"
-python3 - "$INTEGRATION_ROOT/evidence/latest.json" "$RUN_ID" "$RUN_DIR/run.json" "$RUN_STATUS" <<'PY'
+LATEST_POINTER="$INTEGRATION_ROOT/evidence/latest.json"
+if [ "$RUNNER_CASE" != "full" ]; then
+  LATEST_POINTER="$INTEGRATION_ROOT/evidence/latest-$RUNNER_CASE.json"
+fi
+python3 - "$LATEST_POINTER" "$RUN_ID" "$RUN_DIR/run.json" "$RUN_STATUS" "$RUNNER_CASE" <<'PY'
 import json, sys
-out, run_id, run_path, status = sys.argv[1:]
+out, run_id, run_path, status, runner_case = sys.argv[1:]
 with open(out, "w", encoding="utf-8", newline="\n") as fh:
     json.dump({
         "schema": "showstake.product-runner.latest/1.1.0",
         "run_id": run_id,
         "status": status,
+        "runner_case": runner_case,
         "run": run_path,
-        "note": "Pointer to the current run only. Prior run folders are preserved.",
+        "note": "Pointer to the current run of this runner case; the full-run pointer is only replaced by a full run.",
     }, fh, indent=2)
     fh.write("\n")
 PY
