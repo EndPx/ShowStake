@@ -32,7 +32,12 @@
     "typecheck:api": "pnpm --filter @showstake/api typecheck",
     "build:api": "pnpm --filter @showstake/api build",
     "verify:api": "pnpm --filter @showstake/api typecheck && pnpm --filter @showstake/api build && node scripts/verify-api.mjs",
-    "verify:api-db": "pnpm --filter @showstake/api build && wsl -d Ubuntu -- bash scripts/postgres-disposable/run-api-suite.sh"
+    "verify:api-db": "pnpm --filter @showstake/api build && wsl -d Ubuntu -- bash scripts/postgres-disposable/run-api-suite.sh",
+    "dev:web": "pnpm --filter @showstake/web dev",
+    "build:web": "pnpm --filter @showstake/web build",
+    "typecheck:web": "pnpm --filter @showstake/web typecheck",
+    "verify:t08-frontend": "node scripts/verify-t08-frontend.mjs",
+    "verify:frontend-slice": "node scripts/verify-frontend-slice.mjs"
   },
   "devDependencies": {
     "@hot-labs/near-connect": "0.12.0",

@@ -179,3 +179,15 @@ v6sourceb744c00 acceptedlocal anddeployed new showstake-settle-endpx.testnet tx4
 
 
 V6 corefinancial lifecycle PASS_TESTNET: showstake-settle-endpx.testnet sourceb744c00/f462ddcb. FiveNORMAL FTtransfer_call deposits2SS_TEST each; twoorganizerattestations inactualchainwindow; finalizedafteractualcheckinclose; permissionlesssettlement yields5,5,0,0,0. Both5 claims paid, newescrow0; accepted=paid10000000atomic,pending=liability0. 31finaltransactions,5expecteddenials (unauthmark/finalize,prematureclaim,no-showclaim,doubleclaim); fivepassowners/Attended-or-NoShow/Paid-orForfeited verifiedread-only. No shortenedtestnetdeadline. Keyreceipts finalizeCwe8nVcUc1uTphYTChPSgifCBuRgtCKNBhE228LCv9mf, settleD9f1DRGL4qHqD4jW7d4PPKBgPZcvXTZtHYj4cBmsit91, claimsEkQ4teBg161EDxwnggk1PiTxrmFmLYocVdH68DN5r4F7 and8fg8fSnaCF7m5uAExN4xBAbH4njWFGuCamcMnjxRDWRe. Evidence testnet-settlement-five.json andtestnet-settlement-codex-review.json. FullTESTNET_ACCEPTED/applicationT09 not reached: browser/loginmethods/backendprojections/content/funding stillopen.
+
+
+Workerround2 source/evidence received62fixture66PG29testnet/318blockscan. Codex independently62fixtures/buildpass; remainingUNKNOWN_BLOCKskipproofmustuse canonicalprev_hash linkage or failclosed beforeacceptance, msg_528d1a579c94 sent. Priorfactoryctx_91e5cc0bcf67 releaseconfirmedexited afterstopunverified; same taskready recovered withoutnewtask/nooverlappingwriter.
+
+
+Frontendround2 workerreports46behavior68legacy/buildpass. Codex independentlyAPI40/frontend46/typecheck exit0; addedAPIchainEventId toavoidUUID/chainIDmix. FrontendNOTACCEPTED: pre-walletpendingpersistence/unknownoutcome/actualreceiverreceipt/generationandchainclockguards required, boundedrevisiontask_ad0a1624fcd8/ctx_3125ff0fd5ce immediatelyblockedGATER403ip_limit. No frontendpush or UIwalletacceptance. APIadditivefieldPGtestinprogress separately.
+
+
+Frontendround3 review:70behavior/typecheck independentlypass, butnotaccepted. Failedescrowreceiptwithmatchingcommitlog canbeconfirmed, storagewritefailure ignoredbeforewallet, andhashnullUNKNOWNattempt canreset/redeposit. Sentnarrow3fixrevision sameHarnessdispatch; noUIredesign/newscope. No realwalletbrowseracceptance/push.
+
+
+Frontend bounded slice accepted PASS_LOCAL byCodex:92behavior/typecheck independentlypass, workerproductionbuild/68legacy reportedpass; actualbrowserreadsSettled2attend3noshow/pool6/share3, desktop+390/520headerfit checked. Pendingdurability/unknownoutcome/receiptstatus/generationguards reviewed. No interactivewallet/session/backendcatalog/organizerclaimUI/fullT08E2Eacceptance. Open eventslot provisioning next; frontend-onlycommit excludes unacceptedworker/intents.

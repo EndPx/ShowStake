@@ -1,0 +1,26 @@
+{
+  "name": "@showstake/web",
+  "version": "0.0.0",
+  "private": true,
+  "description": "ShowStake Next.js web application — CommitPass-frontend reuse first slice (landing, navigation, discovery/list states, timezone). No EVM/Privy/Cloudinary integration.",
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start --port 3000",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@gsap/react": "2.1.2",
+    "gsap": "3.15.0",
+    "lucide-react": "1.48.0",
+    "next": "15.5.26",
+    "react": "19.1.9",
+    "react-dom": "19.1.9"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/react": "19.1.17",
+    "@types/react-dom": "19.1.11",
+    "typescript": "5.8.3"
+  }
+}

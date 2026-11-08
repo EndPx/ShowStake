@@ -1,0 +1,188 @@
+// Native NEAR wallet (NEAR Connect / HOT, `@hot-labs/near-connect@0.12.0`).
+//
+// Reuses the accepted connector exactly as the T02 onboarding probe does:
+//   * `NearConnector({ network: "testnet", features: { testnet: true } })` —
+//     testnet wallet picker (the shared manifest is testnet-capable only for
+//     wallets that declare it; HOT's testnet capability is ABSENT/UNPROVEN in
+//     the manifest — a known, documented decision, not an inferred incapability).
+//   * `wallet.signMessage` — an OFF-CHAIN NEP-413 proof (never a deposit/tx).
+//   * `wallet.signAndSendTransaction` — the ONLY way a transaction is proposed,
+//     and only after an explicit user click; each approval is a separate wallet
+//     prompt. This module never signs/broadcasts on its own, never reimplements
+//     crypto, and never retries an unknown submission automatically.
+
+import { NETWORK, RPC_URL } from "../config";
+import { viewAccessKeyView } from "./rpc";
+import { APP_DOMAIN, MAX_CHALLENGE_TTL_MS, canonicalProofMessage } from "./proof";
+import type { SignAndSendParams } from "./actions";
+
+export interface WalletAccount {
+  accountId: string;
+  publicKey?: string;
+}
+
+export interface SignedProof {
+  accountId: string;
+  publicKey: string;
+  signature: string;
+  message: string;
+  recipient: string;
+  nonceHex: string;
+  issuedAtMs: number;
+  expiresAtMs: number;
+}
+
+export interface TxResult {
+  transactionHash: string | null;
+  status: string | null;
+}
+
+export type WalletResult<T = WalletAccount> =
+  | { ok: true; code: string; value: T }
+  | { ok: false; code: string; detail: string };
+
+// The connector is created lazily so the CJS SDK is never evaluated during SSR
+// or static page generation (only inside a browser event handler/effect).
+type ConnectorShape = {
+  connect: () => Promise<unknown>;
+  disconnect: () => Promise<void>;
+  wallet: (id?: string | null) => Promise<{
+    getAccounts: () => Promise<Array<{ accountId: string; publicKey?: string }>>;
+    signMessage?: (p: unknown) => Promise<{ accountId: string; publicKey: string; signature: string }>;
+    signAndSendTransaction?: (p: SignAndSendParams) => Promise<MaybeOutcome>;
+  }>;
+};
+
+interface MaybeOutcome {
+  transaction?: { hash?: string };
+  status?: unknown;
+}
+
+let connector: ConnectorShape | null = null;
+
+function hex(bytes: Uint8Array): string {
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function getConnector(): Promise<ConnectorShape> {
+  if (!connector) {
+    const { NearConnector } = (await import("@hot-labs/near-connect")) as {
+      NearConnector: new (options: unknown) => ConnectorShape;
+    };
+    connector = new NearConnector({ network: NETWORK, features: { testnet: true } });
+  }
+  return connector;
+}
+
+/** Open the wallet picker and read the selected account (read-only, off-chain). */
+export async function connectWallet(): Promise<WalletResult<WalletAccount>> {
+  try {
+    const c = await getConnector();
+    await c.connect();
+    const wallet = await c.wallet();
+    const accounts = await wallet.getAccounts();
+    const account = accounts?.[0];
+    if (!account?.accountId) {
+      return { ok: false, code: "NO_ACCOUNT", detail: "The wallet returned no account." };
+    }
+    return { ok: true, code: "SIGNED_IN", value: { accountId: account.accountId, publicKey: account.publicKey } };
+  } catch (error) {
+    return { ok: false, code: "CONNECT_DENIED", detail: String((error as Error)?.message ?? error) };
+  }
+}
+
+export async function disconnectWallet(): Promise<WalletResult<null>> {
+  try {
+    if (connector) await connector.disconnect();
+    return { ok: true, code: "DISCONNECTED", value: null };
+  } catch (error) {
+    return { ok: false, code: "DISCONNECT_FAILED", detail: String((error as Error)?.message ?? error) };
+  } finally {
+    connector = null;
+  }
+}
+
+/** An off-chain NEP-413 signature for account display / later server verify. */
+export async function signProof(accountId: string): Promise<WalletResult<SignedProof>> {
+  const c = await getConnector();
+  let wallet: { signMessage?: (p: unknown) => Promise<{ accountId: string; publicKey: string; signature: string }> };
+  try {
+    wallet = await c.wallet();
+  } catch (error) {
+    return { ok: false, code: "NOT_CONNECTED", detail: String((error as Error)?.message ?? "Connect a wallet first.") };
+  }
+  if (typeof wallet.signMessage !== "function") {
+    return { ok: false, code: "SIGNING_UNSUPPORTED", detail: "The selected wallet does not expose NEP-413 signMessage." };
+  }
+  const nonce = crypto.getRandomValues(new Uint8Array(32));
+  const issuedAtMs = Date.now();
+  const expiresAtMs = issuedAtMs + MAX_CHALLENGE_TTL_MS;
+  const message = canonicalProofMessage(accountId, nonce, issuedAtMs, expiresAtMs);
+  try {
+    const signed = await wallet.signMessage({ message, recipient: APP_DOMAIN, nonce, network: NETWORK });
+    if (signed.accountId !== accountId) {
+      return { ok: false, code: "ACCOUNT_MISMATCH", detail: `Wallet signed as ${signed.accountId}, not ${accountId}.` };
+    }
+    return {
+      ok: true,
+      code: "SIGNED",
+      value: {
+        accountId: signed.accountId,
+        publicKey: signed.publicKey,
+        signature: signed.signature,
+        message,
+        recipient: APP_DOMAIN,
+        nonceHex: hex(nonce),
+        issuedAtMs,
+        expiresAtMs,
+      },
+    };
+  } catch (error) {
+    return { ok: false, code: "SIGN_DENIED", detail: String((error as Error)?.message ?? error) };
+  }
+}
+
+export interface KeyPresence {
+  permission: "FullAccess" | "FunctionCall";
+  blockHeight: number;
+}
+
+/** Read-only access-key membership hint (transparency only, not a session). */
+export async function readKeyPresence(accountId: string, publicKey?: string): Promise<WalletResult<KeyPresence>> {
+  if (!publicKey) return { ok: false, code: "NO_PUBLIC_KEY", detail: "No public key for this account." };
+  const result = await viewAccessKeyView(accountId, publicKey, RPC_URL);
+  if (!result.ok) return { ok: false, code: result.code, detail: result.message };
+  const permission = result.value.permission === "FullAccess" ? "FullAccess" : "FunctionCall";
+  return { ok: true, code: "RESOLVED", value: { permission, blockHeight: result.blockHeight } };
+}
+
+/**
+ * Propose a transaction through the connected wallet. The caller MUST pass a
+ * user-clicked, separately-approved `SignAndSendParams`; the wallet shows its
+ * own confirmation. Returns the transaction hash + status, never fabricated.
+ */
+export async function signAndSendTransaction(params: SignAndSendParams): Promise<WalletResult<TxResult>> {
+  const c = await getConnector();
+  let wallet: { signAndSendTransaction?: (p: SignAndSendParams) => Promise<MaybeOutcome> };
+  try {
+    wallet = await c.wallet();
+  } catch (error) {
+    return { ok: false, code: "NOT_CONNECTED", detail: String((error as Error)?.message ?? "Connect a wallet first.") };
+  }
+  if (typeof wallet.signAndSendTransaction !== "function") {
+    return { ok: false, code: "TX_SIGNING_UNSUPPORTED", detail: "The selected wallet does not expose signAndSendTransaction." };
+  }
+  try {
+    const outcome = await wallet.signAndSendTransaction(params);
+    return {
+      ok: true,
+      code: "TRANSACTION_PROPOSED",
+      value: {
+        transactionHash: outcome?.transaction?.hash ?? null,
+        status: typeof outcome?.status === "string" ? (outcome.status as string) : JSON.stringify(outcome?.status ?? null),
+      },
+    };
+  } catch (error) {
+    return { ok: false, code: "TRANSACTION_DENIED", detail: String((error as Error)?.message ?? error) };
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "reviewer": "Codex",
+  "classification": "PASS_LOCAL",
+  "accepted_scope": "CommitPass-derived shell/discovery/detail/nativeNEAR wallet approval/storage/deposit/pass UI with durablepending and receiptverification",
+  "independent_tests": {
+    "behavior": 92,
+    "typecheck_exit": 0
+  },
+  "worker_tests": {
+    "legacy": 68,
+    "productionbuild_exit": 0
+  },
+  "browser_review": {
+    "url": "http://127.0.0.1:3012/events/d036-settle-five",
+    "actualonchainreads": true,
+    "state": "Eventsettled,2attend3noshow,pool6share3SS_TEST,nodepositCTA",
+    "desktop": true,
+    "mobile390": {
+      "client": 390,
+      "scroll": 390,
+      "headerfit": true
+    },
+    "width520_nooverflow": true
+  },
+  "security_review": [
+    "successreceiptbeforecommitlog",
+    "durablePREPAREDbeforewallet",
+    "hashlessUNKNOWNnounsafesetreset",
+    "fullidentityattemptkey",
+    "generationanddoubleclickguard",
+    "chainclockfailsclosed"
+  ],
+  "limits": [
+    "Realinteractivewalletconnect/sign/deposit NOT_RUN",
+    "Backendpersistentcatalogintegration incomplete",
+    "Organizer/claim/sessionUI nextslice",
+    "Open testnet eventslot notyetconfigured",
+    "Keyboard/200percentzoom/camera/fullaccessibilityNOT_RUN"
+  ],
+  "provenance": "docs/frontend-provenance.json; CommitPassbaseline542273df306a7e5887f1dfcabf1383e78930f579; reusedfrontend notallnewhackathoncode"
+}

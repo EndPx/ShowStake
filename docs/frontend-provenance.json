@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ShowStake frontend reuse provenance (bounded first slice)",
+  "reviewer": "DeepSeek Harness / GATER (sole main writer, per dispatch T08)",
+  "classifier": "PASS_LOCAL",
+  "reference": {
+    "repo_path": "D:/Belajar/Hackacton/Hackacton yang masih jalan/CommitPass Monad",
+    "baseline_commit": "542273df306a7e5887f1dfcabf1383e78930f579",
+    "read_only": true,
+    "human_authorization": "docs/decisions.md D022 (CommitPass frontend reuse), D024"
+  },
+  "license": "No tracked root LICENSE/COPYING/NOTICE at the baseline. Human expressly authorizes reuse for ShowStake (D022); this is not a blanket third-party permissive grant and no MIT/Apache term is invented. Dependency licenses apply separately (see DESIGN.md dependency/license inventory).",
+  "assets": {
+    "imported": "none (no logo, font, generated image or remote media binaries/URLs)",
+    "logo": "text wordmark (ShowStake), no CommitPass/Keyfolio art",
+    "media": "native CSS poster artwork + event-cover-art; Cloudinary manifest brand-media.json and lib/media.ts NOT copied"
+  },
+  "reused_adapted": [
+    {
+      "destination": "apps/web/src/app/globals.css",
+      "source": "apps/web/src/app/globals.css",
+      "sourceBlobSha256": "2bc6df459ab009f7602e345f5016335575c48fb2ad8fcdf7cf18870f0d9c4143",
+      "changes": "Rebased :root to ShowStake tokens (color-*, radius, motion, content-max) with CommitPass aliases mapped to them; focus outline -> --color-focus 3px/2px; Inter/system sans + system serif; removed none of the landing structure; appended native CSS sample artwork styles."
+    },
+    {
+      "destination": "apps/web/src/app/(platform)/platform.css",
+      "source": "apps/web/src/app/(platform)/workspace.css",
+      "sourceBlobSha256": "15926f81336c63460c749e65f54142cc087946ee623abbd252a6058a40f43398",
+      "changes": "Concatenated with discovery.css + lists.css as the platform stylesheet; token values flow from globals aliases; EVM/faucet/account-menu rules left dormant (no integration)."
+    },
+    {
+      "destination": "apps/web/src/app/(platform)/platform.css",
+      "source": "apps/web/src/app/(platform)/discovery.css",
+      "sourceBlobSha256": "230fda1f057cd50fd9a7a169506ed9867ab779b8e67da90d99f9b2e9f7a82349",
+      "changes": "Preserved discovery layout/list/calendar/search CSS and reduced-motion; search/calendar components deferred in this slice."
+    },
+    {
+      "destination": "apps/web/src/app/(platform)/platform.css",
+      "source": "apps/web/src/app/(platform)/lists.css",
+      "sourceBlobSha256": "3d2b9a5de18af5045af406579b280461c7e5671a1b24da76607cbce2cde74446",
+      "changes": "Preserved list/card/empty/loading/error/skeleton CSS and responsive breakpoints."
+    },
+    {
+      "destination": "apps/web/src/lib/display-time.ts",
+      "source": "apps/web/src/lib/display-time.ts",
+      "sourceBlobSha256": "cca80e6a803e23a1c1c898fbc5ba72eab9e3dc1ce87454ca1bdbedb21f6551d1",
+      "changes": "Unchanged formatting logic; added provenance comment and an unavailableTimeLabel constant."
+    },
+    {
+      "destination": "apps/web/src/lib/events.ts",
+      "source": "apps/web/src/lib/events.ts",
+      "sourceBlobSha256": "7847bf4227731c6216c5abe3dfd9369b3ec091a734892ffa9ef14cc4ed5d9af2",
+      "changes": "Removed viem formatUnits and Solidity statuses; ShowStake event lifecycle labels, registration window, and ISO-time helpers; atomic money moved to lib/money.ts."
+    },
+    {
+      "destination": "apps/web/src/components/landing/brand.tsx",
+      "source": "apps/web/src/components/landing/brand.tsx",
+      "sourceBlobSha256": "a64523ce980621e00f7d6673191bf10900e9a9916c22a482fff55620472e9cb3",
+      "changes": "next/image logo mark removed (no logo import); text wordmark ShowStake."
+    },
+    {
+      "destination": "apps/web/src/components/landing/hero.tsx",
+      "source": "apps/web/src/components/landing/hero.tsx",
+      "sourceBlobSha256": "fdf7bfd527f4d6b6e38567a6d52f87a1c6d96719ea2a03eca02a2eb7b24d60a9",
+      "changes": "Scroll-pin assembly/reduced-motion preserved; ShowStake tagline/copy; removed @commitpass/shared import and external YouTube demo link; sample amount labelled."
+    },
+    {
+      "destination": "apps/web/src/components/landing/poster.tsx",
+      "source": "apps/web/src/components/landing/poster.tsx",
+      "sourceBlobSha256": "cdae2d3d9e0d055f2460f2748a430e0fb59a6cf228ed57f616b387529d0dc146",
+      "changes": "Native CSS poster artwork reused verbatim (no image/font binaries)."
+    },
+    {
+      "destination": "apps/web/src/components/landing/reveal.tsx",
+      "source": "apps/web/src/components/landing/reveal.tsx",
+      "sourceBlobSha256": "22e88d951fd7b8ac15cf4ce93ea04238c07cf9da06871c4cde0bd9b66b319275",
+      "changes": "Reused verbatim (GSAP ScrollTrigger reveal honours reduced-motion)."
+    },
+    {
+      "destination": "apps/web/src/components/landing/walkthrough.tsx",
+      "source": "apps/web/src/components/landing/walkthrough.tsx",
+      "sourceBlobSha256": "6059c269c3db15980eac1b231eab28c7fc6f76c7856c3b47938cb5f601582aa3",
+      "changes": "Step 3 copy corrected to zero-fee/no-yield settlement (no-show deposits to attendees, no CommitPass cut); brand + sample copy."
+    },
+    {
+      "destination": "apps/web/src/app/page.tsx",
+      "source": "apps/web/src/app/page.tsx",
+      "sourceBlobSha256": "e960a482a92af7df4f7eb246a6a1920dd99898f6dfbf80d0bf7f434e0118adc7",
+      "changes": "Removed Cloudinary image (native CSS sample figure), session-gate, gas-sponsorship, faucet, Monad/Privy/yield/50%-split copy; FAQ rewritten honestly; footer status rebranded."
+    },
+    {
+      "destination": "apps/web/src/app/layout.tsx",
+      "source": "apps/web/src/app/layout.tsx",
+      "sourceBlobSha256": "ed2552e9be6881d836c4f2b37afe2f4d71fda4fb63058e0ae2794f8e086a02b6",
+      "changes": "Privy/react-grab/react-scan dev scripts and next/font DM Sans/Serif removed; Inter via system font stack; ShowStake metadata."
+    },
+    {
+      "destination": "apps/web/src/components/event/event-list.tsx",
+      "source": "apps/web/src/components/events/event-list.tsx",
+      "sourceBlobSha256": "087ff3befe3403e2a6020006390c692c38fc3d357ab1a993d0d3ee5fa9c49811",
+      "changes": "Removed Privy/account-context fetch; honest sign-in-unavailable personal plans state."
+    },
+    {
+      "destination": "apps/web/src/components/event/event-list-card.tsx",
+      "source": "apps/web/src/components/events/event-list-card.tsx",
+      "sourceBlobSha256": "5ee25fffa9b3c10d34d06731f0a9bb3ed8e9c4e94dd25a1e5c8316c3da3eee8b",
+      "changes": "EVM types/status/vault addressing replaced with ShowStake OpenAPI Event + atomic Amount + ISO checkinOpen time."
+    },
+    {
+      "destination": "apps/web/src/components/event/event-list-states.tsx",
+      "source": "apps/web/src/components/events/event-list-states.tsx",
+      "sourceBlobSha256": "a384dbcc3a884f754ef1e1cfe4e9ba83b33c1b93920785d245e995518cabca6e",
+      "changes": "Preserved Empty/LoadError; added LoadingEvents skeleton + CatalogUnavailable honest state."
+    },
+    {
+      "destination": "apps/web/src/components/event/event-period-tabs.tsx",
+      "source": "apps/web/src/components/events/event-period-tabs.tsx",
+      "sourceBlobSha256": "6bbb810643cbccf00b90f07aee32c71d861d2146a50f5b32fe42942a788d9cb1",
+      "changes": "Reused verbatim."
+    },
+    {
+      "destination": "apps/web/src/components/event/event-cover.tsx",
+      "source": "apps/web/src/components/events/event-cover.tsx",
+      "sourceBlobSha256": "0bb63644e59231e2398a4294be0d47819a9d538a975fac0ce3a0edb1b3355f1f",
+      "changes": "Cloudinary coverImageUrl/brand-media removed; native CSS event-cover-art only."
+    },
+    {
+      "destination": "apps/web/src/components/event/discover-events.tsx",
+      "source": "apps/web/src/components/events/discover-events.tsx",
+      "sourceBlobSha256": "f2c85bc8469996ac1616aa24fd42c470d2dd5ff3eedcae2d69028998e109bc25",
+      "changes": "Kept card/list view, period tabs, day grouping, timezone label, empty/loading/error; dropped search/calendar; injected loader defaulting to honest catalog-unavailable."
+    },
+    {
+      "destination": "apps/web/src/components/shell/platform-shell.tsx",
+      "source": "apps/web/src/components/events/platform-shell.tsx",
+      "sourceBlobSha256": "a08a85bf47b7a99fee5adf0337eeecd68a8364d4c9ef24f7cf9c0963997699c4",
+      "changes": "Removed platform-runtime account/session runtime; plain nav header with scrolled state."
+    },
+    {
+      "destination": "apps/web/src/components/shell/platform-shell.tsx",
+      "source": "apps/web/src/components/events/platform-runtime.tsx",
+      "sourceBlobSha256": "f6e081e25ac8c9e27995c328aedf2d65dc5a51b8d48f8312cfe34c402cfe8cac",
+      "changes": "Reference for scrolled-header behaviour only; auth/session/clock/EVM removed."
+    }
+  ],
+  "newly_authored": [
+    "apps/web/src/lib/types.ts (OpenAPI Event view model)",
+    "apps/web/src/lib/money.ts (BigInt atomic formatter, replaces viem formatUnits)",
+    "apps/web/src/lib/timezone.ts",
+    "apps/web/src/lib/api.ts",
+    "apps/web/src/lib/catalog.ts",
+    "apps/web/src/components/ui/amount.tsx",
+    "apps/web/src/components/ui/status-badge.tsx",
+    "apps/web/src/app/(platform)/layout.tsx",
+    "apps/web/src/app/(platform)/discover/page.tsx",
+    "apps/web/src/app/(platform)/events/page.tsx",
+    "apps/web/src/app/(platform)/events/new/page.tsx",
+    "apps/web/src/app/not-found.tsx",
+    "scripts/verify-t08-frontend.mjs",
+    "apps/web/src/lib/config.ts (accepted v6 deployment/FT/policy/event identity)",
+    "apps/web/src/lib/api.ts (real /v1 envelope client + event mapping)",
+    "apps/web/src/lib/catalog.ts (API-backed catalog with stale/unavailable)",
+    "apps/web/src/lib/deposit.ts (exact ft_transfer_call + preflight gating)",
+    "apps/web/src/lib/registration.ts (receipt-confirmed registration/pass)",
+    "apps/web/src/lib/near/proof.ts (canonical NEP-413 proof binder)",
+    "apps/web/src/lib/near/rpc.ts (dependency-free read-only NEAR JSON-RPC)",
+    "apps/web/src/lib/near/views-map.ts (pure ms->ISO + event-view mapping)",
+    "apps/web/src/lib/near/views.ts (typed contract/FT read-only views)",
+    "apps/web/src/lib/near/actions.ts (exact NEAR Connect ConnectorAction builders)",
+    "apps/web/src/lib/near/wallet.ts (NearConnector connect/sign + user-approved signAndSendTransaction)",
+    "apps/web/src/lib/near/receipt.ts (final receiver-receipt + RegistrationCommitted/reject verification)",
+    "apps/web/src/lib/attempt.ts (persisted PREPARED/SUBMITTED attempt + generation/inflight boundary)",
+    "apps/web/src/lib/commit-flow.ts (persist-then-sign sequencing with injected wallet + durable persistence)",
+    "apps/web/src/components/wallet/wallet-context.tsx",
+    "apps/web/src/components/wallet/wallet-menu.tsx",
+    "apps/web/src/components/event/event-detail.tsx",
+    "apps/web/src/components/event/register-panel.tsx",
+    "apps/web/src/app/(platform)/events/[eventId]/page.tsx",
+    "scripts/verify-frontend-slice.mjs"
+  ],
+  "deferred_or_not_copied": [
+    "lib/media.ts + lib/brand-media.json (Cloudinary remote manifests; forbidden)",
+    "lib/chain.ts, gas-sponsorship.ts, runtime-network.ts, server-api.ts, server-vault-insights.ts (EVM/legacy API)",
+    "components/auth/* (Privy provider/sign-in), account-context/use-event-state (EVM state)",
+    "event-location.tsx (external Google Maps embed; URL review deferred)",
+    "event-detail/event-pass/host-*/editor*/appearance-*/cover-upload (later slices)",
+    ".env.example, vercel.json, next.config webpack Privy/farcaster alias (private config/integration)"
+  ],
+  "limits": [
+    "No browser viewport/200%-zoom/keyboard/camera observation was made in this execution (NOT_RUN); layout is build- and typecheck-verified only.",
+    "Interactive NEAR wallet connect/sign/deposit (mobile return, real wallet) is NOT_RUN — needs a consenting human wallet. The exact NEAR Connect transaction actions (FT storage_deposit, ShowStake storage_deposit, ft_transfer_call) are unit-verified for their NEP shapes; the live wallet click/broadcast is Codex/human's scoped action, never this worker's.",
+    "HOT's testnet capability is ABSENT/UNPROVEN in the shared @hot-labs/near-connect manifest (a known, documented decision), not an inferred incapability; the connector surfaces only wallets that declare testnet support.",
+    "NEAR Connect (@hot-labs/near-connect@0.12.0) drives connect/sign and user-approved signAndSendTransaction via JSON-safe ConnectorActions; near-api-js@7.4.0 remains the canonical server-side NEP-413 verifier (packages/wallet-adapter + onboarding probe) and is intentionally NOT bundled into the browser — this slice never verifies an ed25519 signature itself.",
+    "The accepted live event d036-settle-five is Settled, so the detail route truthfully shows finished/settlement/claim outcomes and registration is closed; the storage/deposit approval flow is only exercisable against a future accepted open event (no fixture catalogue).",
+    "A positive native storage credit is never treated as sufficient, an unknown reserved-count is never defaulted to 0, the chain clock/phase is re-read before commit, and an unknown submission is never auto-retried or auto re-deposited.",
+    "The API is reached same-origin via a closed Next rewrite (single upstream, /v1 prefix); the API projection's chain event id is absent, so accepted deployments are resolved read-only via the contract list_events (API owner=Codex).",
+    "This provenance records only apps/web + frontend verification scripts; apps/api, apps/worker, packages/domain, packages/wallet-adapter, Rust and the root package.json/pnpm-lock remain untouched by this writer."
+  ]
+}
