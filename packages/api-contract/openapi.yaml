@@ -629,9 +629,10 @@ components:
 
     Event:
       type: object
-      required: [id, network, contractId, state, depositAtomic, capacity, times]
+      required: [id, chainEventId, network, contractId, state, depositAtomic, capacity, times]
       properties:
         id: { type: string, format: uuid }
+        chainEventId: { type: string, description: 'Event identifier inside contractId; distinct from database UUID id' }
         network: { type: string }
         contractId: { type: string }
         state: { $ref: '#/components/schemas/EventState' }

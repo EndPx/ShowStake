@@ -1,0 +1,19 @@
+{
+  "classification": "PASS_LOCAL",
+  "author_reviewer": "Codex",
+  "change": "Expose chainEventId distinctfromdatabaseUUID inpubliceventresponse/OpenAPI; schemaunchanged",
+  "tests": {
+    "localAPI": 40,
+    "frontendbehavior": 46,
+    "realPG": {
+      "checks": 26,
+      "failed": 0
+    },
+    "run": "api-run-20261108T201742Z-2419916",
+    "stop_cleanup_proven": true
+  },
+  "limits": [
+    "Not frontendacceptance",
+    "No worker ingestionstatus implied"
+  ]
+}

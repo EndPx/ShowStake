@@ -164,6 +164,7 @@ async function run() {
     check('DB_EVENT_TOTALS', lbody.data?.items?.[0]?.totals?.acceptedAtomic === '10000000' && lbody.data?.items?.[0]?.totals?.liabilityAtomic === '10000000', 'projection totals exact', JSON.stringify(lbody.data?.items?.[0]?.totals));
     const detail = await inject(app, 'GET', `/v1/events/${EVENT_ID}`);
     check('DB_EVENT_DETAIL', detail.statusCode === 200 && detail.json().data?.organizerAccount === 'bob.testnet', 'event detail', String(detail.statusCode));
+    check('DB_CHAIN_EVENT_ID', detail.json().data?.chainEventId === 'evt-api-1' && detail.json().data?.chainEventId !== EVENT_ID, 'contract event ID is distinct from database UUID', detail.json().data?.chainEventId);
 
     // 7. Full NEP-413 challenge -> verify -> session (real DB rows).
     const chal = await inject(app, 'POST', '/v1/auth/challenge', { accountId: kp.accountId, network: NETWORK, domain: DOMAIN });

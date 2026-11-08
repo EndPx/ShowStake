@@ -5,6 +5,7 @@
 /** A public event read (GET /v1/events, GET /v1/events/:id). */
 export interface PublicEvent {
   id: string;
+  chainEventId: string;
   network: string;
   contractId: string;
   organizerAccount: string;

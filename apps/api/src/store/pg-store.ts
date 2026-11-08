@@ -15,6 +15,7 @@ function iso(d: Date): string {
 
 interface EventRow {
   id: string;
+  chain_event_id: string;
   network: string;
   contract_id: string;
   organizer_account: string;
@@ -39,6 +40,7 @@ interface EventRow {
 function mapEvent(r: EventRow): PublicEvent {
   return {
     id: r.id,
+    chainEventId: r.chain_event_id,
     network: r.network,
     contractId: r.contract_id,
     organizerAccount: r.organizer_account,
@@ -66,7 +68,7 @@ function mapEvent(r: EventRow): PublicEvent {
 }
 
 const EVENT_SELECT = `
-  e.id, d.network, d.contract_id, e.organizer_account, e.asset_contract, e.state,
+  e.id, e.chain_event_id, d.network, d.contract_id, e.organizer_account, e.asset_contract, e.state,
   e.deposit_atomic::text AS deposit_atomic, e.capacity,
   e.reg_open, e.reg_close, e.cancel_cutoff, e.checkin_open, e.checkin_close, e.finalize_deadline,
   e.accepted_atomic::text AS accepted_atomic, e.paid_atomic::text AS paid_atomic,
