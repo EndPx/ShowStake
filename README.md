@@ -1,8 +1,18 @@
 # ShowStake
 
-ShowStake is an event attendance commitment platform built around NEAR escrow. Participants commit a refundable deposit to an event; an account-bound, non-transferable pass represents registration. Organizers finalize attendance onchain before settlement and claims. The product addresses registrations that do not translate into attendance.
+ShowStake is an event attendance commitment platform built around NEAR escrow. Participants lock a fixed attendance deposit that cannot be voluntarily withdrawn after registration; an account-bound, non-transferable pass represents registration. Organizers finalize attendance onchain before settlement and claims. The product addresses registrations that do not translate into attendance.
 
-Accepted increments include the database foundation, independent settlement oracle, wallet/signing diagnostic harness, and minimum Rust escrow/pass contract. The minimum contract is deployed on NEAR testnet; the full browser/backend/financial lifecycle remains incomplete. Hackathon tracks: `open` and `nfts`; the custom pass does not claim NEP-171 or NEP-393 compliance.
+Accepted increments include the database foundation, independent settlement oracle, wallet/signing diagnostic harness, and Rust escrow/pass, attendance, settlement and claim contract. The core contract financial lifecycle is exercised on NEAR testnet; full browser/backend integration remains incomplete. Hackathon tracks: `open` and `nfts`; the custom pass does not claim NEP-171 or NEP-393 compliance.
+
+## Inspect the five-person settlement on testnet
+
+Current settlement instance: `showstake-settle-endpx.testnet`, source `b744c00`, Wasm `f462ddcbb8b47ff03f4bea71c054cefe0d0a576b1346a0f9a55688c43307fd59`, policy `showstake-v2-d036-settle/1`.
+
+1. Inspect [finalization](https://testnet.nearblocks.io/txns/Cwe8nVcUc1uTphYTChPSgifCBuRgtCKNBhE228LCv9mf) and [settlement](https://testnet.nearblocks.io/txns/D9f1DRGL4qHqD4jW7d4PPKBgPZcvXTZtHYj4cBmsit91). See five registrations, two organizer-attested attendees, and an allocated total of10 SS_TEST.
+2. Inspect [attendee1 claim](https://testnet.nearblocks.io/txns/EkQ4teBg161EDxwnggk1PiTxrmFmLYocVdH68DN5r4F7) and [attendee2 claim](https://testnet.nearblocks.io/txns/8fg8fSnaCF7m5uAExN4xBAbH4njWFGuCamcMnjxRDWRe). Each participant deposited2 SS_TEST and received5; the three no-shows received0.
+3. Read `get_settlement` / `get_event_totals` for event `d036-settle-five`: see `Settled`, complete allocation, accepted/paid `10000000` atomic units, pending/liability `0`. Inspect [all31 receipts, five passes and balance snapshots](docs/evidence/testnet-settlement-five.json).
+
+This uses normal FT deposits and actual testnet time windows, with no state patch. Organizer-only attendance/finalization, premature claims, no-show claims and duplicate claims were tested as expected failures. SS_TEST is synthetic testnet FT (6decimals), not NEAR or USD. These CLI/keychain proofs do not imply browser/wallet integration, a public deposit pilot, mainnet readiness or completed indexing.
 
 ## Inspect D036 cancellation and claim on testnet
 

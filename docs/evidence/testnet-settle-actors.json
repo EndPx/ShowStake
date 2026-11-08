@@ -1,0 +1,115 @@
+{
+  "network": "testnet",
+  "signer": "dedicated OSkeychain outside repository",
+  "actors": [
+    {
+      "role": "participant1-organizer",
+      "account_id": "showstake-participant-endpx.testnet",
+      "status": "READY_PREEXISTING_DEDICATED"
+    },
+    {
+      "role": "participant2",
+      "account_id": "showstake-demo2-endpx.testnet",
+      "status": "READY",
+      "cli_exit": 0,
+      "rpc_account": {
+        "amount": "10000000000000000000000000",
+        "block_hash": "6hMuyLcpxaANwXxRKvNb2BytVqHiJjkSyYnWpJGRvSHL",
+        "block_height": 276712923,
+        "code_hash": "11111111111111111111111111111111",
+        "locked": "0",
+        "storage_paid_at": 0,
+        "storage_usage": 182
+      },
+      "rpc_access_keys": [
+        {
+          "access_key": {
+            "nonce": 276712920000000,
+            "permission": "FullAccess"
+          },
+          "public_key": "ed25519:C8nXdXcxzNDkHKXgVGk8KGNvRy2wFXNYoM1j6z5vX4ud"
+        }
+      ],
+      "keychain_public_key_matches_rpc": true,
+      "secret_output_logged": false
+    },
+    {
+      "role": "participant3",
+      "account_id": "showstake-demo3-endpx.testnet",
+      "status": "READY",
+      "cli_exit": 0,
+      "rpc_account": {
+        "amount": "10000000000000000000000000",
+        "block_hash": "9fRugeAgkbidaaCrUYMFzpX1PfGkPAGrtD1onfPwX69s",
+        "block_height": 276712944,
+        "code_hash": "11111111111111111111111111111111",
+        "locked": "0",
+        "storage_paid_at": 0,
+        "storage_usage": 182
+      },
+      "rpc_access_keys": [
+        {
+          "access_key": {
+            "nonce": 276712941000000,
+            "permission": "FullAccess"
+          },
+          "public_key": "ed25519:CrD8dQvwCcWEUAWG6WPxwseWophKxiLTfJUJ8kjTmLFj"
+        }
+      ],
+      "keychain_public_key_matches_rpc": true,
+      "secret_output_logged": false
+    },
+    {
+      "role": "participant4",
+      "account_id": "showstake-demo4-endpx.testnet",
+      "status": "READY",
+      "cli_exit": 0,
+      "rpc_account": {
+        "amount": "10000000000000000000000000",
+        "block_hash": "9e5upGGtHRrBGit88TTKYu8qXYYdCqYgnBMCstf5D4m8",
+        "block_height": 276712967,
+        "code_hash": "11111111111111111111111111111111",
+        "locked": "0",
+        "storage_paid_at": 0,
+        "storage_usage": 182
+      },
+      "rpc_access_keys": [
+        {
+          "access_key": {
+            "nonce": 276712964000000,
+            "permission": "FullAccess"
+          },
+          "public_key": "ed25519:EdCGjU3jVQFafoGtUWkMsd8Re86qxoTPX2gzMFj3DaCg"
+        }
+      ],
+      "keychain_public_key_matches_rpc": true,
+      "secret_output_logged": false
+    },
+    {
+      "role": "participant5",
+      "account_id": "showstake-demo5-endpx.testnet",
+      "status": "READY",
+      "cli_exit": 0,
+      "rpc_account": {
+        "amount": "10000000000000000000000000",
+        "block_hash": "BKz3fQkYTMTjsKWCVR1Y6P5MArCFT3bC7x5QBpiX299V",
+        "block_height": 276712990,
+        "code_hash": "11111111111111111111111111111111",
+        "locked": "0",
+        "storage_paid_at": 0,
+        "storage_usage": 182
+      },
+      "rpc_access_keys": [
+        {
+          "access_key": {
+            "nonce": 276712986000000,
+            "permission": "FullAccess"
+          },
+          "public_key": "ed25519:E2fVY6f29eQWQp3jKud23YqziFZ1X1wubnf5CCoy8ojv"
+        }
+      ],
+      "keychain_public_key_matches_rpc": true,
+      "secret_output_logged": false
+    }
+  ]
+}

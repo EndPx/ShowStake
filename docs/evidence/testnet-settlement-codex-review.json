@@ -1,0 +1,53 @@
+{
+  "classification": "PASS_TESTNET",
+  "scope": "onchain CLI/keychain financial lifecycle only, not full browser/application E2E",
+  "source_commit": "b744c00",
+  "contract": "showstake-settle-endpx.testnet",
+  "policy": "showstake-v2-d036-settle/1",
+  "wasm_sha256": "f462ddcbb8b47ff03f4bea71c054cefe0d0a576b1346a0f9a55688c43307fd59",
+  "reviewer_and_test_operator": "Codex",
+  "participants": 5,
+  "normal_ft_transfer_call_deposits": 5,
+  "deposit_each_atomic": "2000000",
+  "attended": 2,
+  "allocation_atomic": [
+    "5000000",
+    "5000000",
+    "0",
+    "0",
+    "0"
+  ],
+  "actual_claim_receipts": [
+    "EkQ4teBg161EDxwnggk1PiTxrmFmLYocVdH68DN5r4F7",
+    "8fg8fSnaCF7m5uAExN4xBAbH4njWFGuCamcMnjxRDWRe"
+  ],
+  "final_totals": {
+    "event_id": "d036-settle-five",
+    "state": "Settled",
+    "registrations": 5,
+    "active_registrations": 5,
+    "withdrawn_registrations": 0,
+    "accepted_principal": "10000000",
+    "paid": "10000000",
+    "pending": "0",
+    "liability": "0"
+  },
+  "final_passes_verified": 5,
+  "transactions_final": 31,
+  "expected_denials": [
+    "unauthorized_attendance",
+    "unauthorized_finalize",
+    "premature_claim",
+    "no_show_claim",
+    "double_claim"
+  ],
+  "real_clock_windows": true,
+  "patched_testnet_state": false,
+  "limits": [
+    "No browser wallet/provider acceptance",
+    "No mainnet funds/deployment",
+    "No factory acceptance",
+    "Remainder/zero-attendee/max200/failure-retry and late24h paths proven only in labelled local tests",
+    "API/worker lifecycle projections still pending review/integration"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "network": "testnet",
+  "account_id": "showstake-settle-endpx.testnet",
+  "signer": "dedicated OSkeychain outside repo",
+  "rpc_account": {
+    "amount": "10000000000000000000000000",
+    "block_hash": "5FSP3xXX9taPVQbBhcXUgr5XB4CGhXL34jhc9SDKtCes",
+    "block_height": 276712684,
+    "code_hash": "11111111111111111111111111111111",
+    "locked": "0",
+    "storage_paid_at": 0,
+    "storage_usage": 182
+  },
+  "rpc_access_keys": [
+    {
+      "access_key": {
+        "nonce": 276712609000000,
+        "permission": "FullAccess"
+      },
+      "public_key": "ed25519:5ZiheFTnK9s2Tf2irwkvZkE4jYedNMbQmT3bog9oxRKf"
+    }
+  ],
+  "keychain_public_key_matches_rpc": true,
+  "secret_output_logged": false,
+  "creation_recovery": "CLI returned0 before account appeared at finality; reconciled read-only, no repeated create",
+  "rpc": "https://test.rpc.fastnear.com",
+  "network_config_alias": "testnet-fastnear (network_name testnet)"
+}
