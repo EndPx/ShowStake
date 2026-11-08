@@ -191,3 +191,6 @@ Frontendround3 review:70behavior/typecheck independentlypass, butnotaccepted. Fa
 
 
 Frontend bounded slice accepted PASS_LOCAL byCodex:92behavior/typecheck independentlypass, workerproductionbuild/68legacy reportedpass; actualbrowserreadsSettled2attend3noshow/pool6/share3, desktop+390/520headerfit checked. Pendingdurability/unknownoutcome/receiptstatus/generationguards reviewed. No interactivewallet/session/backendcatalog/organizerclaimUI/fullT08E2Eacceptance. Open eventslot provisioning next; frontend-onlycommit excludes unacceptedworker/intents.
+
+
+Frontendlocal accepted/pushed2f8925c after92behavior68legacy/typecheck anddesktop/mobileheaderreview (390scroll390,520nooverflow). RealwalletNOT_RUN. Codex created/deployed cleantestnet showstake-wallet-endpx.testnet withacceptedv6f462ddcb (tx9qBbv4V7knnqW5EdZNZb9mcqzbKbX51vjpiRP4kMvg1x), published wallet-browser-test (txCCzv9d43toaphQoKu1tU6KL6DErdHigGAkENXdUWcDgm), escrowFTstorageregistered. ActualRegistrationOpen, D1000000SS_TESTatomic, capacity20,0participants,48hourregwindow. OPENslotconfigured,92behaviorpass; rebuildinprogress. No humanwalletsigned/broadcastbyCodex; no secrets.

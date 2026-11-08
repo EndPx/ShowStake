@@ -1,0 +1,25 @@
+{
+  "network": "testnet",
+  "account_id": "showstake-wallet-endpx.testnet",
+  "signer": "dedicatedOSkeychain",
+  "rpc_account": {
+    "amount": "10000000000000000000000000",
+    "block_hash": "7VEKLqDMoBRQwVjzhJUzzbZ5iBNKaHHxSZH6xHfaQgsp",
+    "block_height": 276829207,
+    "code_hash": "11111111111111111111111111111111",
+    "locked": "0",
+    "storage_paid_at": 0,
+    "storage_usage": 182
+  },
+  "publickeys": [
+    {
+      "access_key": {
+        "nonce": 276829177000000,
+        "permission": "FullAccess"
+      },
+      "public_key": "ed25519:CcRJmgTaWL2vQbXUoTv4AvsQk41cPffoKoWSTKeEdFRM"
+    }
+  ],
+  "keychain_verified": true,
+  "creation_recovery": "read-onlyafterfinalitydelay,norepeatedcreate"
+}

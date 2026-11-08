@@ -53,7 +53,12 @@ export const ACCEPTED_EVENTS: Readonly<Record<string, AcceptedEvent>> = {
  * Codex fills it in. The deposit/approval flow is only exercisable through this
  * slot.
  */
-export const OPEN_TEST_EVENT_SLOT: AcceptedEvent | null = null;
+export const OPEN_TEST_EVENT_SLOT: AcceptedEvent | null = {
+  eventId: "wallet-browser-test",
+  contractId: "showstake-wallet-endpx.testnet",
+  network: NETWORK,
+  policyVersion: POLICY_VERSION,
+};
 
 export function isAcceptedEvent(eventId: string): boolean {
   if (Object.prototype.hasOwnProperty.call(ACCEPTED_EVENTS, eventId)) return true;
