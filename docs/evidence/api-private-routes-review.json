@@ -1,0 +1,24 @@
+{
+  "id": "api-private-routes-review",
+  "classifier": "PASS_LOCAL",
+  "scope": "Terra authenticated projection reads",
+  "source": "apps/api/** and packages/api-contract/openapi.yaml",
+  "checks": [
+    { "name": "api_typecheck", "command": "pnpm --filter @showstake/api typecheck", "exit": 0 },
+    { "name": "api_build", "command": "pnpm --filter @showstake/api build", "exit": 0 },
+    { "name": "api_local_regression", "command": "pnpm verify:api", "result": "40/40 PASS_LOCAL" },
+    { "name": "private_route_behavior", "command": "node apps/api/test/verify-private-routes.mjs", "result": "6/6 PASS_LOCAL" },
+    { "name": "openapi_contract", "command": "node scripts/verify-openapi.mjs", "result": "21 routes; schema and security checks PASS_LOCAL" },
+    { "name": "postgresql_acceptance", "command": "pnpm verify:api-db", "result": "26/26 PASS_LOCAL; restricted API role and cleanup proven" }
+  ],
+  "security": {
+    "identity": "account and network come from the verified session wallet binding",
+    "organizer": "attendance roster requires the event organizer account",
+    "content": "requires current owner, ATTENDED registration, SETTLED event, fresh projection; signer absence returns 503",
+    "network_isolation": "MemoryStore and PgStore reads are scoped to the authenticated network"
+  },
+  "limits": [
+    "private object-storage signing remains BLOCKED_EXTERNAL and no public URL fallback is returned",
+    "live wallet/session and testnet API deployment remain outside this local acceptance"
+  ]
+}

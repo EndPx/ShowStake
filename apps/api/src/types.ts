@@ -72,6 +72,44 @@ export interface WalletBindingRow {
   walletKind: string;
 }
 
+export interface PassRead {
+  id: string;
+  eventId: string;
+  ownerAccount: string;
+  registrationStatus: string;
+  attendanceStatus: boolean;
+  financialStatus: string;
+  observedAt: string;
+}
+
+export interface ClaimRead {
+  id: string;
+  eventId: string;
+  beneficiaryAccount: string;
+  principalAtomic: string;
+  bonusAtomic: string;
+  claimAtomic: string;
+  payoutState: string;
+  observedAt: string;
+}
+
+export interface AttendanceRead {
+  registrationId: string;
+  participantAccount: string;
+  attendanceStatus: boolean;
+  registrationStatus: string;
+  payoutState: string;
+  observedAt: string;
+}
+
+export interface ContentResourceRead {
+  objectKey: string;
+  title: string;
+  mimeType: string;
+  publishedAt: string | null;
+  observedAt: string;
+}
+
 export interface ChallengeIssueRow {
   id: string;
   nonce: string; // hex of the 32-byte nonce (returned to the signer only)

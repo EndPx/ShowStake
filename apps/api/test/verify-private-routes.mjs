@@ -1,0 +1,29 @@
+import assert from 'node:assert/strict';
+import { buildApp } from '../dist/app.js';
+import { MemoryStore } from '../dist/store/memory-store.js';
+import { loadConfig } from '../dist/config.js';
+import { makeKeypair, makeFakeResolver, signChallenge } from './fixtures.mjs';
+
+const id='00000000-0000-4000-8000-0000000000a1';
+const now=new Date().toISOString();
+const event={id,chainEventId:'evt',network:'testnet',contractId:'escrow.testnet',organizerAccount:'host.testnet',assetContract:'ft.testnet',state:'SETTLED',depositAtomic:'10',capacity:10,times:{regOpen:now,regClose:now,cancelCutoff:now,checkinOpen:now,checkinClose:now,finalizeDeadline:now},totals:{acceptedAtomic:'10',paidAtomic:'0',pendingAtomic:'0',liabilityAtomic:'10'},registeredCount:1,observedAt:now};
+const store=new MemoryStore();
+const participant=makeKeypair(), host=makeKeypair(); event.organizerAccount=host.accountId; store.seedEvent(event);
+const foreignEvent={...event,id:'00000000-0000-4000-8000-0000000000a2',network:'mainnet',contractId:'escrow.mainnet'};
+store.seedEvent(foreignEvent);
+store.seedPass({id:'00000000-0000-4000-8000-0000000000p1',eventId:id,ownerAccount:participant.accountId,registrationStatus:'ATTENDED',attendanceStatus:true,financialStatus:'CLAIMABLE',observedAt:now});
+store.seedPass({id:'00000000-0000-4000-8000-0000000000p2',eventId:foreignEvent.id,ownerAccount:participant.accountId,registrationStatus:'ATTENDED',attendanceStatus:true,financialStatus:'CLAIMABLE',observedAt:now});
+store.seedClaim({id:'00000000-0000-4000-8000-0000000000r1',eventId:id,beneficiaryAccount:participant.accountId,principalAtomic:'10',bonusAtomic:'2',claimAtomic:'12',payoutState:'CLAIMABLE',observedAt:now});
+store.seedClaim({id:'00000000-0000-4000-8000-0000000000r2',eventId:foreignEvent.id,beneficiaryAccount:participant.accountId,principalAtomic:'99',bonusAtomic:'1',claimAtomic:'100',payoutState:'CLAIMABLE',observedAt:now});
+store.seedAttendance(id,[{registrationId:'r1',participantAccount:participant.accountId,attendanceStatus:true,registrationStatus:'ATTENDED',payoutState:'CLAIMABLE',observedAt:now}]);
+const cfg=loadConfig({AUTH_DOMAIN:'app.local',AUTH_NETWORK:'testnet',COOKIE_SECURE:'false'});
+const app=buildApp({store,config:cfg,accessKeyVerifier:async q=>makeFakeResolver(q.accountId,q.publicKey,'testnet')(q)});
+async function login(k){const c=(await app.inject({method:'POST',url:'/v1/auth/challenge',payload:{accountId:k.accountId,network:'testnet',domain:'app.local'}})).json().data; const r=await app.inject({method:'POST',url:'/v1/auth/verify',payload:{challengeId:c.challengeId,accountId:k.accountId,network:'testnet',domain:'app.local',nonce:c.nonce,publicKey:k.publicKey,signature:signChallenge(k.privateKey,{message:c.message,nonceHex:c.nonce,recipient:'app.local'})},headers:{origin:'http://app.local'}}); return r.headers['set-cookie'].split(';')[0];}
+assert.equal((await app.inject({method:'GET',url:'/v1/me/passes'})).statusCode,401);
+const participantCookie=await login(participant); const hostCookie=await login(host);
+assert.equal((await app.inject({method:'GET',url:'/v1/me/passes',headers:{cookie:participantCookie}})).json().data.items.length,1);
+assert.equal((await app.inject({method:'GET',url:'/v1/me/claims',headers:{cookie:participantCookie}})).json().data.items[0].claimAtomic,'12');
+assert.equal((await app.inject({method:'GET',url:`/v1/events/${id}/attendance`,headers:{cookie:participantCookie}})).statusCode,403);
+assert.equal((await app.inject({method:'GET',url:`/v1/events/${id}/attendance`,headers:{cookie:hostCookie}})).json().data.items.length,1);
+assert.equal((await app.inject({method:'GET',url:`/v1/events/${id}/content`,headers:{cookie:participantCookie}})).statusCode,503);
+console.log('verify-private-routes: PASS_LOCAL 6 checks');

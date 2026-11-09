@@ -1,6 +1,6 @@
 # ShowStake delivery roadmap
 
-Snapshot: 2026-11-08. Tracks: open, nfts. Internal target: November 14, 23:59 WIB. Test evidence is local unless explicitly classified otherwise.
+Snapshot refreshed from source/evidence: 2026-11-09. Tracks: open, nfts. Internal target: November 14, 23:59 WIB. Test evidence is local unless explicitly classified otherwise.
 
 | Task | Dependency | Deliverable and acceptance | Current status |
 |---|---|---|---|
@@ -9,12 +9,12 @@ Snapshot: 2026-11-08. Tracks: open, nfts. Internal target: November 14, 23:59 WI
 | T02 wallet/route probes | T00 | Native NEAR and social/email/EVM paths, verified account binding, login/relogin same account, signing, supported funding/FT route and reviewed ABI | Partial: local adapter/harness increment accepted after99 checks, build and browser startup; real signing/relogin/social/EVM gates open |
 | T03 escrow/pass | T01 + reviewed T02 interface gates | Event publish, valid FT deposit, atomic seat/pass issuance, immutable participant/beneficiary, non-transferable custom pass | Minimum accepted in 70d6319: 34 unit + 91 real Sandbox checks; same Wasm PASS_TESTNET via CLI/keychain publish/deposit/reg-0/pass-0, duplicate/wrong-amount refunds and transfer denial. Factory and full browser integration remain open |
 | T04 settlement/payout | T03 | Organizer finalization, timeout/cancel refunds, D036 withdrawal denial, exact redistribution, claim callback failure/retry and conservation | Contract core accepted PASS_LOCAL (64unit,2328+103Sandbox) and PASS_TESTNET (five deposit2/two attendees claim5 each, actual windows). Browser/API integration remains open |
-| T05 auth/projections | T01,T02 | Backend challenges/sessions, identity linking, chain-event ingestion, durable cursor/recovery, projection freshness | Bounded API accepted PASS_LOCAL:40local +25realPG/HTTP checks, final integration by Codex (D037). FullT05 remains open: indexing, pass/organizer authorization and browser/testnet integration pending |
+| T05 auth/projections | T01,T02 | Backend challenges/sessions, identity linking, chain-event ingestion, durable cursor/recovery, projection freshness | API authenticated pass/claims/organizer/content reads now PASS_LOCAL and reviewed (Terra slice; 40/40 API, 6/6 private routes, 26/26 real PG, OpenAPI 21 routes). Minimum indexing accepted d76211f; v6 adapter/checkpoint recovery remains review/testnet-rate-limited. Private content signer and live API deployment remain BLOCKED_EXTERNAL |
 | T06 funding | T03,T05 | Supported quote/delivery to participant NEAR account, separate signed escrow deposit, expiry/unknown/retry recovery | Not accepted; no funded cross-chain proof; Intents has no testnet |
 | T07 check-in/content | T04,T05 | Expiring QR, pending request, organizer-signed attendance, backend-gated attendee materials | Not accepted |
-| T08 frontend | T01; final integration T06,T07 | Adapt CommitPass baseline, preserve suitable layouts/interactions, ShowStake tokens and exact state presentation, responsive/accessibility checks | Reuse inspection/map complete; adaptation pending; new FigCraft design deferred |
+| T08 frontend | T01; final integration T06,T07 | Adapt CommitPass baseline, preserve suitable layouts/interactions, ShowStake tokens and exact state presentation, responsive/accessibility checks | Partial accepted locally: CommitPass-adapted discovery/detail/native wallet storage/deposit/pass (2f8925c), real open testnet slot b7d2136. Real browser wallet acceptance, server session, organizer/claim UI and full integration remain open |
 | T09 end-to-end | T04,T06,T07,T08 | Browser create/fund/deposit/pass/check-in/finalize/settle/claim/content, actual receipts and negative paths | Not run |
-| T10 recovery/security | T09 | Auth/role/replay abuse, double claim, callback failures, event isolation, recovery and browser regressions | Not run; isolated negative test preparation allowed earlier |
+| T10 recovery/security | T09 | Auth/role/replay abuse, double claim, callback failures, event isolation, recovery and browser regressions | Partial component evidence exists: auth replay/expiry, contract double claim/callback retry/isolation, frontend pending-recovery guards. Integrated recovery/security acceptance remains open |
 | T11 release/docs | T10 | Judge README and numbered reproducibility, honest provenance, config/deploy manifest, demo/submission artifacts and accepted evidence | Initial README exists; final acceptance not run |
 
 ## Execution policy

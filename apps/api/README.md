@@ -1,6 +1,6 @@
 # ShowStake API
 
-A Fastify/TypeScript server for public event projections and native NEAR proof-of-control sessions. The contract remains the authority for registration, attendance and payouts. Implemented routes are `GET /health`, `GET /v1/events`, `GET /v1/events/:eventId`, `POST /v1/auth/challenge`, `POST /v1/auth/verify`, `GET /v1/me`, and `POST /v1/auth/logout`.
+A Fastify/TypeScript server for public event projections and native NEAR proof-of-control sessions. The contract remains the authority for registration, attendance and payouts. Implemented routes include authenticated `GET /v1/me/passes`, `GET /v1/me/claims`, organizer-only `GET /v1/events/:eventId/attendance`, and fail-closed gated `GET /v1/events/:eventId/content` alongside the public and session routes.
 
 ## Run and observe
 
@@ -23,11 +23,11 @@ Defaults: `HOST=127.0.0.1`, `PORT=3001`, challenge TTL capped at5minutes, sessio
 - A challenge row is locked before the database checks current expiry and consumes it. Session creation shares that transaction. Expiry while blocked on an unchanged row cannot create a session.
 - Session writes require an allowed Origin/Referer, in addition to cookie policy. The challenge endpoint is limited to10/minute/direct socket IP per process; forwarded headers cannot rotate the bucket. A multi-instance deployment needs shared limiting or a verified ingress policy before production acceptance.
 - Public event reads require no session/pass and report staleness from observed timestamps. Worker cursors/indexing are not implemented, so this is row-age freshness only. No chain data is fabricated by the API.
-- OpenAPI includes the echoed nonce plus authenticated `/auth/logout` and `/me`; unimplemented planned routes in the full specification remain future scope.
+- Passes and claims are read only from projections keyed by the verified session wallet binding; the client cannot select an account. Attendance compares that binding to the event organizer account and never treats a participant pass as host authority. Content requires the same account to own an attended pass and the event to be `SETTLED`, then fails closed when projection freshness or a verified private-object signer is unavailable.
 - D036 removes voluntary participant withdrawal/rejoin after commit. This API exposes no withdrawal route.
 
 ## Acceptance boundary
 
 The initial executor was DeepSeek Harness/GATER, with later MiniMax work. Codex identified defects, stopped the incompatible worker attempt with process confirmation, and implemented/tested the final integration fixes. The review/implementation provenance is recorded in `docs/evidence/api-codex-integration-review.json`; this is not an independent external security audit.
 
-Organizer/attendee authorization, pass reads, QR/check-in/content/funding routes, contract ingestion and indexing, browser wallet integration, social/email/EVM login, and a persistent hosted deployment are not accepted by this increment. A fresh empty database has no catalog events until a verified worker projects contract activity. No testnet API authentication or full T05/E2E acceptance is claimed.
+QR/check-in/funding routes, contract ingestion and indexing, browser wallet integration, social/email/EVM login, and a persistent hosted deployment remain future scope. A fresh empty database has no catalog events until a verified worker projects contract activity. No testnet API authentication or full T05/E2E acceptance is claimed; local route behavior does not prove live storage signing or chain finality.

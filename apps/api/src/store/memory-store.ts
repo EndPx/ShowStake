@@ -1,4 +1,4 @@
-import type { ChallengeRow, EventListData, PublicEvent, SessionRow, WalletBindingRow } from '../types.js';
+import type { AttendanceRead, ChallengeRow, ClaimRead, ContentResourceRead, EventListData, PassRead, PublicEvent, SessionRow, WalletBindingRow } from '../types.js';
 import type { Store } from './types.js';
 
 /**
@@ -12,11 +12,19 @@ export class MemoryStore implements Store {
   private readonly bindings = new Map<string, WalletBindingRow>();
   private readonly users = new Map<string, string>(); // bindingId -> userId
   private readonly events: PublicEvent[] = [];
+  private readonly passes: PassRead[] = [];
+  private readonly claims: ClaimRead[] = [];
+  private readonly attendance = new Map<string, AttendanceRead[]>();
+  private readonly content = new Map<string, ContentResourceRead[]>();
   private seq = 0;
 
   seedEvent(e: PublicEvent): void {
     this.events.push(e);
   }
+  seedPass(p: PassRead): void { this.passes.push(p); }
+  seedClaim(c: ClaimRead): void { this.claims.push(c); }
+  seedAttendance(eventId: string, rows: AttendanceRead[]): void { this.attendance.set(eventId, rows); }
+  seedContent(eventId: string, rows: ContentResourceRead[]): void { this.content.set(eventId, rows); }
 
   /** Test-only: force a challenge to be treated as expired (past expiresAt). */
   expireChallenge(id: string): void {
@@ -137,5 +145,26 @@ export class MemoryStore implements Store {
 
   async getBinding(namespace: string, network: string, accountId: string): Promise<WalletBindingRow | null> {
     return this.bindings.get(`${namespace}|${network}|${accountId}`) ?? null;
+  }
+  async getBindingById(id: string): Promise<WalletBindingRow | null> {
+    return [...this.bindings.values()].find((b) => b.id === id) ?? null;
+  }
+  async listPasses(accountId: string, network: string): Promise<PassRead[]> {
+    const eventIds = new Set(this.events.filter((e) => e.network === network).map((e) => e.id));
+    return this.passes.filter((p) => p.ownerAccount === accountId && eventIds.has(p.eventId));
+  }
+  async listClaims(accountId: string, network: string): Promise<ClaimRead[]> {
+    const eventIds = new Set(this.events.filter((e) => e.network === network).map((e) => e.id));
+    return this.claims.filter((c) => c.beneficiaryAccount === accountId && eventIds.has(c.eventId));
+  }
+  async getAttendance(eventId: string, organizerAccount: string, network: string): Promise<AttendanceRead[] | null> {
+    const event = this.events.find((e) => e.id === eventId);
+    return event && event.network === network && event.organizerAccount === organizerAccount ? (this.attendance.get(eventId) ?? []) : null;
+  }
+  async getContentAccess(eventId: string, accountId: string, network: string): Promise<ContentResourceRead[] | null> {
+    const event = this.events.find((e) => e.id === eventId);
+    if (!event || event.network !== network || event.state !== 'SETTLED') return null;
+    const pass = this.passes.find((p) => p.eventId === eventId && p.ownerAccount === accountId && p.attendanceStatus && p.registrationStatus !== 'WITHDRAWN');
+    return pass ? (this.content.get(eventId) ?? []) : null;
   }
 }

@@ -1,7 +1,7 @@
 import { assertMoneyString } from '@showstake/domain';
 import type { Pool, PoolClient } from 'pg';
 import { randomUUID } from 'node:crypto';
-import type { ChallengeRow, EventListData, PublicEvent, SessionRow, WalletBindingRow } from '../types.js';
+import type { AttendanceRead, ChallengeRow, ClaimRead, ContentResourceRead, EventListData, PassRead, PublicEvent, SessionRow, WalletBindingRow } from '../types.js';
 import type { Store } from './types.js';
 
 /** PostgreSQL `numeric` must round-trip as a canonical money string, never a float. */
@@ -340,5 +340,33 @@ export class PgStore implements Store {
     const r = res.rows[0];
     if (!r) return null;
     return { id: r.id, userId: r.user_id, namespace: r.namespace, network: r.network, accountId: r.account_id, walletKind: r.wallet_kind };
+  }
+
+  async getBindingById(id: string): Promise<WalletBindingRow | null> {
+    const res = await this.pool.query<{ id:string; user_id:string; namespace:string; network:string; account_id:string; wallet_kind:string }>(`SELECT id,user_id,namespace,network,account_id,wallet_kind FROM wallet_bindings WHERE id=$1 AND disabled_at IS NULL`, [id]);
+    const r=res.rows[0]; return r ? {id:r.id,userId:r.user_id,namespace:r.namespace,network:r.network,accountId:r.account_id,walletKind:r.wallet_kind} : null;
+  }
+
+  async listPasses(accountId: string, network: string): Promise<PassRead[]> {
+    const res=await this.pool.query<{id:string;event_id:string;owner_account:string;registration_status:string;attended:boolean;payout_state:string;observed_at:Date}>(`SELECT p.id,r.event_id,p.owner_account,r.state AS registration_status,r.attended,r.payout_state,GREATEST(p.observed_at,r.observed_at,e.observed_at) AS observed_at FROM passes_projection p JOIN registrations_projection r ON r.id=p.registration_id JOIN events_projection e ON e.id=r.event_id JOIN deployments d ON d.id=p.deployment_id WHERE p.owner_account=$1 AND d.network=$2 ORDER BY p.issued_at DESC,p.id`,[accountId,network]);
+    return res.rows.map(r=>({id:r.id,eventId:r.event_id,ownerAccount:r.owner_account,registrationStatus:r.registration_status,attendanceStatus:r.attended,financialStatus:r.payout_state,observedAt:iso(r.observed_at)}));
+  }
+
+  async listClaims(accountId: string, network: string): Promise<ClaimRead[]> {
+    const res=await this.pool.query<{id:string;event_id:string;beneficiary_account:string;principal_atomic:string;claim_atomic:string;payout_state:string;observed_at:Date}>(`SELECT r.id,r.event_id,r.beneficiary_account,r.principal_atomic::text,r.claim_atomic::text,r.payout_state,r.observed_at FROM registrations_projection r JOIN events_projection e ON e.id=r.event_id JOIN deployments d ON d.id=e.deployment_id WHERE r.beneficiary_account=$1 AND d.network=$2 ORDER BY r.observed_at DESC,r.id`,[accountId,network]);
+    return res.rows.map(r=>{const principal=money(r.principal_atomic), claim=money(r.claim_atomic); return {id:r.id,eventId:r.event_id,beneficiaryAccount:r.beneficiary_account,principalAtomic:principal,bonusAtomic:(BigInt(claim)-BigInt(principal)).toString(),claimAtomic:claim,payoutState:r.payout_state,observedAt:iso(r.observed_at)};});
+  }
+
+  async getAttendance(eventId: string, organizerAccount: string, network: string): Promise<AttendanceRead[] | null> {
+    const ev=await this.pool.query<{organizer_account:string}>(`SELECT e.organizer_account FROM events_projection e JOIN deployments d ON d.id=e.deployment_id WHERE e.id=$1 AND d.network=$2`,[eventId,network]);
+    if(!ev.rows[0] || ev.rows[0].organizer_account!==organizerAccount) return null;
+    const res=await this.pool.query<{id:string;participant_account:string;attended:boolean;state:string;payout_state:string;observed_at:Date}>(`SELECT id,participant_account,attended,state,payout_state,observed_at FROM registrations_projection WHERE event_id=$1 ORDER BY sequence_no,id`,[eventId]);
+    return res.rows.map(r=>({registrationId:r.id,participantAccount:r.participant_account,attendanceStatus:r.attended,registrationStatus:r.state,payoutState:r.payout_state,observedAt:iso(r.observed_at)}));
+  }
+
+  async getContentAccess(eventId: string, accountId: string, network: string): Promise<ContentResourceRead[] | null> {
+    const res=await this.pool.query<{object_key:string;title:string;mime_type:string;published_at:Date|null;observed_at:Date}>(`SELECT pr.object_key,pr.title,pr.mime_type,pr.published_at,GREATEST(e.observed_at,r.observed_at) AS observed_at FROM protected_resources pr JOIN events_projection e ON e.id=pr.event_id JOIN deployments d ON d.id=e.deployment_id JOIN registrations_projection r ON r.event_id=e.id WHERE e.id=$1 AND d.network=$2 AND e.state='SETTLED' AND r.participant_account=$3 AND r.beneficiary_account=$3 AND r.attended=true AND r.state='ATTENDED' AND pr.deleted_at IS NULL AND pr.published_at IS NOT NULL`,[eventId,network,accountId]);
+    if(res.rows.length===0) return null;
+    return res.rows.map(r=>({objectKey:r.object_key,title:r.title,mimeType:r.mime_type,publishedAt:r.published_at?iso(r.published_at):null,observedAt:iso(r.observed_at)}));
   }
 }

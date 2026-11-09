@@ -209,3 +209,14 @@ Harnessctx_327f833d6358 blockedGATER503/upstream402quota_exceeded. No unbind/ret
 
 
 Minimumreceiptprojectionworker acceptedbyCodex:72independentfixture/73realPGpass, finalsource/linkage/cursor/replay/role review complete; preserved32testnetchecks/318blockproof reviewed, notnewnetworkrun. Scopepublication/deposit/passforfc49minimumonly. FASTNEARcontenttrustexplicit; v6lifecycleadapter/persistentbackend/fullT05stillopen. See worker-codex-acceptance.json.
+
+
+D044 parallel remainingproductimplementation started: CodexTerra APIaccessslice (pass/claims/organizer/content) andDeepSeekHarness existingworkercheckpointintegration active, explicitdisjointpaths. No featureacceptance inferred fromdelegation. FullT02social/EVM/browserwallet/T06fundedmainnet/T09E2E/T11release gates remain.
+
+Terra authenticated API read slice reviewed PASS_LOCAL: session wallet binding now propagates account/network into private routes; /me/passes and /me/claims are projection-only; organizer attendance is network- and organizer-scoped; gated content requires current owner + ATTENDED + SETTLED + fresh projection and returns 503 when the private signer is unavailable. Codex closed a MemoryStore network-isolation gap and reran typecheck/build, verify:api 40/40, private routes 6/6, OpenAPI 21-route validation, and disposable PostgreSQL 26/26 with restricted role/cleanup. Evidence: docs/evidence/api-private-routes-review.json. API is accepted as local integration only; live wallet/API deployment and object-storage signing remain BLOCKED_EXTERNAL.
+
+
+Terra launch /root/terra_api_access failed beforeimplementation: Codexaccess-tokenrefresh refused due logout/accountchange. BLOCKED_EXTERNAL; usermustrenewCodexsignin throughapp/CLI, no chatcredential. No Terra sourcechangesclaimed; no silentmodelsubstitution. Harnessworker continuesindependently.
+
+
+Terraauthdiagnosis corrected: internalcollaboration subagent failedrefresh, butlocalCodexCLI loginstatus saysLoggedinusingChatGPT andmodels_cache verifiesgpt-6.1-terra. No userauthchangeperformed. OrcaCodexTerra structuredworker launchedready ctx_8ffc94740009/task_e41ed129fa27, explicitmodelgpt-6.1-terra; APIaccessslice sourceownership sameD044, internalagentinactive. Readystateisnotimplementationacceptance; awaitresult.

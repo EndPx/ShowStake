@@ -275,6 +275,7 @@ paths:
   /me/passes:
     get:
       summary: Current verified pass projection
+      description: The account is taken from the verified session wallet binding; no client account selector is accepted. Projection data is observational and may be marked stale.
       tags: [passes]
       responses:
         '200':
@@ -438,6 +439,7 @@ paths:
   /me/claims:
     get:
       summary: Immutable beneficiary credits
+      description: Claims are keyed by the immutable beneficiary account from the verified session wallet binding and remain read-only projections of finalized contract state.
       tags: [claims]
       responses:
         '200':
@@ -451,6 +453,7 @@ paths:
   /events/{eventId}/content:
     get:
       summary: Attended + SETTLED gated content (60s signed URL)
+      description: Requires current wallet-bound ownership, finalized attendance, SETTLED event state, and fresh chain-backed projections. If private object-storage signing is unavailable the route fails closed with 503; it never returns a public fallback URL.
       tags: [content]
       parameters:
         - $ref: '#/components/parameters/EventId'
@@ -466,6 +469,8 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+        '503':
+          $ref: '#/components/responses/Unavailable'
 
 components:
   securitySchemes:
@@ -550,6 +555,11 @@ components:
           schema: { $ref: '#/components/schemas/ErrorEnvelope' }
     RateLimited:
       description: Rate limit exceeded
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+    Unavailable:
+      description: Authoritative projection or private-resource signer unavailable
       content:
         application/json:
           schema: { $ref: '#/components/schemas/ErrorEnvelope' }

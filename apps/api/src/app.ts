@@ -9,6 +9,7 @@ import type { AccessKeyVerifier } from './types-external.js';
 import { registerHealth } from './routes/health.js';
 import { registerEvents } from './routes/events.js';
 import { registerAuth } from './routes/auth.js';
+import { registerPrivate } from './routes/private.js';
 
 export interface BuildOptions {
   store: Store;
@@ -48,6 +49,7 @@ export function buildApp(opts: BuildOptions): FastifyInstance {
   registerHealth(app, opts.store);
   registerEvents(app, opts.store, opts.config);
   registerAuth(app, opts.store, opts.config, opts.accessKeyVerifier);
+  registerPrivate(app, opts.store, opts.config);
 
   return app;
 }
