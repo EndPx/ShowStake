@@ -22,11 +22,17 @@ Receipt-token assets must be resolved from `/v0/tokens`; availability and
 liquidity can change. Third-party protocols own the yield and do not guarantee
 APY or principal.
 
+The adapter marks every receipt position as a separate factory yield position.
+A receipt on Base (or any other non-NEAR chain) is not ShowStake EventEscrow
+custody and cannot authorize registration, attendance, refunds, or payouts.
+Event escrow principal remains outside the yield plan.
+
 ## Local usage
 
 ```sh
 node packages/intents-adapter/src/cli.mjs --offline
 node packages/intents-adapter/src/cli.mjs
+node --test packages/intents-adapter/test/earn.test.mjs
 ```
 
 `src/mainnet-config.mjs` freezes `dryRunOnly: true`, `allowBroadcast: false`,
@@ -36,6 +42,10 @@ deposit/withdraw quotes and a factory-yield plan without sending funds.
 ## Limits
 
 - NEAR Intents has no testnet; funded swaps are a separate mainnet authorization.
+- The public catalog is read-only and may prove current asset metadata only;
+  catalog presence does not prove liquidity or route availability. A dry quote
+  has no deposit address and does not move funds. Auth, provider routing limits,
+  and current fees must be observed at use time.
 - A successful Intents swap does not create a ShowStake registration or pass.
 - Factory yield is currently a reviewed interface/configuration boundary, not a
   deployed vault or accepted DeFi integration.
