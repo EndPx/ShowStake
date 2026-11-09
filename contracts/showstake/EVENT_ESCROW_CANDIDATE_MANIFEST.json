@@ -1,0 +1,50 @@
+{
+  "candidate": "showstake-native-usdc-event-escrow",
+  "status": "PASS_LOCAL",
+  "canonical_asset": {
+    "network": "near-testnet",
+    "account": "3e2210e1184b45b64c8a434c0a7e7b23cc04ea7eb7a6c3c32520d03d4afcb8af",
+    "standard": "NEP-141",
+    "decimals": 6,
+    "issuer_source": "https://www.circle.com/multi-chain-usdc/near",
+    "source_status": "official Circle Testnet Address link resolves to this account; no funded call performed"
+  },
+  "source_files": [
+    "contracts/showstake/src/event_escrow.rs",
+    "contracts/showstake/src/lib.rs"
+  ],
+  "preserved_artifacts": [
+    "contracts/showstake/src/lib.rs existing Contract/v6 state and tests",
+    "contracts/showstake/src/rhea_yield.rs separate local policy module"
+  ],
+  "build": {
+    "wasm_target": "wasm32-unknown-unknown",
+    "reproducible_command": "cargo build --manifest-path contracts/showstake/Cargo.toml --target wasm32-unknown-unknown --release",
+    "artifact": "contracts/showstake/target/wasm32-unknown-unknown/release/showstake.wasm",
+    "local_candidate_test_command": "rustc --edition=2024 --test contracts/showstake/src/event_escrow.rs -o %TEMP%\\event-escrow-tests.exe && %TEMP%\\event-escrow-tests.exe",
+    "local_candidate_test_result": "9/9 PASS_LOCAL"
+  },
+  "phase_policy": {
+    "registration_close": "explicit close_registration(event_id, now_ms) transitions RegistrationOpen -> RegistrationClosed and rejects later deposits",
+    "earn_requirement": "supply is permissionless only after RegistrationClosed; finalize requires Earn Supplied; settlement and claims require Earn Redeemed",
+    "yield_distribution": "realized_yield = redeemed_amount - accepted_principal; yield is distributed with no-show reward pool to attendees, or pro-rata to all registrants on zero-attendee/refund paths",
+    "conservation": "accepted_principal + yield_distributed = paid + pending + claimable"
+  },
+  "scope": {
+    "depends_on_rhea_or_earn": true,
+    "yield_calls": "mandatory provider adapter; no verified production adapter in repository",
+    "live_deployment": false,
+    "signing_or_broadcast": false
+  },
+  "earn_provider_readonly_evidence": {
+    "account": "contract.main.burrow.near",
+    "code_hash": "6Nek1M8cwJJ2xMQAUWup9V5AToYS9rkTxJfwo6BCpFa",
+    "status": "TECHNICAL_REVIEW_PARTIAL",
+    "missing": ["exact ABI", "callback receipt proof", "liquidity proof", "funded redemption proof"]
+  },
+  "limits": [
+    "In-memory candidate; not accepted deployment ABI or storage schema.",
+    "Full Cargo/Wasm build remains environment-blocked on this Windows host when aws-lc-sys cannot find NASM.",
+    "Testnet runner must provision storage, deploy a reviewed candidate, and verify ft_transfer_call receipts before any PASS_TESTNET claim."
+  ]
+}

@@ -37,6 +37,13 @@ use near_sdk::{
 };
 use serde::Deserialize;
 
+/// Bounded Rhea USDC event-yield candidate. This is deliberately a separate
+/// policy surface from the accepted v6 escrow/pass state machine: it cannot
+/// change registration, settlement, or pass ownership semantics.
+pub mod rhea_yield;
+/// Separate native-USDC EventEscrow schema candidate; independent of Rhea/Earn.
+pub mod event_escrow;
+
 /// Event financial state for this slice. Variants are append-only so Borsh
 /// state written by the deployed `Published`-only artifact still decodes.
 #[near(serializers = [borsh, json])]
