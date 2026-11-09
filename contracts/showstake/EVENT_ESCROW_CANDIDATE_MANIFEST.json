@@ -10,8 +10,8 @@
     "source_status": "official Circle Testnet Address link resolves to this account; no funded call performed"
   },
   "source_files": [
-    "contracts/showstake/src/event_escrow.rs",
-    "contracts/showstake/src/lib.rs"
+    "contracts/showstake/event-escrow-candidate/src.rs",
+    "contracts/showstake/event-escrow-candidate/Cargo.toml"
   ],
   "preserved_artifacts": [
     "contracts/showstake/src/lib.rs existing Contract/v6 state and tests",
@@ -19,10 +19,12 @@
   ],
   "build": {
     "wasm_target": "wasm32-unknown-unknown",
-    "reproducible_command": "cargo build --manifest-path contracts/showstake/Cargo.toml --target wasm32-unknown-unknown --release",
-    "artifact": "contracts/showstake/target/wasm32-unknown-unknown/release/showstake.wasm",
-    "local_candidate_test_command": "rustc --edition=2024 --test contracts/showstake/src/event_escrow.rs -o %TEMP%\\event-escrow-tests.exe && %TEMP%\\event-escrow-tests.exe",
-    "local_candidate_test_result": "9/9 PASS_LOCAL"
+    "reproducible_command": "cargo build --manifest-path contracts/showstake/event-escrow-candidate/Cargo.toml --target wasm32-unknown-unknown --release",
+    "artifact": "contracts/showstake/event-escrow-candidate/target/wasm32-unknown-unknown/release/showstake_event_escrow_candidate.wasm",
+    "artifact_sha256": "d6c78cf55cb1ebeb0aa382eec166f16dbca7ed8da791727c82578f9827f6ac84",
+    "artifact_bytes": 314620,
+    "local_candidate_test_command": "cargo test --manifest-path contracts/showstake/event-escrow-candidate/Cargo.toml --lib",
+    "local_candidate_test_result": "PASS_LOCAL: cargo test --lib 1/1; cargo build --target wasm32-unknown-unknown --release succeeded in WSL"
   },
   "phase_policy": {
     "registration_close": "explicit close_registration(event_id, now_ms) transitions RegistrationOpen -> RegistrationClosed and rejects later deposits",
@@ -40,11 +42,15 @@
     "account": "contract.main.burrow.near",
     "code_hash": "6Nek1M8cwJJ2xMQAUWup9V5AToYS9rkTxJfwo6BCpFa",
     "status": "TECHNICAL_REVIEW_PARTIAL",
-    "missing": ["exact ABI", "callback receipt proof", "liquidity proof", "funded redemption proof"]
+    "missing": ["exact ABI", "callback receipt proof", "liquidity proof", "funded redemption proof"],
+    "candidate_call_shapes": {
+      "supply": "native USDC ft_transfer_call(receiver_id=contract.main.burrow.near, amount=exact_principal, msg=empty)",
+      "redeem": "execute(actions=[Withdraw(token_id=native USDC, max_amount=u128::MAX)])"
+    }
   },
   "limits": [
     "In-memory candidate; not accepted deployment ABI or storage schema.",
-    "Full Cargo/Wasm build remains environment-blocked on this Windows host when aws-lc-sys cannot find NASM.",
+    "Native Windows cargo may require NASM for aws-lc-sys; the reproducible WSL build path is PASS_LOCAL and was used for this artifact.",
     "Testnet runner must provision storage, deploy a reviewed candidate, and verify ft_transfer_call receipts before any PASS_TESTNET claim."
   ]
 }
