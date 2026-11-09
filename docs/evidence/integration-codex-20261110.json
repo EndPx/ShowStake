@@ -1,0 +1,20 @@
+{
+  "id": "integration-codex-20261110",
+  "classifier": "PASS_LOCAL",
+  "commit_base": "805cd4b",
+  "checks": [
+    { "command": "pnpm typecheck:web", "result": "exit 0" },
+    { "command": "pnpm build:web", "result": "exit 0; Next 15.5.26 generated 7 routes" },
+    { "command": "pnpm verify:frontend-slice", "result": "92/92 PASS_LOCAL" },
+    { "command": "pnpm verify:t08-frontend", "result": "68/68 PASS_LOCAL" },
+    { "command": "pnpm verify:api", "result": "40/40 PASS_LOCAL" },
+    { "command": "pnpm verify:worker", "result": "90/90 PASS_LOCAL" },
+    { "command": "pnpm verify:worker-db", "result": "PASS_LOCAL; real disposable PostgreSQL" },
+    { "command": "pnpm verify:worker-checkpoint", "result": "PASS_LOCAL; restore/resume and fail-closed corruption checks" }
+  ],
+  "limits": [
+    "real browser wallet signing/deposit is still NOT_RUN until a human approves wallet prompts",
+    "full testnet settlement/payout projection remains BLOCKED_EXTERNAL after public RPC rate limiting",
+    "mainnet, NEAR Intents mainnet, public pilot and private content signer are not accepted"
+  ]
+}

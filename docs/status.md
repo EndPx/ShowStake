@@ -217,6 +217,8 @@ Terra authenticated API read slice reviewed PASS_LOCAL: session wallet binding n
 
 Codex Terra read-only review of the v6 worker found four source blockers and Codex fixed them in apps/worker/src/store.ts: per-block totals now reconcile every financial event id with requested event_id checks; settlement checks counts, frozen attendance and claims_enabled; payout success/failure requires a matching PENDING row. Fresh verify:worker 90/90, verify:worker-db PASS_LOCAL, and verify:worker-checkpoint PASS_LOCAL completed with stop/cleanup proof. Evidence: docs/evidence/worker-v6-codex-review-round1.json. Testnet settlement/payout projection remains BLOCKED_EXTERNAL after FASTNEAR/RPC rate limiting; no blind rescan was started.
 
+Cross-module integration recheck after commits 0f7cd20 and 805cd4b: web typecheck/build, frontend behavior and legacy suites remain PASS_LOCAL (92/92 and 68/68); API 40/40 and worker 90/90/DB/checkpoint proofs remain green. Evidence: docs/evidence/integration-codex-20261110.json. Browser wallet signing and full testnet settlement projection remain open gates.
+
 
 Terra launch /root/terra_api_access failed beforeimplementation: Codexaccess-tokenrefresh refused due logout/accountchange. BLOCKED_EXTERNAL; usermustrenewCodexsignin throughapp/CLI, no chatcredential. No Terra sourcechangesclaimed; no silentmodelsubstitution. Harnessworker continuesindependently.
 
