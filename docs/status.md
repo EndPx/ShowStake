@@ -230,3 +230,5 @@ Terra launch /root/terra_api_access failed beforeimplementation: Codexaccess-tok
 
 
 Terraauthdiagnosis corrected: internalcollaboration subagent failedrefresh, butlocalCodexCLI loginstatus saysLoggedinusingChatGPT andmodels_cache verifiesgpt-6.1-terra. No userauthchangeperformed. OrcaCodexTerra structuredworker launchedready ctx_8ffc94740009/task_e41ed129fa27, explicitmodelgpt-6.1-terra; APIaccessslice sourceownership sameD044, internalagentinactive. Readystateisnotimplementationacceptance; awaitresult.
+
+Rhea Finance page reviewed as CANDIDATE_EXTERNAL: it advertises chain-abstracted USDC/USDT lending, NEAR Intents and market-by-market security controls, but Rhea presents itself as the merged Ref/Burrow platform. It is therefore not an independent trust replacement for Burrow. Only dry/read-only Earn preparation is allowed; event principal remains excluded. Evidence: docs/evidence/rhea-finance-credibility-review-20261110.json.

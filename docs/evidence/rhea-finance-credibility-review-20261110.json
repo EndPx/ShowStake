@@ -1,0 +1,40 @@
+{
+  "id": "rhea-finance-credibility-review-20261110",
+  "classifier": "PASS_LOCAL",
+  "verdict": "CANDIDATE_EXTERNAL",
+  "sources": [
+    {
+      "url": "https://rhea.finance/",
+      "observation": "official site presents chain-abstracted Trade, Lend, Intents and Stake; it advertises USDC/USDT lending across multiple chains and Rhea Lending",
+      "limit": "product-page claims are not a live code-hash, liquidity or withdrawal proof"
+    },
+    {
+      "url": "https://github.com/rhea-finance/guide/blob/main/docs/rhea-finance-white-paper.md",
+      "observation": "Rhea describes itself as the merged evolution of Ref Finance and Burrow Finance",
+      "limit": "not an independent protocol lineage if Burrow trust is the concern"
+    }
+  ],
+  "positive_signals": [
+    "Rhea site exposes USDC/USDT lending and NEAR Intents integration",
+    "Rhea site states market-by-market reopening, independent audit requirements and monitoring"
+  ],
+  "showstake_decision": {
+    "allowed_now": [
+      "catalog/quote dry runs",
+      "read-only market and contract verification",
+      "separate Earn demo with no event principal"
+    ],
+    "not_allowed_now": [
+      "EventEscrow USDC principal into Rhea lending",
+      "claim readiness based on advertised APY",
+      "mainnet funding or deployment"
+    ]
+  },
+  "required_before_event_yield": [
+    "live contract IDs and code hashes for USDC lending and receipt token",
+    "reviewed source/ABI and current audit scope",
+    "supply/withdraw liquidity and callback behavior",
+    "exact redemption accounting and failure/retry proof",
+    "small funded mainnet authorization"
+  ]
+}
