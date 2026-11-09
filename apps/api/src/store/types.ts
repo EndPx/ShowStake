@@ -1,4 +1,4 @@
-import type { AttendanceRead, ChallengeRow, ClaimRead, ContentResourceRead, EventListData, PassRead, PublicEvent, SessionRow, WalletBindingRow } from '../types.js';
+import type { AttendanceRead, ChallengeRow, ClaimRead, ContentResourceRead, EventListData, EventResultsRead, PassRead, PublicEvent, SessionRow, WalletBindingRow } from '../types.js';
 
 /**
  * Persistence boundary for the API. The PgStore talks to PostgreSQL (API role
@@ -10,6 +10,8 @@ export interface Store {
 
   listEvents(opts: { limit: number; cursor: { regOpen: string; id: string } | null }): Promise<EventListData>;
   getEvent(id: string): Promise<PublicEvent | null>;
+  getEventByChainEventId(id: string): Promise<PublicEvent | null>;
+  getEventResults(id: string): Promise<EventResultsRead | null>;
 
   createChallenge(c: {
     id: string;

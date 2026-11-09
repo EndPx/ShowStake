@@ -38,6 +38,37 @@ export interface EventListData {
   nextCursor: string | null;
 }
 
+export interface EventResultsRead {
+  eventId: string;
+  chainEventId: string;
+  state: string;
+  counts: {
+    registrations: number;
+    activeRegistrations: number;
+    withdrawn: number;
+    attendees: number;
+    noShows: number;
+  };
+  totals: PublicEvent['totals'];
+  finalized: boolean;
+  refund: {
+    available: boolean;
+    reason: 'CANCELLED' | 'TIMEOUT' | null;
+    principalAtomic: string | null;
+  };
+  settlement: {
+    available: boolean;
+    claimsEnabled: boolean;
+    complete: boolean;
+  };
+  /** The native-USDC earn ABI is not frozen; never infer yield from SQL. */
+  yield: {
+    status: 'UNAVAILABLE';
+    reason: 'ABI_NOT_FROZEN';
+  };
+  observedAt: string;
+}
+
 export interface ChallengeRow {
   id: string;
   nonceHash: string;
@@ -80,6 +111,7 @@ export interface PassRead {
   attendanceStatus: boolean;
   financialStatus: string;
   observedAt: string;
+  finalized: boolean;
 }
 
 export interface ClaimRead {
@@ -91,6 +123,7 @@ export interface ClaimRead {
   claimAtomic: string;
   payoutState: string;
   observedAt: string;
+  finalized: boolean;
 }
 
 export interface AttendanceRead {
@@ -100,6 +133,7 @@ export interface AttendanceRead {
   registrationStatus: string;
   payoutState: string;
   observedAt: string;
+  finalized: boolean;
 }
 
 export interface ContentResourceRead {

@@ -59,10 +59,20 @@ export function registerEvents(app: FastifyInstance, store: Store, config: Confi
 
   app.get<{ Params: { eventId: string } }>('/v1/events/:eventId', async (req, reply) => {
     const { eventId } = req.params;
-    if (!isUuid(eventId)) throw Errors.invalid('EVENT_ID_INVALID', 'eventId must be a UUID');
-    const event = await store.getEvent(eventId);
+    if (!isUuid(eventId) && (!/^[A-Za-z0-9._:-]{1,128}$/.test(eventId) || eventId.toLowerCase().includes('uuid'))) throw Errors.invalid('EVENT_ID_INVALID', 'eventId must be a UUID or contract event id');
+    const event = isUuid(eventId) ? await store.getEvent(eventId) : await store.getEventByChainEventId(eventId);
     if (!event) throw Errors.notFound('event');
     const observedMs = Number.isFinite(Date.parse(event.observedAt)) ? Date.parse(event.observedAt) : null;
     return reply.send(okEnvelope(event, meta(req, { network: event.network, stale: projectionStale(observedMs, Date.now(), config.projectionFreshnessMs) })));
+  });
+
+  app.get<{ Params: { eventId: string } }>('/v1/events/:eventId/results', async (req, reply) => {
+    const { eventId } = req.params;
+    if (!isUuid(eventId) && (!/^[A-Za-z0-9._:-]{1,128}$/.test(eventId) || eventId.toLowerCase().includes('uuid'))) throw Errors.invalid('EVENT_ID_INVALID', 'eventId must be a UUID or contract event id');
+    const results = await store.getEventResults(eventId);
+    if (!results) throw Errors.notFound('event');
+    const event = isUuid(eventId) ? await store.getEvent(eventId) : await store.getEventByChainEventId(eventId);
+    const stale = projectionStale(Date.parse(results.observedAt), Date.now(), config.projectionFreshnessMs);
+    return reply.send(okEnvelope(results, meta(req, { network: event?.network ?? null, stale })));
   });
 }

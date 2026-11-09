@@ -1,4 +1,4 @@
-import type { AttendanceRead, ChallengeRow, ClaimRead, ContentResourceRead, EventListData, PassRead, PublicEvent, SessionRow, WalletBindingRow } from '../types.js';
+import type { AttendanceRead, ChallengeRow, ClaimRead, ContentResourceRead, EventListData, EventResultsRead, PassRead, PublicEvent, SessionRow, WalletBindingRow } from '../types.js';
 import type { Store } from './types.js';
 
 /**
@@ -21,9 +21,9 @@ export class MemoryStore implements Store {
   seedEvent(e: PublicEvent): void {
     this.events.push(e);
   }
-  seedPass(p: PassRead): void { this.passes.push(p); }
-  seedClaim(c: ClaimRead): void { this.claims.push(c); }
-  seedAttendance(eventId: string, rows: AttendanceRead[]): void { this.attendance.set(eventId, rows); }
+  seedPass(p: Omit<PassRead, 'finalized'> | PassRead): void { this.passes.push({ ...p, finalized: true }); }
+  seedClaim(c: Omit<ClaimRead, 'finalized'> | ClaimRead): void { this.claims.push({ ...c, finalized: true }); }
+  seedAttendance(eventId: string, rows: Array<Omit<AttendanceRead, 'finalized'> | AttendanceRead>): void { this.attendance.set(eventId, rows.map((r) => ({ ...r, finalized: true }))); }
   seedContent(eventId: string, rows: ContentResourceRead[]): void { this.content.set(eventId, rows); }
 
   /** Test-only: force a challenge to be treated as expired (past expiresAt). */
@@ -55,6 +55,27 @@ export class MemoryStore implements Store {
 
   async getEvent(id: string): Promise<PublicEvent | null> {
     return this.events.find((e) => e.id === id) ?? null;
+  }
+  async getEventByChainEventId(id: string): Promise<PublicEvent | null> {
+    return this.events.find((e) => e.chainEventId === id) ?? null;
+  }
+  async getEventResults(id: string): Promise<EventResultsRead | null> {
+    const event = this.events.find((e) => e.id === id || e.chainEventId === id);
+    if (!event) return null;
+    const rows = this.claims.filter((c) => c.eventId === event.id);
+    const attendees = this.attendance.get(event.id) ?? [];
+    const withdrawn = this.passes.filter((p) => p.eventId === event.id && p.registrationStatus === 'WITHDRAWN').length;
+    const noShows = attendees.filter((a) => !a.attendanceStatus && a.registrationStatus === 'NO_SHOW').length;
+    const active = Math.max(0, (event.registeredCount ?? rows.length) - withdrawn);
+    return {
+      eventId: event.id, chainEventId: event.chainEventId, state: event.state,
+      counts: { registrations: rows.length || event.registeredCount || 0, activeRegistrations: active, withdrawn, attendees: attendees.filter((a) => a.attendanceStatus).length, noShows },
+      totals: event.totals,
+      finalized: ['ATTENDANCE_FINALIZED', 'SETTLING', 'SETTLED', 'CANCELLED', 'REFUND_ONLY'].includes(event.state),
+      refund: { available: event.state === 'CANCELLED' || event.state === 'REFUND_ONLY', reason: event.state === 'CANCELLED' ? 'CANCELLED' : event.state === 'REFUND_ONLY' ? 'TIMEOUT' : null, principalAtomic: event.state === 'CANCELLED' || event.state === 'REFUND_ONLY' ? event.depositAtomic : null },
+      settlement: { available: event.state === 'SETTLED', claimsEnabled: event.state === 'SETTLED', complete: event.state === 'SETTLED' },
+      yield: { status: 'UNAVAILABLE', reason: 'ABI_NOT_FROZEN' }, observedAt: event.observedAt,
+    };
   }
 
   async createChallenge(c: {

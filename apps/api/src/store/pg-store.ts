@@ -1,7 +1,7 @@
 import { assertMoneyString } from '@showstake/domain';
 import type { Pool, PoolClient } from 'pg';
 import { randomUUID } from 'node:crypto';
-import type { AttendanceRead, ChallengeRow, ClaimRead, ContentResourceRead, EventListData, PassRead, PublicEvent, SessionRow, WalletBindingRow } from '../types.js';
+import type { AttendanceRead, ChallengeRow, ClaimRead, ContentResourceRead, EventListData, EventResultsRead, PassRead, PublicEvent, SessionRow, WalletBindingRow } from '../types.js';
 import type { Store } from './types.js';
 
 /** PostgreSQL `numeric` must round-trip as a canonical money string, never a float. */
@@ -113,6 +113,32 @@ export class PgStore implements Store {
   async getEvent(id: string): Promise<PublicEvent | null> {
     const res = await this.pool.query<EventRow>(`SELECT ${EVENT_SELECT} WHERE e.id = $1`, [id]);
     return res.rows[0] ? mapEvent(res.rows[0]) : null;
+  }
+  async getEventByChainEventId(id: string): Promise<PublicEvent | null> {
+    const res = await this.pool.query<EventRow>(`SELECT ${EVENT_SELECT} WHERE e.chain_event_id = $1`, [id]);
+    return res.rows[0] ? mapEvent(res.rows[0]) : null;
+  }
+  async getEventResults(id: string): Promise<EventResultsRead | null> {
+    const ev = await this.pool.query<EventRow>(`SELECT ${EVENT_SELECT} WHERE e.id = $1 OR e.chain_event_id = $1`, [id]);
+    const event = ev.rows[0];
+    if (!event) return null;
+    const counts = await this.pool.query<{ registrations: string; active: string; withdrawn: string; attendees: string; no_shows: string }>(
+      `SELECT count(*)::text registrations, count(*) FILTER (WHERE state <> 'WITHDRAWN')::text active,
+       count(*) FILTER (WHERE state = 'WITHDRAWN')::text withdrawn,
+       count(*) FILTER (WHERE state = 'ATTENDED')::text attendees,
+       count(*) FILTER (WHERE state = 'NO_SHOW')::text no_shows
+       FROM registrations_projection WHERE event_id = $1`, [event.id]);
+    const c = counts.rows[0]!;
+    const refund = event.state === 'CANCELLED' || event.state === 'REFUND_ONLY';
+    const finalized = ['ATTENDANCE_FINALIZED', 'SETTLING', 'SETTLED', 'CANCELLED', 'REFUND_ONLY'].includes(event.state);
+    return {
+      eventId: event.id, chainEventId: event.chain_event_id, state: event.state,
+      counts: { registrations: Number(c.registrations), activeRegistrations: Number(c.active), withdrawn: Number(c.withdrawn), attendees: Number(c.attendees), noShows: Number(c.no_shows) },
+      totals: { acceptedAtomic: money(event.accepted_atomic), paidAtomic: money(event.paid_atomic), pendingAtomic: money(event.pending_atomic), liabilityAtomic: money(event.liability_atomic) },
+      finalized, refund: { available: refund, reason: event.state === 'CANCELLED' ? 'CANCELLED' : event.state === 'REFUND_ONLY' ? 'TIMEOUT' : null, principalAtomic: refund ? money(event.deposit_atomic) : null },
+      settlement: { available: event.state === 'SETTLED', claimsEnabled: event.state === 'SETTLED', complete: event.state === 'SETTLED' },
+      yield: { status: 'UNAVAILABLE', reason: 'ABI_NOT_FROZEN' }, observedAt: iso(event.observed_at),
+    };
   }
 
   async createChallenge(c: {
@@ -349,19 +375,19 @@ export class PgStore implements Store {
 
   async listPasses(accountId: string, network: string): Promise<PassRead[]> {
     const res=await this.pool.query<{id:string;event_id:string;owner_account:string;registration_status:string;attended:boolean;payout_state:string;observed_at:Date}>(`SELECT p.id,r.event_id,p.owner_account,r.state AS registration_status,r.attended,r.payout_state,GREATEST(p.observed_at,r.observed_at,e.observed_at) AS observed_at FROM passes_projection p JOIN registrations_projection r ON r.id=p.registration_id JOIN events_projection e ON e.id=r.event_id JOIN deployments d ON d.id=p.deployment_id WHERE p.owner_account=$1 AND d.network=$2 ORDER BY p.issued_at DESC,p.id`,[accountId,network]);
-    return res.rows.map(r=>({id:r.id,eventId:r.event_id,ownerAccount:r.owner_account,registrationStatus:r.registration_status,attendanceStatus:r.attended,financialStatus:r.payout_state,observedAt:iso(r.observed_at)}));
+    return res.rows.map(r=>({id:r.id,eventId:r.event_id,ownerAccount:r.owner_account,registrationStatus:r.registration_status,attendanceStatus:r.attended,financialStatus:r.payout_state,observedAt:iso(r.observed_at),finalized:true}));
   }
 
   async listClaims(accountId: string, network: string): Promise<ClaimRead[]> {
     const res=await this.pool.query<{id:string;event_id:string;beneficiary_account:string;principal_atomic:string;claim_atomic:string;payout_state:string;observed_at:Date}>(`SELECT r.id,r.event_id,r.beneficiary_account,r.principal_atomic::text,r.claim_atomic::text,r.payout_state,r.observed_at FROM registrations_projection r JOIN events_projection e ON e.id=r.event_id JOIN deployments d ON d.id=e.deployment_id WHERE r.beneficiary_account=$1 AND d.network=$2 ORDER BY r.observed_at DESC,r.id`,[accountId,network]);
-    return res.rows.map(r=>{const principal=money(r.principal_atomic), claim=money(r.claim_atomic); return {id:r.id,eventId:r.event_id,beneficiaryAccount:r.beneficiary_account,principalAtomic:principal,bonusAtomic:(BigInt(claim)-BigInt(principal)).toString(),claimAtomic:claim,payoutState:r.payout_state,observedAt:iso(r.observed_at)};});
+    return res.rows.map(r=>{const principal=money(r.principal_atomic), claim=money(r.claim_atomic); return {id:r.id,eventId:r.event_id,beneficiaryAccount:r.beneficiary_account,principalAtomic:principal,bonusAtomic:(BigInt(claim)-BigInt(principal)).toString(),claimAtomic:claim,payoutState:r.payout_state,observedAt:iso(r.observed_at),finalized:true};});
   }
 
   async getAttendance(eventId: string, organizerAccount: string, network: string): Promise<AttendanceRead[] | null> {
     const ev=await this.pool.query<{organizer_account:string}>(`SELECT e.organizer_account FROM events_projection e JOIN deployments d ON d.id=e.deployment_id WHERE e.id=$1 AND d.network=$2`,[eventId,network]);
     if(!ev.rows[0] || ev.rows[0].organizer_account!==organizerAccount) return null;
     const res=await this.pool.query<{id:string;participant_account:string;attended:boolean;state:string;payout_state:string;observed_at:Date}>(`SELECT id,participant_account,attended,state,payout_state,observed_at FROM registrations_projection WHERE event_id=$1 ORDER BY sequence_no,id`,[eventId]);
-    return res.rows.map(r=>({registrationId:r.id,participantAccount:r.participant_account,attendanceStatus:r.attended,registrationStatus:r.state,payoutState:r.payout_state,observedAt:iso(r.observed_at)}));
+    return res.rows.map(r=>({registrationId:r.id,participantAccount:r.participant_account,attendanceStatus:r.attended,registrationStatus:r.state,payoutState:r.payout_state,observedAt:iso(r.observed_at),finalized:true}));
   }
 
   async getContentAccess(eventId: string, accountId: string, network: string): Promise<ContentResourceRead[] | null> {

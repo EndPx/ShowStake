@@ -656,6 +656,17 @@ components:
             cancelCutoff: { type: string, format: date-time }
             checkinOpen: { type: string, format: date-time }
             checkinClose: { type: string, format: date-time }
+            finalizeDeadline: { type: string, format: date-time }
+        totals:
+          type: object
+          required: [acceptedAtomic, paidAtomic, pendingAtomic, liabilityAtomic]
+          properties:
+            acceptedAtomic: { $ref: '#/components/schemas/Money' }
+            paidAtomic: { $ref: '#/components/schemas/Money' }
+            pendingAtomic: { $ref: '#/components/schemas/Money' }
+            liabilityAtomic: { $ref: '#/components/schemas/Money' }
+        registeredCount: { type: integer, nullable: true }
+        observedAt: { type: string, format: date-time }
 
     Pass:
       type: object
@@ -667,6 +678,7 @@ components:
         registrationStatus: { $ref: '#/components/schemas/RegistrationState' }
         attendanceStatus: { type: boolean }
         financialStatus: { $ref: '#/components/schemas/PayoutState' }
+        finalized: { type: boolean, description: true when this row came from a finalized chain receipt; false/absent must disable money actions. }
 
     FundingAttempt:
       type: object
@@ -817,9 +829,59 @@ components:
     FundingAttemptEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { $ref: '#/components/schemas/FundingAttempt' } } } ] }
     QuoteEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, required: [provider, expiresAt, expectedOutputAtomic, minimumOutputAtomic], properties: { provider: { type: string }, expiresAt: { type: string, format: date-time }, expectedOutputAtomic: { $ref: '#/components/schemas/Money' }, minimumOutputAtomic: { $ref: '#/components/schemas/Money' } } } } } ] }
     CheckinRequestEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, properties: { id: { type: string, format: uuid }, state: { type: string, enum: [PROPOSED, SUBMITTED, CONFIRMED, FAILED, EXPIRED] } } } } } ] }
-    RosterEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, properties: { items: { type: array, items: { type: object, properties: { participantAccount: { type: string }, attendanceStatus: { type: boolean }, payoutState: { $ref: '#/components/schemas/PayoutState' } } } } } } } } ] }
-    ResultsEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, properties: { counts: { type: object }, finalized: { type: boolean } } } } } ] }
-    ClaimListEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, properties: { items: { type: array, items: { type: object, properties: { principalAtomic: { $ref: '#/components/schemas/Money' }, bonusAtomic: { $ref: '#/components/schemas/Money' }, payoutState: { $ref: '#/components/schemas/PayoutState' } } } } } } } } ] }
+    RosterEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, properties: { items: { type: array, items: { type: object, properties: { participantAccount: { type: string }, attendanceStatus: { type: boolean }, payoutState: { $ref: '#/components/schemas/PayoutState' }, finalized: { type: boolean } } } } } } } } ] }
+    ResultsEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/BaseEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [eventId, chainEventId, state, counts, totals, finalized, refund, settlement, yield, observedAt]
+              properties:
+                eventId: { type: string, format: uuid }
+                chainEventId: { type: string }
+                state: { $ref: '#/components/schemas/EventState' }
+                counts:
+                  type: object
+                  required: [registrations, activeRegistrations, withdrawn, attendees, noShows]
+                  properties:
+                    registrations: { type: integer, minimum: 0 }
+                    activeRegistrations: { type: integer, minimum: 0 }
+                    withdrawn: { type: integer, minimum: 0 }
+                    attendees: { type: integer, minimum: 0 }
+                    noShows: { type: integer, minimum: 0 }
+                totals:
+                  type: object
+                  required: [acceptedAtomic, paidAtomic, pendingAtomic, liabilityAtomic]
+                  properties:
+                    acceptedAtomic: { $ref: '#/components/schemas/Money' }
+                    paidAtomic: { $ref: '#/components/schemas/Money' }
+                    pendingAtomic: { $ref: '#/components/schemas/Money' }
+                    liabilityAtomic: { $ref: '#/components/schemas/Money' }
+                finalized: { type: boolean }
+                refund:
+                  type: object
+                  required: [available, reason, principalAtomic]
+                  properties:
+                    available: { type: boolean }
+                    reason: { type: string, enum: [CANCELLED, TIMEOUT], nullable: true }
+                    principalAtomic: { allOf: [{ $ref: '#/components/schemas/Money' }], nullable: true }
+                settlement:
+                  type: object
+                  required: [available, claimsEnabled, complete]
+                  properties:
+                    available: { type: boolean }
+                    claimsEnabled: { type: boolean }
+                    complete: { type: boolean }
+                yield:
+                  type: object
+                  required: [status, reason]
+                  properties:
+                    status: { type: string, enum: [UNAVAILABLE] }
+                    reason: { type: string, enum: [ABI_NOT_FROZEN] }
+                observedAt: { type: string, format: date-time }
+    ClaimListEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, properties: { items: { type: array, items: { type: object, properties: { principalAtomic: { $ref: '#/components/schemas/Money' }, bonusAtomic: { $ref: '#/components/schemas/Money' }, payoutState: { $ref: '#/components/schemas/PayoutState' }, finalized: { type: boolean } } } } } } } } ] }
     ContentEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, properties: { items: { type: array, items: { type: object, properties: { objectKey: { type: string }, url: { type: string }, urlExpiresAt: { type: string, format: date-time } } } } } } } } ] }
     DraftEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, required: [id, revision], properties: { id: { type: string, format: uuid }, revision: { type: integer } } } } } ] }
     PublishIntentEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, required: [intentId, targetContract, method, argsHash, expiresAt], properties: { intentId: { type: string, format: uuid }, targetContract: { type: string }, method: { type: string, enum: [create_event] }, argsHash: { type: string }, expiresAt: { type: string, format: date-time } } } } } ] }

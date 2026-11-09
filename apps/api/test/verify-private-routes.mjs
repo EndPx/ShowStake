@@ -21,9 +21,18 @@ const app=buildApp({store,config:cfg,accessKeyVerifier:async q=>makeFakeResolver
 async function login(k){const c=(await app.inject({method:'POST',url:'/v1/auth/challenge',payload:{accountId:k.accountId,network:'testnet',domain:'app.local'}})).json().data; const r=await app.inject({method:'POST',url:'/v1/auth/verify',payload:{challengeId:c.challengeId,accountId:k.accountId,network:'testnet',domain:'app.local',nonce:c.nonce,publicKey:k.publicKey,signature:signChallenge(k.privateKey,{message:c.message,nonceHex:c.nonce,recipient:'app.local'})},headers:{origin:'http://app.local'}}); return r.headers['set-cookie'].split(';')[0];}
 assert.equal((await app.inject({method:'GET',url:'/v1/me/passes'})).statusCode,401);
 const participantCookie=await login(participant); const hostCookie=await login(host);
-assert.equal((await app.inject({method:'GET',url:'/v1/me/passes',headers:{cookie:participantCookie}})).json().data.items.length,1);
-assert.equal((await app.inject({method:'GET',url:'/v1/me/claims',headers:{cookie:participantCookie}})).json().data.items[0].claimAtomic,'12');
+const passRead = await app.inject({method:'GET',url:'/v1/me/passes',headers:{cookie:participantCookie}});
+assert.equal(passRead.json().data.items.length,1);
+assert.equal(passRead.json().data.items[0].finalized,true);
+const claimRead = await app.inject({method:'GET',url:'/v1/me/claims',headers:{cookie:participantCookie}});
+assert.equal(claimRead.json().data.items[0].claimAtomic,'12');
+assert.equal(claimRead.json().data.items[0].finalized,true);
 assert.equal((await app.inject({method:'GET',url:`/v1/events/${id}/attendance`,headers:{cookie:participantCookie}})).statusCode,403);
 assert.equal((await app.inject({method:'GET',url:`/v1/events/${id}/attendance`,headers:{cookie:hostCookie}})).json().data.items.length,1);
 assert.equal((await app.inject({method:'GET',url:`/v1/events/${id}/content`,headers:{cookie:participantCookie}})).statusCode,503);
-console.log('verify-private-routes: PASS_LOCAL 6 checks');
+const results = await app.inject({method:'GET',url:`/v1/events/${id}/results`});
+assert.equal(results.statusCode,200);
+assert.equal(results.json().data.yield.reason,'ABI_NOT_FROZEN');
+assert.equal(results.json().data.finalized,true);
+assert.equal((await app.inject({method:'GET',url:'/v1/events/evt'})).statusCode,200);
+console.log('verify-private-routes: PASS_LOCAL 9 checks');

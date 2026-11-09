@@ -34,7 +34,7 @@ export function requireSession(store: Store, config: Config) {
     };
     if (verdict.session!.walletBindingId) {
       const binding = await store.getBindingById(verdict.session!.walletBindingId);
-      if (!binding) throw Errors.unauthorized('WALLET_BINDING_UNAVAILABLE', 'verified wallet binding is unavailable');
+      if (!binding || binding.userId !== verdict.session!.userId) throw Errors.unauthorized('WALLET_BINDING_UNAVAILABLE', 'verified wallet binding is unavailable');
       req.auth.accountId = binding.accountId;
       req.auth.network = binding.network;
     }
