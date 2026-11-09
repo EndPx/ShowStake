@@ -1,0 +1,664 @@
+// Projection store: a least-privilege worker DB pool plus the transactional
+// ingestion core.
+//
+// Cursor invariant (frozen): each ingest is ONE PostgreSQL transaction guarded by
+// a per-(deployment, consumer) transaction-scoped advisory lock taken BEFORE the
+// cursor is read, so the cursor can only advance monotonically, contiguously, and
+// to an official-RPC-canonical hash:
+//   * first cursor creation is serialized by the same lock and must land exactly
+//     on the DB deployment start_block (no omitted history);
+//   * a gap (height > cursor+1) throws UNLESS every intermediate height is
+//     canonically proven skipped by the official RPC (never a blind skip);
+//   * a fork (same height, different hash) throws;
+//   * an older canonical block is an idempotent replay only when every event it
+//     carries was already ingested with the same provenance; it never regresses
+//     and never injects new chain events at an already-passed height;
+//   * the cursor upsert is conditional on the EXACT expected previous
+//     height+hash, so a lost lock/serialization bug fails closed instead of
+//     overwriting a newer cursor.
+// Any canonical/finality/validation/enrichment/DB error rolls the whole block
+// back, so the cursor can never advance past required unprocessed data.
+// Malformed cursor state is a hard failure (fail-closed), never silently treated
+// as "start over at null".
+//
+// The ingestion id is bound to the DB deployment row and the allowlist INSIDE the
+// transaction (FOR SHARE), so a stale/foreign id can never project under this
+// consumer. Canonical hash + official-finality proof happen in the production
+// ingest path itself, not only in tests.
+import { randomUUID } from 'node:crypto';
+import { Pool, type Client, type PoolConfig } from 'pg';
+import { WORKER_DB_ROLE, type DeploymentAllowlist } from './config.js';
+import { assertAllowlistIdentity } from './identity.js';
+import { classifyEvent, parseShowStakeLogs } from './events.js';
+import { buildChainEvent, enrichPublish, parseEventView } from './project.js';
+import type { CanonicalBlockHeader, CanonicalVerifier, ChainEventInsert, DeploymentRow, NormalizedBlock, PublishRules, ViewSource } from './types.js';
+
+export interface LiveChain {
+  viewSource: ViewSource;
+  accountCodeHash(accountId: string, finality?: string): Promise<string>;
+}
+
+export interface IngestSummary {
+  blockHeight: number;
+  blockHash: string;
+  matchedReceipts: number;
+  publishedEvents: number;
+  committedRegistrations: number;
+  provenanceEvents: number;
+  /** the durable cursor height after this ingest (unchanged on replay). */
+  cursorHeight: number;
+}
+
+/** A parsed, validated `worker_cursors.cursor_value` row. */
+export interface CursorState {
+  block_height: number;
+  block_hash: string;
+}
+
+/** Strictly parse a `worker_cursors.cursor_value` jsonb. Malformed state throws. */
+export function parseCursorValue(cursorValue: unknown): CursorState {
+  if (typeof cursorValue !== 'object' || cursorValue === null || Array.isArray(cursorValue)) {
+    throw new Error('worker_cursors.cursor_value is not an object');
+  }
+  const v = cursorValue as Record<string, unknown>;
+  const height = v['block_height'];
+  const hash = v['block_hash'];
+  if (typeof height !== 'number' || !Number.isSafeInteger(height) || height < 0) {
+    throw new Error('worker_cursors.cursor_value.block_height is not a non-negative safe integer');
+  }
+  if (typeof hash !== 'string' || hash.length === 0 || hash.length > 128 || /\s/.test(hash)) {
+    throw new Error('worker_cursors.cursor_value.block_hash is not a single non-empty token');
+  }
+  return { block_height: height, block_hash: hash };
+}
+
+/** Validate a deployments row against the explicit allowlist; returns start_block. */
+function assertDeploymentRow(row: DeploymentRow, d: DeploymentAllowlist): number {
+  if (row.environment !== d.environment) throw new Error(`deployment environment mismatch: ${row.environment}`);
+  if (row.network !== d.network) throw new Error(`deployment network mismatch: ${row.network}`);
+  if (row.contract_id !== d.contractId) throw new Error('deployment contract_id mismatch');
+  if (row.ft_contract_id !== d.ftContractId) throw new Error('deployment ft_contract_id mismatch');
+  if (Number(row.ft_decimals) !== d.ftDecimals) throw new Error('deployment ft_decimals mismatch');
+  if (row.code_hash !== d.codeHash) throw new Error('deployment code_hash mismatch');
+  const startBlock = Number(row.start_block);
+  if (!Number.isSafeInteger(startBlock) || startBlock < 0) throw new Error('deployment start_block invalid');
+  return startBlock;
+}
+
+/** Build a worker pool whose every connection runs `SET ROLE showstake_worker`. */
+export function createWorkerPool(config: PoolConfig): Pool {
+  return new Pool({
+    ...config,
+    onConnect: async (client) => {
+      await client.query(`SET ROLE ${JSON.stringify(WORKER_DB_ROLE)}`);
+      // The service LOGIN must be a dedicated, unprivileged NOINHERIT role:
+      // no operator attributes, no escalation membership, no direct/inherited
+      // writes to projection tables (so `RESET ROLE` cannot restore authority).
+      const identity = await client.query<{ unsafe: boolean }>(`
+        SELECT (
+          r.rolsuper
+          OR r.rolcreatedb
+          OR r.rolcreaterole
+          OR r.rolreplication
+          OR r.rolbypassrls
+          OR r.rolinherit
+          OR EXISTS (
+            SELECT 1 FROM pg_auth_members am
+              JOIN pg_roles member ON member.oid = am.member
+             WHERE member.rolname = session_user AND am.inherit_option
+          )
+          OR pg_has_role(session_user, 'showstake_api', 'MEMBER')
+          OR pg_has_role(session_user, 'showstake_migration', 'MEMBER')
+          OR EXISTS (
+            SELECT 1 FROM pg_auth_members am
+              JOIN pg_roles member ON member.oid = am.member
+              JOIN pg_roles granted ON granted.oid = am.roleid
+             WHERE member.rolname = session_user
+               AND (granted.rolsuper OR granted.rolcreatedb OR granted.rolcreaterole
+                    OR granted.rolreplication OR granted.rolbypassrls)
+          )
+          OR has_table_privilege(session_user, 'app_users', 'INSERT,UPDATE,DELETE')
+          OR has_table_privilege(session_user, 'sessions', 'INSERT,UPDATE,DELETE')
+          OR has_table_privilege(session_user, 'deployments', 'INSERT,UPDATE,DELETE')
+          OR has_table_privilege(session_user, 'chain_events', 'INSERT,UPDATE,DELETE')
+          OR has_table_privilege(session_user, 'events_projection', 'INSERT,UPDATE,DELETE')
+          OR has_table_privilege(session_user, 'registrations_projection', 'INSERT,UPDATE,DELETE')
+          OR has_table_privilege(session_user, 'passes_projection', 'INSERT,UPDATE,DELETE')
+          OR has_table_privilege(session_user, 'payouts_projection', 'INSERT,UPDATE,DELETE')
+          OR has_table_privilege(session_user, 'worker_cursors', 'INSERT,UPDATE,DELETE')
+        ) AS unsafe
+        FROM pg_roles r WHERE r.rolname = session_user`);
+      if (!identity.rows[0] || identity.rows[0].unsafe) {
+        throw new Error('worker requires a dedicated unprivileged NOINHERIT LOGIN; operator/superuser credentials are forbidden');
+      }
+    },
+  });
+}
+
+/**
+ * Proves the runtime pool operates as the restricted worker role (fail closed),
+ * and that `RESET ROLE` cannot restore any write authority. Restores the worker
+ * role before the connection is reused.
+ */
+export async function assertWorkerLeastPrivilege(pool: Pool): Promise<void> {
+  const readOnlyTables = [
+    'deployments',
+    'app_users',
+    'sessions',
+    'chain_events',
+    'events_projection',
+    'registrations_projection',
+    'passes_projection',
+    'payouts_projection',
+    'worker_cursors',
+  ] as const;
+  const client = await pool.connect();
+  try {
+    const cur = await client.query<{ current_user: string; session_user: string }>('SELECT current_user, session_user');
+    if (cur.rows[0]?.current_user !== WORKER_DB_ROLE) {
+      throw new Error(`worker least-privilege check failed: current_user ${cur.rows[0]?.current_user}`);
+    }
+    for (const table of readOnlyTables) {
+      let denied = false;
+      try {
+        await client.query(`DELETE FROM ${table} WHERE false`);
+      } catch (e) {
+        denied = (e as { code?: string }).code === '42501';
+      }
+      if (!denied) throw new Error(`worker role can mutate ${table} (must be read-only)`);
+    }
+
+    // RESET ROLE must land on the unprivileged NOINHERIT service login and must
+    // NOT restore any projection/cursor write authority (accepted-API pattern).
+    try {
+      await client.query('RESET ROLE');
+      const reset = await client.query<{ current_user: string; session_user: string }>('SELECT current_user, session_user');
+      const who = `${reset.rows[0]?.current_user}/${reset.rows[0]?.session_user}`;
+      if (reset.rows[0]?.current_user !== reset.rows[0]?.session_user) {
+        throw new Error(`worker least-privilege check failed: RESET ROLE did not return to the session login (${who})`);
+      }
+      for (const probe of [
+        `UPDATE public.events_projection SET deposit_atomic = deposit_atomic WHERE false`,
+        `DELETE FROM public.worker_cursors WHERE false`,
+      ]) {
+        let denied = false;
+        let detail = 'no error (write allowed)';
+        try {
+          await client.query(probe);
+        } catch (e) {
+          const err = e as { code?: string; message?: string };
+          denied = err.code === '42501';
+          detail = `${err.code}: ${err.message}`;
+        }
+        if (!denied) throw new Error(`worker service LOGIN can write after RESET ROLE (${who}; ${detail}): ${probe}`);
+      }
+    } finally {
+      await client.query(`SET ROLE ${JSON.stringify(WORKER_DB_ROLE)}`);
+    }
+  } finally {
+    client.release();
+  }
+}
+
+export class WorkerStore {
+  constructor(
+    private readonly pool: Pool,
+    private readonly allowlist: DeploymentAllowlist,
+    private readonly consumer: string,
+    private readonly live: LiveChain,
+    private readonly canonical: CanonicalVerifier,
+  ) {
+    assertAllowlistIdentity(allowlist);
+    if (!consumer) throw new Error('worker consumer id is required');
+  }
+
+  private lockKey(deploymentId: string): string {
+    return `${deploymentId}:${this.consumer}`;
+  }
+
+  /** Resolve and verify the allowlisted deployment against the DB row. */
+  async resolveDeployment(): Promise<{ id: string; startBlock: number }> {
+    const res = await this.pool.query<DeploymentRow>(
+      `SELECT id, environment, network, contract_id, ft_contract_id, ft_decimals, start_block::text, code_hash
+         FROM deployments WHERE network = $1 AND contract_id = $2`,
+      [this.allowlist.network, this.allowlist.contractId],
+    );
+    const row = res.rows[0];
+    if (!row) throw new Error(`no deployment row for ${this.allowlist.network}/${this.allowlist.contractId}`);
+    const startBlock = assertDeploymentRow(row, this.allowlist);
+    if (this.allowlist.startHeight < startBlock) {
+      throw new Error(`start height ${this.allowlist.startHeight} precedes deployment start_block ${startBlock}`);
+    }
+    return { id: row.id, startBlock };
+  }
+
+  /**
+   * Resolve the first height to ingest. Fresh-start requires the configured
+   * start height to EXACTLY equal the deployment start_block (never skip
+   * required history); an existing durable cursor resumes from cursor+1. Throws
+   * on malformed cursor state (fail-closed, never "restart at null").
+   */
+  async resolveStartHeight(deploymentId: string, startBlock: number): Promise<number> {
+    const cursor = await this.readCursor(deploymentId);
+    if (cursor !== null) {
+      if (cursor.block_height < startBlock) {
+        throw new Error(
+          `resume gate: durable cursor ${cursor.block_height} precedes deployment start_block ${startBlock}`,
+        );
+      }
+      return cursor.block_height + 1;
+    }
+    if (this.allowlist.startHeight !== startBlock) {
+      throw new Error(
+        `exact-start gate: configured start height ${this.allowlist.startHeight} != deployment start_block ${startBlock} and no resume cursor; refusing to omit required history`,
+      );
+    }
+    return startBlock;
+  }
+
+  /** Live chain/token identity: code hash + get_config + actual FT metadata. */
+  async verifyLiveIdentity(): Promise<void> {
+    const codeHash = await this.live.accountCodeHash(this.allowlist.contractId);
+    if (codeHash !== this.allowlist.codeHash) {
+      throw new Error(`live code hash ${codeHash} != allowlist ${this.allowlist.codeHash}`);
+    }
+    const view = await this.live.viewSource.callView('get_config', { accountId: this.allowlist.contractId, args: {} }, 'final');
+    const cfg = view.result as Record<string, unknown>;
+    if (cfg['organizer'] !== this.allowlist.organizer) throw new Error(`live organizer ${String(cfg['organizer'])} mismatch`);
+    if (cfg['canonical_ft'] !== this.allowlist.ftContractId) throw new Error('live canonical_ft mismatch');
+    if (cfg['network'] !== this.allowlist.network) throw new Error(`live network ${String(cfg['network'])} mismatch`);
+    if (cfg['policy_version'] !== this.allowlist.policyVersion) throw new Error('live policy_version mismatch');
+
+    // Token identity is the FT's own on-chain metadata, not just the config/DB echo.
+    const ftView = await this.live.viewSource.callView('ft_metadata', { accountId: this.allowlist.ftContractId, args: {} }, 'final');
+    const meta = ftView.result as Record<string, unknown>;
+    const decimals = meta['decimals'];
+    if (typeof decimals !== 'number' && typeof decimals !== 'string') {
+      throw new Error('ft_metadata.decimals missing');
+    }
+    const decimalsNum = typeof decimals === 'string' ? Number(decimals) : decimals;
+    if (!Number.isSafeInteger(decimalsNum) || decimalsNum !== this.allowlist.ftDecimals) {
+      throw new Error(`ft_metadata.decimals ${decimalsNum} != allowlist ${this.allowlist.ftDecimals}`);
+    }
+    const symbol = meta['symbol'];
+    if (typeof symbol !== 'string' || symbol.length === 0) throw new Error('ft_metadata.symbol missing');
+  }
+
+  /** Read the durable cursor (strict). `null` means "no cursor row yet". */
+  async readCursor(deploymentId: string): Promise<CursorState | null> {
+    const res = await this.pool.query<{ cursor_value: unknown }>(
+      `SELECT cursor_value FROM worker_cursors WHERE deployment_id = $1 AND consumer = $2`,
+      [deploymentId, this.consumer],
+    );
+    const row = res.rows[0];
+    if (!row) return null;
+    // A row that exists but holds JSON null / junk is malformed state, not "no cursor".
+    return parseCursorValue(row.cursor_value);
+  }
+
+  /** Read the durable cursor height (strict; throws on malformed state). */
+  async readCursorHeight(deploymentId: string): Promise<number | null> {
+    const cursor = await this.readCursor(deploymentId);
+    return cursor === null ? null : cursor.block_height;
+  }
+
+  /**
+   * Ingest one finalized block for one deployment: canonical/finality proof,
+   * filter successful receipts for the allowlisted contract, parse/classify
+   * showstake events, enrich publication rules from the pinned view, then persist
+   * everything atomically with a monotonic cursor.
+   */
+  async ingestBlock(deploymentId: string, block: NormalizedBlock): Promise<IngestSummary> {
+    if (block.height < this.allowlist.startHeight) {
+      throw new Error(`block ${block.height} precedes configured start height ${this.allowlist.startHeight}`);
+    }
+
+    // Mandatory canonical + finality proof for EVERY ingest (production path).
+    const canonicalHeader = await this.canonical.verifyBlock(block.height, block.hash);
+    const finalHeight = await this.canonical.lastFinalHeight();
+    if (block.height > finalHeight) {
+      throw new Error(`block ${block.height} is not final (official final height ${finalHeight})`);
+    }
+    // The source's own predecessor fields must agree with the official canonical
+    // header (a source may not claim a different chain shape under a real hash).
+    if (block.prevHash !== canonicalHeader.prevHash || block.prevHeight !== canonicalHeader.prevHeight) {
+      throw new Error(
+        `source/official header mismatch at ${block.height}: source prev ${block.prevHeight}/${block.prevHash} != official ${canonicalHeader.prevHeight}/${canonicalHeader.prevHash}`,
+      );
+    }
+
+    const kept = block.receipts.filter((r) => r.executorId === this.allowlist.contractId && r.success);
+    const units: { classified: ReturnType<typeof classifyEvent>; chainEvent: ChainEventInsert }[] = [];
+    for (const receipt of kept) {
+      for (const ev of parseShowStakeLogs(receipt.logs)) {
+        const classified = classifyEvent(ev);
+        units.push({ classified, chainEvent: buildChainEvent(classified, receipt.receiptId, block) });
+      }
+    }
+
+    // Enrich publish before opening the transaction (network read; fail closed).
+    // The enriched view must be pinned to exactly the block being ingested.
+    const publishRules = new Map<number, PublishRules>();
+    for (let i = 0; i < units.length; i++) {
+      const c = units[i]!.classified;
+      if (c.kind === 'PUBLISH') {
+        const view = await this.live.viewSource.callView(
+          'get_event',
+          { accountId: this.allowlist.contractId, args: { event_id: c.publish.eventId } },
+          block.hash,
+        );
+        if (view.blockHeight !== block.height) {
+          throw new Error(`get_event pinned to block ${view.blockHeight}, ingesting ${block.height}`);
+        }
+        if (view.blockHash !== block.hash) {
+          throw new Error(`get_event pinned to hash ${view.blockHash}, expected ${block.hash}`);
+        }
+        publishRules.set(i, enrichPublish(c.publish, parseEventView(view.result), this.allowlist));
+      }
+    }
+
+    const client = await this.pool.connect();
+    let published = 0;
+    let committed = 0;
+    let provenance = 0;
+    try {
+      await client.query('BEGIN');
+      // Transaction-scoped per-(deployment, consumer) lock: serializes ingestion
+      // and first-cursor creation; auto-released on commit/rollback/crash.
+      await client.query(`SELECT pg_advisory_xact_lock(hashtextextended($1, 0))`, [this.lockKey(deploymentId)]);
+
+      // Bind the ingestion id to the DB deployment + allowlist INSIDE the tx.
+      const startBlock = await this.bindDeploymentInTx(client, deploymentId);
+      const current = await this.readCursorInTx(client, deploymentId);
+      const next = this.advanceCursor(block, current, startBlock, canonicalHeader);
+
+      // An older block may only replay already-ingested provenance (never inject
+      // a previously-unseen event at an already-passed height).
+      if (current !== null && block.height < current.block_height) {
+        await this.assertOldReplayKnown(client, deploymentId, units, block);
+      }
+
+      for (let i = 0; i < units.length; i++) {
+        const { classified, chainEvent } = units[i]!;
+        const inserted = await this.insertChainEvent(client, deploymentId, chainEvent);
+        if (!inserted) continue; // already ingested (idempotent replay)
+        if (classified.kind === 'PUBLISH') {
+          await this.insertEventProjection(client, deploymentId, publishRules.get(i)!, chainEvent.blockTimeMs);
+          published++;
+        } else if (classified.kind === 'COMMIT') {
+          await this.applyCommit(client, deploymentId, classified.commit, chainEvent.blockTimeMs);
+          committed++;
+        } else {
+          provenance++;
+        }
+      }
+
+      if (next !== null) {
+        await this.writeCursor(client, deploymentId, next, current);
+      }
+      await client.query('COMMIT');
+      return {
+        blockHeight: block.height,
+        blockHash: block.hash,
+        matchedReceipts: kept.length,
+        publishedEvents: published,
+        committedRegistrations: committed,
+        provenanceEvents: provenance,
+        cursorHeight: next?.block_height ?? current?.block_height ?? block.height,
+      };
+    } catch (e) {
+      try { await client.query('ROLLBACK'); } catch { /* ignore */ }
+      throw e;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Re-read the deployment row INSIDE the transaction and verify it against the
+   * allowlist. The worker role only has SELECT on deployments (no row-lock
+   * privilege), and the row is operator-seeded/immutable at runtime, so a plain
+   * in-transaction SELECT is the authoritative binding.
+   */
+  private async bindDeploymentInTx(client: Client, deploymentId: string): Promise<number> {
+    const res = await client.query<DeploymentRow>(
+      `SELECT id, environment, network, contract_id, ft_contract_id, ft_decimals, start_block::text, code_hash
+         FROM deployments WHERE id = $1`,
+      [deploymentId],
+    );
+    const row = res.rows[0];
+    if (!row) throw new Error(`ingestion deployment ${deploymentId} not found in deployments`);
+    return assertDeploymentRow(row, this.allowlist);
+  }
+
+  /** Read the cursor inside the (already advisory-locked) transaction (strict). */
+  private async readCursorInTx(client: Client, deploymentId: string): Promise<CursorState | null> {
+    const res = await client.query<{ cursor_value: unknown }>(
+      `SELECT cursor_value FROM worker_cursors WHERE deployment_id = $1 AND consumer = $2`,
+      [deploymentId, this.consumer],
+    );
+    const row = res.rows[0];
+    if (!row) return null;
+    return parseCursorValue(row.cursor_value);
+  }
+
+  /**
+   * Monotonic, canonically-linked advancement. Returns the cursor to write
+   * (`null` = idempotent replay, cursor unchanged). Throws on fork, an
+   * unproven height gap, first-write off the deployment start, or malformed
+   * existing cursor.
+   *
+   * A source 404 / RPC UNKNOWN_BLOCK is NOT skip evidence (it may be a pruned
+   * historical block). Forward progress across a height gap is allowed only when
+   * the official canonical header of the target block proves chain linkage:
+   * prev_hash == cursor hash AND prev_height == cursor height. If any canonical
+   * block existed between the cursor and the target, the target's predecessor
+   * would be that block, not the cursor block.
+   */
+  private advanceCursor(
+    block: NormalizedBlock,
+    current: CursorState | null,
+    startBlock: number,
+    canonicalHeader: CanonicalBlockHeader,
+  ): CursorState | null {
+    if (block.height < startBlock) {
+      throw new Error(`block ${block.height} precedes deployment start_block ${startBlock}`);
+    }
+    if (current === null) {
+      if (block.height !== startBlock) {
+        throw new Error(
+          `first cursor must be created exactly at deployment start_block ${startBlock}; got block ${block.height} (missing initial block must fail closed)`,
+        );
+      }
+      return { block_height: block.height, block_hash: block.hash };
+    }
+    if (current.block_height < startBlock) {
+      throw new Error(`cursor ${current.block_height} precedes deployment start_block ${startBlock}`);
+    }
+    if (block.height < current.block_height) {
+      return null; // older canonical replay (validated by assertOldReplayKnown)
+    }
+    if (block.height === current.block_height) {
+      if (block.hash !== current.block_hash) {
+        throw new Error(`fork: block ${block.height} hash ${block.hash} != cursor hash ${current.block_hash}`);
+      }
+      return null; // exact replay
+    }
+    if (canonicalHeader.prevHash !== current.block_hash || canonicalHeader.prevHeight !== current.block_height) {
+      throw new Error(
+        `chain linkage: canonical block ${block.height} has prev ${canonicalHeader.prevHeight}/${canonicalHeader.prevHash}, expected cursor ${current.block_height}/${current.block_hash}; a source 404 or RPC UNKNOWN_BLOCK alone is not a skip proof`,
+      );
+    }
+    return { block_height: block.height, block_hash: block.hash };
+  }
+
+  /**
+   * Conditional cursor write: creation may only insert (the advisory lock makes a
+   * conflict a bug), and an update must match the EXACT expected previous
+   * height+hash. Either mismatch throws and rolls the block back.
+   */
+  private async writeCursor(
+    client: Client,
+    deploymentId: string,
+    next: CursorState,
+    expected: CursorState | null,
+  ): Promise<void> {
+    if (expected === null) {
+      const res = await client.query(
+        `INSERT INTO worker_cursors (deployment_id, consumer, cursor_value, updated_at)
+         VALUES ($1, $2, $3::jsonb, now())
+         ON CONFLICT (deployment_id, consumer) DO NOTHING
+         RETURNING deployment_id`,
+        [deploymentId, this.consumer, JSON.stringify(next)],
+      );
+      if ((res.rowCount ?? 0) !== 1) {
+        throw new Error('cursor creation raced: a cursor row exists despite the advisory lock');
+      }
+      return;
+    }
+    const res = await client.query(
+      `UPDATE worker_cursors
+          SET cursor_value = $3::jsonb, updated_at = now()
+        WHERE deployment_id = $1 AND consumer = $2 AND cursor_value = $4::jsonb
+        RETURNING deployment_id`,
+      [deploymentId, this.consumer, JSON.stringify(next), JSON.stringify(expected)],
+    );
+    if ((res.rowCount ?? 0) !== 1) {
+      throw new Error(
+        `cursor update failed expected-previous-state check (expected ${expected.block_height}/${expected.block_hash})`,
+      );
+    }
+  }
+
+  /** An old replay must consist only of chain events already ingested verbatim. */
+  private async assertOldReplayKnown(
+    client: Client,
+    deploymentId: string,
+    units: { chainEvent: ChainEventInsert }[],
+    block: NormalizedBlock,
+  ): Promise<void> {
+    for (const { chainEvent } of units) {
+      const res = await client.query<{ block_hash: string; event_name: string }>(
+        `SELECT block_hash, event_name FROM chain_events
+          WHERE deployment_id = $1 AND receipt_id = $2 AND log_index = $3`,
+        [deploymentId, chainEvent.receiptId, chainEvent.logIndex],
+      );
+      const row = res.rows[0];
+      if (!row) {
+        throw new Error(
+          `old replay at ${block.height} introduces an unknown chain event (${chainEvent.receiptId}/${chainEvent.logIndex}); refusing to regress/inject`,
+        );
+      }
+      if (row.block_hash !== chainEvent.blockHash || row.event_name !== chainEvent.eventName) {
+        throw new Error(
+          `old replay provenance mismatch at ${block.height} for ${chainEvent.receiptId}/${chainEvent.logIndex}`,
+        );
+      }
+    }
+  }
+
+  /**
+   * Insert a chain event, or verify an existing row is byte-for-byte equivalent
+   * provenance on replay. `ON CONFLICT DO NOTHING` is never a silent drop: a
+   * same-key row with a different block height/hash/time, event name, schema
+   * version or payload throws (a source may not alter a log under an already
+   * ingested receipt_id/log_index).
+   */
+  private async insertChainEvent(client: Client, deploymentId: string, ce: ChainEventInsert): Promise<boolean> {
+    const res = await client.query(
+      `INSERT INTO chain_events (id, deployment_id, receipt_id, log_index, block_height, block_hash, block_time, event_name, schema_version, payload, ingested_at)
+       VALUES ($1, $2, $3, $4, $5, $6, to_timestamp($7::double precision / 1000.0), $8, $9, $10::jsonb, now())
+       ON CONFLICT (deployment_id, receipt_id, log_index) DO NOTHING
+       RETURNING id`,
+      [randomUUID(), deploymentId, ce.receiptId, ce.logIndex, ce.blockHeight, ce.blockHash, ce.blockTimeMs, ce.eventName, ce.schemaVersion, JSON.stringify(ce.payload)],
+    );
+    if ((res.rowCount ?? 0) === 1) return true;
+
+    const existing = await client.query<{
+      block_height: string;
+      block_hash: string;
+      event_name: string;
+      schema_version: string;
+      same_time: boolean;
+      same_payload: boolean;
+    }>(
+      `SELECT block_height::text AS block_height, block_hash, event_name, schema_version,
+              (block_time = to_timestamp($4::double precision / 1000.0)) AS same_time,
+              (payload = $5::jsonb) AS same_payload
+         FROM chain_events
+        WHERE deployment_id = $1 AND receipt_id = $2 AND log_index = $3`,
+      [deploymentId, ce.receiptId, ce.logIndex, ce.blockTimeMs, JSON.stringify(ce.payload)],
+    );
+    const row = existing.rows[0];
+    if (!row) throw new Error(`chain_event conflict for ${ce.receiptId}/${ce.logIndex} without an existing row`);
+    if (
+      Number(row.block_height) !== ce.blockHeight ||
+      row.block_hash !== ce.blockHash ||
+      row.event_name !== ce.eventName ||
+      row.schema_version !== ce.schemaVersion ||
+      row.same_time !== true ||
+      row.same_payload !== true
+    ) {
+      throw new Error(
+        `replay provenance mismatch for ${ce.receiptId}/${ce.logIndex}: existing ${row.block_height}/${row.block_hash}/${row.event_name}/${row.schema_version} (time=${row.same_time}, payload=${row.same_payload}) != incoming ${ce.blockHeight}/${ce.blockHash}/${ce.eventName}/${ce.schemaVersion}`,
+      );
+    }
+    return false;
+  }
+
+  private async insertEventProjection(client: Client, deploymentId: string, rules: PublishRules, blockTimeMs: number): Promise<void> {
+    await client.query(
+      `INSERT INTO events_projection
+         (id, deployment_id, chain_event_id, organizer_account, asset_contract, deposit_atomic, capacity,
+          reg_open, reg_close, cancel_cutoff, checkin_open, checkin_close, finalize_deadline,
+          state, policy_version, rules_hash, accepted_atomic, paid_atomic, pending_atomic, liability_atomic, observed_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7,
+          to_timestamp($8::double precision / 1000.0), to_timestamp($9::double precision / 1000.0),
+          to_timestamp($10::double precision / 1000.0), to_timestamp($11::double precision / 1000.0),
+          to_timestamp($12::double precision / 1000.0), to_timestamp($13::double precision / 1000.0),
+          'PUBLISHED', $14, $15, '0', '0', '0', '0', to_timestamp($16::double precision / 1000.0))
+       ON CONFLICT (deployment_id, chain_event_id) DO NOTHING`,
+      [
+        randomUUID(), deploymentId, rules.eventId, rules.organizer, rules.canonicalFt, rules.deposit, rules.capacity,
+        rules.regOpenMs, rules.regCloseMs, rules.cancelCutoffMs, rules.checkinOpenMs, rules.checkinCloseMs,
+        rules.finalizeDeadlineMs, rules.policyVersion, rules.rulesHash, blockTimeMs,
+      ],
+    );
+  }
+
+  private async applyCommit(client: Client, deploymentId: string, c: { eventId: string; registrationId: string; passId: string; participant: string; beneficiary: string; commitmentId: string; amount: string; eventSequence: number }, blockTimeMs: number): Promise<void> {
+    if (c.participant !== c.beneficiary) throw new Error('participant != beneficiary (schema requires equality)');
+    const event = await client.query<{ id: string; deposit_atomic: string }>(
+      `SELECT id, deposit_atomic::text FROM events_projection WHERE deployment_id = $1 AND chain_event_id = $2 FOR UPDATE`,
+      [deploymentId, c.eventId],
+    );
+    const ev = event.rows[0];
+    if (!ev) throw new Error(`event ${c.eventId} not projected yet (out-of-order commit denied)`);
+    if (BigInt(c.amount) !== BigInt(ev.deposit_atomic)) {
+      throw new Error(`commit amount ${c.amount} != event deposit ${ev.deposit_atomic}`);
+    }
+    const regId = randomUUID();
+    const inserted = await client.query(
+      `INSERT INTO registrations_projection
+         (id, event_id, chain_registration_id, sequence_no, participant_account, beneficiary_account, commitment_id,
+          principal_atomic, state, attended, claim_atomic, payout_state, observed_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'COMMITTED', false, '0', 'NOT_CLAIMABLE', to_timestamp($9::double precision / 1000.0))
+       ON CONFLICT (event_id, chain_registration_id) DO NOTHING
+       RETURNING id`,
+      [regId, ev.id, c.registrationId, c.eventSequence, c.participant, c.beneficiary, c.commitmentId, c.amount, blockTimeMs],
+    );
+    if ((inserted.rowCount ?? 0) !== 1) return; // duplicate registration: already applied
+    await client.query(
+      `INSERT INTO passes_projection (id, registration_id, deployment_id, pass_id, owner_account, issued_at, observed_at, metadata)
+       VALUES ($1, $2, $3, $4, $5, to_timestamp($6::double precision / 1000.0), to_timestamp($6::double precision / 1000.0), '{}'::jsonb)
+       ON CONFLICT (deployment_id, pass_id) DO NOTHING`,
+      [randomUUID(), regId, deploymentId, c.passId, c.participant, blockTimeMs],
+    );
+    await client.query(
+      `UPDATE events_projection
+          SET accepted_atomic = accepted_atomic + ($1::numeric), liability_atomic = liability_atomic + ($1::numeric)
+        WHERE id = $2`,
+      [c.amount, ev.id],
+    );
+  }
+}

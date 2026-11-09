@@ -194,3 +194,18 @@ Frontend bounded slice accepted PASS_LOCAL byCodex:92behavior/typecheck independ
 
 
 Frontendlocal accepted/pushed2f8925c after92behavior68legacy/typecheck anddesktop/mobileheaderreview (390scroll390,520nooverflow). RealwalletNOT_RUN. Codex created/deployed cleantestnet showstake-wallet-endpx.testnet withacceptedv6f462ddcb (tx9qBbv4V7knnqW5EdZNZb9mcqzbKbX51vjpiRP4kMvg1x), published wallet-browser-test (txCCzv9d43toaphQoKu1tU6KL6DErdHigGAkENXdUWcDgm), escrowFTstorageregistered. ActualRegistrationOpen, D1000000SS_TESTatomic, capacity20,0participants,48hourregwindow. OPENslotconfigured,92behaviorpass; rebuildinprogress. No humanwalletsigned/broadcastbyCodex; no secrets.
+
+
+D042 ZCode->Harness handoffauthorized byhuman. ZCodestops confirmed; Harnessfactoryctx_86a77c0b9981/indexctx_51072ccbfbb3 immediatelyblockedupstreamauthentication_failed thenstopped. PriorityindexingMiniMaxfallbacklaunchpending; factorysourcepreservedwithoutduplicatewriter. No unbindforauthenticationerror; no retryloop.
+
+
+GATERMiniMax504then503/upstream502 afteroneexplicitresume; no furtherloop. ctx_9d981ede94f5 guardedstopconfirmed. Codex takes soleindexingintegrationreview temporarily; foundZCodepreservedcanonicalgap/shardset/replayfixalreadyimplemented, no rewrite. Independent72fixturepass, actualPGverificationrunning. Factorypartialsuntouched; no newworkerfeatureacceptanceyet.
+
+
+Codex independentactualPG worker-run-20261109T063730Z-2429929 completedexit0/PASS, serverstopPROVEN/cleanupcomplete. Counts readfromrunartifact; workeracceptance pending finaltestnet-currentpath review andscopedcommit, notjustCLIready.
+
+
+Harnessctx_327f833d6358 blockedGATER503/upstream402quota_exceeded. No unbind/retry/purchase/modelchange; stoprequested tosecurewriterownership. Existing72fixture/73independentPG/32testnet318blockproofpreserved. Codexcontinuesfinalintegrationreview, notsourcefeatureacceptanceyet.
+
+
+Minimumreceiptprojectionworker acceptedbyCodex:72independentfixture/73realPGpass, finalsource/linkage/cursor/replay/role review complete; preserved32testnetchecks/318blockproof reviewed, notnewnetworkrun. Scopepublication/deposit/passforfc49minimumonly. FASTNEARcontenttrustexplicit; v6lifecycleadapter/persistentbackend/fullT05stillopen. See worker-codex-acceptance.json.

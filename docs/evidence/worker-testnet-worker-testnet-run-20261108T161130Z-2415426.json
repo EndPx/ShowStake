@@ -1,0 +1,290 @@
+{
+  "id": "worker-testnet-proof",
+  "task": "apps/worker read-only actual-testnet full-range ingestion/projection proof (review round 2)",
+  "classifier": "PASS_TESTNET",
+  "ok": true,
+  "reviewer_pending": true,
+  "run_id": "worker-testnet-run-20261108T161130Z-2415426",
+  "environment": {
+    "network": "testnet",
+    "neardata": "https://testnet.neardata.xyz",
+    "rpc": "https://test.rpc.fastnear.com",
+    "official_crosscheck_rpc": "https://rpc.testnet.near.org",
+    "postgresql": "disposable postgresql-18 cluster"
+  },
+  "provider": {
+    "runtime": "ZCode via Orca (Cloud Near); D040 executor reassignment",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash-1017-abliterated",
+    "prior_round": "GATER/deepseek-v4.1-flash-1017-v2"
+  },
+  "source_manifest": {
+    "block": "FASTNEAR NEAR Data (https://github.com/fastnear/neardata-server) /v0/block/<height>",
+    "view": "NEAR JSON-RPC query (call_function) pinned to receipt block hash",
+    "canonical": "NEAR JSON-RPC block-by-height canonical proof + official prev_hash/prev_height chain linkage + final-height bound; D041 transport test.rpc.fastnear.com",
+    "official_crosscheck": "https://rpc.testnet.near.org block-by-height for the two committed receipt blocks",
+    "receipts": [
+      "docs/evidence/testnet-product-smoke.json (publish/deposit receipt block metadata)"
+    ],
+    "deployment": [
+      "docs/evidence/testnet-showstake-deployment-result.json"
+    ]
+  },
+  "trusted_source_boundary": "Block identity (height/hash/canonicality/finality) is proven against the official JSON-RPC. Receipt execution-outcome/log CONTENTS come from FASTNEAR and are not merkle-proved here; they are trusted inside the proven block-identity boundary.",
+  "scan": {
+    "start": 276624074,
+    "until": 276624391,
+    "blocksIngested": 318,
+    "heightsSkipped": [],
+    "heightsUnprovenMissing": [],
+    "officialFinalHeight": 276798539
+  },
+  "receipts": {
+    "publish": {
+      "receiptId": "GrpHcvrpi5ZBph2DcRumXSKHwpFB2UCRqgXjDd4yPYY6",
+      "blockHash": "3Bj52tt5ctKTNUdkyh4peH4tk26rQrjexoiWaoiHjqSa",
+      "blockHeight": 276624284,
+      "blockTimeMs": 1794050592970,
+      "log": "EVENT_JSON:{\"standard\":\"showstake\",\"version\":\"1.0.0\",\"event\":\"EventPublished\",\"data\":{\"event_id\":\"testnet-first-event\",\"organizer\":\"showstake-participant-endpx.testnet\",\"deposit\":\"1000000\",\"capacity\":10,\"finalize_deadline\":1794162171780,\"policy_version\":\"showstake-v2/1\",\"storage_cost_yocto\":\"3490000000000000000000\"}}"
+    },
+    "deposit": {
+      "receiptId": "EzrnbJnaB8vc2AnQGHDHpUQ5RxZSk5riALpBcVEbDttS",
+      "blockHash": "6JKLsNKV9X3tSwntQyN4PLf8mQerMAczxPQXSVWupd3i",
+      "blockHeight": 276624391,
+      "log": "EVENT_JSON:{\"standard\":\"showstake\",\"version\":\"1.0.0\",\"event\":\"RegistrationCommitted\",\"data\":{\"event_id\":\"testnet-first-event\",\"registration_id\":\"reg-0\",\"pass_id\":\"pass-0\",\"participant\":\"showstake-participant-endpx.testnet\",\"beneficiary\":\"showstake-participant-endpx.testnet\",\"commitment_id\":\"testnet-commit-001\",\"amount\":\"1000000\",\"event_sequence\":0,\"storage_cost_yocto\":\"6970000000000000000000\"}}"
+    }
+  },
+  "totals": {
+    "checks": 32,
+    "failed": 0
+  },
+  "checks": [
+    {
+      "id": "TESTNET_DEPLOY_RESOLVED",
+      "ok": true,
+      "expected": "committed deployment resolved at deployment block 276624074",
+      "observed": "00000000-0000-4000-8000-0000000000d1/276624074",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_LIVE_IDENTITY",
+      "ok": true,
+      "expected": "live code_hash + get_config + ACTUAL ft_metadata decimals match allowlist",
+      "observed": "HyqAt2yJGvV3CHKNYLA9oqzt1aWrmagwSbtogdXhA8wo/6",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_EXACT_START",
+      "ok": true,
+      "expected": "exact-start gate starts at the contract deployment block (never the later publish block)",
+      "observed": 276624074,
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_SCAN_END",
+      "ok": true,
+      "expected": "scan ends at the committed deposit block 276624391",
+      "observed": 276624391,
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_SCAN_FULL_RANGE",
+      "ok": true,
+      "expected": "every height 276624074..276624391 ingested or proven skipped by canonical prev-hash linkage",
+      "observed": "{\"ingested\":318,\"skipped\":[],\"unproven\":[],\"expected\":318}",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_SCAN_OFFICIAL_FINAL_BOUND",
+      "ok": true,
+      "expected": "scan bounded by the OFFICIAL RPC final height",
+      "observed": 276798539,
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_OFFICIAL_RPC_CROSSCHECK",
+      "ok": true,
+      "expected": "publish/deposit canonical hashes independently agree with rpc.testnet.near.org",
+      "observed": "3Bj52tt5ctKTNUdkyh4peH4tk26rQrjexoiWaoiHjqSa/6JKLsNKV9X3tSwntQyN4PLf8mQerMAczxPQXSVWupd3i",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_REAL_MISSING_SHARD_OUTCOMES_REJECTED",
+      "ok": true,
+      "expected": "rejects (no receipt_execution_outcomes member)",
+      "observed": "shard 10 has no receipt_execution_outcomes member (malformed source)",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_REAL_EMPTY_SHARDS_REJECTED",
+      "ok": true,
+      "expected": "rejects (shards array is empty)",
+      "observed": "block shards array is empty (malformed source: a finalized block carries its shards)",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_REAL_MISSING_LOGS_REJECTED",
+      "ok": true,
+      "expected": "rejects (no outcome.logs member)",
+      "observed": "shard 9 outcome 0 has no outcome.logs member (malformed source)",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_REAL_PARTIAL_SHARD_SET_REJECTED",
+      "ok": true,
+      "expected": "rejects (shard set incomplete)",
+      "observed": "shard set incomplete: 9 shard outcomes for 10 block chunk headers",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_REAL_DUPLICATE_SHARD_ID_REJECTED",
+      "ok": true,
+      "expected": "rejects (duplicate shard_id)",
+      "observed": "block shards contains duplicate shard_id 10",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_CANONICAL_MISMATCH_REJECTED",
+      "ok": true,
+      "expected": "rejects (canonical check)",
+      "observed": "canonical check: canonical block at height 276624391 has hash 6JKLsNKV9X3tSwntQyN4PLf8mQerMAczxPQXSVWupd3i, expected 11111111111111111111111111111111",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_OFFICIAL_HEADER_LINKAGE",
+      "ok": true,
+      "expected": "official headers provide prev_height/prev_hash linkage for the committed blocks",
+      "observed": "{\"depositPrev\":276624390,\"publishPrev\":276624283}",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_MISSING_HEIGHT_IS_TYPED",
+      "ok": true,
+      "expected": "FASTNEAR 404 for a height is a typed not-found (skip candidate)",
+      "observed": "BlockNotFoundError",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_EVENT_ID",
+      "ok": true,
+      "expected": "event_id projected",
+      "observed": "testnet-first-event",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_EVENT_ORGANIZER",
+      "ok": true,
+      "expected": "organizer projected",
+      "observed": "showstake-participant-endpx.testnet",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_EVENT_MONEY",
+      "ok": true,
+      "expected": "deposit/capacity projected",
+      "observed": "1000000/10",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_EVENT_RULES_TIMES",
+      "ok": true,
+      "expected": "rules times projected (enriched)",
+      "observed": "2026-11-07T11:21:51.780Z",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_REGISTRATION",
+      "ok": true,
+      "expected": "reg-0 committed",
+      "observed": "reg-0",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_PASS",
+      "ok": true,
+      "expected": "pass-0 owner = participant",
+      "observed": "pass-0",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_TOTALS",
+      "ok": true,
+      "expected": "event totals reflect the committed deposit",
+      "observed": "1000000/1000000",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_PUBLISH_PROVENANCE",
+      "ok": true,
+      "expected": "publish provenance (receipt/height/hash) stored",
+      "observed": "{\"receipt_id\":\"GrpHcvrpi5ZBph2DcRumXSKHwpFB2UCRqgXjDd4yPYY6\",\"log_index\":0,\"block_height\":\"276624284\",\"block_hash\":\"3Bj52tt5ctKTNUdkyh4peH4tk26rQrjexoiWaoiHjqSa\",\"event_name\":\"EventPublished\"}",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_DEPOSIT_PROVENANCE",
+      "ok": true,
+      "expected": "deposit provenance (receipt/height/hash) stored",
+      "observed": "{\"receipt_id\":\"EzrnbJnaB8vc2AnQGHDHpUQ5RxZSk5riALpBcVEbDttS\",\"log_index\":0,\"block_height\":\"276624391\",\"block_hash\":\"6JKLsNKV9X3tSwntQyN4PLf8mQerMAczxPQXSVWupd3i\",\"event_name\":\"RegistrationCommitted\"}",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_ALL_EVENTS_KNOWN",
+      "ok": true,
+      "expected": "every captured chain event name is in the deployed-ABI event set",
+      "observed": "[\"EventPublished\",\"StorageDeposited\",\"RegistrationCommitted\"]",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_STORAGE_EVENTS_ACCOUNTED",
+      "ok": true,
+      "expected": "provenance-only events captured and never projected (1)",
+      "observed": "[\"StorageDeposited\"]",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_PROJECTION_CONSISTENCY",
+      "ok": true,
+      "expected": "every committed chain event has exactly one registration and pass projection",
+      "observed": "{\"committedChain\":1,\"regCount\":1,\"passCount\":1}",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_CURSOR",
+      "ok": true,
+      "expected": "cursor advanced to the deposit block via the locked, monotonic path",
+      "observed": "{\"block_height\":276624391,\"block_hash\":\"6JKLsNKV9X3tSwntQyN4PLf8mQerMAczxPQXSVWupd3i\"}",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_API_READY",
+      "ok": true,
+      "expected": "real API server ready on loopback with unprivileged role",
+      "observed": "http://127.0.0.1:42091",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_API_LIST_EVENT",
+      "ok": true,
+      "expected": "GET /v1/events returns the newly projected event",
+      "observed": "status=200 hit=true",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_API_READ_EVENT",
+      "ok": true,
+      "expected": "real API GET /v1/events/:id serves the projected event + totals",
+      "observed": "status=200 {\"id\":\"4fdf718e-ba4c-4ed4-8644-a4d126b30004\",\"network\":\"testnet\",\"contractId\":\"showstake-endpx.testnet\",\"organizerAccount\":\"showstake-participant-endpx.testnet\",\"assetContract\":\"showstake-ft-endpx.tes",
+      "classifier": "PASS_TESTNET"
+    },
+    {
+      "id": "TESTNET_API_READ_PASS",
+      "ok": true,
+      "expected": "API role reads the projected pass",
+      "observed": "pass-0",
+      "classifier": "PASS_TESTNET"
+    }
+  ],
+  "commands": [
+    "wsl -d Ubuntu -- bash scripts/postgres-disposable/run-worker-testnet.sh"
+  ],
+  "note": "READ-ONLY public testnet reads; NO transactions/funds/secrets. The production runBoundedScan ingested EVERY canonical block from the contract deployment block to the committed deposit block (no publish->deposit jump), with each block hash proven against the official RPC by canonical height + official prev_hash/prev_height chain linkage and bounded by official finality; source 404/UNKNOWN_BLOCK alone is never skip evidence. Malformed real payloads (missing outcomes/logs, empty/partial/duplicate shard sets) are rejected; the projected event is read through the real API server and the projected pass through the API role."
+}

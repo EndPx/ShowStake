@@ -37,7 +37,10 @@
     "build:web": "pnpm --filter @showstake/web build",
     "typecheck:web": "pnpm --filter @showstake/web typecheck",
     "verify:t08-frontend": "node scripts/verify-t08-frontend.mjs",
-    "verify:frontend-slice": "node scripts/verify-frontend-slice.mjs"
+    "verify:frontend-slice": "node scripts/verify-frontend-slice.mjs",
+    "verify:worker": "pnpm --filter @showstake/worker typecheck && pnpm --filter @showstake/worker build && node apps/worker/test/verify-worker-fixtures.mjs",
+    "verify:worker-db": "pnpm --filter @showstake/worker build && wsl -d Ubuntu -- bash scripts/postgres-disposable/run-worker-suite.sh",
+    "verify:worker-testnet": "pnpm --filter @showstake/api build && pnpm --filter @showstake/worker build && wsl -d Ubuntu -- bash scripts/postgres-disposable/run-worker-testnet.sh"
   },
   "devDependencies": {
     "@hot-labs/near-connect": "0.12.0",

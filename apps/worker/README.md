@@ -1,7 +1,212 @@
-# apps/worker — ShowStake projection & reconciliation worker
+# apps/worker — ShowStake NEAR receipt projection & reconciliation worker
 
-Planned module: Node TypeScript worker. Ingests finalized contract receipts, maintains
-projections/cursors, runs outbox jobs and reconciliation; never logs users in and never
-signs financial actions per `docs/planning/showstake-v2/02-ARCHITECTURE.md`.
+Reads **finalized** NEAR blocks/receipt outcomes, captures **successful** ShowStake
+events for an allowlisted event contract, and transactionally maintains
+`chain_events` + `events_projection` / `registrations_projection` /
+`passes_projection` + durable `worker_cursors`. The worker DB role writes
+projections only; it never logs users in and never signs financial actions
+(`docs/planning/showstake-v2/02-ARCHITECTURE.md`).
 
-Status: **placeholder only** (T00/T01 foundation). No polling, projection, or job code yet.
+**Status (this increment):** bounded runnable first slice — publication /
+deposit / pass, not settlement. Provenance-only events (storage, cancel,
+refund-only, payout) are captured in `chain_events` but never project financial
+rights. Review round 2 moved canonical/finality proof into the production path,
+hardened the source normalizer and made the cursor invariants executable. No
+additional executor/framework/toolchain.
+
+## Interface freeze (ingestion → projection)
+
+These boundaries are frozen for this module; multiple writers on them are not
+allowed without a reviewed change here.
+
+| Boundary | File | Contract |
+|---|---|---|
+| Config (explicit allowlist, fail-closed) | `src/config.ts` | `loadConfig(env) → WorkerConfig`; rejects missing/mismatched network/deployment/start-height. |
+| Block source | `src/source.ts` | `BlockSource.fetchBlock(height) → NormalizedBlock`; `lastFinalHeight()`. Strict normalizer; `BlockNotFoundError` only for HTTP 404. |
+| Canonical source | `src/source.ts` | `CanonicalVerifier.verifyBlock(height, hash)` returns the official RPC's **canonical block at that height** plus its `prev_hash`/`prev_height`; `lastFinalHeight()`. No UNKNOWN_BLOCK-based skip proof. |
+| View source (pinned enrichment) | `src/source.ts` | `ViewSource.callView(method, args, blockRef) → {result, blockHeight, blockHash}`; the returned hash must equal the pinned hash. |
+| Event parse/classify | `src/events.ts` | `parseShowStakeLogs(logs) → ShowStakeEvent[]`; `classifyEvent(ev)`; throws on malformed/unknown. |
+| Enrichment + projection prep | `src/project.ts` | `buildChainEvent`, `enrichPublish`, `parseEventView`, `mapEventState`. |
+| Transactional store | `src/store.ts` | `WorkerStore.ingestBlock(deploymentId, block)` — official-RPC canonical/finality proof + one SQL transaction per block; deployment/allowlist bound inside the transaction. |
+| Runnable scan | `src/index.ts` | `runBoundedScan(...)` — sequential, bounded by the **official** final height, skip only with canonical proof. |
+
+### Cursor + atomicity invariants (frozen, executable)
+
+1. **One transaction per block**, guarded by a transaction-scoped
+   `pg_advisory_xact_lock` on `(deployment_id, consumer)` taken *before* the
+   cursor read. First cursor creation is serialized by the same lock.
+2. **Exact start.** With no cursor the first write must land exactly on the DB
+   `deployments.start_block` (`configured start == DB start`); an existing
+   cursor resumes at `cursor+1`. A cursor below `start_block` is refused.
+3. **Monotonic + canonically linked.** Forward progress requires the official
+   canonical header of the target block to link directly to the cursor:
+   `prev_hash == cursor.hash` AND `prev_height == cursor.height`. For contiguous
+   blocks that means height+1; across a legitimate height gap it proves every
+   intermediate height has no canonical block (the predecessor is the cursor
+   block). A source 404 or RPC `UNKNOWN_BLOCK` is **only a skip candidate**, never
+   proof (it may be a pruned historical block): if an intermediate block exists,
+   the target's predecessor is that block and the linkage mismatch fails closed.
+   A missing INITIAL block also fails closed (a fresh first cursor must equal
+   `deployments.start_block`). A same-height different hash is a **fork** and
+   throws. An older block is an idempotent replay only if every event it carries
+   was already ingested with verbatim provenance; it never regresses the cursor
+   and never injects new chain events at a passed height.
+4. **Conditional upsert.** Creation inserts only (`ON CONFLICT DO NOTHING` must
+   not hit); update carries the exact expected previous `height+hash` in the
+   `WHERE` and requires `rowCount = 1`. Any mismatch rolls the block back.
+   Chain-event replay is not a silent drop either: an existing
+   `(receipt_id, log_index)` row must have the same block height/hash/time, event
+   name, schema version and JSON payload, or the replay throws.
+5. **Fail-closed state.** A malformed `worker_cursors.cursor_value` (including
+   JSON `null`, missing hash, non-integer height) throws; it is never treated as
+   "no cursor / start over".
+6. **Canonical + final + linkage proof in the ingest path.** `ingestBlock` asks
+   the official RPC for the canonical block at the height (by height, not only by
+   hash), requires the hash to match, requires the source's own
+   `prev_hash`/`prev_height` to equal the official header, and requires the height
+   to be at or below the official final height. The scan's upper bound is the
+   official final height, never the block source's claim. A pinned `get_event`
+   view must report exactly the ingested block's height and hash.
+7. **Deployment binding inside the transaction.** The `deploymentId` is re-read
+   from `deployments` inside the transaction and compared field-by-field with the
+   explicit allowlist (environment/network/contract/FT/decimals/code hash) before
+   any event or cursor write.
+8. **Strict source.** `normalizeFastNearBlock` rejects absent/empty `shards`, a
+   shard without an explicit `receipt_execution_outcomes` array, outcomes missing
+   `id`/`outcome`/`executor_id`/`logs`, a `block_hash` differing from the parent
+   block, duplicate receipt ids, malformed status variants, missing/malformed
+   `prev_hash`/`prev_height`, and non-bounded timestamps. The header `chunks`
+   shard set must be non-empty, unique and EXACTLY equal to the `shards` set, so
+   a partial or duplicate shard set is never claimed complete merely because it
+   is non-empty. Explicit empty outcome arrays and empty `logs` arrays are
+   accepted. Any throw means the cursor cannot advance.
+
+Ingestion also persists `chain_events` dedup (`ON CONFLICT (deployment_id,
+receipt_id, log_index) DO NOTHING`) + projections + the conditional cursor write
+in that same transaction. Any canonical/validation/parse/enrichment/DB error rolls
+the whole block back, so the cursor can never advance past required unprocessed
+data. Replay/restart is idempotent.
+
+### Event support matrix
+
+| ShowStake event (`standard=showstake`, `version=1.0.0`) | Projection |
+|---|---|
+| `EventPublished` | `events_projection` (rules enriched from pinned `get_event` view) |
+| `RegistrationCommitted` | `registrations_projection` + `passes_projection` + event totals |
+| `StorageDeposited`, `EventCancelled`, `RefundModeActivated`, `PayoutStarted/Succeeded/Failed` | provenance only (`chain_events`) |
+| unknown event / wrong version / wrong standard / malformed amount | **fail closed** (throw, cursor not advanced) |
+
+Only successful receipts (`outcome.status` is `SuccessValue`/`SuccessReceiptId`,
+never `Failure`) whose `executor_id` is the allowlisted contract are consumed.
+Failed-receipt logs never grant rights.
+
+## Source selection + capability matrix
+
+Selected source: **FASTNEAR NEAR Data** — https://github.com/fastnear/neardata-server .
+Public testnet base URL `https://testnet.neardata.xyz`; documented endpoints used
+here are `/v0/last_block/final` and `/v0/block/<height>` (the README also lists
+`first_block`, per-shard/header/optimistic endpoints and `mainnet.neardata.xyz`).
+The documented limit is **180 requests/minute per IP** with 1 Gbps bandwidth; the
+worker paces block reads at ≤150/minute and backs off on HTTP 429.
+
+Primary-source facts, and what is **unknown/untested**:
+
+| Capability | FASTNEAR NEAR Data | NEAR Lake framework/indexer | Notes / sources |
+|---|---|---|---|
+| Function | Finalized block + per-shard receipt execution outcomes (JSON) | S3-indexed Lake data via the Lake framework SDK | FASTNEAR README endpoint list. Lake is a framework + bucket layout, not one HTTP call. |
+| History | Height-addressed finalized blocks | S3 archive (testnet/mainnet buckets) | Lake buckets: `near-lake-data-testnet`, `near-lake-data-mainnet` (eu-central-1) per the indexer README. |
+| Network | testnet + mainnet public hosts | testnet + mainnet buckets | Both cover the configured testnet; only FASTNEAR was exercised here. |
+| Access | Unauthenticated HTTPS | **AWS credentials required**; buckets are **requester-pays**; readers are charged by AWS | Lake indexer README: "Connections to the bucket have to be done with AWS credentials provided" and "All NEAR Lake AWS S3 buckets have Request Payer enabled". |
+| Security | Read-only HTTP; block identity re-checked against NEAR JSON-RPC | Read-only S3; data pinned to block heights | See the trusted-source boundary below. |
+| Cost | No key/payment used here; documented rate limit, no price statement in the README | **Requester pays** => AWS request/data-transfer charges | Do not claim Lake is free. Neither service's price/SLA is contracted here. |
+| Reliability | No SLA/availability statement in the README; 429 throttling observed and handled | No SLA statement in the repository | **Unknown** for both; no production-availability claim. |
+| Time | Minutes (plain `fetch` over documented endpoints) | Higher (SDK + S3 credentials/requester-pays setup) | FASTNEAR selected for this bounded slice. |
+
+Primary sources: https://github.com/fastnear/neardata-server (endpoints, 180
+req/min, 1 Gbps) and https://github.com/near/near-lake-indexer (bucket names, AWS
+credentials, requester-pays, "charged for it by AWS"). NEAR Lake was **not**
+integrated (no additional framework/toolchain this slice).
+
+### Trusted-source boundary (honest limit)
+
+Matching a source block's height/hash against the official NEAR JSON-RPC proves
+**which block** was read (canonical identity + finality). FASTNEAR returns the
+receipt execution outcomes/logs for that block **without a merkle proof verified
+here**, so receipt/log **contents** are trusted inside the proven block-identity
+boundary; a compromised/malicious source could serve wrong contents under a real
+block hash. The worker's strict schema/status/log checks and the pinned
+`get_event` cross-check constrain that trust, but they are not a cryptographic
+receipt proof.
+
+## Configuration (explicit allowlist + verified identity)
+
+All env vars are required unless a default is shown. Fail-closed on any mismatch.
+
+```
+WORKER_NETWORK=testnet
+WORKER_ENVIRONMENT=testnet
+WORKER_CONTRACT_ID=showstake-endpx.testnet
+WORKER_FT_CONTRACT_ID=showstake-ft-endpx.testnet
+WORKER_FT_DECIMALS=6
+WORKER_CODE_HASH=HyqAt2yJGvV3CHKNYLA9oqzt1aWrmagwSbtogdXhA8wo
+WORKER_WASM_SHA256=fc49fb85cc6e718086ddf81e9a936362a8c36ef9384a8444eadafa6ec0cdcd8e
+WORKER_ORGANIZER=showstake-participant-endpx.testnet
+WORKER_POLICY_VERSION=showstake-v2/1
+WORKER_START_HEIGHT=276624074   # contract deployment block; must EXACTLY equal deployments.start_block on a fresh cursor
+WORKER_CONSUMER=showstake-worker
+WORKER_RPC_URL=https://rpc.testnet.near.org   # default; D041 testnet transport is https://test.rpc.fastnear.com
+WORKER_NEARDATA_URL=https://testnet.neardata.xyz
+WORKER_MAX_BLOCKS_PER_RUN=1000                # bounded, default
+DATABASE_URL=...                              # or SHOWSTAKE_PG_* socket (tests)
+```
+
+The DB `deployments` row is operator-seeded (worker role is read-only on it).
+`resolveDeployment` + `resolveStartHeight` + `ingestBlock` enforce: DB row matches
+the allowlist (network/contract/ft/decimals/code_hash/start block), the base58
+`code_hash` decodes to `wasm_sha256`, the live RPC `code_hash` + `get_config` view
+match, the FT's own `ft_metadata.decimals`/`symbol` (not just config/DB echoes)
+match, the fresh start equals the deployment `start_block`, and the ingestion id
+is re-bound to the allowlist inside every ingestion transaction. Any mismatch
+refuses to start/ingest.
+
+The worker runtime pool requires a dedicated **NOINHERIT, non-superuser** LOGIN
+with no `CREATEDB`/`CREATEROLE`/`REPLICATION`/`BYPASSRLS`, no API/migration
+membership, no inherited/privileged membership and no direct write grants on
+projections/cursors. Membership in `showstake_worker` must be granted
+`WITH INHERIT FALSE, SET TRUE`, so `RESET ROLE` cannot restore write authority;
+startup proves this empirically (projection UPDATE / cursor DELETE return 42501
+after `RESET ROLE`).
+
+## Commands
+
+```sh
+pnpm --filter @showstake/worker typecheck
+pnpm --filter @showstake/worker build
+pnpm verify:worker               # typecheck+build+adversarial fixtures (no DB)
+pnpm verify:worker-db            # build + WSL disposable-PostgreSQL suite
+pnpm verify:worker-testnet       # build API+worker + read-only full-range testnet proof
+pnpm --filter @showstake/worker start   # bounded runnable scan (testnet)
+```
+
+Tests are deterministic labelled fixtures (`apps/worker/test/fixtures.mjs`);
+DB acceptance uses a real disposable PostgreSQL (TMPDIR=/tmp tmpfs) with proven
+stop/cleanup. The read-only testnet proof is clearly separate from local
+fixtures: it runs the production `runBoundedScan` from the contract deployment
+block through the committed deposit block (every intervening height, no jumps),
+rejects mutated real payloads, and reads the projected event through the real API
+server.
+
+Evidence labels are honest: `PASS_LOCAL` (fixtures/PG, no network),
+`PASS_TESTNET` (read-only public testnet), never a live/production claim.
+
+## Runtime/provider + provenance
+
+Runtime: ZCode via Orca (Cloud Near), model
+`deepseek-ai/DeepSeek-V4.1-Flash-1017-abliterated` (D040 executor reassignment;
+earlier GATER/`deepseek-v4.1-flash-1017-v2` runs remain preserved). Source manifest and
+per-run evidence are written to `docs/evidence/worker-db-<run>.json` and
+`docs/evidence/worker-testnet-<run>.json`; prior runs are preserved, new runs
+have unique ids.
+
+Money is canonical u128 base-10 strings; time is checked integer milliseconds;
+projections carry `receipt_id`/`log_index`/block hash+height provenance.

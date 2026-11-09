@@ -1,0 +1,51 @@
+{
+  "reviewer": "Codex",
+  "accepted": true,
+  "scope": "minimumartifact finalreceipt publication/deposit/pass projection only",
+  "classification": "PASS_LOCAL",
+  "independent_tests": {
+    "fixtures": 72,
+    "realPG": 73,
+    "PG_run": "worker-run-20261109T063730Z-2429929",
+    "stop_cleanup_proven": true
+  },
+  "reviewed_testnet_evidence": {
+    "classification": "PASS_TESTNET",
+    "checks": 32,
+    "blocks": 318,
+    "path": "docs/evidence/worker-testnet-worker-testnet-run-20261108T161130Z-2415426.json",
+    "new_independent_network_run": false
+  },
+  "source_review": [
+    "transactionlock/conditionalcursor",
+    "canonicalprevhashgaplinkage",
+    "strictshardset/status",
+    "replaypayloadcomparison",
+    "runtimeRPC/pinnedviewchecks",
+    "restrictedLOGIN"
+  ],
+  "limits": [
+    "FASTNEARreceiptcontents trusted, notmerkleproved",
+    "No v6attendance/settlement/payoutprojections",
+    "No persistentapplicationdeployment orfullT05acceptance"
+  ],
+  "files": {
+    "apps\\worker\\package.json": "d9b5a9c3357511a7d8183a00e1221c199727df4f0e14817f50f978220e737762",
+    "apps\\worker\\README.md": "0e8acba8a2bade439b011d619c0062ec0d4a69f3bd8d8af8b513569d5d2bc0a0",
+    "apps\\worker\\tsconfig.json": "f12b9723384ca7d90708aad0734ccbb75a3296666c09ffddf5d07f2d4afc3785",
+    "apps\\worker\\src\\cli.ts": "d45cdfe0122c5fc4320810bd04677fe3fe713215b09e51a1995499af5677ce8b",
+    "apps\\worker\\src\\config.ts": "61bff67b41bdb83af0fa939e25c4e90ff28c314926ac5a3633510c75c400a819",
+    "apps\\worker\\src\\events.ts": "c954c1e5a7f659ff7b9abd9e60ba946f24ba4d9628a421ea680e2c25e14bb7af",
+    "apps\\worker\\src\\external.d.ts": "5cd08b7f37bf77f06e1001810db4af153d1095cccfcf41702d4d4523f5d9e49c",
+    "apps\\worker\\src\\identity.ts": "87cd937a2c4a73cf61aaa54bf9453547713e6f6aaf86feb5a408734fa779e337",
+    "apps\\worker\\src\\index.ts": "9ba8808149520b297fcb5ce2cce5b0da88f447e8e8b79c2d9a3152fe1daaba87",
+    "apps\\worker\\src\\project.ts": "73685bdde5da72ecef337d75c1e7eba477ad1ce7902f001fb0723d90ecef8045",
+    "apps\\worker\\src\\source.ts": "8dacb7264bfe679cd3d9e056b136659ce064e4e650d1af47c51e96fefab55139",
+    "apps\\worker\\src\\store.ts": "ddc0258e3bc06bf384d49d839a651c9f3065d28015fc67354b45ffd15e71a3ef",
+    "apps\\worker\\src\\types.ts": "69f1bdbd59627b24f51432de1c2d679916984232a3a7bcb0acb5115ab3a1a62e",
+    "apps\\worker\\test\\fixtures.mjs": "bfb0b20684c7386d8afb7cc007717b8d88ea379202e7b10c019e97d098408d1b",
+    "apps\\worker\\test\\verify-worker-db.mjs": "f6ca1f2375fa072fe8d05401c37176fda3fd616a691168a95f02536e59e49bcc",
+    "apps\\worker\\test\\verify-worker-fixtures.mjs": "5c7143074ea46058c8bb8b878e00ede60240d41e097a8b268d5d09a3d89ec3c2",
+    "apps\\worker\\test\\verify-worker-testnet.mjs": "412c15a91dbd0c6722d57086418386e5359c45a9b664cae506abfca14fea2507"
+  }
+}
