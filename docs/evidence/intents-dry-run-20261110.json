@@ -1,0 +1,30 @@
+{
+  "id": "intents-dry-run-20261110",
+  "classifier": "PASS_LOCAL",
+  "mode": "NEAR Intents 1Click API dry=true; no deposit address and no funds moved",
+  "endpoint": "https://1click.chaindefuser.com",
+  "tokenCatalog": {
+    "count": 216,
+    "chainsObserved": ["abs", "adi", "aleo", "aptos", "arb", "avax", "base", "bera", "bsc", "btc", "cardano", "dash", "doge", "eth", "gnosis", "hypercore", "near", "op", "pol", "scroll", "sol", "starknet", "stellar", "sui", "ton", "tron", "xlayer", "xrp", "zec"]
+  },
+  "destination": "nep141:wrap.near",
+  "dryQuotes": [
+    { "chain": "eth", "symbol": "USDT", "status": 201, "amountOutPresent": true },
+    { "chain": "sol", "symbol": "SOL", "status": 201, "amountOutPresent": true },
+    { "chain": "btc", "symbol": "BTC", "status": 201, "amountOutPresent": true },
+    { "chain": "arb", "symbol": "ARB", "status": 400, "reason": "No liquidity available" },
+    { "chain": "tron", "symbol": "TRX", "status": 400, "reason": "minimum swap amount is $100" }
+  ],
+  "route": {
+    "swapType": "EXACT_INPUT",
+    "depositType": "ORIGIN_CHAIN",
+    "recipientType": "DESTINATION_CHAIN",
+    "refundType": "INTENTS",
+    "destinationAccount": "intents.near"
+  },
+  "limits": [
+    "NEAR Intents has no testnet version; the dry run is mainnet quote infrastructure only",
+    "a successful dry quote does not prove a funded swap, final delivery, or escrow deposit",
+    "assetIds came from /v0/tokens and were not constructed manually"
+  ]
+}

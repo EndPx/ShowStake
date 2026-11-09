@@ -219,6 +219,8 @@ Codex Terra read-only review of the v6 worker found four source blockers and Cod
 
 Cross-module integration recheck after commits 0f7cd20 and 805cd4b: web typecheck/build, frontend behavior and legacy suites remain PASS_LOCAL (92/92 and 68/68); API 40/40 and worker 90/90/DB/checkpoint proofs remain green. Evidence: docs/evidence/integration-codex-20261110.json. Browser wallet signing and full testnet settlement projection remain open gates.
 
+NEAR Intents dry-run preparation completed against the official 1Click API: 216-token catalog, 39 observed chains, and `dry:true` quotes to `nep141:wrap.near` succeeded for ETH/USDT, SOL and BTC. ARB/ARB returned no liquidity; TRX at the tiny probe amount was rejected by the provider minimum. Evidence: docs/evidence/intents-dry-run-20261110.json. This is MAINNET_PREPARED infrastructure evidence only; no deposit address, swap, escrow deposit, factory call or real asset movement occurred.
+
 
 Terra launch /root/terra_api_access failed beforeimplementation: Codexaccess-tokenrefresh refused due logout/accountchange. BLOCKED_EXTERNAL; usermustrenewCodexsignin throughapp/CLI, no chatcredential. No Terra sourcechangesclaimed; no silentmodelsubstitution. Harnessworker continuesindependently.
 
