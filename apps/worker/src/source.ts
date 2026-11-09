@@ -69,6 +69,21 @@ export class RpcError extends Error {
   }
 }
 
+/**
+ * The OFFICIAL RPC reported no canonical block at a height (HTTP 422/404 or an
+ * `UNKNOWN_BLOCK` error): that height is a legitimate chain-gap candidate. It is
+ * NEVER treated as proof by itself — the NEXT ingested block's official canonical
+ * `prev_hash`/`prev_height` linkage must still prove the gap or the ingest fails
+ * closed. The block source may have served a spurious/stale block for the height,
+ * which the canonical check now refuses to trust.
+ */
+export class CanonicalBlockMissingError extends Error {
+  constructor(readonly height: number, readonly url: string) {
+    super(`official RPC has no canonical block at height ${height} (${url})`);
+    this.name = 'CanonicalBlockMissingError';
+  }
+}
+
 function rec(object: unknown): Record<string, unknown> {
   if (typeof object !== 'object' || object === null || Array.isArray(object)) {
     throw new Error('expected JSON object');
@@ -318,7 +333,14 @@ export class FastNearBlockSource implements BlockSource {
   async fetchBlock(height: number): Promise<NormalizedBlock> {
     if (!Number.isSafeInteger(height) || height < 0) throw new Error(`invalid block height ${height}`);
     await this.pace();
-    const payload = await fetchJson(`${this.baseUrl.replace(/\/$/, '')}/v0/block/${height}`);
+    const url = `${this.baseUrl.replace(/\/$/, '')}/v0/block/${height}`;
+    const payload = await fetchJson(url);
+    // FASTNEAR answers a height that has no archived/known block with HTTP 200
+    // and a JSON `null` body (NOT a 404). Treat it exactly like a 404: a skip
+    // CANDIDATE, never block evidence — the next ingested block's official
+    // canonical prev_hash/prev_height linkage proves whether the height is a
+    // legitimate chain gap or a pruned block.
+    if (payload === null || payload === undefined) throw new BlockNotFoundError(url);
     return normalizeFastNearBlock(payload);
   }
 
@@ -367,7 +389,20 @@ export class NearRpcClient {
    */
   async verifyBlock(height: number, hash: string): Promise<CanonicalBlockHeader> {
     if (!Number.isSafeInteger(height) || height < 0) throw new Error(`invalid block height ${height}`);
-    const result = rec(await this.rpc('block', { block_id: height }));
+    let result: Record<string, unknown>;
+    try {
+      result = rec(await this.rpc('block', { block_id: height }));
+    } catch (e) {
+      // A height with no canonical block is a chain-gap candidate, not a fatal
+      // error: the fail-closed proof is the NEXT block's prev_hash linkage.
+      if (e instanceof HttpError && (e.status === 404 || e.status === 422)) {
+        throw new CanonicalBlockMissingError(height, e.url);
+      }
+      if (e instanceof RpcError && typeof e.detail === 'string' && e.detail.includes('UNKNOWN_BLOCK')) {
+        throw new CanonicalBlockMissingError(height, this.url);
+      }
+      throw e;
+    }
     const header = rec(result['header']);
     const rpcHeight = header['height'];
     const rpcHash = header['hash'];

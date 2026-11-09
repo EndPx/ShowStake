@@ -9,7 +9,7 @@
 // heights). A pruned-but-existing height breaks that linkage and fails closed. A
 // malformed/missing source payload throws and the cursor stays behind it.
 import type { BlockSource, CanonicalVerifier, ViewSource } from './types.js';
-import { BlockNotFoundError, FastNearBlockSource, NearRpcClient, NearRpcViewSource, RpcCanonicalVerifier } from './source.js';
+import { BlockNotFoundError, CanonicalBlockMissingError, FastNearBlockSource, NearRpcClient, NearRpcViewSource, RpcCanonicalVerifier } from './source.js';
 import { WorkerStore, type LiveChain } from './store.js';
 
 export interface ScanLog {
@@ -110,7 +110,23 @@ export async function runBoundedScan(opts: {
       throw e;
     }
     if (block.height !== height) throw new Error(`source returned block ${block.height}, expected ${height}`);
-    const summary = await store.ingestBlock(deploymentId, block);
+    let summary;
+    try {
+      summary = await store.ingestBlock(deploymentId, block);
+    } catch (e) {
+      if (e instanceof CanonicalBlockMissingError) {
+        // The OFFICIAL RPC has no canonical block at this height (a chain gap);
+        // the source may have served a spurious/stale block, which the canonical
+        // check refuses to trust. Skip candidate: proven only by the NEXT block's
+        // official canonical prev_hash/prev_height linkage, never by itself.
+        pendingMissing.push(height);
+        log?.(`official RPC has no canonical block at ${height} (skip candidate; canonical linkage checked at the next ingest)`);
+        height++;
+        count++;
+        continue;
+      }
+      throw e;
+    }
     // ingestBlock's linkage proof covers every still-pending missing height below
     // this block (it required prev_hash/prev_height == cursor at the gap).
     for (let i = pendingMissing.length - 1; i >= 0; i--) {

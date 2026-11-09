@@ -8,18 +8,31 @@ import type { CommitData, ShowStakeEvent } from './types.js';
 export const SHOWSTAKE_STANDARD = 'showstake';
 export const SHOWSTAKE_VERSION = '1.0.0';
 
-/** Events emitted by the deployed minimum (fc49fb85) contract source. */
+/**
+ * Events emitted by the deployed minimum (fc49fb85 / `showstake-v2/1`) contract
+ * plus the settled v6 lifecycle (f462ddcb / `showstake-v2-d036-settle/1`).
+ * Unknown financial/attendance/settlement event names throw (fail-closed): they
+ * are never silently downgraded to provenance-only, because advancing a stale
+ * projection over an unparsed financial event would fabricate DB rights.
+ */
 export const KNOWN_EVENTS = new Set([
   // projected
   'EventPublished',
   'RegistrationCommitted',
-  // provenance-only (captured in chain_events, never projected in this slice)
-  'StorageDeposited',
-  'EventCancelled',
-  'RefundModeActivated',
+  // v6 attendance + settlement lifecycle (projected)
+  'AttendanceMarked',
+  'EventFinalized',
+  'SettlementStarted',
+  'SettlementChunk',
+  'EventSettled',
+  // v6 private payout callback lifecycle (projected)
   'PayoutStarted',
   'PayoutSucceeded',
   'PayoutFailed',
+  // provenance-only (captured in chain_events, never projected)
+  'StorageDeposited',
+  'EventCancelled',
+  'RefundModeActivated',
 ]);
 
 function isObject(v: unknown): v is Record<string, unknown> {
@@ -91,6 +104,12 @@ function reqInt(data: Record<string, unknown>, key: string, opts: { min: number;
   return v;
 }
 
+function reqBool(data: Record<string, unknown>, key: string): boolean {
+  const v = data[key];
+  if (typeof v !== 'boolean') throw new Error(`field ${key} must be a boolean`);
+  return v;
+}
+
 /** Data extracted from an `EventPublished` log (enrichment adds the rest). */
 export interface PublishLogData {
   eventId: string;
@@ -125,14 +144,147 @@ export function parseCommitLog(data: Record<string, unknown>): CommitData {
   };
 }
 
-/** A classified event: PUBLISH/COMMIT project; everything else is provenance. */
+/** Optional flag carried by `SettlementChunk` after an idempotent re-settle. */
+export interface AttendanceData {
+  eventId: string;
+  registrationId: string;
+  attended: boolean;
+  changed: boolean;
+}
+
+export interface FinalizeData {
+  eventId: string;
+  attendeeCount: number;
+  noShowCount: number;
+  totalRegistrations: number;
+  finalizedAtMs: number;
+}
+
+export interface SettleStartData {
+  eventId: string;
+  pool: string;
+  baseShare: string;
+  remainder: string;
+  attendeeCount: number;
+  actor: string;
+}
+
+export interface SettleChunkData {
+  eventId: string;
+  cursor: number;
+  totalRegistrations: number;
+  allocatedTotal: string;
+  complete: boolean;
+  /** only present on an idempotent re-settle after the event is already Settled. */
+  alreadySettled: boolean;
+}
+
+export interface SettleEndData {
+  eventId: string;
+  allocatedTotal: string;
+  attendeeCount: number;
+  noShowCount: number;
+  totalRegistrations: number;
+}
+
+export interface PayoutData {
+  payoutId: string;
+  registrationId: string;
+  eventId: string;
+  beneficiary: string;
+  amount: string;
+}
+
+export function parseAttendanceLog(data: Record<string, unknown>): AttendanceData {
+  return {
+    eventId: reqString(data, 'event_id'),
+    registrationId: reqString(data, 'registration_id'),
+    attended: reqBool(data, 'attended'),
+    changed: reqBool(data, 'changed'),
+  };
+}
+
+export function parseFinalizeLog(data: Record<string, unknown>): FinalizeData {
+  return {
+    eventId: reqString(data, 'event_id'),
+    attendeeCount: reqInt(data, 'attendee_count', { min: 0, max: 200 }),
+    noShowCount: reqInt(data, 'no_show_count', { min: 0, max: 200 }),
+    totalRegistrations: reqInt(data, 'total_registrations', { min: 1, max: 200 }),
+    finalizedAtMs: reqInt(data, 'finalized_at', { min: 0, max: Number.MAX_SAFE_INTEGER }),
+  };
+}
+
+export function parseSettleStartLog(data: Record<string, unknown>): SettleStartData {
+  return {
+    eventId: reqString(data, 'event_id'),
+    pool: reqU128(data, 'pool'),
+    baseShare: reqU128(data, 'base_share'),
+    remainder: reqU128(data, 'remainder'),
+    attendeeCount: reqInt(data, 'attendee_count', { min: 0, max: 200 }),
+    actor: reqAccount(data, 'actor'),
+  };
+}
+
+export function parseSettleChunkLog(data: Record<string, unknown>): SettleChunkData {
+  return {
+    eventId: reqString(data, 'event_id'),
+    cursor: reqInt(data, 'cursor', { min: 0, max: Number.MAX_SAFE_INTEGER }),
+    totalRegistrations: reqInt(data, 'total_registrations', { min: 1, max: 200 }),
+    allocatedTotal: reqU128(data, 'allocated_total'),
+    complete: reqBool(data, 'complete'),
+    alreadySettled: data['already_settled'] === undefined ? false : reqBool(data, 'already_settled'),
+  };
+}
+
+export function parseSettleEndLog(data: Record<string, unknown>): SettleEndData {
+  return {
+    eventId: reqString(data, 'event_id'),
+    allocatedTotal: reqU128(data, 'allocated_total'),
+    attendeeCount: reqInt(data, 'attendee_count', { min: 0, max: 200 }),
+    noShowCount: reqInt(data, 'no_show_count', { min: 0, max: 200 }),
+    totalRegistrations: reqInt(data, 'total_registrations', { min: 1, max: 200 }),
+  };
+}
+
+export function parsePayoutLog(data: Record<string, unknown>): PayoutData {
+  return {
+    payoutId: reqString(data, 'payout_id'),
+    registrationId: reqString(data, 'registration_id'),
+    eventId: reqString(data, 'event_id'),
+    beneficiary: reqAccount(data, 'beneficiary'),
+    amount: reqU128(data, 'amount', { positive: true }),
+  };
+}
+
+/**
+ * A classified event. PUBLISH/COMMIT plus the v6 attendance/settlement/payout
+ * lifecycle project; the remaining events are provenance-only (never projected).
+ */
 export type ClassifiedEvent =
   | { kind: 'PUBLISH'; log: ShowStakeEvent; publish: PublishLogData }
   | { kind: 'COMMIT'; log: ShowStakeEvent; commit: CommitData }
+  | { kind: 'ATTENDANCE'; log: ShowStakeEvent; attendance: AttendanceData }
+  | { kind: 'FINALIZE'; log: ShowStakeEvent; finalize: FinalizeData }
+  | { kind: 'SETTLE_START'; log: ShowStakeEvent; settleStart: SettleStartData }
+  | { kind: 'SETTLE_CHUNK'; log: ShowStakeEvent; settleChunk: SettleChunkData }
+  | { kind: 'SETTLE_END'; log: ShowStakeEvent; settleEnd: SettleEndData }
+  | { kind: 'PAYOUT_START'; log: ShowStakeEvent; payout: PayoutData }
+  | { kind: 'PAYOUT_SUCCESS'; log: ShowStakeEvent; payout: PayoutData }
+  | { kind: 'PAYOUT_FAIL'; log: ShowStakeEvent; payout: PayoutData }
   | { kind: 'PROVENANCE'; log: ShowStakeEvent };
 
 export function classifyEvent(ev: ShowStakeEvent): ClassifiedEvent {
-  if (ev.event === 'EventPublished') return { kind: 'PUBLISH', log: ev, publish: parsePublishLog(ev.data) };
-  if (ev.event === 'RegistrationCommitted') return { kind: 'COMMIT', log: ev, commit: parseCommitLog(ev.data) };
-  return { kind: 'PROVENANCE', log: ev };
+  switch (ev.event) {
+    case 'EventPublished': return { kind: 'PUBLISH', log: ev, publish: parsePublishLog(ev.data) };
+    case 'RegistrationCommitted': return { kind: 'COMMIT', log: ev, commit: parseCommitLog(ev.data) };
+    case 'AttendanceMarked': return { kind: 'ATTENDANCE', log: ev, attendance: parseAttendanceLog(ev.data) };
+    case 'EventFinalized': return { kind: 'FINALIZE', log: ev, finalize: parseFinalizeLog(ev.data) };
+    case 'SettlementStarted': return { kind: 'SETTLE_START', log: ev, settleStart: parseSettleStartLog(ev.data) };
+    case 'SettlementChunk': return { kind: 'SETTLE_CHUNK', log: ev, settleChunk: parseSettleChunkLog(ev.data) };
+    case 'EventSettled': return { kind: 'SETTLE_END', log: ev, settleEnd: parseSettleEndLog(ev.data) };
+    case 'PayoutStarted': return { kind: 'PAYOUT_START', log: ev, payout: parsePayoutLog(ev.data) };
+    case 'PayoutSucceeded': return { kind: 'PAYOUT_SUCCESS', log: ev, payout: parsePayoutLog(ev.data) };
+    case 'PayoutFailed': return { kind: 'PAYOUT_FAIL', log: ev, payout: parsePayoutLog(ev.data) };
+    default: return { kind: 'PROVENANCE', log: ev };
+  }
 }

@@ -77,3 +77,14 @@ D040 justifiedexecutor reassignment: repeated GATERip_limit blocks indexingrevis
 
 
 D041 testnet RPC execution choice: after officialrpc.testnet.near.org repeatedly429, read-onlyD036reconciliation and newv6tests use officialNEAR-doc-listed FASTNEAR https://test.rpc.fastnear.com. Existing CLI connection alias testnet-fastnear has network_name=testnet andsameOSkeychain; no globalNEARconfig mutation. Codehash/config/chainid verified; no feesubscription/APIkey/newpaidservice. Publicfree-tierlimits/reliability notguaranteed. V5claim wasneverresent; v6transfers haveindividualreceipt/checkpoint guards. This is infrastructuretransport choice, not a newasset/network or model/provider substitution.
+
+
+D042 explicit humanreassignment: ZCode reportedlycreditblocked, runtimeonlyshowsModelrequestfailed. Guardedstopconfirmed bothZCodefactory/indexingattempts; preserveallpartials. Transferexistingtasks toDeepSeekHarness/GATER, samefiles/disjointownership. BothDeepSeekFlashrequests immediatelyupstream403authentication_failed; notipbinding/noTelegram. ExistingauthorizedMiniMaxfallback attempted forpriorityindexingonly; factoryattemptstopped/preservedpendinghealthyexecutor. No newprovider/paidservice, featureacceptance or workerpush.
+
+
+D043 latest explicit modeldirection: Harnessuses GATER/deepseek-v4.1-flash-1017-v2 again. MiniMaxattemptstopped/released; sameindexingtaskrecovered ctx_327f833d6358, no competingwriter. Current72fixture/73realPG proof preserved, finishremainingtestnet/reportonly. Codex temporarilyceasesindexsourcewrites forsoleHarnessownership. No providerchange orfeatureacceptanceimplied.
+
+
+D044 explicit human authorizes remaining implementation through DeepSeekHarness plus CodexTerra. Terra actualmodelgpt-6.1-terra spawned as /root/terra_api_access, owns apps/api/**+APIcontractspec/tests for authenticatedpass/claims/organizer/content slice. Harness keeps apps/worker/**+workerPG/recovery/rootNode lock; no overlappingwriters. ParentCodex reviews/accepts/tests/commitspush. No provider/model masquerade, no new financial/deployment permission; existingtestnetonly authorization retained. Subsequentassignments followdependencies, do not restartacceptedmilestones.
+
+D045 Codex review of the v6 worker adapter: accept the corrected source as PASS_LOCAL integration only after per-block multi-event totals reconciliation, pinned totals event identity, settlement count/freeze/claims checks, and pending-payout guards were added and verified. Keep the testnet settlement/payout scan BLOCKED_EXTERNAL while public FASTNEAR/RPC endpoints rate-limit; do not weaken canonical linkage or retry blindly.

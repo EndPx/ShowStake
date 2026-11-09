@@ -19,7 +19,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createWorkerPool, WorkerStore, assertWorkerLeastPrivilege } from '../dist/store.js';
 import { listMigrations, runMigrations, connectConfig } from '../../../migrations/runner.mjs';
-import { COMMITTED_DEPLOYMENT, localFixtureBlocks, commitBlock } from './fixtures.mjs';
+import { COMMITTED_DEPLOYMENT, SETTLE_DEPLOYMENT, localFixtureBlocks, commitBlock, block, receipt, log } from './fixtures.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(here, '../../..');
@@ -436,20 +436,165 @@ async function main() {
     check('DB_PROJECTION_CONSISTENCY', expectedCommits === 4 && finalRegs.rows[0].n === 4 && finalPasses.rows[0].n === 4 && finalChain.rows.find((r) => r.event_name === 'StorageDeposited')?.n === 1,
       '4 committed chain events -> 4 registrations/passes; storage provenance captured', JSON.stringify({ chain: finalChain.rows, regs: finalRegs.rows[0].n, passes: finalPasses.rows[0].n }));
 
+    // 19. v6 settlement lifecycle (separate settle deployment + consumer):
+    //      attendance provisional -> finalize freeze -> settlement allocation with
+    //      no-show forfeit -> payout start/fail/retry/success (no double count).
+    const DEP6 = SETTLE_DEPLOYMENT;
+    const SO_SETTLE_DEPLOYMENT_ID = '00000000-0000-4000-8000-0000000000d1';
+    await client.query(`
+      INSERT INTO deployments (id, environment, network, contract_id, ft_contract_id, ft_decimals, start_block, code_hash)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      ON CONFLICT (network, contract_id) DO UPDATE SET code_hash = EXCLUDED.code_hash, start_block = EXCLUDED.start_block`,
+      [SO_SETTLE_DEPLOYMENT_ID, DEP6.environment, DEP6.network, DEP6.contractId, DEP6.ftContractId, DEP6.ftDecimals, 200, DEP6.codeHash]);
+
+    const settleView = {
+      event_id: 'evt-settle-1', organizer: DEP6.organizer, canonical_ft: DEP6.ftContractId, rules_hash: 'rules-settle-1',
+      deposit: '5000000', capacity: 5,
+      reg_open: 1794050511780, reg_close: 1794072171780, cancel_cutoff: 1794072171780,
+      checkin_open: 1794072171780, checkin_close: 1794075771780, finalize_deadline: 1794162171780,
+      policy_version: DEP6.policyVersion, state: 'Published',
+    };
+    const settlementView = {
+      event_id: 'evt-settle-1', state: 'Settled', attendance_frozen: true, attendee_count: 2, no_show_count: 1,
+      registrations: 3, pool: '5000000', base_share: '2500000', remainder: '0', allocated_total: '15000000', complete: true, claims_enabled: true,
+    };
+    const totalsFor = (h) => {
+      if (h <= 207) return { event_id: 'evt-settle-1', state: 'Settled', accepted_principal: '15000000', paid: '0', pending: '0', liability: '15000000' };
+      if (h === 208 || h === 210) return { event_id: 'evt-settle-1', state: 'Settled', accepted_principal: '15000000', paid: '0', pending: '7500000', liability: '7500000' };
+      if (h === 209) return { event_id: 'evt-settle-1', state: 'Settled', accepted_principal: '15000000', paid: '0', pending: '0', liability: '15000000' };
+      if (h === 211) return { event_id: 'evt-settle-1', state: 'Settled', accepted_principal: '15000000', paid: '7500000', pending: '0', liability: '7500000' };
+      return { event_id: 'evt-settle-1', state: 'Settled', accepted_principal: '15000000', paid: '15000000', pending: '0', liability: '0' };
+    };
+    const payoutFor = (payoutId, h) => {
+      // state is end-of-block terminal; the worker derives transitions from EVENT
+      // data and only verifies identity+amount against this view (no state assert).
+      if (payoutId === 'pay-reg-s-0-1') return { payout_id: payoutId, registration_id: 'reg-s-0', event_id: 'evt-settle-1', beneficiary: 'bob.testnet', amount: '7500000', state: h >= 209 ? 'Failed' : 'Pending' };
+      if (payoutId === 'pay-reg-s-0-2') return { payout_id: payoutId, registration_id: 'reg-s-0', event_id: 'evt-settle-1', beneficiary: 'bob.testnet', amount: '7500000', state: 'Succeeded' };
+      return { payout_id: payoutId, registration_id: 'reg-s-1', event_id: 'evt-settle-1', beneficiary: 'carol.testnet', amount: '7500000', state: 'Succeeded' };
+    };
+    function makeSettleLiveChain() {
+      return {
+        viewSource: {
+          async callView(method, args, blockRef) {
+            const h = Number(String(blockRef).replace(/^S/, ''));
+            if (method === 'get_config') return { result: { organizer: DEP6.organizer, canonical_ft: DEP6.ftContractId, network: DEP6.network, policy_version: DEP6.policyVersion }, blockHeight: h, blockHash: blockRef };
+            if (method === 'ft_metadata') return { result: { decimals: DEP6.ftDecimals, symbol: 'SS' }, blockHeight: h, blockHash: blockRef };
+            if (method === 'get_event') return { result: settleView, blockHeight: h, blockHash: blockRef };
+            if (method === 'get_settlement') return { result: settlementView, blockHeight: h, blockHash: blockRef };
+            if (method === 'get_event_totals') return { result: totalsFor(h), blockHeight: h, blockHash: blockRef };
+            if (method === 'get_payout') return { result: payoutFor(args.args.payout_id, h), blockHeight: h, blockHash: blockRef };
+            throw new Error(`unexpected view ${method}`);
+          },
+        },
+        async accountCodeHash() { return DEP6.codeHash; },
+      };
+    }
+
+    const settleCanonical = makeFakeCanonical();
+    const settleBlock = (height, receiptId, logs) => {
+      const b = block({
+        height, hash: `S${height}`, prevHash: `S${height - 1}`, prevHeight: height - 1,
+        timestampMs: 1794100000000 + height * 1000,
+        receipts: [receipt({ id: receiptId, executorId: DEP6.contractId, logs })],
+      });
+      registerBlock(settleCanonical, b);
+      return b;
+    };
+    const settleBlocks = {
+      publish: settleBlock(200, 's-receipt-publish', [log('EventPublished', { event_id: 'evt-settle-1', organizer: DEP6.organizer, deposit: '5000000', capacity: 5, finalize_deadline: 1794162171780, policy_version: DEP6.policyVersion, storage_cost_yocto: '0' })]),
+      c0: settleBlock(201, 's-receipt-c0', [log('RegistrationCommitted', { event_id: 'evt-settle-1', registration_id: 'reg-s-0', pass_id: 'pass-s-0', participant: 'bob.testnet', beneficiary: 'bob.testnet', commitment_id: 'commit-s-0', amount: '5000000', event_sequence: 0, storage_cost_yocto: '0' })]),
+      c1: settleBlock(202, 's-receipt-c1', [log('RegistrationCommitted', { event_id: 'evt-settle-1', registration_id: 'reg-s-1', pass_id: 'pass-s-1', participant: 'carol.testnet', beneficiary: 'carol.testnet', commitment_id: 'commit-s-1', amount: '5000000', event_sequence: 1, storage_cost_yocto: '0' })]),
+      c2: settleBlock(203, 's-receipt-c2', [log('RegistrationCommitted', { event_id: 'evt-settle-1', registration_id: 'reg-s-2', pass_id: 'pass-s-2', participant: 'dave.testnet', beneficiary: 'dave.testnet', commitment_id: 'commit-s-2', amount: '5000000', event_sequence: 2, storage_cost_yocto: '0' })]),
+      a0: settleBlock(204, 's-receipt-a0', [log('AttendanceMarked', { event_id: 'evt-settle-1', registration_id: 'reg-s-0', attended: true, changed: true })]),
+      a1: settleBlock(205, 's-receipt-a1', [log('AttendanceMarked', { event_id: 'evt-settle-1', registration_id: 'reg-s-1', attended: true, changed: true })]),
+      fin: settleBlock(206, 's-receipt-fin', [log('EventFinalized', { event_id: 'evt-settle-1', attendee_count: 2, no_show_count: 1, total_registrations: 3, finalized_at: 1794100000000 })]),
+      settle: settleBlock(207, 's-receipt-settle', [log('SettlementStarted', { event_id: 'evt-settle-1', pool: '5000000', base_share: '2500000', remainder: '0', attendee_count: 2, actor: DEP6.organizer }), log('EventSettled', { event_id: 'evt-settle-1', allocated_total: '15000000', attendee_count: 2, no_show_count: 1, total_registrations: 3 })]),
+      pstart: settleBlock(208, 's-receipt-pstart', [log('PayoutStarted', { payout_id: 'pay-reg-s-0-1', registration_id: 'reg-s-0', event_id: 'evt-settle-1', beneficiary: 'bob.testnet', amount: '7500000' })]),
+      pfail: settleBlock(209, 's-receipt-pfail', [log('PayoutFailed', { payout_id: 'pay-reg-s-0-1', registration_id: 'reg-s-0', event_id: 'evt-settle-1', beneficiary: 'bob.testnet', amount: '7500000' })]),
+      pretry: settleBlock(210, 's-receipt-pretry', [log('PayoutStarted', { payout_id: 'pay-reg-s-0-2', registration_id: 'reg-s-0', event_id: 'evt-settle-1', beneficiary: 'bob.testnet', amount: '7500000' })]),
+      pok: settleBlock(211, 's-receipt-pok', [log('PayoutSucceeded', { payout_id: 'pay-reg-s-0-2', registration_id: 'reg-s-0', event_id: 'evt-settle-1', beneficiary: 'bob.testnet', amount: '7500000' })]),
+      // reg-s-1 start + private callback SUCCEEDED in the SAME block: the pinned
+      // end-of-block get_payout already reads Succeeded, so the start event must
+      // not assert Pending (event-derived transitions + one per-block reconcile).
+      sameBlock: settleBlock(212, 's-receipt-sameblock', [log('PayoutStarted', { payout_id: 'pay-reg-s-1-1', registration_id: 'reg-s-1', event_id: 'evt-settle-1', beneficiary: 'carol.testnet', amount: '7500000' }), log('PayoutSucceeded', { payout_id: 'pay-reg-s-1-1', registration_id: 'reg-s-1', event_id: 'evt-settle-1', beneficiary: 'carol.testnet', amount: '7500000' })]),
+    };
+
+    const settleStore = new WorkerStore(pool, { ...DEP6, startHeight: 200 }, 'showstake-worker-settle', makeSettleLiveChain(), settleCanonical);
+    const { id: settleDeploymentId, startBlock: settleStartBlock } = await settleStore.resolveDeployment();
+    check('DB_SETTLE_DEPLOYMENT_RESOLVED', settleDeploymentId === SO_SETTLE_DEPLOYMENT_ID && settleStartBlock === 200, 'settle deployment resolved at start 200', `${settleDeploymentId}/${settleStartBlock}`);
+
+    await settleStore.ingestBlock(settleDeploymentId, settleBlocks.publish);
+    await settleStore.ingestBlock(settleDeploymentId, settleBlocks.c0);
+    await settleStore.ingestBlock(settleDeploymentId, settleBlocks.c1);
+    await settleStore.ingestBlock(settleDeploymentId, settleBlocks.c2);
+    await settleStore.ingestBlock(settleDeploymentId, settleBlocks.a0);
+    await settleStore.ingestBlock(settleDeploymentId, settleBlocks.a1);
+    await settleStore.ingestBlock(settleDeploymentId, settleBlocks.fin);
+
+    const settleEvent = await client.query(`SELECT id, state FROM events_projection WHERE deployment_id=$1 AND chain_event_id='evt-settle-1'`, [settleDeploymentId]);
+    check('DB_SETTLE_FINALIZED', settleEvent.rows[0]?.state === 'ATTENDANCE_FINALIZED', 'event ATTENDANCE_FINALIZED after finalize', settleEvent.rows[0]?.state);
+    const finRegs = await client.query(`SELECT chain_registration_id, state, attended FROM registrations_projection WHERE event_id=$1 ORDER BY sequence_no ASC`, [settleEvent.rows[0].id]);
+    check('DB_SETTLE_ATTENDANCE_FROZEN', finRegs.rows.length === 3 && finRegs.rows.filter((r) => r.state === 'ATTENDED').length === 2 && finRegs.rows.filter((r) => r.state === 'NO_SHOW').length === 1,
+      'attendance frozen: 2 ATTENDED, 1 NO_SHOW', JSON.stringify(finRegs.rows.map((r) => [r.chain_registration_id, r.state])));
+
+    await settleStore.ingestBlock(settleDeploymentId, settleBlocks.settle);
+    const settledEvent = await client.query(`SELECT id, state, accepted_atomic::text a, paid_atomic::text p, pending_atomic::text pen, liability_atomic::text l FROM events_projection WHERE deployment_id=$1 AND chain_event_id='evt-settle-1'`, [settleDeploymentId]);
+    check('DB_SETTLE_SETTLED', settledEvent.rows[0]?.state === 'SETTLED' && settledEvent.rows[0].a === '15000000' && settledEvent.rows[0].l === '15000000', 'event SETTLED with accepted=liability=15000000', JSON.stringify(settledEvent.rows[0]));
+    const settleAllocs = await client.query(`SELECT chain_registration_id, claim_atomic::text c, payout_state s, principal_atomic::text d FROM registrations_projection WHERE event_id=$1 ORDER BY sequence_no ASC`, [settleEvent.rows[0].id]);
+    const allocs = settleAllocs.rows;
+    check('DB_SETTLE_ALLOCATION', allocs.length === 3 && allocs[0].c === '7500000' && allocs[0].s === 'CLAIMABLE' && allocs[1].c === '7500000' && allocs[1].s === 'CLAIMABLE' && allocs[2].c === '0' && allocs[2].s === 'ZERO',
+      'attendees 7500000 CLAIMABLE; no-show 0 ZERO (Forfeited->ZERO)', JSON.stringify(allocs.map((r) => [r.chain_registration_id, r.c, r.s])));
+    check('DB_SETTLE_PRINCIPAL_UNCHANGED', allocs.every((r) => r.d === '5000000'), 'principal stays D=5000000 (claim is reward+principal)', JSON.stringify(allocs.map((r) => r.d)));
+    check('DB_SETTLE_CONSERVATION', allocs.reduce((s, r) => s + BigInt(r.c), 0n).toString() === '15000000', 'sum(claim_atomic) == accepted == allocated_total', allocs.reduce((s, r) => s + BigInt(r.c), 0n).toString());
+
+    await settleStore.ingestBlock(settleDeploymentId, settleBlocks.pstart);
+    const afterStart = await client.query(`SELECT paid_atomic::text p, pending_atomic::text pen, liability_atomic::text l FROM events_projection WHERE id=$1`, [settleEvent.rows[0].id]);
+    check('DB_SETTLE_PAYOUT_PENDING', afterStart.rows[0].p === '0' && afterStart.rows[0].pen === '7500000' && afterStart.rows[0].l === '7500000', 'PayoutStarted -> pending 7500000, liability 7500000', JSON.stringify(afterStart.rows[0]));
+
+    await settleStore.ingestBlock(settleDeploymentId, settleBlocks.pfail);
+    const afterFail = await client.query(`SELECT pending_atomic::text pen, liability_atomic::text l FROM events_projection WHERE id=$1`, [settleEvent.rows[0].id]);
+    const regs0AfterFail = await client.query(`SELECT payout_state FROM registrations_projection WHERE chain_registration_id='reg-s-0' AND event_id=$1`, [settleEvent.rows[0].id]);
+    check('DB_SETTLE_PAYOUT_FAIL_RESTORES', afterFail.rows[0].pen === '0' && afterFail.rows[0].l === '15000000' && regs0AfterFail.rows[0].payout_state === 'CLAIMABLE',
+      'PayoutFailed restores claimable + liability; no double count', JSON.stringify({ t: afterFail.rows[0], st: regs0AfterFail.rows[0].payout_state }));
+
+    await settleStore.ingestBlock(settleDeploymentId, settleBlocks.pretry);
+    await settleStore.ingestBlock(settleDeploymentId, settleBlocks.pok);
+    const afterOk = await client.query(`SELECT paid_atomic::text p, pending_atomic::text pen, liability_atomic::text l FROM events_projection WHERE id=$1`, [settleEvent.rows[0].id]);
+    const regs0AfterOk = await client.query(`SELECT payout_state FROM registrations_projection WHERE chain_registration_id='reg-s-0' AND event_id=$1`, [settleEvent.rows[0].id]);
+    const payouts = await client.query(`SELECT payout_id, state, amount_atomic::text a FROM payouts_projection ORDER BY payout_id ASC`);
+    check('DB_SETTLE_RETRY_PAID_ONCE', afterOk.rows[0].p === '7500000' && afterOk.rows[0].pen === '0' && afterOk.rows[0].l === '7500000' && regs0AfterOk.rows[0].payout_state === 'PAID',
+      'retry paid once: paid 7500000, liability 7500000, registration PAID', JSON.stringify({ t: afterOk.rows[0], st: regs0AfterOk.rows[0].payout_state }));
+    check('DB_SETTLE_NO_DOUBLE_COUNT', payouts.rows.length === 2 && payouts.rows.some((r) => r.payout_id === 'pay-reg-s-0-1' && r.state === 'FAILED') && payouts.rows.some((r) => r.payout_id === 'pay-reg-s-0-2' && r.state === 'SUCCEEDED' && r.a === '7500000'),
+      'two payout rows: FAILED + SUCCEEDED, exactly once', JSON.stringify(payouts.rows));
+
+    // Same-block start + callback: event-derived transitions + ONE per-block
+    // totals reconcile (the start's get_payout already reads Succeeded).
+    await settleStore.ingestBlock(settleDeploymentId, settleBlocks.sameBlock);
+    const afterSame = await client.query(`SELECT paid_atomic::text p, pending_atomic::text pen, liability_atomic::text l FROM events_projection WHERE id=$1`, [settleEvent.rows[0].id]);
+    const regs1 = await client.query(`SELECT payout_state FROM registrations_projection WHERE chain_registration_id='reg-s-1' AND event_id=$1`, [settleEvent.rows[0].id]);
+    const payoutsSame = await client.query(`SELECT payout_id, state, amount_atomic::text a FROM payouts_projection WHERE payout_id='pay-reg-s-1-1'`);
+    check('DB_SETTLE_SAME_BLOCK_CALLBACK', afterSame.rows[0].p === '15000000' && afterSame.rows[0].pen === '0' && afterSame.rows[0].l === '0' && regs1.rows[0].payout_state === 'PAID' && payoutsSame.rows.length === 1 && payoutsSame.rows[0].state === 'SUCCEEDED',
+      'same-block start+callback: reg-s-1 PAID, totals paid=15000000, payout SUCCEEDED once', JSON.stringify({ t: afterSame.rows[0], st: regs1.rows[0].payout_state, po: payoutsSame.rows }));
+
+    // Batch resume: a fresh store over the same durable cursor resumes at cursor+1.
+    const resumeStore = new WorkerStore(pool, { ...DEP6, startHeight: 200 }, 'showstake-worker-settle', makeSettleLiveChain(), settleCanonical);
+    const resumeFrom = await resumeStore.resolveStartHeight(settleDeploymentId, settleStartBlock);
+    check('DB_SETTLE_BATCH_RESUME', resumeFrom === 213, 'resolveStartHeight resumes from cursor+1 = 213 (same DB lifecycle)', resumeFrom);
+
     const failed = results.filter((r) => !r.ok);
     const summary = {
       id: 'worker-increment-db',
-      task: 'apps/worker receipt projection (disposable PostgreSQL acceptance, review round 2)',
+      task: 'apps/worker receipt projection + v6 settlement lifecycle (disposable PostgreSQL acceptance)',
       classifier: failed.length === 0 ? 'PASS_LOCAL' : 'FAILED',
       ok: failed.length === 0,
       reviewer_pending: true,
       run_id: RUN_ID(),
       environment: { os: 'Windows + WSL2 (Linux Node over per-run Unix socket)', postgresql: 'disposable postgresql-18 cluster', database: DB(), socket: SOCKET() },
-      provider: { runtime: 'ZCode via Orca (Cloud Near); D040 executor reassignment', model: 'deepseek-ai/DeepSeek-V4.1-Flash-1017-abliterated', prior_round: 'GATER/deepseek-v4.1-flash-1017-v2' },
+      provider: { runtime: 'DeepSeek Harness via Orca', model: 'GATER/deepseek-v4.1-flash-1017-v2', prior_round: 'ZCode/deepseek-ai/DeepSeek-V4.1-Flash-1017-abliterated (minimum worker)' },
       totals: { checks: results.length, failed: failed.length },
       checks: results,
       commands: ['wsl -d Ubuntu -- bash scripts/postgres-disposable/run-worker-suite.sh', 'node apps/worker/test/verify-worker-fixtures.mjs (no-DB adversarial)'],
-      note: 'LABELED local: deterministic fixture receipts; real disposable PostgreSQL; NO network. Proves R1 cursor invariants (tx advisory lock incl. first creation, exact-start incl. fail-closed missing initial block, monotonic advancement only through official canonical prev_hash/prev_height linkage across legitimate gaps, fork and pruned-height/hash/height mismatch rejection, old replay without regression, verbatim replay provenance/payload comparison, conditional expected-previous upsert, malformed-cursor fail-closed, crash rollback, two-connection different-height opposite-order and same-height exactly-once), source-vs-official header consistency, R5 in-tx deployment/allowlist bind + actual FT metadata decimals + NOINHERIT/RESET ROLE guard, and API-role read of the projected event and pass.',
+      note: 'LABELED local: deterministic fixture receipts; real disposable PostgreSQL; NO network. Proves R1 cursor invariants (tx advisory lock incl. first creation, exact-start incl. fail-closed missing initial block, monotonic advancement only through official canonical prev_hash/prev_height linkage across legitimate gaps, fork and pruned-height/hash/height mismatch rejection, old replay without regression, verbatim replay provenance/payload comparison, conditional expected-previous upsert, malformed-cursor fail-closed, crash rollback, two-connection different-height opposite-order and same-height exactly-once), source-vs-official header consistency, R5 in-tx deployment/allowlist bind + actual FT metadata decimals + NOINHERIT/RESET ROLE guard, API-role read of the projected event and pass, AND the v6 settlement lifecycle: provisional attendance -> frozen ATTENDED/NO_SHOW, deterministic allocation (attendees D+share CLAIMABLE, no-show Forfeited->ZERO, principal D unchanged), conservation sum(claim)==accepted==allocated_total, payout start/fail/retry/success with exactly-once accounting and no double count, plus a same-block start+callback regression (event-derived transitions + one per-block totals reconcile) and a same-DB-lifecycle batch-resume regression (resolveStartHeight returns cursor+1).',
     };
     if (ARTIFACTS()) {
       await mkdir(ARTIFACTS(), { recursive: true });

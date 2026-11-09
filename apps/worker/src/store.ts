@@ -30,7 +30,9 @@ import { Pool, type Client, type PoolConfig } from 'pg';
 import { WORKER_DB_ROLE, type DeploymentAllowlist } from './config.js';
 import { assertAllowlistIdentity } from './identity.js';
 import { classifyEvent, parseShowStakeLogs } from './events.js';
-import { buildChainEvent, enrichPublish, parseEventView } from './project.js';
+import type { AttendanceData, FinalizeData, PayoutData, SettleChunkData, SettleEndData, SettleStartData } from './events.js';
+import { buildChainEvent, enrichPublish, mapEventState, parseEventView, parsePayoutView, parseSettlementView, parseTotalsView } from './project.js';
+import type { EventTotalsViewData, PayoutViewData, SettlementViewData } from './project.js';
 import type { CanonicalBlockHeader, CanonicalVerifier, ChainEventInsert, DeploymentRow, NormalizedBlock, PublishRules, ViewSource } from './types.js';
 
 export interface LiveChain {
@@ -44,10 +46,15 @@ export interface IngestSummary {
   matchedReceipts: number;
   publishedEvents: number;
   committedRegistrations: number;
+  settlementEvents: number;
+  payoutEvents: number;
   provenanceEvents: number;
   /** the durable cursor height after this ingest (unchanged on replay). */
   cursorHeight: number;
 }
+
+/** Event-derived transitions are reconciled against ONE pinned totals view per block. */
+type BlockFinancialReconcile = Map<string, EventTotalsViewData>;
 
 /** A parsed, validated `worker_cursors.cursor_value` row. */
 export interface CursorState {
@@ -336,30 +343,75 @@ export class WorkerStore {
       }
     }
 
-    // Enrich publish before opening the transaction (network read; fail closed).
-    // The enriched view must be pinned to exactly the block being ingested.
+    // Enrich before opening the transaction (network reads; fail closed). Every
+    // enriched view must be pinned to exactly the block being ingested. Financial
+    // transitions are driven by their OWN event data, then reconciled against ONE
+    // pinned `get_event_totals` per block: a mid-block pinned view already shows
+    // the END-of-block state (a payout started and its callback can land in the
+    // same block, so a start event's `get_payout` may already read `Succeeded`),
+    // so per-event state/totals assertions are never exact.
     const publishRules = new Map<number, PublishRules>();
+    const settlementViews = new Map<number, SettlementViewData>();
+    const payoutViews = new Map<number, PayoutViewData>();
     for (let i = 0; i < units.length; i++) {
       const c = units[i]!.classified;
       if (c.kind === 'PUBLISH') {
-        const view = await this.live.viewSource.callView(
+        const viewResult = await this.live.viewSource.callView(
           'get_event',
           { accountId: this.allowlist.contractId, args: { event_id: c.publish.eventId } },
           block.hash,
         );
-        if (view.blockHeight !== block.height) {
-          throw new Error(`get_event pinned to block ${view.blockHeight}, ingesting ${block.height}`);
-        }
-        if (view.blockHash !== block.hash) {
-          throw new Error(`get_event pinned to hash ${view.blockHash}, expected ${block.hash}`);
-        }
-        publishRules.set(i, enrichPublish(c.publish, parseEventView(view.result), this.allowlist));
+        this.assertPinned(viewResult.blockHeight, viewResult.blockHash, block, 'get_event');
+        publishRules.set(i, enrichPublish(c.publish, parseEventView(viewResult.result), this.allowlist));
+      } else if (c.kind === 'SETTLE_END') {
+        const raw = await this.live.viewSource.callView(
+          'get_settlement',
+          { accountId: this.allowlist.contractId, args: { event_id: c.settleEnd.eventId } },
+          block.hash,
+        );
+        this.assertPinned(raw.blockHeight, raw.blockHash, block, 'get_settlement');
+        settlementViews.set(i, parseSettlementView(raw.result));
+      } else if (c.kind === 'PAYOUT_START' || c.kind === 'PAYOUT_SUCCESS' || c.kind === 'PAYOUT_FAIL') {
+        const raw = await this.live.viewSource.callView(
+          'get_payout',
+          { accountId: this.allowlist.contractId, args: { payout_id: c.payout.payoutId } },
+          block.hash,
+        );
+        this.assertPinned(raw.blockHeight, raw.blockHash, block, 'get_payout');
+        payoutViews.set(i, parsePayoutView(raw.result));
+      }
+    }
+
+    // ONE pinned totals view per block reconciles every financial event's final
+    // state (contract totals are the sole financial authority, never DB-created).
+    const financialEventIds = new Set<string>();
+    for (const unit of units) {
+      const kind = unit.classified.kind;
+      if (kind === 'SETTLE_END' || kind === 'PAYOUT_START' || kind === 'PAYOUT_SUCCESS' || kind === 'PAYOUT_FAIL') {
+        financialEventIds.add(this.classifiedEventId(unit.classified));
+      }
+    }
+    let blockFinancial: BlockFinancialReconcile | null = null;
+    if (financialEventIds.size > 0) {
+      blockFinancial = new Map();
+      for (const eventId of financialEventIds) {
+      const totalsRaw = await this.live.viewSource.callView(
+        'get_event_totals',
+        { accountId: this.allowlist.contractId, args: { event_id: eventId } },
+        block.hash,
+      );
+      this.assertPinned(totalsRaw.blockHeight, totalsRaw.blockHash, block, 'get_event_totals');
+        const totals = parseTotalsView(totalsRaw.result);
+        if (totals.event_id !== eventId) throw new Error(`event totals view event_id mismatch: requested ${eventId}, got ${totals.event_id}`);
+        blockFinancial.set(eventId, totals);
       }
     }
 
     const client = await this.pool.connect();
     let published = 0;
     let committed = 0;
+    let settlement = 0;
+    let payouts = 0;
     let provenance = 0;
     try {
       await client.query('BEGIN');
@@ -382,14 +434,57 @@ export class WorkerStore {
         const { classified, chainEvent } = units[i]!;
         const inserted = await this.insertChainEvent(client, deploymentId, chainEvent);
         if (!inserted) continue; // already ingested (idempotent replay)
-        if (classified.kind === 'PUBLISH') {
-          await this.insertEventProjection(client, deploymentId, publishRules.get(i)!, chainEvent.blockTimeMs);
-          published++;
-        } else if (classified.kind === 'COMMIT') {
-          await this.applyCommit(client, deploymentId, classified.commit, chainEvent.blockTimeMs);
-          committed++;
-        } else {
-          provenance++;
+        switch (classified.kind) {
+          case 'PUBLISH':
+            await this.insertEventProjection(client, deploymentId, publishRules.get(i)!, chainEvent.blockTimeMs);
+            published++;
+            break;
+          case 'COMMIT':
+            await this.applyCommit(client, deploymentId, classified.commit, chainEvent.blockTimeMs);
+            committed++;
+            break;
+          case 'ATTENDANCE':
+            await this.applyAttendance(client, deploymentId, classified.attendance);
+            settlement++;
+            break;
+          case 'FINALIZE':
+            await this.applyFinalize(client, deploymentId, classified.finalize);
+            settlement++;
+            break;
+          case 'SETTLE_START':
+            await this.applySettleStart(client, deploymentId, classified.settleStart);
+            settlement++;
+            break;
+          case 'SETTLE_CHUNK':
+            await this.applySettleChunk(client, deploymentId, classified.settleChunk);
+            settlement++;
+            break;
+          case 'SETTLE_END':
+            await this.applySettleEnd(client, deploymentId, classified.settleEnd, settlementViews.get(i)!, blockFinancial?.get(classified.settleEnd.eventId) ?? null);
+            settlement++;
+            break;
+          case 'PAYOUT_START':
+            await this.applyPayoutStart(client, deploymentId, classified.payout, payoutViews.get(i)!, chainEvent.receiptId, chainEvent.blockTimeMs);
+            payouts++;
+            break;
+          case 'PAYOUT_SUCCESS':
+            await this.applyPayoutSuccess(client, deploymentId, classified.payout, payoutViews.get(i)!);
+            payouts++;
+            break;
+          case 'PAYOUT_FAIL':
+            await this.applyPayoutFail(client, deploymentId, classified.payout, payoutViews.get(i)!);
+            payouts++;
+            break;
+          default:
+            provenance++;
+        }
+      }
+
+      // Reconcile the block's financial state exactly once (contract totals are
+      // the authority; per-event transitions above are the derived ledger moves).
+      if (blockFinancial) {
+        for (const [eventId, totals] of blockFinancial) {
+          await this.applyVerifiedTotals(client, deploymentId, eventId, totals);
         }
       }
 
@@ -403,6 +498,8 @@ export class WorkerStore {
         matchedReceipts: kept.length,
         publishedEvents: published,
         committedRegistrations: committed,
+        settlementEvents: settlement,
+        payoutEvents: payouts,
         provenanceEvents: provenance,
         cursorHeight: next?.block_height ?? current?.block_height ?? block.height,
       };
@@ -660,5 +757,235 @@ export class WorkerStore {
         WHERE id = $2`,
       [c.amount, ev.id],
     );
+  }
+
+  /** A pinned view must have executed exactly at the ingested block. */
+  private assertPinned(viewBlockHeight: number, viewBlockHash: string, block: NormalizedBlock, method: string): void {
+    if (viewBlockHeight !== block.height) {
+      throw new Error(`${method} pinned to block ${viewBlockHeight}, ingesting ${block.height}`);
+    }
+    if (viewBlockHash !== block.hash) {
+      throw new Error(`${method} pinned to hash ${viewBlockHash}, expected ${block.hash}`);
+    }
+  }
+
+  /** Read the projected event row (FOR UPDATE) for a lifecycle event; fail closed. */
+  private async lockEvent(client: Client, deploymentId: string, eventId: string, expected: readonly string[]): Promise<{ id: string; state: string }> {
+    const res = await client.query<{ id: string; state: string }>(
+      `SELECT id, state FROM events_projection WHERE deployment_id = $1 AND chain_event_id = $2 FOR UPDATE`,
+      [deploymentId, eventId],
+    );
+    const row = res.rows[0];
+    if (!row) throw new Error(`lifecycle event for ${eventId} before its publish projection (out-of-order denied)`);
+    if (!expected.includes(row.state)) {
+      throw new Error(`lifecycle event for ${eventId} from state ${row.state} (expected ${expected.join('|')})`);
+    }
+    return row;
+  }
+
+  /** Verified payout event identity against the pinned `get_payout` view (identity +
+   * amount only — NOT the payout state, which by end-of-block may already be the
+   * terminal Succeeded/Failed when a start + callback land in the same block). */
+  private assertPayoutIdentity(p: PayoutData, view: PayoutViewData): void {
+    if (view.payout_id !== p.payoutId) throw new Error(`payout_id mismatch: event ${p.payoutId} vs view ${view.payout_id}`);
+    if (view.registration_id !== p.registrationId) throw new Error(`payout registration mismatch: ${p.registrationId} vs ${view.registration_id}`);
+    if (view.event_id !== p.eventId) throw new Error(`payout event mismatch: ${p.eventId} vs ${view.event_id}`);
+    if (view.beneficiary !== p.beneficiary) throw new Error(`payout beneficiary mismatch: ${p.beneficiary} vs ${view.beneficiary}`);
+    if (view.amount !== p.amount) throw new Error(`payout amount mismatch: event ${p.amount} vs view ${view.amount}`);
+  }
+
+  /** Resolve the projected event + registration for a payout (fail closed). */
+  private async lookupRegistration(client: Client, deploymentId: string, eventId: string, registrationId: string): Promise<{ eventId: string; regId: string }> {
+    const ev = await client.query<{ id: string }>(
+      `SELECT id FROM events_projection WHERE deployment_id = $1 AND chain_event_id = $2`,
+      [deploymentId, eventId],
+    );
+    if (!ev.rows[0]) throw new Error(`payout for unknown event ${eventId}`);
+    const reg = await client.query<{ id: string }>(
+      `SELECT id FROM registrations_projection WHERE event_id = $1 AND chain_registration_id = $2`,
+      [ev.rows[0].id, registrationId],
+    );
+    if (!reg.rows[0]) throw new Error(`payout for unknown registration ${registrationId}`);
+    return { eventId: ev.rows[0].id, regId: reg.rows[0].id };
+  }
+
+  /** Reconcile the event's financial totals exactly once per block from the pinned
+   * `get_event_totals` view (contract authority: accepted/paid/pending/liability). */
+  private async applyVerifiedTotals(client: Client, deploymentId: string, eventId: string, totals: EventTotalsViewData): Promise<void> {
+    if (totals.event_id !== eventId) throw new Error(`event totals view event_id mismatch: requested ${eventId}, got ${totals.event_id}`);
+    await client.query(
+      `UPDATE events_projection
+          SET accepted_atomic = $3::numeric, paid_atomic = $4::numeric, pending_atomic = $5::numeric, liability_atomic = $6::numeric
+        WHERE deployment_id = $1 AND chain_event_id = $2`,
+      [deploymentId, eventId, totals.accepted_principal, totals.paid, totals.pending, totals.liability],
+    );
+  }
+
+  private classifiedEventId(c: ReturnType<typeof classifyEvent>): string {
+    switch (c.kind) {
+      case 'SETTLE_END': return c.settleEnd.eventId;
+      case 'PAYOUT_START':
+      case 'PAYOUT_SUCCESS':
+      case 'PAYOUT_FAIL': return c.payout.eventId;
+      default: throw new Error(`financial reconcile on non-financial event kind ${c.kind}`);
+    }
+  }
+
+  /** Provisional attendance mark (never final): updates the `attended` flag only. */
+  private async applyAttendance(client: Client, deploymentId: string, a: AttendanceData): Promise<void> {
+    const ev = await this.lockEvent(client, deploymentId, a.eventId, ['PUBLISHED']);
+    const upd = await client.query(
+      `UPDATE registrations_projection SET attended = $3 WHERE event_id = $1 AND chain_registration_id = $2 RETURNING id`,
+      [ev.id, a.registrationId, a.attended],
+    );
+    if ((upd.rowCount ?? 0) !== 1) {
+      throw new Error(`attendance for unknown registration ${a.registrationId} in event ${a.eventId}`);
+    }
+  }
+
+  /** Freeze attendance: derive final ATTENDED/NO_SHOW from the provisional flag. */
+  private async applyFinalize(client: Client, deploymentId: string, f: FinalizeData): Promise<void> {
+    const ev = await this.lockEvent(client, deploymentId, f.eventId, ['PUBLISHED']);
+    if (f.attendeeCount + f.noShowCount !== f.totalRegistrations) {
+      throw new Error(`finalize counts inconsistent: ${f.attendeeCount}+${f.noShowCount} != ${f.totalRegistrations}`);
+    }
+    const regs = await client.query<{ attended: boolean }>(
+      `SELECT attended FROM registrations_projection WHERE event_id = $1 ORDER BY sequence_no ASC`,
+      [ev.id],
+    );
+    if (regs.rows.length !== f.totalRegistrations) {
+      throw new Error(`finalize over ${regs.rows.length} registrations, expected ${f.totalRegistrations}`);
+    }
+    const attendedCount = regs.rows.filter((r) => r.attended).length;
+    if (attendedCount !== f.attendeeCount || regs.rows.length - attendedCount !== f.noShowCount) {
+      throw new Error(`finalize attendance mismatch: projection ${attendedCount} attended vs event ${f.attendeeCount}`);
+    }
+    await client.query(
+      `UPDATE registrations_projection SET state = CASE WHEN attended THEN 'ATTENDED' ELSE 'NO_SHOW' END WHERE event_id = $1`,
+      [ev.id],
+    );
+    await client.query(`UPDATE events_projection SET state = 'ATTENDANCE_FINALIZED' WHERE id = $1`, [ev.id]);
+  }
+
+  /** Settlement begins: freeze allocation pending chunked completion. */
+  private async applySettleStart(client: Client, deploymentId: string, s: SettleStartData): Promise<void> {
+    const ev = await this.lockEvent(client, deploymentId, s.eventId, ['ATTENDANCE_FINALIZED']);
+    await client.query(`UPDATE events_projection SET state = 'SETTLING' WHERE id = $1`, [ev.id]);
+  }
+
+  /** A partial settlement chunk never exposes claimability. */
+  private async applySettleChunk(client: Client, deploymentId: string, s: SettleChunkData): Promise<void> {
+    const ev = await this.lockEvent(client, deploymentId, s.eventId, ['ATTENDANCE_FINALIZED', 'SETTLING', 'SETTLED']);
+    if (ev.state === 'ATTENDANCE_FINALIZED') {
+      await client.query(`UPDATE events_projection SET state = 'SETTLING' WHERE id = $1`, [ev.id]);
+    }
+    // Partial allocation (complete=false) and idempotent re-settles (already_settled)
+    // never change claimability: only EventSettled finalizes entitlement.
+  }
+
+  /**
+   * Settlement completion: freeze the deterministic allocation (verified against
+   * the pinned `get_settlement` view and the block's pinned `get_event_totals`)
+   * and mark the event Settled. Claim entitlements come from the contract's own
+   * allocation rule; financial totals are reconciled ONCE per block afterwards
+   * from the pinned totals view — never DB-invented rights.
+   */
+  private async applySettleEnd(client: Client, deploymentId: string, e: SettleEndData, settlement: SettlementViewData, blockTotals: EventTotalsViewData | null): Promise<void> {
+    const existing = await client.query<{ id: string; state: string; deposit_atomic: string; accepted_atomic: string }>(
+      `SELECT id, state, deposit_atomic::text, accepted_atomic::text FROM events_projection WHERE deployment_id = $1 AND chain_event_id = $2 FOR UPDATE`,
+      [deploymentId, e.eventId],
+    );
+    const row = existing.rows[0];
+    if (!row) throw new Error(`settle for event ${e.eventId} before its publish projection`);
+    if (row.state !== 'SETTLING') throw new Error(`event settled from state ${row.state} (expected SETTLING)`);
+    if (settlement.event_id !== e.eventId) throw new Error('settlement view event_id mismatch');
+    if (!settlement.complete) throw new Error('settlement view not complete');
+    if (!settlement.attendance_frozen) throw new Error('settlement view attendance is not frozen');
+    if (settlement.attendee_count !== e.attendeeCount || settlement.no_show_count !== e.noShowCount || settlement.registrations !== e.totalRegistrations) {
+      throw new Error(`settlement counts mismatch: view ${settlement.attendee_count}/${settlement.no_show_count}/${settlement.registrations} vs event ${e.attendeeCount}/${e.noShowCount}/${e.totalRegistrations}`);
+    }
+    if (!settlement.claims_enabled) throw new Error('settlement view claims are not enabled');
+    if (settlement.allocated_total !== e.allocatedTotal) {
+      throw new Error(`allocated_total mismatch: view ${settlement.allocated_total} vs event ${e.allocatedTotal}`);
+    }
+    if (mapEventState(settlement.state) !== 'SETTLED') throw new Error('settlement view state is not Settled');
+    // Contract totals are authoritative; the DB accepted principal must match.
+    if (blockTotals !== null && blockTotals.accepted_principal !== row.accepted_atomic) {
+      throw new Error(`accepted principal mismatch: contract ${blockTotals.accepted_principal} vs DB ${row.accepted_atomic}`);
+    }
+    const regs = await client.query<{ id: string; attended: boolean }>(
+      `SELECT id, attended FROM registrations_projection WHERE event_id = $1 ORDER BY sequence_no ASC`,
+      [row.id],
+    );
+    if (regs.rows.length !== e.totalRegistrations) {
+      throw new Error(`settle over ${regs.rows.length} registrations, expected ${e.totalRegistrations}`);
+    }
+    const deposit = BigInt(row.deposit_atomic);
+    const baseShare = BigInt(settlement.base_share);
+    const remainder = BigInt(settlement.remainder);
+    const attendees = BigInt(e.attendeeCount);
+    let attendeeIndex = 0n;
+    let allocatedSum = 0n;
+    for (const r of regs.rows) {
+      let claim: bigint;
+      let payoutState: string;
+      if (r.attended) {
+        const bonus = attendeeIndex < remainder ? 1n : 0n;
+        claim = deposit + baseShare + bonus;
+        attendeeIndex += 1n;
+        payoutState = 'CLAIMABLE';
+      } else if (attendees === 0n) {
+        claim = deposit; // zero-attendee: every registration refunds its own D
+        payoutState = 'CLAIMABLE';
+      } else {
+        claim = 0n; // no-show forfeits its allocation (Forfeited -> ZERO)
+        payoutState = 'ZERO';
+      }
+      allocatedSum += claim;
+      await client.query(
+        `UPDATE registrations_projection SET claim_atomic = $2::numeric, payout_state = $3 WHERE id = $1`,
+        [r.id, claim.toString(), payoutState],
+      );
+    }
+    if (allocatedSum.toString() !== e.allocatedTotal || allocatedSum.toString() !== settlement.allocated_total) {
+      throw new Error(`settlement conservation failed: allocated ${allocatedSum} vs event ${e.allocatedTotal} vs view ${settlement.allocated_total}`);
+    }
+    await client.query(`UPDATE events_projection SET state = 'SETTLED' WHERE id = $1`, [row.id]);
+  }
+
+  private async applyPayoutStart(client: Client, deploymentId: string, p: PayoutData, payoutView: PayoutViewData, receiptId: string, blockTimeMs: number): Promise<void> {
+    this.assertPayoutIdentity(p, payoutView);
+    const { regId } = await this.lookupRegistration(client, deploymentId, p.eventId, p.registrationId);
+    await client.query(
+      `INSERT INTO payouts_projection (id, registration_id, payout_id, recipient_account, amount_atomic, state, receipt_id, observed_at)
+       VALUES ($1, $2, $3, $4, $5::numeric, 'PENDING', $6, to_timestamp($7::double precision / 1000.0))
+       ON CONFLICT (registration_id, payout_id) DO NOTHING`,
+      [randomUUID(), regId, p.payoutId, p.beneficiary, p.amount, receiptId, blockTimeMs],
+    );
+    await client.query(`UPDATE registrations_projection SET payout_state = 'PENDING' WHERE id = $1`, [regId]);
+  }
+
+  private async applyPayoutSuccess(client: Client, deploymentId: string, p: PayoutData, payoutView: PayoutViewData): Promise<void> {
+    this.assertPayoutIdentity(p, payoutView);
+    const { regId } = await this.lookupRegistration(client, deploymentId, p.eventId, p.registrationId);
+    const updated = await client.query(
+      `UPDATE payouts_projection SET state = 'SUCCEEDED' WHERE registration_id = $1 AND payout_id = $2 AND state = 'PENDING' RETURNING id`,
+      [regId, p.payoutId],
+    );
+    if ((updated.rowCount ?? 0) !== 1) throw new Error(`payout success without a pending payout ${p.payoutId}`);
+    await client.query(`UPDATE registrations_projection SET payout_state = 'PAID' WHERE id = $1`, [regId]);
+  }
+
+  private async applyPayoutFail(client: Client, deploymentId: string, p: PayoutData, payoutView: PayoutViewData): Promise<void> {
+    this.assertPayoutIdentity(p, payoutView);
+    const { regId } = await this.lookupRegistration(client, deploymentId, p.eventId, p.registrationId);
+    const updated = await client.query(
+      `UPDATE payouts_projection SET state = 'FAILED' WHERE registration_id = $1 AND payout_id = $2 AND state = 'PENDING' RETURNING id`,
+      [regId, p.payoutId],
+    );
+    if ((updated.rowCount ?? 0) !== 1) throw new Error(`payout failure without a pending payout ${p.payoutId}`);
+    // A failed private callback restores claimability without changing registration
+    // state; the liability is re-claimable, never double-counted.
+    await client.query(`UPDATE registrations_projection SET payout_state = 'CLAIMABLE' WHERE id = $1`, [regId]);
   }
 }

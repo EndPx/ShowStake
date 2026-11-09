@@ -7,11 +7,15 @@ events for an allowlisted event contract, and transactionally maintains
 projections only; it never logs users in and never signs financial actions
 (`docs/planning/showstake-v2/02-ARCHITECTURE.md`).
 
-**Status (this increment):** bounded runnable first slice — publication /
-deposit / pass, not settlement. Provenance-only events (storage, cancel,
-refund-only, payout) are captured in `chain_events` but never project financial
-rights. Review round 2 moved canonical/finality proof into the production path,
-hardened the source normalizer and made the cursor invariants executable. No
+**Status (this increment):** bounded runnable — publication / deposit / pass **plus
+the settled v6 lifecycle** (attendance → finalization → bounded settlement → private
+payout with retry) on `showstake-v2-d036-settle/1` / `showstake-settle-endpx.testnet`.
+Provenance-only events (storage, cancel, refund-only) are captured in `chain_events`
+but never project financial rights. Review round 2 moved canonical/finality proof into the
+production path, hardened the source normalizer and made the cursor invariants executable.
+The v6 adapter extends the same worker with an explicit artifact/policy allowlist — it
+does **not** reinterpret the existing `showstake-v2/1` minimum deployment, and settlement
+financial totals are read from pinned contract views, never invented by the DB. No
 additional executor/framework/toolchain.
 
 ## Interface freeze (ingestion → projection)
@@ -93,12 +97,39 @@ data. Replay/restart is idempotent.
 |---|---|
 | `EventPublished` | `events_projection` (rules enriched from pinned `get_event` view) |
 | `RegistrationCommitted` | `registrations_projection` + `passes_projection` + event totals |
-| `StorageDeposited`, `EventCancelled`, `RefundModeActivated`, `PayoutStarted/Succeeded/Failed` | provenance only (`chain_events`) |
+| `AttendanceMarked` | provisional `attended` flag only (state stays `COMMITTED` until finalize) |
+| `EventFinalized` | freeze attendance: `ATTENDED` / `NO_SHOW`; event → `ATTENDANCE_FINALIZED` |
+| `SettlementStarted` | event → `SETTLING` (claims stay disabled) |
+| `SettlementChunk` | partial allocation only (state stays `SETTLING`; never claimable) |
+| `EventSettled` | deterministic allocation + event → `SETTLED`; totals from pinned `get_event_totals` |
+| `PayoutStarted`/`Succeeded`/`Failed` | `payouts_projection` + registration `payout_state`; totals from pinned `get_event_totals` |
+| `StorageDeposited`, `EventCancelled`, `RefundModeActivated` | provenance only (`chain_events`) |
 | unknown event / wrong version / wrong standard / malformed amount | **fail closed** (throw, cursor not advanced) |
 
 Only successful receipts (`outcome.status` is `SuccessValue`/`SuccessReceiptId`,
 never `Failure`) whose `executor_id` is the allowlisted contract are consumed.
 Failed-receipt logs never grant rights.
+
+### v6 settlement projection (D038 / `showstake-v2-d036-settle/1`)
+
+- **Provisional vs finalized attendance.** `AttendanceMarked` only flips
+  `registrations_projection.attended`; the `state` column stays `COMMITTED`.
+  `EventFinalized` freezes it: `attended=true` → `ATTENDED`, else `NO_SHOW`
+  (cross-checked against the event's attendee/no-show counts).
+- **Deterministic allocation (Forfeited → ZERO).** On `EventSettled` each
+  registration, in `sequence_no` order, receives `claim_atomic` = `deposit +
+  base_share + (attendee_index < remainder ? 1 : 0)` for attendees, `0` for a
+  no-show when `attendee_count > 0`, or `deposit` for every registration in the
+  zero-attendee case; `payout_state` = `CLAIMABLE` or `ZERO`. `principal_atomic`
+  stays `D` (the deposit) — `claim_atomic` is the total allocated entitlement.
+- **Contract totals, no DB-created rights.** `base_share`/`remainder`/`allocated_total`
+  come from the pinned `get_settlement` view; `accepted`/`paid`/`pending`/`liability`
+  come from the pinned `get_event_totals` view; payouts are cross-checked against the
+  pinned `get_payout` view. Conservation is asserted: `sum(claim_atomic) == accepted`
+  `== allocated_total`. A `PayoutFailed` restores `CLAIMABLE` without double-counting
+  liability, and a retry is a new `payout_id` (exactly-once via the unique constraint).
+- **Unknown financial events fail closed.** An unrecognised showstake event name
+  throws rather than advancing a stale projection.
 
 ## Source selection + capability matrix
 
@@ -184,28 +215,38 @@ pnpm --filter @showstake/worker typecheck
 pnpm --filter @showstake/worker build
 pnpm verify:worker               # typecheck+build+adversarial fixtures (no DB)
 pnpm verify:worker-db            # build + WSL disposable-PostgreSQL suite
-pnpm verify:worker-testnet       # build API+worker + read-only full-range testnet proof
+pnpm verify:worker-testnet       # build API+worker + read-only full-range testnet proof (minimum v1)
+pnpm verify:worker-testnet-v6    # build API+worker + read-only full-range v6 settlement testnet proof
+pnpm verify:worker-checkpoint    # local dump/restore/resume proof for the v6 cursor
 pnpm --filter @showstake/worker start   # bounded runnable scan (testnet)
 ```
 
 Tests are deterministic labelled fixtures (`apps/worker/test/fixtures.mjs`);
 DB acceptance uses a real disposable PostgreSQL (TMPDIR=/tmp tmpfs) with proven
-stop/cleanup. The read-only testnet proof is clearly separate from local
-fixtures: it runs the production `runBoundedScan` from the contract deployment
-block through the committed deposit block (every intervening height, no jumps),
-rejects mutated real payloads, and reads the projected event through the real API
-server.
+stop/cleanup. The read-only testnet proofs are clearly separate from local
+fixtures: they run the production `runBoundedScan` from the contract deployment
+block through the committed final receipt block (every intervening height, no
+jumps), reject mutated real payloads, and read the projected event through the real
+API server. `verify:worker-testnet-v6` covers the settled `d036-settle-five`
+lifecycle on `showstake-settle-endpx.testnet` (deterministic allocation, no-show
+forfeit, two payouts, conservation).
 
-Evidence labels are honest: `PASS_LOCAL` (fixtures/PG, no network),
-`PASS_TESTNET` (read-only public testnet), never a live/production claim.
+Evidence labels are honest: `PASS_LOCAL` (fixtures/PG/checkpoint, no network),
+`PASS_TESTNET` (read-only public testnet), `BLOCKED_EXTERNAL` when the public
+testnet source is rate-limited, never a live/production claim. The v6 adapter's
+local source integration is reviewed PASS_LOCAL; the full settlement/payout
+testnet projection remains BLOCKED_EXTERNAL until the public endpoint recovers.
 
 ## Runtime/provider + provenance
 
-Runtime: ZCode via Orca (Cloud Near), model
-`deepseek-ai/DeepSeek-V4.1-Flash-1017-abliterated` (D040 executor reassignment;
-earlier GATER/`deepseek-v4.1-flash-1017-v2` runs remain preserved). Source manifest and
-per-run evidence are written to `docs/evidence/worker-db-<run>.json` and
-`docs/evidence/worker-testnet-<run>.json`; prior runs are preserved, new runs
+Runtime: DeepSeek Harness via Orca, model GATER/`deepseek-v4.1-flash-1017-v2`
+(the v6 settlement adapter + report); the earlier minimum-worker source/evidence
+was authored by ZCode via Orca (Cloud Near), model
+`deepseek-ai/DeepSeek-V4.1-Flash-1017-abliterated` (D040 reassignment; earlier
+GATER/`deepseek-v4.1-flash-1017-v2` runs remain preserved). Source manifest and
+per-run evidence are written to `docs/evidence/worker-db-<run>.json`,
+`docs/evidence/worker-testnet-<run>.json` and
+`docs/evidence/worker-testnet-v6-<run>.json`; prior runs are preserved, new runs
 have unique ids.
 
 Money is canonical u128 base-10 strings; time is checked integer milliseconds;

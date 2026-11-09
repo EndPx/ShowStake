@@ -22,6 +22,34 @@ export const COMMITTED_DEPLOYMENT = {
   startHeight: 276624074,
 };
 
+/** Accepted v6 settlement deployment (showstake-v2-d036-settle/1, f462ddcb…). */
+export const SETTLE_DEPLOYMENT = {
+  environment: 'testnet',
+  network: 'testnet',
+  contractId: 'showstake-settle-endpx.testnet',
+  ftContractId: 'showstake-ft-endpx.testnet',
+  ftDecimals: 6,
+  codeHash: 'HSyv94gFgwMFyfrfQBhjBc7Aidgh4eaaL6LeH3cs1zpp',
+  wasmSha256: 'f462ddcbb8b47ff03f4bea71c054cefe0d0a576b1346a0f9a55688c43307fd59',
+  organizer: 'showstake-participant-endpx.testnet',
+  policyVersion: 'showstake-v2-d036-settle/1',
+  startHeight: 276712710,
+};
+
+/** Committed d036-settle-five publish receipt (EventPublished) block metadata. */
+export const V6_SETTLE_PUBLISH = {
+  receiptId: 'oEYHu1QaYb2U3BeFnesHVGd3Rm3YiV2CjdpN4PkUMS9',
+  blockHash: '88FA3ywBBi7uNZCsfimeLeYVBYm51RgAVaKKUiwoC7CX',
+  blockHeight: 276713411,
+};
+
+/** Committed d036-settle-five final payout receipt (PayoutSucceeded reg-1). */
+export const V6_SETTLE_FINAL_BLOCK = {
+  receiptId: 'zW1K2zpGNcgotPw3jwETxDJbB9bbvwAwVMYegNo2QsB',
+  blockHash: '3Mpa7htVsJB9nUBKq4nzv6BhBmgTbGC5TJJd3e11Ecaj',
+  blockHeight: 276714097,
+};
+
 /** Real committed `publish` (EventPublished) receipt metadata. */
 export const PUBLISH_RECEIPT = {
   receiptId: 'GrpHcvrpi5ZBph2DcRumXSKHwpFB2UCRqgXjDd4yPYY6',

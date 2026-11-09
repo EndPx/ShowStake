@@ -3,7 +3,7 @@
 // build` first). Deterministic labelled fixtures only.
 import { parseShowStakeLogs, classifyEvent } from '../dist/events.js';
 import { normalizeFastNearBlock, isSuccessStatus, parseSuccessStatus, BlockNotFoundError } from '../dist/source.js';
-import { enrichPublish, parseEventView } from '../dist/project.js';
+import { enrichPublish, parseEventView, mapFinancialStatus, parseTotalsView, parseSettlementView, parsePayoutView } from '../dist/project.js';
 import { base58Decode, verifyCodeIdentity, toHex } from '../dist/identity.js';
 import { parseCursorValue } from '../dist/store.js';
 import { runBoundedScan } from '../dist/index.js';
@@ -277,10 +277,52 @@ const validPayload = () => ({
   check('SCAN_BOUND_BY_OFFICIAL_FINAL', r3.blocksIngested === 1 && bounded.ingested.length === 1 && bounded.ingested[0] === 10, 'official RPC final bounds the scan (source claim ignored)', JSON.stringify({ n: r3.blocksIngested, final: r3.officialFinalHeight }));
 }
 
+// 9. v6 settlement/lifecycle classification + adversarial parsing (fail closed)
+{
+  const attendance = classifyEvent(parseShowStakeLogs([log('AttendanceMarked', { event_id: 'e1', registration_id: 'r0', attended: true, changed: true })])[0]);
+  check('CLASSIFY_ATTENDANCE', attendance.kind === 'ATTENDANCE' && attendance.attendance.attended === true && attendance.attendance.changed === true, 'AttendanceMarked classified + fields', attendance.kind);
+
+  const fin = classifyEvent(parseShowStakeLogs([log('EventFinalized', { event_id: 'e1', attendee_count: 2, no_show_count: 3, total_registrations: 5, finalized_at: 1794104288580 })])[0]);
+  check('CLASSIFY_FINALIZE', fin.kind === 'FINALIZE' && fin.finalize.attendeeCount === 2 && fin.finalize.noShowCount === 3, 'EventFinalized classified', fin.kind);
+
+  const ss = classifyEvent(parseShowStakeLogs([log('SettlementStarted', { event_id: 'e1', pool: '6000000', base_share: '3000000', remainder: '0', attendee_count: 2, actor: 'org.testnet' })])[0]);
+  check('CLASSIFY_SETTLE_START', ss.kind === 'SETTLE_START' && ss.settleStart.baseShare === '3000000', 'SettlementStarted classified', ss.kind);
+
+  const sc = classifyEvent(parseShowStakeLogs([log('SettlementChunk', { event_id: 'e1', cursor: 25, total_registrations: 50, allocated_total: '1000000', complete: false })])[0]);
+  check('CLASSIFY_SETTLE_CHUNK', sc.kind === 'SETTLE_CHUNK' && sc.settleChunk.complete === false && sc.settleChunk.cursor === 25, 'SettlementChunk classified', sc.kind);
+
+  const se = classifyEvent(parseShowStakeLogs([log('EventSettled', { event_id: 'e1', allocated_total: '10000000', attendee_count: 2, no_show_count: 3, total_registrations: 5 })])[0]);
+  check('CLASSIFY_SETTLE_END', se.kind === 'SETTLE_END' && se.settleEnd.allocatedTotal === '10000000', 'EventSettled classified', se.kind);
+
+  const ps = classifyEvent(parseShowStakeLogs([log('PayoutStarted', { payout_id: 'pay-r0-1', registration_id: 'r0', event_id: 'e1', beneficiary: 'a.testnet', amount: '5000000' })])[0]);
+  check('CLASSIFY_PAYOUT_START', ps.kind === 'PAYOUT_START' && ps.payout.amount === '5000000', 'PayoutStarted classified', ps.kind);
+  const pok = classifyEvent(parseShowStakeLogs([log('PayoutSucceeded', { payout_id: 'pay-r0-1', registration_id: 'r0', event_id: 'e1', beneficiary: 'a.testnet', amount: '5000000' })])[0]);
+  check('CLASSIFY_PAYOUT_SUCCESS', pok.kind === 'PAYOUT_SUCCESS', 'PayoutSucceeded classified', pok.kind);
+  const pf = classifyEvent(parseShowStakeLogs([log('PayoutFailed', { payout_id: 'pay-r0-1', registration_id: 'r0', event_id: 'e1', beneficiary: 'a.testnet', amount: '5000000' })])[0]);
+  check('CLASSIFY_PAYOUT_FAIL', pf.kind === 'PAYOUT_FAIL', 'PayoutFailed classified', pf.kind);
+
+  expectThrow('ADVERSARIAL_ATTENDANCE_NOT_BOOL', () => classifyEvent(parseShowStakeLogs([log('AttendanceMarked', { event_id: 'e1', registration_id: 'r', attended: 'yes', changed: true })])[0]), 'must be a boolean');
+  expectThrow('ADVERSARIAL_FINALIZE_NEG_COUNT', () => classifyEvent(parseShowStakeLogs([log('EventFinalized', { event_id: 'e1', attendee_count: -1, no_show_count: 0, total_registrations: 1, finalized_at: 1 })])[0]), 'integer in 0..200');
+  expectThrow('ADVERSARIAL_SETTLE_CHUNK_NO_COMPLETE', () => classifyEvent(parseShowStakeLogs([log('SettlementChunk', { event_id: 'e1', cursor: 0, total_registrations: 1, allocated_total: '0' })])[0]), 'must be a boolean');
+  expectThrow('ADVERSARIAL_PAYOUT_ZERO', () => classifyEvent(parseShowStakeLogs([log('PayoutStarted', { payout_id: 'pay-r', registration_id: 'r', event_id: 'e1', beneficiary: 'a.testnet', amount: '05000000' })])[0]), 'canonical u128');
+
+  // Unknown FINANCIAL event must fail closed, never downgrade to provenance.
+  expectThrow('ADVERSARIAL_UNKNOWN_FINANCIAL_FAILCLOSED', () => classifyEvent(parseShowStakeLogs([log('AutoClaim', { event_id: 'e1' })])[0]), 'unsupported showstake event');
+
+  check('PROJECT_MAP_FORFEITED_TO_ZERO', mapFinancialStatus('Forfeited') === 'ZERO' && mapFinancialStatus('Claimable') === 'CLAIMABLE' && mapFinancialStatus('Paid') === 'PAID', 'FinancialStatus->payout_state map (Forfeited->ZERO)', mapFinancialStatus('Forfeited'));
+  const totals = parseTotalsView({ event_id: 'e1', state: 'Settled', accepted_principal: '10000000', paid: '5000000', pending: '0', liability: '5000000' });
+  check('PROJECT_PARSE_TOTALS', totals.accepted_principal === '10000000' && totals.liability === '5000000', 'get_event_totals parsed', totals.accepted_principal);
+  const st = parseSettlementView({ event_id: 'e1', state: 'Settled', attendance_frozen: true, attendee_count: 2, no_show_count: 3, registrations: 5, pool: '6000000', base_share: '3000000', remainder: '0', allocated_total: '10000000', complete: true, claims_enabled: true });
+  check('PROJECT_PARSE_SETTLEMENT', st.complete === true && st.base_share === '3000000' && st.claims_enabled === true, 'get_settlement parsed', st.base_share);
+  const pv = parsePayoutView({ payout_id: 'pay-r0-1', registration_id: 'r0', event_id: 'e1', beneficiary: 'a.testnet', amount: '5000000', state: 'Succeeded' });
+  check('PROJECT_PARSE_PAYOUT', pv.state === 'Succeeded' && pv.amount === '5000000', 'get_payout parsed', pv.state);
+  expectThrow('PROJECT_PARSE_TOTALS_BAD', () => parseTotalsView({ event_id: 'e1', state: 'Settled', accepted_principal: '10000000', paid: '5000000', pending: '0', liability: '05000000' }), 'canonical u128');
+}
+
 // Final fail-closed summary: any failure exits non-zero (never a green exit0
 // that des.!== complete inventory).
 const failed = results.filter((r) => !r.ok);
-const REQUIRED = 65;
+const REQUIRED = 82;
 console.log(`\nverify-worker-fixtures: ${results.length - failed.length}/${results.length} passed`);
 if (results.length < REQUIRED) {
   console.error(`verify-worker-fixtures FAILED: incomplete inventory (${results.length} < ${REQUIRED})`);

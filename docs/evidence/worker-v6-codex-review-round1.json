@@ -1,0 +1,27 @@
+{
+  "id": "worker-v6-codex-review-round1",
+  "classifier": "PASS_LOCAL",
+  "reviewer": "Codex and Codex Terra read-only review",
+  "scope": "v6 settlement/payout projection adapter and checkpoint integration",
+  "findings": [
+    "per-block totals reconciliation selected only the first financial event",
+    "totals event_id was not asserted against the requested event",
+    "settlement view counts, attendance_frozen and claims_enabled were not cross-checked",
+    "payout success/failure could change registration state without a PENDING payout row"
+  ],
+  "fixes": [
+    "reconcile one pinned get_event_totals view for every financial event id in the block",
+    "assert requested event_id on every totals view",
+    "require matching settlement counts, frozen attendance and claims_enabled",
+    "require an existing PENDING payout row before success/failure transition"
+  ],
+  "verification": [
+    { "command": "pnpm verify:worker", "result": "90/90 PASS_LOCAL" },
+    { "command": "pnpm verify:worker-db", "result": "PASS_LOCAL; real disposable PostgreSQL, stop and cleanup proven" },
+    { "command": "pnpm verify:worker-checkpoint", "result": "PASS_LOCAL; two-batch restore/resume, corrupt and wrong-deployment dumps fail closed" }
+  ],
+  "external_limits": [
+    "v6 full-range testnet settlement/payout projection remains BLOCKED_EXTERNAL after FASTNEAR/RPC rate limiting",
+    "no network scan, transaction, key, deployment or paid service was used in this review"
+  ]
+}
