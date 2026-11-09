@@ -3347,3 +3347,22 @@
     animation: none;
   }
 }
+
+/* Native-USDC lifecycle slice: explicit unavailable and receipt states. */
+.lifecycle-workspace { max-width: 920px; margin-inline: auto; }
+.lifecycle-card { background: var(--surface, #fff); border: 1px solid var(--border, #dcdcd5); border-radius: 16px; padding: 24px; margin: 18px 0; }
+.lifecycle-card h2 { margin-top: 0; }
+.lifecycle-form-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; margin: 20px 0; }
+.lifecycle-form-grid label, .lifecycle-card > label { display: grid; gap: 6px; font-weight: 600; }
+.lifecycle-card input { min-height: 44px; border: 1px solid var(--border, #dcdcd5); border-radius: 8px; padding: 10px 12px; background: #f7f5f0; }
+.lifecycle-card input:disabled { color: #5b645e; cursor: not-allowed; }
+.lifecycle-note { display: flex; align-items: flex-start; gap: 8px; padding: 12px 14px; border-radius: 10px; margin: 16px 0 0; }
+.lifecycle-note--warning { color: #7a4a00; background: #fff2d6; }
+.lifecycle-note--error { color: #a12622; background: #fceceb; }
+.lifecycle-note--success { color: #245c3e; background: #e8f2eb; }
+.lifecycle-note--pending { color: #4b5563; background: #eef1f0; }
+.lifecycle-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
+.lifecycle-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+.lifecycle-stats div { border: 1px solid var(--border, #dcdcd5); border-radius: 10px; padding: 14px; display: grid; gap: 4px; }
+.status-inline { display: block; margin-top: 12px; color: #5b645e; }
+@media (max-width: 640px) { .lifecycle-form-grid, .lifecycle-stats { grid-template-columns: 1fr; } .lifecycle-card { padding: 18px; } }
