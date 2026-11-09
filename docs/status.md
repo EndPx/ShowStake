@@ -223,6 +223,8 @@ NEAR Intents dry-run preparation completed against the official 1Click API: 216-
 
 Factory yield interpretation clarified: redeem means the factory redeems its own Earn receipt position back to the factory, not that a participant withdraws a committed event deposit. The dry-run adapter now separates idle factory balance, factory-controlled Earn receipt position and event escrow; only idle balance may enter the yield plan. Evidence: docs/evidence/intents-earn-config-review-20261110.json. Factory/vault contract design and deployment remain unaccepted.
 
+Burrow credibility review completed as CANDIDATE_ONLY for native NEAR USDC yield: official product page lists aUSDC markets, Immunefi lists a public bug-bounty scope, and historical BlockSec audit artifacts exist, but the historical source is archived and the live code hash/market configuration/withdrawal liquidity have not been matched. Event principal must not enter Burrow until those gates pass. Evidence: docs/evidence/burrow-credibility-review-20261110.json.
+
 
 Terra launch /root/terra_api_access failed beforeimplementation: Codexaccess-tokenrefresh refused due logout/accountchange. BLOCKED_EXTERNAL; usermustrenewCodexsignin throughapp/CLI, no chatcredential. No Terra sourcechangesclaimed; no silentmodelsubstitution. Harnessworker continuesindependently.
 

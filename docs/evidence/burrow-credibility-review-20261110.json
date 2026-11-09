@@ -1,0 +1,53 @@
+{
+  "id": "burrow-credibility-review-20261110",
+  "classifier": "PASS_LOCAL",
+  "verdict": "CANDIDATE_ONLY",
+  "protocol": "Burrow Finance / Rhea lending",
+  "evidence": [
+    {
+      "source": "https://burrowfi.app/",
+      "observation": "official site presents a NEAR money market with 20+ assets and aUSDC among supported interest-bearing assets",
+      "strength": "current product signal",
+      "limit": "market-size/APY values are provider-reported and not an independent solvency proof"
+    },
+    {
+      "source": "https://immunefi.com/bug-bounty/burrow/resources/",
+      "observation": "public bug-bounty resource lists Burrow, a maximum bounty of $250,000 and contract scope",
+      "strength": "positive security-process signal",
+      "limit": "must verify current program status and scope before relying on it"
+    },
+    {
+      "source": "https://github.com/NearDeFi/burrowland",
+      "observation": "historical Burrow source includes two BlockSec audit reports but the repository is archived and read-only",
+      "strength": "historical audit/source provenance",
+      "limit": "old audit commit is not proof that the current live contract code is identical"
+    },
+    {
+      "source": "https://github.com/rhea-finance/guide/blob/main/docs/rhea-finance-white-paper.md",
+      "observation": "Rhea describes Burrow as part of its merged lending platform",
+      "strength": "current ecosystem relationship",
+      "limit": "does not eliminate protocol, governance or smart-contract risk"
+    }
+  ],
+  "showstake_decision": {
+    "allowed_now": [
+      "local/mock receipt and callback adapter",
+      "read-only mainnet views and code-hash/config verification",
+      "dry quote/config preparation"
+    ],
+    "not_allowed_now": [
+      "put event principal into Burrow",
+      "treat aUSDC/APY as guaranteed",
+      "open claims before redemption is final",
+      "use borrow/collateral or leverage for event funds"
+    ]
+  },
+  "required_before_funded_e2e": [
+    "match live contract ID and code hash to reviewed source",
+    "verify USDC market asset identity, can_deposit and can_withdraw",
+    "verify current liquidity/reserves and pause/admin controls",
+    "verify receipt-share conversion and redeem behavior",
+    "run local callback/failure/withdrawal tests",
+    "obtain separate mainnet authorization with a small maximum amount"
+  ]
+}
