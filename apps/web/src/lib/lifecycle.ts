@@ -7,6 +7,22 @@
 export type ReceiptState = "idle" | "pending" | "confirmed" | "failed" | "stale";
 export type ActorRole = "organizer" | "participant" | "unknown";
 export type ContentEligibility = "eligible" | "denied" | "checking" | "unavailable";
+export interface WalletBoundary {
+  status: "idle" | "connecting" | "connected" | "signing" | "error";
+  accountId: string | null;
+  network: string;
+  expectedNetwork: string;
+  proof: boolean;
+  error?: string | null;
+}
+
+export function walletGate(wallet: WalletBoundary, action: string): { allowed: boolean; reason: string } {
+  if (wallet.network !== wallet.expectedNetwork) return { allowed: false, reason: `Wrong network. Switch to ${wallet.expectedNetwork} before ${action}.` };
+  if (wallet.status === "error") return { allowed: false, reason: wallet.error || "The wallet action was rejected; this action remains blocked." };
+  if (wallet.status !== "connected" || !wallet.accountId) return { allowed: false, reason: `Connect a ${wallet.expectedNetwork} NEAR wallet before ${action}.` };
+  if (!wallet.proof) return { allowed: false, reason: `Sign the account proof before ${action}.` };
+  return { allowed: true, reason: "" };
+}
 
 export interface LifecycleState {
   receipt: ReceiptState;

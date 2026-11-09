@@ -25,6 +25,7 @@ import {
   type SignedProof,
   type WalletAccount,
 } from "@/lib/near/wallet";
+import { NETWORK } from "@/lib/config";
 
 export type WalletStatus =
   | "idle"
@@ -34,6 +35,7 @@ export type WalletStatus =
   | "error";
 
 interface WalletContextValue {
+  network: typeof NETWORK;
   status: WalletStatus;
   account: WalletAccount | null;
   proof: SignedProof | null;
@@ -110,7 +112,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   }, [account]);
 
   const value = useMemo<WalletContextValue>(
-    () => ({ status, account, proof, keyPermission, error, connect, disconnect, sign }),
+    () => ({ network: NETWORK, status, account, proof, keyPermission, error, connect, disconnect, sign }),
     [status, account, proof, keyPermission, error, connect, disconnect, sign],
   );
 
