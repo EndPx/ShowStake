@@ -1,0 +1,14 @@
+{
+  "name": "@showstake/intents-adapter",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "ShowStake intents-adapter probes: typed NEAR Intents 1Click quote/status/catalog schemas and NEP-141 ft_transfer_call commit argument builder. Zero runtime dependencies.",
+  "license": "UNLICENSED",
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "engines": {
+    "node": ">=24.18.0 <25"
+  }
+}

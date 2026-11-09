@@ -1,0 +1,29 @@
+{
+  "id": "intents-earn-config-review-20261110",
+  "classifier": "PASS_LOCAL",
+  "scope": "factory yield preparation; no mainnet transaction",
+  "files": [
+    "packages/intents-adapter/src/mainnet-config.mjs",
+    "packages/intents-adapter/src/earn.mjs",
+    "packages/intents-adapter/README.md"
+  ],
+  "checks": [
+    "dryRunOnly=true",
+    "allowBroadcast=false",
+    "factory and registry addresses unset",
+    "factory yield redemption destination is the factory account",
+    "event escrow funds are explicitly excluded from the yield plan",
+    "Earn deposit and withdrawal quote builders validate canonical asset IDs and atomic amounts",
+    "offline intents adapter CLI local checks pass"
+  ],
+  "product_boundary": {
+    "idle_factory_balance": "eligible for third-party Earn position",
+    "earn_receipt_position": "redeemed back to factory through a reverse quote",
+    "event_escrow": "excluded from yield; cancellation/timeout/settlement/claim authority remains ShowStake"
+  },
+  "limits": [
+    "factory/vault contract is not implemented or deployed",
+    "receipt-token APY and principal are not guaranteed by NEAR Intents",
+    "no signer, API key, deposit address, swap, or real asset movement"
+  ]
+}
