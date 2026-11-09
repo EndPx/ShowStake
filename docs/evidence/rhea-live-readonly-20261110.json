@@ -1,0 +1,31 @@
+{
+  "id": "rhea-live-readonly-20261110",
+  "classifier": "PASS_LOCAL",
+  "scope": "read-only NEAR mainnet verification; no signer or state mutation",
+  "rpc": "https://rpc.mainnet.near.org",
+  "accounts": [
+    { "accountId": "contract.main.burrow.near", "codeHash": "6Nek1MZ8cwJJ2xMQAUWup9V5AToYS9rkTxJfwo6BCpFa", "storageUsage": 53682488 },
+    { "accountId": "lst.rhealab.near", "codeHash": "EPLT4C61pkVYf5Km6dC4X9x5PMo6rfBwuEwo7vgKpmuv", "storageUsage": 5201236 },
+    { "accountId": "lsd-usdt.rhealab.near", "codeHash": "4GhovZPNjMHpQ6TR8eQyy4ojM8w2K5VxYnacKV4GrzWU", "storageUsage": 1149694 },
+    { "accountId": "v2.ref-finance.near", "codeHash": "GZmkbfVLcN7ErxU9RDxP24YTaKmoVixhM6XyycP15Qvi", "storageUsage": 111249961 }
+  ],
+  "usdcMarket": {
+    "tokenId": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+    "view": "contract.main.burrow.near::get_asset",
+    "canDeposit": true,
+    "canWithdraw": true,
+    "canUseAsCollateral": true,
+    "canBorrow": true,
+    "suppliedShares": "10884959459839807222794965",
+    "suppliedBalance": "12599621851884106871000467",
+    "borrowedBalance": "10899175962166074745563380",
+    "supplyApr": "0.10321374738708108308176773",
+    "borrowApr": "0.15908899186597026210030411",
+    "note": "read-only live view; no funds were supplied or withdrawn"
+  },
+  "decision": {
+    "status": "SELECTED_FOR_HACKATHON; TECHNICAL_REVIEW_PARTIAL",
+    "verified": ["live accounts exist", "USDC market view exists", "deposit/withdraw capability flags are true"],
+    "still_open": ["receipt/call ABI exactness", "funded redemption", "callback failure/retry", "liquidity under the proposed event amount", "current source/audit match"]
+  }
+}
