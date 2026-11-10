@@ -1,56 +1,91 @@
 {
-  "candidate": "showstake-native-usdc-event-escrow",
-  "status": "PASS_LOCAL",
-  "canonical_asset": {
-    "network": "near-testnet",
-    "account": "3e2210e1184b45b64c8a434c0a7e7b23cc04ea7eb7a6c3c32520d03d4afcb8af",
-    "standard": "NEP-141",
-    "decimals": 6,
-    "issuer_source": "https://www.circle.com/multi-chain-usdc/near",
-    "source_status": "official Circle Testnet Address link resolves to this account; no funded call performed"
-  },
-  "source_files": [
-    "contracts/showstake/event-escrow-candidate/src.rs",
-    "contracts/showstake/event-escrow-candidate/Cargo.toml"
-  ],
-  "preserved_artifacts": [
-    "contracts/showstake/src/lib.rs existing Contract/v6 state and tests",
-    "contracts/showstake/src/rhea_yield.rs separate local policy module"
-  ],
-  "build": {
-    "wasm_target": "wasm32-unknown-unknown",
-    "reproducible_command": "cargo build --manifest-path contracts/showstake/event-escrow-candidate/Cargo.toml --target wasm32-unknown-unknown --release",
-    "artifact": "contracts/showstake/event-escrow-candidate/target/wasm32-unknown-unknown/release/showstake_event_escrow_candidate.wasm",
-    "artifact_sha256": "d6c78cf55cb1ebeb0aa382eec166f16dbca7ed8da791727c82578f9827f6ac84",
-    "artifact_bytes": 314620,
-    "local_candidate_test_command": "cargo test --manifest-path contracts/showstake/event-escrow-candidate/Cargo.toml --lib",
-    "local_candidate_test_result": "PASS_LOCAL: cargo test --lib 1/1; cargo build --target wasm32-unknown-unknown --release succeeded in WSL"
-  },
-  "phase_policy": {
-    "registration_close": "explicit close_registration(event_id, now_ms) transitions RegistrationOpen -> RegistrationClosed and rejects later deposits",
-    "earn_requirement": "supply is permissionless only after RegistrationClosed; finalize requires Earn Supplied; settlement and claims require Earn Redeemed",
-    "yield_distribution": "realized_yield = redeemed_amount - accepted_principal; yield is distributed with no-show reward pool to attendees, or pro-rata to all registrants on zero-attendee/refund paths",
-    "conservation": "accepted_principal + yield_distributed = paid + pending + claimable"
-  },
-  "scope": {
-    "depends_on_rhea_or_earn": true,
-    "yield_calls": "mandatory provider adapter; no verified production adapter in repository",
-    "live_deployment": false,
-    "signing_or_broadcast": false
-  },
-  "earn_provider_readonly_evidence": {
-    "account": "contract.main.burrow.near",
-    "code_hash": "6Nek1M8cwJJ2xMQAUWup9V5AToYS9rkTxJfwo6BCpFa",
-    "status": "TECHNICAL_REVIEW_PARTIAL",
-    "missing": ["exact ABI", "callback receipt proof", "liquidity proof", "funded redemption proof"],
-    "candidate_call_shapes": {
-      "supply": "native USDC ft_transfer_call(receiver_id=contract.main.burrow.near, amount=exact_principal, msg=empty)",
-      "redeem": "execute(actions=[Withdraw(token_id=native USDC, max_amount=u128::MAX)])"
-    }
-  },
-  "limits": [
-    "In-memory candidate; not accepted deployment ABI or storage schema.",
-    "Native Windows cargo may require NASM for aws-lc-sys; the reproducible WSL build path is PASS_LOCAL and was used for this artifact.",
-    "Testnet runner must provision storage, deploy a reviewed candidate, and verify ft_transfer_call receipts before any PASS_TESTNET claim."
-  ]
+    "candidate":  "showstake-native-usdc-event-escrow",
+    "status":  "PASS_TESTNET_VERTICAL_SLICE",
+    "canonical_asset":  {
+                            "testnet_default":  {
+                                                    "account":  "mock.usdc.testnet",
+                                                    "standard":  "NEP-141",
+                                                    "symbol":  "USDC",
+                                                    "name":  "Mock USDC",
+                                                    "decimals":  6,
+                                                    "source_status":  "frozen contracts/test-ft deployment candidate; metadata is passed explicitly to init"
+                                                },
+                            "circle_production_candidates":  {
+                                                                 "mainnet_account":  "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+                                                                 "testnet_account":  "3e2210e1184b45b64c8a434c0a7e7b23cc04ea7eb7a6c3c32520d03d4afcb8af",
+                                                                 "standard":  "NEP-141",
+                                                                 "decimals":  6,
+                                                                 "issuer_source":  "https://www.circle.com/multi-chain-usdc/near",
+                                                                 "usage":  "documented production candidates only; never the testnet default"
+                                                             }
+                        },
+    "source_files":  [
+                         "contracts/showstake/event-escrow-candidate/src.rs",
+                         "contracts/showstake/event-escrow-candidate/Cargo.toml"
+                     ],
+    "preserved_artifacts":  [
+                                "contracts/showstake/src/lib.rs existing Contract/v6 state and tests",
+                                "contracts/showstake/src/rhea_yield.rs separate local policy module"
+                            ],
+    "build":  {
+                  "wasm_target":  "wasm32-unknown-unknown",
+                  "reproducible_command":  "cargo build --manifest-path contracts/showstake/event-escrow-candidate/Cargo.toml --target wasm32-unknown-unknown --release",
+                  "artifact":  "contracts/showstake/event-escrow-candidate/target/wasm32-unknown-unknown/release/showstake_event_escrow_candidate.wasm",
+                  "artifact_sha256":  "8764cab08593275f6ff3cadec642c378943baad1450293d5f4295ea18d2fa237",
+                  "artifact_bytes":  373729,
+                  "local_candidate_test_command":  "cargo test --manifest-path contracts/showstake/event-escrow-candidate/Cargo.toml --lib",
+                  "local_candidate_test_result":  "PASS_LOCAL: cargo test --lib 1/1; cargo build --target wasm32-unknown-unknown --release succeeded in WSL"
+              },
+    "testnet_init_args":  {
+                              "method":  "new",
+                              "args":  {
+                                           "organizer":  "showstake-participant-endpx.testnet",
+                                           "provider_account":  "contract.main.burrow.near",
+                                           "canonical_ft":  "mock.usdc.testnet",
+                                           "token_symbol":  "USDC",
+                                           "token_name":  "Mock USDC",
+                                           "token_decimals":  6
+                                       },
+                              "gate":  "testnet vertical slice deployed; provider_verified remains false"
+                          },
+    "phase_policy":  {
+                         "registration_close":  "explicit close_registration(event_id, now_ms) transitions RegistrationOpen -\u003e RegistrationClosed and rejects later deposits",
+                         "earn_requirement":  "supply is permissionless only after RegistrationClosed; finalize requires Earn Supplied; settlement and claims require Earn Redeemed",
+                         "yield_distribution":  "realized_yield = redeemed_amount - accepted_principal; yield is distributed with no-show reward pool to attendees, or pro-rata to all registrants on zero-attendee/refund paths",
+                         "conservation":  "accepted_principal + yield_distributed = paid + pending + claimable"
+                     },
+    "scope":  {
+                  "depends_on_rhea_or_earn":  true,
+                  "yield_calls":  "mandatory provider adapter; no verified production adapter in repository",
+                  "live_deployment":  true,
+                  "signing_or_broadcast":  true
+              },
+    "earn_provider_readonly_evidence":  {
+                                            "account":  "contract.main.burrow.near",
+                                            "code_hash":  "6Nek1M8cwJJ2xMQAUWup9V5AToYS9rkTxJfwo6BCpFa",
+                                            "status":  "TECHNICAL_REVIEW_PARTIAL",
+                                            "missing":  [
+                                                            "exact ABI",
+                                                            "callback receipt proof",
+                                                            "liquidity proof",
+                                                            "funded redemption proof"
+                                                        ],
+                                            "candidate_call_shapes":  {
+                                                                          "supply":  "native USDC ft_transfer_call(receiver_id=contract.main.burrow.near, amount=exact_principal, msg=empty)",
+                                                                          "redeem":  "execute(actions=[Withdraw(token_id=native USDC, max_amount=u128::MAX)])"
+                                                                      }
+                                        },
+    "limits":  [
+                   "Separate deployable candidate crate; not an accepted production deployment ABI or storage schema.",
+                   "Native Windows cargo may require NASM for aws-lc-sys; the reproducible WSL build path is PASS_LOCAL and was used for this artifact.",
+                   "Testnet runner must provision storage, deploy a reviewed candidate, and verify ft_transfer_call receipts before any PASS_TESTNET claim."
+               ],
+    "testnet_deployment":  {
+                               "contract_id":  "showstake-event-v2-endpx.testnet",
+                               "deploy_tx":  "7auRX7VtyzDkBz5wD41CV7HeFjUAdJ33CYbAoxJsYyBY",
+                               "init_tx":  "EgTPtSk4D4eFgEScMaNzWRkPYptudUZLNFKZ6XRzfA23",
+                               "event_id":  "wallet-browser-test",
+                               "canonical_ft":  "mockusdc.testnet",
+                               "evidence":  "docs/evidence/event-escrow-testnet-five-deposits-20261110.json"
+                           }
 }

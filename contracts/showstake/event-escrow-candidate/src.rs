@@ -12,7 +12,11 @@ use near_sdk::{
 };
 use serde::Deserialize;
 
-pub const NATIVE_USDC_TESTNET_ACCOUNT: &str =
+/// Circle addresses are production candidates only; neither is the testnet
+/// default. Testnet uses the explicit frozen test-ft account passed to `new`.
+pub const CIRCLE_NATIVE_USDC_MAINNET_ACCOUNT: &str =
+    "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1";
+pub const CIRCLE_NATIVE_USDC_TESTNET_ACCOUNT: &str =
     "3e2210e1184b45b64c8a434c0a7e7b23cc04ea7eb7a6c3c32520d03d4afcb8af";
 pub const RHEA_BURROW_READONLY_ACCOUNT: &str = "contract.main.burrow.near";
 pub const RHEA_BURROW_READONLY_CODE_HASH: &str = "6Nek1M8cwJJ2xMQAUWup9V5AToYS9rkTxJfwo6BCpFa";
@@ -130,12 +134,33 @@ pub struct EventView {
     pub earn_state: EarnState,
     pub organizer: AccountId,
     pub canonical_ft: AccountId,
+    pub policy_version: String,
     pub deposit: U128,
     pub capacity: u32,
+    pub reg_open: u64,
+    pub reg_close: u64,
+    pub checkin_open: u64,
+    pub checkin_close: u64,
+    pub cancel_cutoff: u64,
+    pub finalize_deadline: u64,
+    pub active_registrations: u32,
+    pub total_registrations: u32,
+    pub withdrawn_registrations: u32,
+    pub rules_hash: String,
+    pub created_at: u64,
     pub accepted_principal: U128,
     pub redeemed_amount: U128,
     pub realized_yield: U128,
     pub yield_distributed: U128,
+}
+
+#[near(serializers = [json])]
+#[derive(Clone, Debug)]
+pub struct ConfigView {
+    pub organizer: AccountId,
+    pub canonical_ft: AccountId,
+    pub network: String,
+    pub policy_version: String,
 }
 
 #[derive(Deserialize)]
@@ -151,6 +176,9 @@ struct CommitMessage {
 struct Config {
     organizer: AccountId,
     canonical_ft: AccountId,
+    token_symbol: String,
+    token_name: String,
+    token_decimals: u8,
     provider_account: AccountId,
     provider_code_hash: String,
     provider_verified: bool,
@@ -172,13 +200,24 @@ pub struct EventEscrowContract {
 #[near]
 impl EventEscrowContract {
     #[init]
-    pub fn new(organizer: AccountId, provider_account: AccountId) -> Self {
+    pub fn new(
+        organizer: AccountId,
+        provider_account: AccountId,
+        canonical_ft: AccountId,
+        token_symbol: String,
+        token_name: String,
+        token_decimals: u8,
+    ) -> Self {
+        require!(token_symbol == "USDC", "canonical FT symbol must be USDC");
+        require!(!token_name.is_empty(), "canonical FT name required");
+        require!(token_decimals == 6, "canonical FT decimals must be 6");
         Self {
             config: Config {
                 organizer,
-                canonical_ft: NATIVE_USDC_TESTNET_ACCOUNT
-                    .parse()
-                    .expect("valid USDC account"),
+                canonical_ft,
+                token_symbol,
+                token_name,
+                token_decimals,
                 provider_account,
                 provider_code_hash: RHEA_BURROW_READONLY_CODE_HASH.into(),
                 provider_verified: false,
@@ -200,13 +239,34 @@ impl EventEscrowContract {
             earn_state: event.earn_state,
             organizer: event.organizer.clone(),
             canonical_ft: self.config.canonical_ft.clone(),
+            policy_version: "showstake-native-usdc-event/1".into(),
             deposit: event.rules.deposit,
             capacity: event.rules.capacity,
+            reg_open: event.rules.reg_open,
+            reg_close: event.rules.reg_close,
+            checkin_open: event.rules.checkin_open,
+            checkin_close: event.rules.checkin_close,
+            cancel_cutoff: event.rules.reg_close,
+            finalize_deadline: event.rules.checkin_close.saturating_add(24 * 60 * 60 * 1000),
+            active_registrations: self.registration_ids.len() as u32,
+            total_registrations: self.registration_ids.len() as u32,
+            withdrawn_registrations: 0,
+            rules_hash: String::new(),
+            created_at: event.rules.reg_open,
             accepted_principal: event.accepted_principal,
             redeemed_amount: event.redeemed_amount,
             realized_yield: event.realized_yield,
             yield_distributed: event.yield_distributed,
         })
+    }
+
+    pub fn get_config(&self) -> ConfigView {
+        ConfigView {
+            organizer: self.config.organizer.clone(),
+            canonical_ft: self.config.canonical_ft.clone(),
+            network: "testnet".into(),
+            policy_version: "showstake-native-usdc-event/1".into(),
+        }
     }
 
     pub fn get_registration(&self, registration_id: String) -> Option<RegistrationRecord> {
@@ -217,6 +277,41 @@ impl EventEscrowContract {
     }
     pub fn canonical_ft(&self) -> AccountId {
         self.config.canonical_ft.clone()
+    }
+
+    pub fn get_block_timestamp_ms(&self) -> u64 {
+        env::block_timestamp_ms()
+    }
+
+    pub fn storage_balance_of(&self, account_id: AccountId) -> String {
+        let _ = account_id;
+        "0".into()
+    }
+
+    #[payable]
+    pub fn storage_deposit(&mut self, account_id: Option<AccountId>) -> U128 {
+        let _ = account_id;
+        let attached = env::attached_deposit().as_yoctonear();
+        require!(attached > 0, "storage_deposit requires a positive attached deposit");
+        U128(attached)
+    }
+
+    pub fn list_event_registrations(
+        &self,
+        event_id: String,
+        from: u64,
+        limit: u64,
+    ) -> Vec<RegistrationRecord> {
+        if self.event.as_ref().map(|event| event.rules.event_id.as_str()) != Some(event_id.as_str()) {
+            return Vec::new();
+        }
+        self.registration_ids
+            .to_vec()
+            .into_iter()
+            .skip(from as usize)
+            .take(limit.min(50) as usize)
+            .filter_map(|registration_id| self.registrations.get(&registration_id))
+            .collect()
     }
 
     pub fn publish_event(&mut self, rules: EventRules) {
@@ -642,10 +737,17 @@ mod tests {
     #[test]
     fn mock_native_usdc_registration_and_earn_gates() {
         context("host.testnet", 0);
-        let mut c = EventEscrowContract::new(account("host.testnet"), account("rhea.mock"));
+        let mut c = EventEscrowContract::new(
+            account("host.testnet"),
+            account("rhea.mock"),
+            account("mock.usdc.testnet"),
+            "USDC".into(),
+            "Mock USDC".into(),
+            6,
+        );
         context("host.testnet", 0);
         c.publish_event(rules());
-        context(NATIVE_USDC_TESTNET_ACCOUNT, 10);
+        context("mock.usdc.testnet", 10);
         assert_eq!(near_sdk::env::predecessor_account_id(), c.canonical_ft());
         assert_eq!(near_sdk::env::block_timestamp_ms(), 10);
         let accepted = c.ft_on_transfer(

@@ -106,6 +106,28 @@ export interface ContractConfigView {
   policy_version: string;
 }
 
+interface CandidateEventView {
+  event_id: string;
+  phase: ContractEventState;
+  organizer: string;
+  canonical_ft: string;
+  policy_version: string;
+  deposit: string;
+  capacity: number;
+  reg_open: number;
+  reg_close: number;
+  checkin_open: number;
+  checkin_close: number;
+  cancel_cutoff: number;
+  finalize_deadline: number;
+  active_registrations: number;
+  total_registrations: number;
+  withdrawn_registrations: number;
+  rules_hash: string;
+  created_at: number;
+  accepted_principal: string;
+}
+
 export interface FtMetadata {
   spec: string;
   name: string;
@@ -129,7 +151,46 @@ export function getEvent(
   rpcUrl: string,
   fetchImpl?: typeof fetch,
 ): Promise<RpcResult<ContractEventView>> {
-  return callView<ContractEventView>(contractId, "get_event", { event_id: eventId }, rpcUrl, fetchImpl ?? fetch);
+  const fetcher = fetchImpl ?? fetch;
+  return (async () => {
+    const primary = await callView<ContractEventView>(contractId, "get_event", { event_id: eventId }, rpcUrl, fetcher);
+    if (primary.ok) return primary;
+
+    // The deployable native-USDC candidate exposes a single-event view with no
+    // argument. Keep the accepted v6 ABI path first, then adapt that bounded
+    // shape without weakening the fail-closed error returned by either call.
+    const candidate = await callView<CandidateEventView>(contractId, "get_event", {}, rpcUrl, fetcher);
+    if (!candidate.ok) return primary;
+    const value = candidate.value;
+    if (value.event_id !== eventId) {
+      return { ok: false, code: "UNKNOWN_EVENT", message: `contract returned ${value.event_id}` };
+    }
+    return {
+      ...candidate,
+      value: {
+        event_id: value.event_id,
+        organizer: value.organizer,
+        canonical_ft: value.canonical_ft,
+        rules_hash: value.rules_hash,
+        deposit: value.deposit,
+        capacity: value.capacity,
+        reg_open: value.reg_open,
+        reg_close: value.reg_close,
+        cancel_cutoff: value.cancel_cutoff,
+        checkin_open: value.checkin_open,
+        checkin_close: value.checkin_close,
+        finalize_deadline: value.finalize_deadline,
+        policy_version: value.policy_version,
+        state: value.phase,
+        phase: value.phase,
+        active_registrations: value.active_registrations,
+        total_registrations: value.total_registrations,
+        withdrawn_registrations: value.withdrawn_registrations,
+        accepted_principal: value.accepted_principal,
+        created_at: value.created_at,
+      },
+    };
+  })();
 }
 
 export function getRegistration(

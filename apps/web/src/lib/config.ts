@@ -34,6 +34,8 @@ export interface AcceptedEvent {
   contractId: string;
   network: NetworkId;
   policyVersion: string;
+  /** Event-specific canonical FT when the deployment does not use the v6 default. */
+  canonicalFt?: string;
 }
 
 export const ACCEPTED_EVENTS: Readonly<Record<string, AcceptedEvent>> = {
@@ -55,9 +57,10 @@ export const ACCEPTED_EVENTS: Readonly<Record<string, AcceptedEvent>> = {
  */
 export const OPEN_TEST_EVENT_SLOT: AcceptedEvent | null = {
   eventId: "wallet-browser-test",
-  contractId: "showstake-wallet-endpx.testnet",
+  contractId: "showstake-event-v2-endpx.testnet",
   network: NETWORK,
-  policyVersion: POLICY_VERSION,
+  policyVersion: "showstake-native-usdc-event/1",
+  canonicalFt: "mockusdc.testnet",
 };
 
 export function isAcceptedEvent(eventId: string): boolean {

@@ -615,7 +615,7 @@ const preparedRec = {
 }
 
 // ---- explicit OPEN test-event slot (real deployment reference, no fixture) --
-assert("slot: real testnet open instance configured", config.OPEN_TEST_EVENT_SLOT?.eventId === "wallet-browser-test" && config.OPEN_TEST_EVENT_SLOT?.contractId === "showstake-wallet-endpx.testnet", "verified deployed slot");
+assert("slot: real testnet open instance configured", config.OPEN_TEST_EVENT_SLOT?.eventId === "wallet-browser-test" && config.OPEN_TEST_EVENT_SLOT?.contractId === "showstake-event-v2-endpx.testnet" && config.OPEN_TEST_EVENT_SLOT?.canonicalFt === "mockusdc.testnet", "verified deployed slot");
 assert("slot: unknown open-test id stays rejected", !config.isAcceptedEvent("d036-open-slot"), "d036-open-slot");
 assert("slot: accepted event still resolves", config.acceptedEvent("d036-settle-five")?.contractId === config.SHOWSTAKE_CONTRACT, "settle-five");
 

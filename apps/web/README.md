@@ -18,7 +18,10 @@ and copy. See `../../DESIGN.md` and `../../docs/frontend-provenance.json`.
   (`get_config`, `get_event`, `get_settlement`) and the canonical FT
   (`showstake-ft-endpx.testnet`, 6 decimals) `ft_metadata`. `d036-settle-five` is
   **Settled**, so it shows finished/settlement/claim outcomes, not open
-  registration. Unknown ids/deployments fail closed.
+  registration. Unknown ids/deployments fail closed. The current open testnet
+  slot is `wallet-browser-test` on `showstake-event-v2-endpx.testnet` with
+  `mockusdc.testnet` (6 decimals); its event/pass views are read directly
+  from the deployed EventEscrow candidate.
 - `/events` — personal plans list; a server session is not wired (the wallet
   button connects/signs but that is not a session), shown honestly.
 - `/events/new` — event creation unavailable (needs organizer identity + NEAR binding).
@@ -70,6 +73,7 @@ invented catalogue, no automatic network swap).
 
 ```sh
 pnpm --filter @showstake/web dev         # http://localhost:3000
+pnpm --filter @showstake/web exec next start --port 3010 # http://localhost:3010
 pnpm --filter @showstake/web build       # Next production build
 pnpm --filter @showstake/web typecheck   # tsc --noEmit
 node scripts/verify-frontend-slice.mjs   # behavioral money/u128/state/action/registration/proof/envelope guards

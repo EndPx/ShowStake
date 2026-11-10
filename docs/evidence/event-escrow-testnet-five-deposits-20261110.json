@@ -1,0 +1,82 @@
+{
+    "evidence_id":  "event-escrow-testnet-five-deposits-20261110",
+    "classification":  "PASS_TESTNET",
+    "network":  "near-testnet",
+    "contract_id":  "showstake-event-v2-endpx.testnet",
+    "wasm_sha256":  "8764cab08593275f6ff3cadec642c378943baad1450293d5f4295ea18d2fa237",
+    "canonical_ft":  "mockusdc.testnet",
+    "token":  {
+                  "symbol":  "USDC",
+                  "decimals":  6,
+                  "atomic_unit":  "1e-6"
+              },
+    "organizer":  "showstake-participant-endpx.testnet",
+    "event_id":  "wallet-browser-test",
+    "event_rules":  {
+                        "deposit_atomic":  "2000000",
+                        "capacity":  10
+                    },
+    "participants":  [
+                         {
+                             "account_id":  "showstake-participant-endpx.testnet",
+                             "registration_id":  "wallet-browser-test-reg-0",
+                             "pass_id":  "wallet-browser-test-pass-0"
+                         },
+                         {
+                             "account_id":  "showstake-attendee-a-endpx.testnet",
+                             "registration_id":  "wallet-browser-test-reg-1",
+                             "pass_id":  "wallet-browser-test-pass-1"
+                         },
+                         {
+                             "account_id":  "showstake-attendee-b-endpx.testnet",
+                             "registration_id":  "wallet-browser-test-reg-2",
+                             "pass_id":  "wallet-browser-test-pass-2"
+                         },
+                         {
+                             "account_id":  "showstake-attendee-c-endpx.testnet",
+                             "registration_id":  "wallet-browser-test-reg-3",
+                             "pass_id":  "wallet-browser-test-pass-3"
+                         },
+                         {
+                             "account_id":  "showstake-attendee-d-endpx.testnet",
+                             "registration_id":  "wallet-browser-test-reg-4",
+                             "pass_id":  "wallet-browser-test-pass-4"
+                         }
+                     ],
+    "receipts":  {
+                     "contract_deploy":  "7auRX7VtyzDkBz5wD41CV7HeFjUAdJ33CYbAoxJsYyBY",
+                     "contract_init":  "EgTPtSk4D4eFgEScMaNzWRkPYptudUZLNFKZ6XRzfA23",
+                     "create_event":  "2SQVxTL4dwry6vADSgmCStwokQsvy5hLTobrZ1DpjvNx",
+                     "first_deposit":  "G9LQUz2rmZhgMHzXkzsnYMjuokDTMU8KiNT5VBsRodHs",
+                     "additional_deposits":  [
+                                                 "EzpN2rw8jWdsRmao4vo2b7wwYxJsg5gsNs3LjGfFEkmX",
+                                                 "HvrhYA75d6k29Xd4NTokVZE6hZHFdXGD3hLSvyUYpwea",
+                                                 "H1Dh6nPnn6Ka2ZMT5oNYrzYbSULoj27MSer8fmtGew",
+                                                 "Ch8Ujj2eRz6skuYdQcGCdffoUoVpo6V7FGnH3dZv6h74"
+                                             ]
+                 },
+    "final_chain_view":  {
+                             "phase":  "RegistrationOpen",
+                             "earn_state":  "NotStarted",
+                             "active_registrations":  5,
+                             "accepted_principal_atomic":  "10000000",
+                             "accepted_principal_display":  "10 USDC",
+                             "escrow_ft_balance_atomic":  "10000000",
+                             "participant_ft_balance_atomic":  "999990000000",
+                             "passes_issued":  5,
+                             "pass_policy":  "showstake-native-usdc-event/1"
+                         },
+    "expected_settlement_without_yield":  {
+                                              "attendees":  2,
+                                              "no_shows":  3,
+                                              "total_pool_atomic":  "10000000",
+                                              "per_attendee_atomic":  "5000000",
+                                              "per_attendee_display":  "5 USDC",
+                                              "status":  "EXPECTED_ONLY_BLOCKED_BY_EARN_PROVIDER"
+                                          },
+    "blocked_gates":  [
+                          "Rhea provider_verified=false; no live supply/redeem callback has been executed.",
+                          "Attendance/finalize/settlement/claim are not PASS_TESTNET yet.",
+                          "Mainnet deployment and transactions are not authorized."
+                      ]
+}

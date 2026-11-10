@@ -23,6 +23,8 @@ export function msToIso(ms: unknown): string | null {
  * treated as a known phase.
  */
 export type ContractEventState =
+  | "RegistrationOpen"
+  | "RegistrationClosed"
   | "Published"
   | "Cancelled"
   | "RefundOnly"
@@ -32,6 +34,10 @@ export type ContractEventState =
 
 export function mapContractEventState(value: unknown): EventState | null {
   switch (value) {
+    case "RegistrationOpen":
+      return "PUBLISHED";
+    case "RegistrationClosed":
+      return "ATTENDANCE_FINALIZED";
     case "Published":
       return "PUBLISHED";
     case "Cancelled":

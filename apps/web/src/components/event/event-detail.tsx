@@ -80,7 +80,7 @@ export function EventDetailClient({ eventId }: { eventId: string }) {
         getConfig(accepted.contractId, RPC_URL),
         getEvent(accepted.contractId, eventId, RPC_URL),
         getSettlement(accepted.contractId, eventId, RPC_URL),
-        ftMetadata(CANONICAL_FT, RPC_URL),
+        ftMetadata(accepted.canonicalFt ?? CANONICAL_FT, RPC_URL),
       ]);
       if (controller.signal.aborted) return;
       if (!event.ok) {
