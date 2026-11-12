@@ -3,6 +3,7 @@ import type { Pool, PoolClient } from 'pg';
 import { randomUUID } from 'node:crypto';
 import type { AttendanceRead, ChallengeRow, ClaimRead, ContentResourceRead, EventListData, EventResultsRead, PassRead, PublicEvent, SessionRow, WalletBindingRow } from '../types.js';
 import type { Store } from './types.js';
+import { isUuid } from '../lib/util.js';
 
 /** PostgreSQL `numeric` must round-trip as a canonical money string, never a float. */
 function money(v: unknown): string {
@@ -119,7 +120,7 @@ export class PgStore implements Store {
     return res.rows[0] ? mapEvent(res.rows[0]) : null;
   }
   async getEventResults(id: string): Promise<EventResultsRead | null> {
-    const ev = await this.pool.query<EventRow>(`SELECT ${EVENT_SELECT} WHERE e.id = $1 OR e.chain_event_id = $1`, [id]);
+    const ev = await this.pool.query<EventRow>(`SELECT ${EVENT_SELECT} WHERE ${isUuid(id) ? "e.id" : "e.chain_event_id"} = $1`, [id]);
     const event = ev.rows[0];
     if (!event) return null;
     const counts = await this.pool.query<{ registrations: string; active: string; withdrawn: string; attendees: string; no_shows: string }>(

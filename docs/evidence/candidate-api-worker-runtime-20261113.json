@@ -1,0 +1,61 @@
+{
+  "classification": "PASS_TESTNET",
+  "scope": "Read-only testnet receipts projected through real restricted local PostgreSQL and real API. Browser wallet NOT_RUN.",
+  "network": "testnet",
+  "contract": "ss-e2e-1113013557.testnet",
+  "cursor": [
+    {
+      "consumer": "candidate-e2e",
+      "cursor_value": {
+        "block_hash": "DBAC5K65NPF624LYx3Anxq8PWpy2BeAYSU69LhtuTHm1",
+        "block_height": 277401909
+      }
+    }
+  ],
+  "api": {
+    "data": {
+      "eventId": "31fe9bbc-3db8-4c65-ae46-f5d4aef07e2b",
+      "chainEventId": "five-two-attendees",
+      "state": "SETTLED",
+      "counts": {
+        "registrations": 5,
+        "activeRegistrations": 5,
+        "withdrawn": 0,
+        "attendees": 2,
+        "noShows": 3
+      },
+      "totals": {
+        "acceptedAtomic": "10000000",
+        "paidAtomic": "10000000",
+        "pendingAtomic": "0",
+        "liabilityAtomic": "0"
+      },
+      "finalized": true,
+      "refund": {
+        "available": false,
+        "reason": null,
+        "principalAtomic": null
+      },
+      "settlement": {
+        "available": true,
+        "claimsEnabled": true,
+        "complete": true
+      },
+      "yield": {
+        "status": "UNAVAILABLE",
+        "reason": "ABI_NOT_FROZEN"
+      },
+      "observedAt": "2026-11-12T18:36:55.196Z"
+    },
+    "meta": {
+      "requestId": "100a1b23-5231-4f09-af29-f67b5a805a1c",
+      "observedAt": "2026-11-12T19:48:54.284Z",
+      "network": "testnet",
+      "stale": true
+    },
+    "error": null
+  },
+  "restart": "API restarted with fixed UUID-or-chain-ID query; worker resumed from durable cursor without replaying financial transactions",
+  "freshness": "Historical event observation remains stale; not changed to imply current freshness",
+  "mainnet": "NOT_RUN"
+}
