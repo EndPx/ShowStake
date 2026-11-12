@@ -4,6 +4,16 @@ ShowStake is an event attendance commitment platform built around NEAR escrow. P
 
 Accepted increments include the database foundation, independent settlement oracle, wallet/signing diagnostic harness, and Rust escrow/pass, attendance, settlement and claim contract. The core contract financial lifecycle is exercised on NEAR testnet; full browser/backend integration remains incomplete. Hackathon tracks: `open` and `nfts`; the custom pass does not claim NEP-171 or NEP-393 compliance.
 
+## Inspect the paused mainnet deployment
+
+Contract: [`showstake-mainnet-escrow-endpx-2026.near`](https://nearblocks.io/address/showstake-mainnet-escrow-endpx-2026.near). This is **PASS_LIVE for empty, paused deployment only**. There is no mainnet event or participant deposit; Rhea funded withdrawal and mainnet browser lifecycle are not accepted.
+
+1. Inspect [account creation](https://nearblocks.io/txns/J8fBgZFDPnvoViz9UQPUeKaYs1qQoaRt81QWqMWL9tZQ) and [atomic deploy + initialization](https://nearblocks.io/txns/HoBrYk5ye1n4SXThHULFTg3avu8dyo8ERy5XL3SDEjwc).
+2. Run `near contract call-function as-read-only showstake-mainnet-escrow-endpx-2026.near get_rhea_control json-args '{}' network-config mainnet now`. See paused=true and principal_cap=0. Run `get_event` the same way and see null.
+3. Inspect [receipt/code/balance evidence](docs/evidence/mainnet-deploy-20261112T221125Z/result.json). Onchain code matches SHA-256 `03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2`; deployed code matching is not a claim of independent audit or reproducible source verification.
+
+Fees totaled0.0092553459773227NEAR. The2.30NEAR contract funding is mostly retained as balance/storage reserve. FullAccess upgrade authority is retained in the local OS keychain. No public deposit pilot is enabled.
+
 ## Inspect the five-person settlement on testnet
 
 Current settlement instance: `showstake-settle-endpx.testnet`, source `b744c00`, Wasm `f462ddcbb8b47ff03f4bea71c054cefe0d0a576b1346a0f9a55688c43307fd59`, policy `showstake-v2-d036-settle/1`.

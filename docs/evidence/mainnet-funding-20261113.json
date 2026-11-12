@@ -1,0 +1,13 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "PUBLIC_READ_ONLY_MAINNET: finalized funder balance confirmation only. No spending or deployment.",
+  "funder": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5",
+  "amountYocto": "2610499591414378372426612",
+  "amountNear": "2.610499591414378372426612",
+  "blockHeight": 224272979,
+  "blockHash": "GPiQMFGawXAPCCghjosR6dXCNkEMPggC9jg8haZTji8J",
+  "sourceLink": "https://explorer.near-intents.org/mask/364cc65a150d2543b3f90005becf57cc7932eaea7b225b83176ba5b93381fbb6",
+  "sourceLinkInspection": "BLOCKED_EXTERNAL: explorer page inaccessible; balance independently checked by official mainnet RPC, not proof of this exact intent identity",
+  "stage1ProposedMaxNear": "2.32",
+  "mainnetBroadcastPerformed": false
+}

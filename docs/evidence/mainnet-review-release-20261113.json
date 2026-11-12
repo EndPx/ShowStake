@@ -1,9 +1,9 @@
 {
-  "status": "IMPLEMENTED_LOCAL",
-  "release_gate": "REVIEW_CANDIDATE_ONLY",
+  "status": "PASS_LIVE",
+  "release_gate": "STAGE1_EMPTY_PAUSED_DEPLOYMENT_ACCEPTED",
   "network": "mainnet",
-  "broadcast_performed": false,
-  "mainnet_spend": "0",
+  "broadcast_performed": true,
+  "mainnet_spend": "0.0092553459773227",
   "artifact": {
     "path": "test-support/contract-integration/wasm/showstake-mainnet-review.wasm",
     "sha256": "03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2",
@@ -52,7 +52,7 @@
     "independent_review": "Codex reviewed plus independent Terra re-review: no new paused/cap0/noevent stage1 blocker if deploy+new atomic. Funded route NOT ACCEPTED: detached withdrawal failure/ambiguity and post-dispatch transfer provenance remain open.",
     "required_atomic_deploy_init": true,
     "retry_and_pre_dispatch_donation_fixes": "PASS_LOCAL: organizer-only Preparing retry; unsolicited FT quarantined from allocations at supply completion and redeem preflight",
-    "execution_authorization": "NOT_APPROVED_FOR_EXACT_REVISED_BUDGET; preparation and local tests only, no mainnet signing or spending",
+    "execution_authorization": "User explicitly approved stage1 with gas tuh, following exact2.32NEAR maximum proposal; no USDC/provider calls authorized",
     "api_worker_runtime": "docs/evidence/candidate-api-worker-runtime-20261113.json",
     "frontend": "PASS_LOCAL: typecheck, lifecycle reducer, 100 frontend checks. Mainnet actions blocked until approved deployment; browser wallet acceptance NOT_RUN.",
     "empty_account_budget": "docs/evidence/mainnet-storage-budget-20261113.json",
@@ -60,12 +60,13 @@
   },
   "accounts": {
     "funder": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5",
-    "funder_native_near": "0.25",
+    "funder_native_near": "0.303054317868679672426612",
     "funder_usdc_atomic": "0",
     "proposed_contract": "showstake-mainnet-escrow-endpx-2026.near",
-    "proposed_contract_status": "UNKNOWN_ACCOUNT at final mainnet block224261600. Use named .near registration path; raw top-level proposal superseded by live account_creation_config minimum65.",
+    "proposed_contract_status": "CREATED_AND_DEPLOYED_MAINNET; paused cap0/noevent verified",
     "organizer": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5",
-    "signer": "NEAR CLI 0.31.1 Windows Credential Manager; imported/readback verified locally, public key matched final mainnet access key. Mainnet CLI transaction signing NOT_RUN"
+    "signer": "Both mainnet transactions finalized through NEAR CLI0.31.1 Windows keychain; new contract FullAccess key saved securely, no legacy fallback",
+    "contract_native_near": "2.298189927568376"
   },
   "init": {
     "method": "new",
@@ -144,14 +145,35 @@
     "provider_admin": "External DAO/upgrade authority; no audit/safety guarantee"
   },
   "open_gates": [
-    "User-approved stage1 exact budget and sufficient native funding",
     "Final reproducible source verification / independent security acceptance",
     "Rhea final provider FT debit + destination balance reconciliation under bounded funded micro-test",
     "Detached provider withdrawal rollback can strand residual shares; no blind retry on ambiguous success",
     "Yield below frozen redemption floor is rejected; excess funds are excluded from allocation",
     "No public pilot or deposits authorized",
-    "Deploy/init must be atomic to prevent initializer takeover",
     "Successful execute with unresolved detached transfer cannot be blindly retried; no funded stage2 acceptance",
     "FT arriving after redeem dispatch can cover balance threshold without proving provider-origin receipt; actual provider final receipt chain required"
-  ]
+  ],
+  "scope": "NEAR mainnet STAGE1 EMPTY_PAUSED_DEPLOYMENT_ONLY. No event, USDC deposit, provider storage, supply or redeem.",
+  "mainnet_spend_basis": "Native account-creation and deploy/init fees only; contract funding2.30NEAR recorded separately and largely retained as balance/storage reserve",
+  "mainnet_contract_funding_near": "2.30",
+  "deployment": {
+    "contract": "showstake-mainnet-escrow-endpx-2026.near",
+    "finalBlock": {
+      "height": 224274113,
+      "hash": "3kL33tpVmZH5w1muVUZ9mQa36pqNbDKhrTWzvQREVBYW"
+    },
+    "transactions": [
+      {
+        "step": "create",
+        "hash": "J8fBgZFDPnvoViz9UQPUeKaYs1qQoaRt81QWqMWL9tZQ",
+        "final": true
+      },
+      {
+        "step": "deploy-init",
+        "hash": "HoBrYk5ye1n4SXThHULFTg3avu8dyo8ERy5XL3SDEjwc",
+        "final": true
+      }
+    ],
+    "evidence": "docs/evidence/mainnet-deploy-20261112T221125Z/result.json"
+  }
 }

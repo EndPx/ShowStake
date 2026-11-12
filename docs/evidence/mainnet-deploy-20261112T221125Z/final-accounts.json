@@ -1,0 +1,37 @@
+{
+  "block": {
+    "height": 224274113,
+    "hash": "3kL33tpVmZH5w1muVUZ9mQa36pqNbDKhrTWzvQREVBYW"
+  },
+  "contract": {
+    "amount": "2298189927568376000000000",
+    "block_hash": "3kL33tpVmZH5w1muVUZ9mQa36pqNbDKhrTWzvQREVBYW",
+    "block_height": 224274113,
+    "code_hash": "CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os",
+    "locked": "0",
+    "storage_paid_at": 0,
+    "storage_usage": 225503
+  },
+  "funder": {
+    "amount": "303054317868679672426612",
+    "block_hash": "3kL33tpVmZH5w1muVUZ9mQa36pqNbDKhrTWzvQREVBYW",
+    "block_height": 224274113,
+    "code_hash": "11111111111111111111111111111111",
+    "locked": "0",
+    "storage_paid_at": 0,
+    "storage_usage": 182
+  },
+  "keys": {
+    "block_hash": "3kL33tpVmZH5w1muVUZ9mQa36pqNbDKhrTWzvQREVBYW",
+    "block_height": 224274113,
+    "keys": [
+      {
+        "access_key": {
+          "nonce": 224273797000001,
+          "permission": "FullAccess"
+        },
+        "public_key": "ed25519:FQJ3SrmLBtQU7xjigLN9NW2aMu2PUTT6Tper1CvnYe2X"
+      }
+    ]
+  }
+}

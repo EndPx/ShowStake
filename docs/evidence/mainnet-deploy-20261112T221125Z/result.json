@@ -1,0 +1,83 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "NEAR mainnet STAGE1 EMPTY_PAUSED_DEPLOYMENT_ONLY. No event, USDC deposit, provider storage, supply or redeem.",
+  "network": "mainnet",
+  "contract": "showstake-mainnet-escrow-endpx-2026.near",
+  "funder": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5",
+  "artifact": {
+    "sha256": "03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2",
+    "bytes": 224939,
+    "codeHash": "CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os"
+  },
+  "finalBlock": {
+    "height": 224274113,
+    "hash": "3kL33tpVmZH5w1muVUZ9mQa36pqNbDKhrTWzvQREVBYW"
+  },
+  "transactions": [
+    {
+      "step": "create",
+      "hash": "J8fBgZFDPnvoViz9UQPUeKaYs1qQoaRt81QWqMWL9tZQ",
+      "final": true
+    },
+    {
+      "step": "deploy-init",
+      "hash": "HoBrYk5ye1n4SXThHULFTg3avu8dyo8ERy5XL3SDEjwc",
+      "final": true
+    }
+  ],
+  "views": {
+    "config": {
+      "organizer": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5",
+      "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "network": "mainnet",
+      "policy_version": "showstake-native-usdc-rhea-review/1",
+      "provider_account": "contract.main.burrow.near",
+      "provider_kind": "RHEA_MAINNET"
+    },
+    "control": {
+      "paused": true,
+      "stage": "Idle",
+      "principal_cap": "0",
+      "shares": "0",
+      "last_internal_balance": "0",
+      "baseline_ft": "0",
+      "expected_return": "0"
+    },
+    "event": null,
+    "storage": {
+      "storage_bytes": 225503,
+      "storage_cost_yocto": "2255030000000000000000000",
+      "account_balance_yocto": "2298189927568376000000000",
+      "payer": "contract"
+    }
+  },
+  "balances": {
+    "beforeFunderYocto": "2610499591414378372426612",
+    "afterFunderYocto": "303054317868679672426612",
+    "contractFundingYocto": "2300000000000000000000000",
+    "afterContractYocto": "2298189927568376000000000",
+    "accountCreationAndFundingCostYocto": "7445273545698700000000",
+    "deployInitCostYocto": "1810072431624000000000",
+    "totalFeesYocto": "9255345977322700000000",
+    "capitalPlusFeesConservativeYocto": "2309255345977322700000000",
+    "authorizedMaximumYocto": "2320000000000000000000000",
+    "contractStorageReserveYocto": "2255030000000000000000000"
+  },
+  "authority": {
+    "fullAccessPublicKey": "ed25519:FQJ3SrmLBtQU7xjigLN9NW2aMu2PUTT6Tper1CvnYe2X",
+    "keychainSaved": true,
+    "legacyFallback": false,
+    "upgradable": true
+  },
+  "provider": {
+    "selected": "SELECTED_FOR_HACKATHON",
+    "technicalAcceptance": "NOT_ACCEPTED",
+    "fundedCalls": "NOT_RUN"
+  },
+  "remaining": [
+    "No event created; no cap increase or unpause authorized",
+    "Provider actual withdrawal liquidity NOT_RUN",
+    "Frontend mainnet transactions remain disabled",
+    "Factory organizer-paid creation NOT_DEPLOYED"
+  ]
+}

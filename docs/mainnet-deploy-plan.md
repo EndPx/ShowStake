@@ -1,6 +1,6 @@
 # Mainnet deployment proposal
 
-Status: **PREPARED_LOCAL / NOT_DEPLOYED**. This proposal covers an empty, paused
+Status: **STAGE1_DEPLOYED_PAUSED / PASS_LIVE**. This proposal covers an empty, paused
 contract only. It does not authorize USDC deposits, provider calls or a public pilot.
 
 The reviewed artifact and initialization are pinned in
@@ -31,9 +31,10 @@ proposed empty paused deployment. Rhea is **SELECTED_FOR_HACKATHON**, not
 **TECHNICALLY_ACCEPTED**. The funded route still needs final provider transfer
 provenance, withdrawal failure recovery and actual returned-USDC evidence.
 
-## Commands prepared for separate scoped authorization
+## Executed commands under scoped authorization
 
-These commands are documented for review and **have not been executed**. The
+The user approved the exact2.32NEAR stage1 budget with "gas tuh". These commands
+were executed and finalized on mainnet; **do not run them again**. The
 funder key is in the local OS credential store; no private key is passed in a
 command, environment variable, evidence file or chat.
 
@@ -98,3 +99,21 @@ Six compiler/optimizer variants were measured on identical source. The best save
 only306 bytes (0.00306 NEAR of code storage), so the reviewed Wasm was retained.
 The meaningful budget reduction comes from measured initial storage and a smaller
 initializer gas allowance, preserving all lifecycle features and tests.
+
+## Accepted mainnet stage1 result
+
+Account creation: `J8fBgZFDPnvoViz9UQPUeKaYs1qQoaRt81QWqMWL9tZQ`.
+Atomic deploy+new: `HoBrYk5ye1n4SXThHULFTg3avu8dyo8ERy5XL3SDEjwc`.
+Final verification block224274113 / `3kL33tpVmZH5w1muVUZ9mQa36pqNbDKhrTWzvQREVBYW`.
+Onchain Wasm bytes/hash match the reviewed224939-byte artifact. Mainnet config,
+canonical USDC, organizer, sole FullAccess key and paused/cap0/noevent are verified.
+
+Native fees were0.0092553459773227NEAR in total: account creation/funding
+0.0074452735456987 and deploy/init0.001810072431624. Funder remaining balance
+0.303054317868679672426612NEAR. Contract balance2.298189927568376NEAR, including
+2.25503NEAR storage reserve. These are current results; earlier balance/availability
+observations above are historical preflight notes.
+
+Full [receipts and balance reconciliation](evidence/mainnet-deploy-20261112T221125Z/result.json).
+No event, FT storage registration, USDC transfer, Rhea supply/redeem, cap increase,
+unpause or public deposit was performed. Mainnet frontend transactions stay disabled.

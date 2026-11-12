@@ -1,0 +1,69 @@
+{
+  "authorizedBy": "User: gas tuh; scoped stage1 create account, fund2.30NEAR, atomic deploy/init paused, total<=2.32NEAR, zero USDC/provider calls",
+  "gasPrice": "100000000",
+  "state": "DEPLOY_FINAL_VERIFIED",
+  "cliRpcHost": "archival-rpc.mainnet.fastnear.com",
+  "sha256": "03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2",
+  "before": {
+    "amount": "2610499591414378372426612",
+    "block_hash": "EX2CZ6yLhzA5VXDz6pUgTxmfxYqz459v69U9RwdGPHBm",
+    "block_height": 224273656,
+    "code_hash": "11111111111111111111111111111111",
+    "locked": "0",
+    "storage_paid_at": 0,
+    "storage_usage": 182
+  },
+  "artifact": "test-support/contract-integration/wasm/showstake-mainnet-review.wasm",
+  "contract": "showstake-mainnet-escrow-endpx-2026.near",
+  "funder": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5",
+  "storagePerByte": "10000000000000000000",
+  "steps": [
+    {
+      "observedAt": "2026-11-12T22:12:44.0946071Z",
+      "step": "create",
+      "exitCode": 0,
+      "txHash": "J8fBgZFDPnvoViz9UQPUeKaYs1qQoaRt81QWqMWL9tZQ",
+      "keychainSaved": true,
+      "legacyFallback": false
+    },
+    {
+      "txHash": "HoBrYk5ye1n4SXThHULFTg3avu8dyo8ERy5XL3SDEjwc",
+      "step": "deploy-init",
+      "observedAt": "2026-11-12T22:14:27.5178482Z",
+      "exitCode": 0
+    }
+  ],
+  "maxTotalYocto": "2320000000000000000000000",
+  "initArgsPath": "docs/evidence/mainnet-init-args-20261113.json",
+  "cliRpcCanonicalMatch": true,
+  "network": "mainnet",
+  "afterCreate": {
+    "block": {
+      "height": 224273912,
+      "hash": "EARt16qNvKA92MpwhuQGkh5FhU4YxRqxJjQH3pQsY3gu"
+    },
+    "contract": {
+      "amount": "2300000000000000000000000",
+      "block_hash": "EARt16qNvKA92MpwhuQGkh5FhU4YxRqxJjQH3pQsY3gu",
+      "block_height": 224273912,
+      "code_hash": "11111111111111111111111111111111",
+      "locked": "0",
+      "storage_paid_at": 0,
+      "storage_usage": 182
+    },
+    "funder": {
+      "amount": "303054317868679672426612",
+      "block_hash": "EARt16qNvKA92MpwhuQGkh5FhU4YxRqxJjQH3pQsY3gu",
+      "block_height": 224273912,
+      "code_hash": "11111111111111111111111111111111",
+      "locked": "0",
+      "storage_paid_at": 0,
+      "storage_usage": 182
+    },
+    "contractPublicKey": "ed25519:FQJ3SrmLBtQU7xjigLN9NW2aMu2PUTT6Tper1CvnYe2X",
+    "funderOutflowYocto": "2307445273545698700000000",
+    "creationFeeYocto": "7445273545698700000000",
+    "txHash": "J8fBgZFDPnvoViz9UQPUeKaYs1qQoaRt81QWqMWL9tZQ"
+  },
+  "resultPath": "docs/evidence/mainnet-deploy-20261112T221125Z/result.json"
+}
