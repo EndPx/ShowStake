@@ -1,0 +1,146 @@
+{
+  "status": "IMPLEMENTED_LOCAL",
+  "release_gate": "REVIEW_CANDIDATE_ONLY",
+  "network": "mainnet",
+  "broadcast_performed": false,
+  "mainnet_spend": "0",
+  "artifact": {
+    "path": "test-support/contract-integration/wasm/showstake-mainnet-review.wasm",
+    "sha256": "03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2",
+    "code_hash_base58": "CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os",
+    "bytes": 224939,
+    "feature": "mainnet-review",
+    "rust": "1.99.1",
+    "cargo": "1.99.1",
+    "optimizer": "Binaryen 120 wasm-opt -Oz",
+    "locked_dependencies": true,
+    "reproducible_container_build": "NOT_RUN",
+    "source_files": [
+      {
+        "path": "contracts/showstake/event-escrow-candidate/src.rs",
+        "sha256": "40de13466e8ed6bf2d3e676d83de9594b30f1a6ce4c26fa94939430cdeacdae7"
+      },
+      {
+        "path": "contracts/showstake/event-escrow-candidate/rhea_adapter.rs",
+        "sha256": "71e0f0d22149f512e35ef544ea4e3e3211f0975459066d6c1a9d100427f55a0f"
+      },
+      {
+        "path": "contracts/showstake/event-escrow-candidate/Cargo.toml",
+        "sha256": "06fca2449ab16aa06efe957e7b7416a03dac56c1ce5c54c179e16d08a8da22af"
+      },
+      {
+        "path": "contracts/showstake/event-escrow-candidate/Cargo.lock",
+        "sha256": "9aa5cdba4e42ee87c4e9d36d0a1c02a0bb217e9581198cbe3e888a5a599a3298"
+      }
+    ],
+    "build_command": "wsl -d Ubuntu -- bash scripts/build-mainnet-review.sh (use absolute WSL repository path on Windows)",
+    "build_script": "scripts/build-mainnet-review.sh"
+  },
+  "review": {
+    "local_tests": "PASS_LOCAL 18/18 mainnet-review and 5/5 default",
+    "test_log": "docs/evidence/mainnet-review-unit-tests-20261113.log",
+    "optimized_wasm_validation": "PASS_LOCAL",
+    "optimized_testnet_control": {
+      "hash": "db3508f8490d4abc444ea1cee59865337abc15fc38a14897206ae34cf87423de",
+      "scope": "Prior MockEarn-only source optimized to 201017 bytes passed actual five-account deposit/supply/redeem/payout testnet cycle. Does NOT prove Rhea feature runtime.",
+      "evidence": "docs/evidence/testnet-lifecycle-opt1113021957/result.json",
+      "artifact": "test-support/contract-integration/wasm/showstake-testnet-optimized.wasm"
+    },
+    "mainnet_rhea_feature_runtime": "NOT_RUN",
+    "provider_redemption_liquidity": "NOT_RUN",
+    "browser_mainnet": "NOT_RUN",
+    "independent_review": "Codex reviewed plus independent Terra re-review: no new paused/cap0/noevent stage1 blocker if deploy+new atomic. Funded route NOT ACCEPTED: detached withdrawal failure/ambiguity and post-dispatch transfer provenance remain open.",
+    "required_atomic_deploy_init": true,
+    "retry_and_pre_dispatch_donation_fixes": "PASS_LOCAL: organizer-only Preparing retry; unsolicited FT quarantined from allocations at supply completion and redeem preflight",
+    "execution_authorization": "NOT_APPROVED_FOR_EXACT_BUDGET; current broad mainnet direction is recorded, no blockchain signing or spending performed",
+    "api_worker_runtime": "docs/evidence/candidate-api-worker-runtime-20261113.json",
+    "frontend": "PASS_LOCAL: typecheck, lifecycle reducer, 100 frontend checks. Mainnet actions blocked until approved deployment; browser wallet acceptance NOT_RUN."
+  },
+  "accounts": {
+    "funder": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5",
+    "funder_native_near": "0.25",
+    "funder_usdc_atomic": "0",
+    "proposed_contract": "showstake-mainnet-escrow-endpx-2026",
+    "proposed_contract_status": "UNKNOWN_ACCOUNT when checked; recheck before creation",
+    "organizer": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5",
+    "signer": "NEAR CLI 0.31.1 Windows Credential Manager; imported/readback verified locally, public key matched final mainnet access key. Mainnet CLI transaction signing NOT_RUN"
+  },
+  "init": {
+    "method": "new",
+    "args": {
+      "organizer": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5",
+      "provider_account": "contract.main.burrow.near",
+      "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "token_symbol": "USDC",
+      "token_name": "USDC",
+      "token_decimals": 6,
+      "provider_kind": "RHEA_MAINNET"
+    },
+    "expected": {
+      "network": "mainnet",
+      "policy": "showstake-native-usdc-rhea-review/1",
+      "paused": true,
+      "principal_cap_atomic": "0",
+      "event": null
+    }
+  },
+  "provider": {
+    "selection": "SELECTED_FOR_HACKATHON",
+    "technical_acceptance": "NOT_ACCEPTED",
+    "account": "contract.main.burrow.near",
+    "code_hash": "6Nek1MZ8cwJJ2xMQAUWup9V5AToYS9rkTxJfwo6BCpFa",
+    "position_type": "Internal supplied shares, not a separate FT receipt token",
+    "extra_decimals": 12,
+    "owner": "burrow.sputnik-dao.near",
+    "mode_at_inspection": "Running",
+    "pause_operator_at_inspection": null,
+    "storage_min_near": "0.1",
+    "audit_live_code_match": "NOT_VERIFIED",
+    "source": "https://github.com/NearDeFi/burrowland",
+    "current_sdk": "https://github.com/rhea-finance/burrow-sdk-python",
+    "read_only_evidence": "docs/evidence/mainnet-release-readonly-20261113.json"
+  },
+  "budget": {
+    "code_storage_yocto": "2249390000000000000000000",
+    "code_storage_near": "2.24939",
+    "stage1": {
+      "actions": [
+        "Create new dedicated contract account with new local key",
+        "Fund that account with 2.5 NEAR",
+        "Deploy exact Wasm AND initialize new in ONE ATOMIC ACTION BATCH; never deploy uninitialized code separately",
+        "Verify finalized batch outcome plus code bytes/config/paused cap0/noevent"
+      ],
+      "maximum_total_native_near": "2.55",
+      "includes_gas_limit_near": "0.05",
+      "maximum_usdc_atomic": "0",
+      "provider_calls_allowed": false,
+      "public_deposits_allowed": false
+    },
+    "stage2_proposed_only": {
+      "demo_usdc_max_atomic": "1000000",
+      "provider_storage_near": "0.1",
+      "ft_storage_near": "0.00125",
+      "requires_separate_authorization": true
+    },
+    "suggested_funder_balance_near": "2.75",
+    "suggested_topup_near": "2.50",
+    "funding_is_not_spend_authorization": true
+  },
+  "authority": {
+    "new_contract_key": "FullAccess key kept in local OS credential store; enables upgrade. Do not remove or export during micro-test.",
+    "organizer": "Can publish one event, configure cap before event, pause new entry/supply; cannot redirect beneficiary",
+    "pause": "Does not block claim or redeem",
+    "provider_admin": "External DAO/upgrade authority; no audit/safety guarantee"
+  },
+  "open_gates": [
+    "User-approved stage1 exact budget and sufficient native funding",
+    "Final reproducible source verification / independent security acceptance",
+    "Rhea final provider FT debit + destination balance reconciliation under bounded funded micro-test",
+    "Detached provider withdrawal rollback can strand residual shares; no blind retry on ambiguous success",
+    "Yield below frozen redemption floor is rejected; excess funds are excluded from allocation",
+    "No public pilot or deposits authorized",
+    "Deploy/init must be atomic to prevent initializer takeover",
+    "Successful execute with unresolved detached transfer cannot be blindly retried; no funded stage2 acceptance",
+    "FT arriving after redeem dispatch can cover balance threshold without proving provider-origin receipt; actual provider final receipt chain required"
+  ]
+}

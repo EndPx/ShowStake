@@ -1,9 +1,12 @@
 //! Deployable native-USDC EventEscrow candidate.
 //!
 //! This is a separate near-sdk contract struct; the accepted v6 `Contract`
-//! and the local Rhea policy module remain unchanged. The Rhea adapter is
-//! fail-closed (`provider_verified=false`) until ABI, receipt and liquidity
-//! evidence is accepted; tests may enable a local mock only under cfg(test).
+//! and the local Rhea policy module remain unchanged. The Rhea review adapter
+//! is feature-gated, paused and capped at zero on initialization; funded provider
+//! receipt/liquidity acceptance is separate from local build and codec tests.
+
+#[cfg(feature = "mainnet-review")]
+mod rhea_adapter;
 
 use near_sdk::collections::{LookupMap, Vector};
 use near_sdk::json_types::U128;
@@ -19,7 +22,7 @@ pub const CIRCLE_NATIVE_USDC_MAINNET_ACCOUNT: &str =
 pub const CIRCLE_NATIVE_USDC_TESTNET_ACCOUNT: &str =
     "3e2210e1184b45b64c8a434c0a7e7b23cc04ea7eb7a6c3c32520d03d4afcb8af";
 pub const RHEA_BURROW_READONLY_ACCOUNT: &str = "contract.main.burrow.near";
-pub const RHEA_BURROW_READONLY_CODE_HASH: &str = "6Nek1M8cwJJ2xMQAUWup9V5AToYS9rkTxJfwo6BCpFa";
+pub const RHEA_BURROW_READONLY_CODE_HASH: &str = "6Nek1MZ8cwJJ2xMQAUWup9V5AToYS9rkTxJfwo6BCpFa";
 const ONE_YOCTO: u128 = 1;
 const CLAIM_GAS: u64 = 50_000_000_000_000;
 const CALLBACK_GAS: u64 = 30_000_000_000_000;
@@ -201,6 +204,24 @@ struct Config {
     provider_kind: String,
 }
 
+#[cfg(feature = "mainnet-review")]
+#[near(serializers = [borsh, json])]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum RheaStage { Idle, Preparing, Dispatched, TerminalUsed, TerminalRefund, Ambiguous }
+
+#[cfg(feature = "mainnet-review")]
+#[near(serializers = [borsh, json])]
+#[derive(Clone, Debug)]
+pub struct RheaControl {
+    pub paused: bool,
+    pub stage: RheaStage,
+    pub principal_cap: U128,
+    pub shares: U128,
+    pub last_internal_balance: U128,
+    pub baseline_ft: U128,
+    pub expected_return: U128,
+}
+
 #[near(contract_state)]
 #[derive(PanicOnDefault)]
 pub struct EventEscrowContract {
@@ -212,10 +233,15 @@ pub struct EventEscrowContract {
     commitments: LookupMap<String, String>,
     registration_ids: Vector<String>,
     next_registration: u64,
+    #[cfg(feature = "mainnet-review")]
+    rhea: RheaControl,
 }
 
 #[near]
 impl EventEscrowContract {
+    fn policy_version(&self) -> String {
+        if self.config.provider_kind == "RHEA_MAINNET" { "showstake-native-usdc-rhea-review/1" } else { "showstake-native-usdc-event/1" }.into()
+    }
     #[init]
     pub fn new(
         organizer: AccountId,
@@ -226,8 +252,14 @@ impl EventEscrowContract {
         token_decimals: u8,
         provider_kind: String,
     ) -> Self {
-        require!(provider_kind == "MOCK_TESTNET", "only MOCK_TESTNET supported");
-        require!(env::current_account_id().as_str().ends_with(".testnet") && provider_account.as_str().ends_with(".testnet") && canonical_ft.as_str().ends_with(".testnet"), "mock provider requires testnet accounts");
+        if provider_kind == "MOCK_TESTNET" {
+            require!(env::current_account_id().as_str().ends_with(".testnet") && provider_account.as_str().ends_with(".testnet") && canonical_ft.as_str().ends_with(".testnet"), "mock provider requires testnet accounts");
+        } else {
+            #[cfg(feature = "mainnet-review")]
+            require!(provider_kind == "RHEA_MAINNET" && provider_account.as_str() == rhea_adapter::PROVIDER && canonical_ft.as_str() == rhea_adapter::USDC && !env::current_account_id().as_str().ends_with(".testnet"), "invalid Rhea configuration");
+            #[cfg(not(feature = "mainnet-review"))]
+            env::panic_str("only MOCK_TESTNET supported");
+        }
         require!(provider_account != canonical_ft && provider_account != env::current_account_id(), "invalid provider");
         require!(token_symbol == "USDC", "canonical FT symbol must be USDC");
         require!(!token_name.is_empty(), "canonical FT name required");
@@ -249,6 +281,8 @@ impl EventEscrowContract {
             commitments: LookupMap::new(b"ec-c".to_vec()),
             registration_ids: Vector::new(b"ec-i".to_vec()),
             next_registration: 0,
+            #[cfg(feature = "mainnet-review")]
+            rhea: RheaControl { paused: true, stage: RheaStage::Idle, principal_cap: U128(0), shares: U128(0), last_internal_balance: U128(0), baseline_ft: U128(0), expected_return: U128(0) },
         }
     }
 
@@ -264,7 +298,7 @@ impl EventEscrowContract {
             earn_action_completed: event.earn_action_completed,
             organizer: event.organizer.clone(),
             canonical_ft: self.config.canonical_ft.clone(),
-            policy_version: "showstake-native-usdc-event/1".into(),
+            policy_version: self.policy_version(),
             deposit: event.rules.deposit,
             capacity: event.rules.capacity,
             reg_open: event.rules.reg_open,
@@ -289,8 +323,8 @@ impl EventEscrowContract {
         ConfigView {
             organizer: self.config.organizer.clone(),
             canonical_ft: self.config.canonical_ft.clone(),
-            network: "testnet".into(),
-            policy_version: "showstake-native-usdc-event/1".into(),
+            network: if self.config.provider_kind == "RHEA_MAINNET" { "mainnet" } else { "testnet" }.into(),
+            policy_version: self.policy_version(),
             provider_account: self.config.provider_account.clone(),
             provider_kind: self.config.provider_kind.clone(),
         }
@@ -348,6 +382,13 @@ impl EventEscrowContract {
                 && rules.checkin_close < rules.finalize_deadline,
             "invalid event times"
         );
+        #[cfg(feature = "mainnet-review")]
+        if self.config.provider_kind == "RHEA_MAINNET" {
+            require!(rules.finalize_deadline == rules.checkin_close.checked_add(86_400_000).expect("deadline overflow"), "mainnet requires 24h finalization deadline");
+            require!(!rules.title.is_empty() && rules.title.len() <= 256 && !rules.location.is_empty() && rules.location.len() <= 512 && !rules.rules_text.is_empty() && rules.rules_text.len() <= 8192 && !rules.event_id.is_empty() && rules.event_id.len() <= 128, "mainnet metadata bounds");
+            let total = rules.deposit.0.checked_mul(rules.capacity as u128).expect("cap overflow");
+            require!(!self.rhea.paused && self.rhea.principal_cap.0 > 0 && total <= self.rhea.principal_cap.0, "mainnet cap or pause");
+        }
         self.event = Some(EventRecord {
             rules,
             created_at: env::block_timestamp_ms(),
@@ -384,6 +425,8 @@ impl EventEscrowContract {
             return PromiseOrValue::Value(amount);
         };
         let now = env::block_timestamp_ms();
+        #[cfg(feature = "mainnet-review")]
+        if self.config.provider_kind == "RHEA_MAINNET" && self.rhea.paused { return PromiseOrValue::Value(amount); }
         if message.event_id != event.rules.event_id
             || event.phase != EscrowPhase::RegistrationOpen
             || now < event.rules.reg_open
@@ -435,7 +478,7 @@ impl EventEscrowContract {
                 owner: sender_id.clone(),
                 registration_status: "Active".into(),
                 attendance_status: "Unmarked".into(),
-                policy_version: "showstake-native-usdc-event/1".into(),
+                policy_version: self.policy_version(),
             },
         );
         event.accepted_principal = U128(
@@ -466,16 +509,22 @@ impl EventEscrowContract {
     /// Preflight queries both contracts before sending funds. No retry sends a
     /// second transfer while a previous one has an unresolved receipt.
     pub fn trigger_earn_supply(&mut self) -> Promise {
+        #[cfg(feature = "mainnet-review")]
+        if self.config.provider_kind == "RHEA_MAINNET" { require!(!self.rhea.paused, "supply paused"); }
         let event = self.event.as_mut().expect("event missing");
         require!(event.phase == EscrowPhase::RegistrationClosed && event.earn_state == EarnState::NotStarted && event.accepted_principal.0 > 0, "supply gate closed");
         event.earn_attempt = event.earn_attempt.checked_add(1).expect("earn attempt overflow");
         event.earn_state = EarnState::SupplyPending;
         event.earn_action_completed = false;
+        #[cfg(feature = "mainnet-review")]
+        if self.config.provider_kind == "RHEA_MAINNET" { self.rhea.stage = RheaStage::Preparing; }
         let attempt = event.earn_attempt;
         self.query_earn(attempt, true)
     }
 
     fn query_earn(&self, attempt: u64, preflight: bool) -> Promise {
+        #[cfg(feature = "mainnet-review")]
+        if self.config.provider_kind == "RHEA_MAINNET" { return self.query_rhea(attempt, preflight); }
         let current = env::current_account_id();
         let balance = Promise::new(self.config.canonical_ft.clone()).function_call(
             "ft_balance_of", near_sdk::serde_json::json!({"account_id": current}).to_string().into_bytes(), NearToken::from_yoctonear(0), Gas::from_tgas(10));
@@ -486,7 +535,21 @@ impl EventEscrowContract {
     }
 
     /// Retry only reads after a terminal operation callback; never reissue funds.
-    pub fn reconcile_earn(&self) -> Promise {
+    pub fn reconcile_earn(&mut self) -> Promise {
+        #[cfg(feature = "mainnet-review")]
+        if self.config.provider_kind == "RHEA_MAINNET" {
+            let event = self.event.as_mut().expect("event missing");
+            require!(matches!(event.earn_state, EarnState::SupplyPending | EarnState::RedeemPending), "reconciliation unavailable");
+            if self.rhea.stage == RheaStage::Preparing {
+                require!(env::predecessor_account_id() == self.config.organizer, "organizer required for preflight retry");
+                event.earn_attempt=event.earn_attempt.checked_add(1).expect("attempt overflow");
+                let attempt=event.earn_attempt;
+                return self.query_rhea(attempt,true);
+            }
+            require!(matches!(self.rhea.stage,RheaStage::TerminalUsed|RheaStage::TerminalRefund), "receipt unresolved");
+            let attempt=event.earn_attempt;
+            return self.query_rhea(attempt,false);
+        }
         let event = self.event.as_ref().expect("event missing");
         require!(matches!(event.earn_state, EarnState::SupplyPending | EarnState::RedeemPending) && event.earn_action_completed, "reconciliation unavailable");
         self.query_earn(event.earn_attempt, false)
@@ -540,6 +603,132 @@ impl EventEscrowContract {
         let _terminal_result = env::promise_result_checked(0, 1024);
         event.earn_action_completed = true;
         PromiseOrValue::Promise(self.query_earn(attempt, false))
+    }
+
+    /// REVIEW_NOT_ACCEPTED: config is immutable after publishing an event.
+    #[cfg(feature = "mainnet-review")]
+    pub fn configure_rhea_cap(&mut self, principal_cap: U128) {
+        require!(env::predecessor_account_id() == self.config.organizer && self.config.provider_kind == "RHEA_MAINNET" && self.event.is_none(), "configuration gate closed");
+        require!(principal_cap.0 > 0, "cap required");
+        self.rhea.principal_cap = principal_cap;
+    }
+
+    #[cfg(feature = "mainnet-review")]
+    pub fn set_rhea_paused(&mut self, paused: bool) {
+        require!(env::predecessor_account_id() == self.config.organizer && self.config.provider_kind == "RHEA_MAINNET", "organizer required");
+        self.rhea.paused = paused;
+    }
+
+    #[cfg(feature = "mainnet-review")]
+    pub fn get_rhea_control(&self) -> RheaControl { self.rhea.clone() }
+
+    /// Owner funds precisely the attached storage deposit; never spends escrow FT.
+    /// Registration must still be verified independently before supply.
+    #[cfg(feature = "mainnet-review")]
+    #[payable]
+    pub fn rhea_storage_deposit(&mut self, target: String) -> Promise {
+        require!(env::predecessor_account_id() == self.config.organizer && self.config.provider_kind == "RHEA_MAINNET", "organizer required");
+        let deposit = env::attached_deposit();
+        require!(deposit.as_yoctonear() > 0, "storage deposit required");
+        let account = match target.as_str() { "provider" => self.config.provider_account.clone(), "ft" => self.config.canonical_ft.clone(), _ => env::panic_str("unknown storage target") };
+        Promise::new(account).function_call("storage_deposit", near_sdk::serde_json::json!({"account_id":env::current_account_id()}).to_string().into_bytes(), deposit, Gas::from_tgas(30))
+    }
+
+    #[cfg(feature = "mainnet-review")]
+    fn query_rhea(&self, attempt: u64, preflight: bool) -> Promise {
+        let account = env::current_account_id();
+        let ft = Promise::new(self.config.canonical_ft.clone()).function_call("ft_balance_of", near_sdk::serde_json::json!({"account_id":account}).to_string().into_bytes(), NearToken::from_yoctonear(0), Gas::from_tgas(10));
+        let pos = Promise::new(self.config.provider_account.clone()).function_call("get_account", near_sdk::serde_json::json!({"account_id":env::current_account_id()}).to_string().into_bytes(), NearToken::from_yoctonear(0), Gas::from_tgas(15));
+        let asset = Promise::new(self.config.provider_account.clone()).function_call("get_asset", near_sdk::serde_json::json!({"token_id":self.config.canonical_ft}).to_string().into_bytes(), NearToken::from_yoctonear(0), Gas::from_tgas(15));
+        ft.and(pos).and(asset).then(Promise::new(env::current_account_id()).function_call("on_rhea_reconcile", near_sdk::serde_json::json!({"attempt":attempt,"preflight":preflight}).to_string().into_bytes(), NearToken::from_yoctonear(0), Gas::from_tgas(if preflight { 180 } else { 40 })))
+    }
+
+    #[cfg(feature = "mainnet-review")]
+    #[private]
+    pub fn on_rhea_reconcile(&mut self, attempt: u64, preflight: bool) -> PromiseOrValue<bool> {
+        let event = self.event.as_ref().expect("event missing");
+        if event.earn_attempt != attempt || !matches!(event.earn_state, EarnState::SupplyPending | EarnState::RedeemPending) || env::promise_results_count() != 3 { return PromiseOrValue::Value(false); }
+        if (preflight && self.rhea.stage != RheaStage::Preparing) || (!preflight && !matches!(self.rhea.stage,RheaStage::TerminalUsed|RheaStage::TerminalRefund)) { return PromiseOrValue::Value(false); }
+        let ft = env::promise_result_checked(0, 128).ok().and_then(|v| near_sdk::serde_json::from_slice::<U128>(&v).ok());
+        let pos = env::promise_result_checked(1, 65536).ok();
+        let asset = env::promise_result_checked(2, 65536).ok().and_then(|v| rhea_adapter::decode_asset("mainnet",rhea_adapter::PROVIDER,rhea_adapter::USDC,&v).ok());
+        let (Some(ft),Some(pos),Some(asset)) = (ft,pos,asset) else { return PromiseOrValue::Value(false); };
+        let Ok(position) = rhea_adapter::decode_position("mainnet",rhea_adapter::PROVIDER,rhea_adapter::USDC,env::current_account_id().as_str(),&pos,&asset) else { return PromiseOrValue::Value(false); };
+        let event = self.event.as_mut().unwrap();
+        if preflight {
+            if event.earn_state == EarnState::RedeemPending {
+                let Some(after_supply)=self.rhea.baseline_ft.0.checked_sub(event.accepted_principal.0) else { return PromiseOrValue::Value(false); };
+                if event.earn_action_completed || position.shares == 0 || position.shares != self.rhea.shares.0 || ft.0 < after_supply || position.token_atomics_floor < event.accepted_principal.0 { return PromiseOrValue::Value(false); }
+                let Ok(call)=rhea_adapter::withdraw_all_call("mainnet",rhea_adapter::PROVIDER,rhea_adapter::USDC,&asset) else { return PromiseOrValue::Value(false); };
+                let Some(quarantined_baseline) = ft.0.checked_add(event.accepted_principal.0) else { return PromiseOrValue::Value(false); };
+                self.rhea.baseline_ft=U128(quarantined_baseline);
+                self.rhea.expected_return=U128(position.token_atomics_floor);
+                self.rhea.stage=RheaStage::Dispatched;
+                self.rhea.last_internal_balance=U128(position.internal_balance);
+                return PromiseOrValue::Promise(Promise::new(self.config.provider_account.clone()).function_call(call.method,call.args,NearToken::from_yoctonear(call.deposit_yocto),Gas::from_tgas(80)).then(Self::rhea_action_callback(attempt)));
+            }
+            if event.earn_state != EarnState::SupplyPending || event.earn_action_completed || self.rhea.paused || position.shares != 0 || ft.0 < event.accepted_principal.0 { return PromiseOrValue::Value(false); }
+            let Ok(call) = rhea_adapter::supply_call("mainnet",rhea_adapter::PROVIDER,rhea_adapter::USDC,event.accepted_principal.0,&asset) else { return PromiseOrValue::Value(false); };
+            event.earn_baseline_balance=ft; self.rhea.baseline_ft=ft; self.rhea.stage=RheaStage::Dispatched;
+            return PromiseOrValue::Promise(Promise::new(self.config.canonical_ft.clone()).function_call(call.method,call.args,NearToken::from_yoctonear(call.deposit_yocto),Gas::from_tgas(60)).then(Self::rhea_action_callback(attempt)));
+        }
+        if !event.earn_action_completed { return PromiseOrValue::Value(false); }
+        self.rhea.last_internal_balance=U128(position.internal_balance);
+        let Some(after_supply) = self.rhea.baseline_ft.0.checked_sub(event.accepted_principal.0) else { return PromiseOrValue::Value(false); };
+        if event.earn_state == EarnState::SupplyPending && self.rhea.stage == RheaStage::TerminalUsed && position.shares > 0 && position.token_atomics_floor >= event.accepted_principal.0 && ft.0 >= after_supply {
+            let Some(quarantined_baseline) = ft.0.checked_add(event.accepted_principal.0) else { return PromiseOrValue::Value(false); };
+            self.rhea.baseline_ft=U128(quarantined_baseline); self.rhea.shares=U128(position.shares); event.earn_state=EarnState::Supplied; event.earn_action_completed=false; self.rhea.stage=RheaStage::Idle; return PromiseOrValue::Value(true);
+        }
+        if event.earn_state == EarnState::SupplyPending && self.rhea.stage == RheaStage::TerminalRefund && position.shares == 0 && ft.0 >= self.rhea.baseline_ft.0 { event.earn_state=EarnState::NotStarted; event.earn_action_completed=false; self.rhea.stage=RheaStage::Idle; return PromiseOrValue::Value(true); }
+        if event.earn_state == EarnState::RedeemPending && self.rhea.stage == RheaStage::TerminalRefund && position.shares == self.rhea.shares.0 && position.shares > 0 && ft.0 >= after_supply {
+            event.earn_state=EarnState::Supplied; event.earn_action_completed=false; self.rhea.stage=RheaStage::Idle; self.rhea.expected_return=U128(0);
+            return PromiseOrValue::Value(true);
+        }
+        // Fully fund only the pre-dispatch position floor. Any excess is not
+        // allocated. This does not prove the origin/finality of the FT transfer.
+        if event.earn_state == EarnState::RedeemPending && position.shares == 0 && self.rhea.expected_return.0 >= event.accepted_principal.0 {
+            if let Some(required) = after_supply.checked_add(self.rhea.expected_return.0) {
+                if ft.0 >= required {
+                    event.redeemed_amount=self.rhea.expected_return;
+                    event.realized_yield=U128(self.rhea.expected_return.0-event.accepted_principal.0);
+                    event.earn_state=EarnState::Redeemed; event.earn_action_completed=false; self.rhea.stage=RheaStage::Idle;
+                    return PromiseOrValue::Value(true);
+                }
+            }
+        }
+        PromiseOrValue::Value(false)
+    }
+
+    #[cfg(feature = "mainnet-review")]
+    fn rhea_action_callback(attempt: u64) -> Promise {
+        Promise::new(env::current_account_id()).function_call("on_rhea_action",near_sdk::serde_json::json!({"attempt":attempt}).to_string().into_bytes(),NearToken::from_yoctonear(0),Gas::from_tgas(100))
+    }
+    #[cfg(feature = "mainnet-review")]
+    #[private]
+    pub fn on_rhea_action(&mut self, attempt: u64) -> PromiseOrValue<bool> {
+        let e=self.event.as_mut().expect("event missing");
+        if e.earn_attempt != attempt || !matches!(e.earn_state,EarnState::SupplyPending|EarnState::RedeemPending) || e.earn_action_completed || self.rhea.stage != RheaStage::Dispatched || env::promise_results_count() != 1 { return PromiseOrValue::Value(false); }
+        let receipt=env::promise_result_checked(0,1024);
+        if e.earn_state == EarnState::SupplyPending {
+            let used = receipt.ok().and_then(|v| near_sdk::serde_json::from_slice::<U128>(&v).ok());
+            self.rhea.stage = match used { Some(U128(0)) => RheaStage::TerminalRefund, Some(n) if n == e.accepted_principal => RheaStage::TerminalUsed, _ => RheaStage::Ambiguous };
+            if self.rhea.stage == RheaStage::Ambiguous { return PromiseOrValue::Value(false); }
+        } else {
+            // A failed single-action execute receipt rolls back its scheduled
+            // promises; a successful execute may still have detached FT work.
+            self.rhea.stage=if matches!(receipt,Err(near_sdk::PromiseError::Failed)) { RheaStage::TerminalRefund } else { RheaStage::TerminalUsed };
+        }
+        e.earn_action_completed=true;
+        PromiseOrValue::Promise(self.query_rhea(attempt,false))
+    }
+    #[cfg(feature = "mainnet-review")]
+    fn trigger_rhea_redeem(&mut self) -> Promise {
+        let e=self.event.as_mut().expect("event missing");
+        require!(e.earn_state == EarnState::Supplied && (e.phase == EscrowPhase::Cancelled || e.phase == EscrowPhase::RefundOnly || (e.phase == EscrowPhase::AttendanceFinalized && env::block_timestamp_ms() >= e.rules.checkin_close)), "redeem gate closed");
+        e.earn_attempt=e.earn_attempt.checked_add(1).expect("attempt overflow"); e.earn_state=EarnState::RedeemPending; e.earn_action_completed=false;
+        let attempt=e.earn_attempt;
+        self.rhea.expected_return=U128(0); self.rhea.stage=RheaStage::Preparing;
+        self.query_rhea(attempt,true)
     }
 
     pub fn mark_attendance(&mut self, registration_id: String, attended: bool) {
@@ -600,6 +789,8 @@ impl EventEscrowContract {
     }
 
     pub fn trigger_earn_redeem(&mut self) -> Promise {
+        #[cfg(feature = "mainnet-review")]
+        if self.config.provider_kind == "RHEA_MAINNET" { return self.trigger_rhea_redeem(); }
         let event = self.event.as_mut().expect("event missing");
         require!(event.earn_state == EarnState::Supplied && (event.phase == EscrowPhase::Cancelled || event.phase == EscrowPhase::RefundOnly || (event.phase == EscrowPhase::AttendanceFinalized && env::block_timestamp_ms() >= event.rules.checkin_close)), "redeem gate closed");
         event.earn_attempt = event.earn_attempt.checked_add(1).expect("earn attempt overflow");
@@ -815,6 +1006,141 @@ mod tests {
         let e = c.event.as_mut().unwrap(); e.accepted_principal = U128(10); e.phase = EscrowPhase::RegistrationClosed;
         c
     }
+    #[cfg(feature = "mainnet-review")]
+    fn mainnet_candidate() -> EventEscrowContract {
+        testing_env!(VMContextBuilder::new().current_account_id(account("escrow.near")).predecessor_account_id(account("host.near")).build());
+        EventEscrowContract::new(account("host.near"), account(rhea_adapter::PROVIDER), account(rhea_adapter::USDC), "USDC".into(), "USDC".into(), 6, "RHEA_MAINNET".into())
+    }
+    #[cfg(feature = "mainnet-review")]
+    #[test]
+    fn mainnet_initializes_paused_with_zero_cap_and_fixed_identity() {
+        let mut c=mainnet_candidate();
+        assert!(c.get_rhea_control().paused);
+        assert_eq!(c.get_rhea_control().principal_cap,U128(0));
+        assert_eq!(c.get_config().network,"mainnet");
+        assert_eq!(c.get_config().canonical_ft.as_str(),rhea_adapter::USDC);
+        c.configure_rhea_cap(U128(100));c.set_rhea_paused(false);
+        let mut r=rules();r.finalize_deadline=r.checkin_close+86_400_000;
+        c.create_event(r);
+        assert!(c.event.is_some());
+    }
+    #[cfg(feature = "mainnet-review")]
+    #[test]
+    #[should_panic(expected="mainnet requires 24h finalization deadline")]
+    fn mainnet_rejects_arbitrary_finalization_deadline() {
+        let mut c=mainnet_candidate();c.configure_rhea_cap(U128(100));c.set_rhea_paused(false);
+        c.create_event(rules());
+    }
+    #[cfg(feature = "mainnet-review")]
+    #[test]
+    fn failed_rhea_execute_can_retry_but_success_with_detached_work_cannot() {
+        for failed in [true,false] {
+            let mut c=earned_candidate();c.config.provider_kind="RHEA_MAINNET".into();c.config.provider_account=account(rhea_adapter::PROVIDER);c.config.canonical_ft=account(rhea_adapter::USDC);
+            c.rhea.baseline_ft=U128(10);c.rhea.shares=U128(5);c.rhea.expected_return=U128(12);c.rhea.stage=RheaStage::Dispatched;
+            {let e=c.event.as_mut().unwrap();e.phase=EscrowPhase::AttendanceFinalized;e.earn_state=EarnState::RedeemPending;e.earn_attempt=3;}
+            promise_context(vec![if failed{near_sdk::PromiseResult::Failed}else{near_sdk::PromiseResult::Successful(b"null".to_vec())}]);
+            drop(c.on_rhea_action(3));
+            let position=near_sdk::serde_json::json!({"account_id":"event.testnet","supplied":[{"token_id":rhea_adapter::USDC,"shares":"5","balance":"12000000000000"}],"borrowed":[],"collateral":[]});
+            let asset=near_sdk::serde_json::json!({"token_id":rhea_adapter::USDC,"config":{"extra_decimals":12,"can_deposit":true,"can_withdraw":true,"can_use_as_collateral":true,"can_borrow":true}});
+            promise_context(vec![result(0),near_sdk::PromiseResult::Successful(near_sdk::serde_json::to_vec(&position).unwrap()),near_sdk::PromiseResult::Successful(near_sdk::serde_json::to_vec(&asset).unwrap())]);
+            drop(c.on_rhea_reconcile(3,false));
+            assert_eq!(c.event.as_ref().unwrap().earn_state,if failed{EarnState::Supplied}else{EarnState::RedeemPending});
+            assert_eq!(c.rhea.shares,U128(5));
+        }
+    }
+    #[cfg(feature = "mainnet-review")]
+    #[test]
+    fn rhea_zero_position_and_unchanged_position_never_complete_redeem() {
+        let mut c=earned_candidate(); c.config.provider_kind="RHEA_MAINNET".into();
+        c.config.provider_account=account(rhea_adapter::PROVIDER); c.config.canonical_ft=account(rhea_adapter::USDC);
+        c.rhea.baseline_ft=U128(10); c.rhea.stage=RheaStage::TerminalUsed;
+        { let e=c.event.as_mut().unwrap(); e.earn_state=EarnState::RedeemPending; e.earn_attempt=3; e.earn_action_completed=true; }
+        let asset=near_sdk::serde_json::json!({"token_id":rhea_adapter::USDC,"config":{"extra_decimals":12,"can_deposit":true,"can_withdraw":true,"can_use_as_collateral":true,"can_borrow":true}});
+        for (balance,shares,internal) in [(10,0,0),(0,5,10_000_000_000_000u128)] {
+            let account_json=near_sdk::serde_json::json!({"account_id":"event.testnet","supplied":if shares==0 {vec![]} else {vec![near_sdk::serde_json::json!({"token_id":rhea_adapter::USDC,"shares":shares.to_string(),"balance":internal.to_string()})]},"borrowed":[],"collateral":[]});
+            promise_context(vec![result(balance),near_sdk::PromiseResult::Successful(near_sdk::serde_json::to_vec(&account_json).unwrap()),near_sdk::PromiseResult::Successful(near_sdk::serde_json::to_vec(&asset).unwrap())]);
+            drop(c.on_rhea_reconcile(3,false)); assert_eq!(c.event.as_ref().unwrap().earn_state,EarnState::RedeemPending);
+        }
+    }
+
+    #[cfg(feature = "mainnet-review")]
+    #[test]
+    fn rhea_preflight_retry_invalidates_stale_and_refund_requires_terminal_proof() {
+        let mut c=earned_candidate(); c.config.provider_kind="RHEA_MAINNET".into(); c.config.provider_account=account(rhea_adapter::PROVIDER); c.config.canonical_ft=account(rhea_adapter::USDC); c.rhea.paused=false;
+        drop(c.trigger_earn_supply());
+        promise_context(vec![near_sdk::PromiseResult::Failed,near_sdk::PromiseResult::Failed,near_sdk::PromiseResult::Failed]);
+        drop(c.on_rhea_reconcile(1,true)); assert_eq!(c.rhea.stage,RheaStage::Preparing);
+        context("host.testnet",30); drop(c.reconcile_earn()); assert_eq!(c.event.as_ref().unwrap().earn_attempt,2);
+        let asset=near_sdk::serde_json::json!({"token_id":rhea_adapter::USDC,"config":{"extra_decimals":12,"can_deposit":true,"can_withdraw":true,"can_use_as_collateral":true,"can_borrow":true}});
+        let empty=near_sdk::serde_json::json!({"account_id":"event.testnet","supplied":[],"borrowed":[],"collateral":[]});
+        let results=|| vec![result(10),near_sdk::PromiseResult::Successful(near_sdk::serde_json::to_vec(&empty).unwrap()),near_sdk::PromiseResult::Successful(near_sdk::serde_json::to_vec(&asset).unwrap())];
+        promise_context(results()); drop(c.on_rhea_reconcile(1,true)); assert_eq!(c.rhea.stage,RheaStage::Preparing);
+        promise_context(results()); drop(c.on_rhea_reconcile(2,true)); assert_eq!(c.rhea.stage,RheaStage::Dispatched);
+        promise_context(results()); drop(c.on_rhea_reconcile(2,true)); assert_eq!(c.rhea.stage,RheaStage::Dispatched);
+        promise_context(vec![result(0)]); drop(c.on_rhea_action(2)); assert_eq!(c.rhea.stage,RheaStage::TerminalRefund);
+        promise_context(results()); drop(c.on_rhea_reconcile(2,false)); assert_eq!(c.event.as_ref().unwrap().earn_state,EarnState::NotStarted);
+    }
+
+    #[cfg(feature = "mainnet-review")]
+    #[test]
+    fn rhea_unauthorized_preflight_retry_cannot_invalidate_attempt() {
+        let mut c=earned_candidate(); c.config.provider_kind="RHEA_MAINNET".into(); c.rhea.paused=false;
+        context("attacker.testnet",30); drop(c.trigger_earn_supply());
+        let rejected=std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| drop(c.reconcile_earn())));
+        assert!(rejected.is_err()); assert_eq!(c.event.as_ref().unwrap().earn_attempt,1); assert_eq!(c.rhea.stage,RheaStage::Preparing);
+    }
+
+    #[cfg(feature = "mainnet-review")]
+    #[test]
+    fn rhea_donations_are_quarantined_before_redemption() {
+        let mut c=earned_candidate(); c.config.provider_kind="RHEA_MAINNET".into(); c.config.provider_account=account(rhea_adapter::PROVIDER); c.config.canonical_ft=account(rhea_adapter::USDC);
+        c.rhea.baseline_ft=U128(10); c.rhea.stage=RheaStage::TerminalUsed;
+        {let e=c.event.as_mut().unwrap(); e.earn_state=EarnState::SupplyPending; e.earn_attempt=1; e.earn_action_completed=true;}
+        let asset=near_sdk::serde_json::json!({"token_id":rhea_adapter::USDC,"config":{"extra_decimals":12,"can_deposit":true,"can_withdraw":true,"can_use_as_collateral":true,"can_borrow":true}});
+        let position=near_sdk::serde_json::json!({"account_id":"event.testnet","supplied":[{"token_id":rhea_adapter::USDC,"shares":"5","balance":"12000000000000"}],"borrowed":[],"collateral":[]});
+        let rows=|ft| vec![result(ft),near_sdk::PromiseResult::Successful(near_sdk::serde_json::to_vec(&position).unwrap()),near_sdk::PromiseResult::Successful(near_sdk::serde_json::to_vec(&asset).unwrap())];
+        promise_context(rows(3)); drop(c.on_rhea_reconcile(1,false));
+        assert_eq!(c.event.as_ref().unwrap().earn_state,EarnState::Supplied); assert_eq!(c.rhea.baseline_ft,U128(13)); assert_eq!(c.event.as_ref().unwrap().accepted_principal,U128(10));
+        { let e=c.event.as_mut().unwrap(); e.phase=EscrowPhase::AttendanceFinalized; }
+        context("caller.testnet",30); drop(c.trigger_earn_redeem());
+        promise_context(rows(7)); drop(c.on_rhea_reconcile(2,true));
+        assert_eq!(c.rhea.expected_return,U128(12)); assert_eq!(c.rhea.baseline_ft,U128(17));
+        assert_eq!(c.event.as_ref().unwrap().realized_yield,U128(0));
+        promise_context(vec![near_sdk::PromiseResult::Successful(b"null".to_vec())]); drop(c.on_rhea_action(2));
+        let empty=near_sdk::serde_json::json!({"account_id":"event.testnet","supplied":[],"borrowed":[],"collateral":[]});
+        let final_rows=|ft| vec![result(ft),near_sdk::PromiseResult::Successful(near_sdk::serde_json::to_vec(&empty).unwrap()),near_sdk::PromiseResult::Successful(near_sdk::serde_json::to_vec(&asset).unwrap())];
+        promise_context(final_rows(18)); drop(c.on_rhea_reconcile(2,false)); assert_eq!(c.event.as_ref().unwrap().earn_state,EarnState::RedeemPending);
+        promise_context(final_rows(19)); drop(c.on_rhea_reconcile(2,false)); assert_eq!(c.event.as_ref().unwrap().earn_state,EarnState::Redeemed); assert_eq!(c.event.as_ref().unwrap().realized_yield,U128(2));
+    }
+
+    #[cfg(feature = "mainnet-review")]
+    #[test]
+    fn rhea_malformed_action_result_never_retries_and_short_position_never_supplies() {
+        let mut c=earned_candidate(); c.config.provider_kind="RHEA_MAINNET".into(); c.config.provider_account=account(rhea_adapter::PROVIDER); c.config.canonical_ft=account(rhea_adapter::USDC);
+        {let e=c.event.as_mut().unwrap(); e.earn_state=EarnState::SupplyPending; e.earn_attempt=1;}
+        c.rhea.stage=RheaStage::Dispatched;
+        promise_context(vec![near_sdk::PromiseResult::Successful(b"invalid".to_vec())]); drop(c.on_rhea_action(1)); assert_eq!(c.rhea.stage,RheaStage::Ambiguous);
+        c.rhea.stage=RheaStage::TerminalUsed; c.rhea.baseline_ft=U128(10); c.event.as_mut().unwrap().earn_action_completed=true;
+        let asset=near_sdk::serde_json::json!({"token_id":rhea_adapter::USDC,"config":{"extra_decimals":12,"can_deposit":true,"can_withdraw":true,"can_use_as_collateral":true,"can_borrow":true}});
+        let short=near_sdk::serde_json::json!({"account_id":"event.testnet","supplied":[{"token_id":rhea_adapter::USDC,"shares":"1","balance":"9999999999999"}],"borrowed":[],"collateral":[]});
+        promise_context(vec![result(0),near_sdk::PromiseResult::Successful(near_sdk::serde_json::to_vec(&short).unwrap()),near_sdk::PromiseResult::Successful(near_sdk::serde_json::to_vec(&asset).unwrap())]); drop(c.on_rhea_reconcile(1,false)); assert_eq!(c.event.as_ref().unwrap().earn_state,EarnState::SupplyPending);
+    }
+
+    #[cfg(feature = "mainnet-review")]
+    #[test]
+    fn rhea_funded_zero_shares_allocates_only_frozen_floor() {
+        let mut c=earned_candidate(); c.config.provider_kind="RHEA_MAINNET".into(); c.config.provider_account=account(rhea_adapter::PROVIDER); c.config.canonical_ft=account(rhea_adapter::USDC);
+        c.rhea.baseline_ft=U128(10); c.rhea.expected_return=U128(12); c.rhea.stage=RheaStage::TerminalUsed;
+        { let e=c.event.as_mut().unwrap(); e.earn_state=EarnState::RedeemPending; e.earn_attempt=3; e.earn_action_completed=true; }
+        let a=near_sdk::serde_json::json!({"token_id":rhea_adapter::USDC,"config":{"extra_decimals":12,"can_deposit":true,"can_withdraw":true,"can_use_as_collateral":true,"can_borrow":true}});
+        let p=near_sdk::serde_json::json!({"account_id":"event.testnet","supplied":[],"borrowed":[],"collateral":[]});
+        for (ft,done) in [(11,false),(13,true)] {
+            promise_context(vec![result(ft),near_sdk::PromiseResult::Successful(near_sdk::serde_json::to_vec(&p).unwrap()),near_sdk::PromiseResult::Successful(near_sdk::serde_json::to_vec(&a).unwrap())]);
+            drop(c.on_rhea_reconcile(3,false)); assert_eq!(c.event.as_ref().unwrap().earn_state==EarnState::Redeemed,done);
+        }
+        assert_eq!(c.event.as_ref().unwrap().redeemed_amount,U128(12)); assert_eq!(c.event.as_ref().unwrap().realized_yield,U128(2));
+    }
+
     #[test]
     fn mock_supply_and_redeem_require_receipt_and_reconciled_balances() {
         let mut c = earned_candidate();

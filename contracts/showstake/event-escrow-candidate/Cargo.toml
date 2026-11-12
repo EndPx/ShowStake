@@ -1,10 +1,13 @@
-﻿[package]
+[package]
 name = "showstake-event-escrow-candidate"
 version = "0.1.0"
 edition = "2024"
 resolver = "3"
 rust-version = "1.95"
 license = "MIT"
+
+[features]
+mainnet-review = []
 
 [lib]
 path = "src.rs"

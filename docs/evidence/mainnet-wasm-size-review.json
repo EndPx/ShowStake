@@ -1,0 +1,49 @@
+{
+  "status": "PASS_LOCAL",
+  "source_commit": "a3dcddec25189e0ff38511416424f7e690c48327",
+  "scope": "Read-only optimization experiment; no deployment or signing",
+  "baseline": {
+    "bytes": 395690,
+    "sha256": "de868ccb9d3dbf64409b392ba7e58a38678321bef803d1d0779a3d8abec791ae",
+    "path": "contracts/showstake/event-escrow-candidate/target/wasm32-unknown-unknown/release/showstake_event_escrow_candidate.wasm"
+  },
+  "optimized": {
+    "bytes": 201017,
+    "sha256": "db3508f8490d4abc444ea1cee59865337abc15fc38a14897206ae34cf87423de",
+    "path": ".local/mainnet-size/optimized.wasm",
+    "command": "LD_LIBRARY_PATH=/var/tmp/showstake-mainnet-size/tools/usr/lib/x86_64-linux-gnu /var/tmp/showstake-mainnet-size/tools/usr/bin/wasm-opt /var/tmp/showstake-mainnet-size/baseline.wasm -Oz -o /var/tmp/showstake-mainnet-size/optimized.wasm",
+    "tool": "Ubuntu binaryen 120-4build1, wasm-opt version 120"
+  },
+  "strip_only": {
+    "bytes": 248923,
+    "sha256": "237eb465fbced1a3c2cb90dff3ea4302ee8215bc25298ca8eae4c21114c24534",
+    "command": "/var/tmp/showstake-mainnet-size/tools/usr/bin/wasm-strip /var/tmp/showstake-mainnet-size/baseline.wasm -o /var/tmp/showstake-mainnet-size/stripped.wasm",
+    "tool": "Ubuntu wabt 1.0.36"
+  },
+  "checks": {
+    "optimized_wasm_validate": "PASS_LOCAL",
+    "export_names_and_kinds": "PASS_LOCAL: 27 each, no differences via wasm-objdump -x",
+    "optimized_deployed_wasm_behavior": "NOT_RUN",
+    "production_reproducible_build": "NOT_RUN",
+    "unit_tests": "PASS_LOCAL: 5 passed, 0 failed; source host tests, not optimized Wasm execution. WSL Ubuntu: cd contracts/showstake/event-escrow-candidate; CARGO_TARGET_DIR=/var/tmp/showstake-mainnet-size/target rustup run 1.95.0 cargo test --locked"
+  },
+  "storage_basis": {
+    "assumption_near_per_byte": "0.00001",
+    "baseline_code_near": "3.95690",
+    "optimized_code_near": "2.01017",
+    "meaning": "Code-only account storage balance requirement, not a transaction fee; excludes account overhead, contract state, gas and any other balances. Verify current protocol configuration before funding."
+  },
+  "limitations": [
+    "Optimization creates a different Wasm hash; export and validation checks do not establish behavioral equivalence.",
+    "Size comparison covers only strip and wasm-opt -Oz, not all possible compiler or optimizer options.",
+    "Host-built artifact and locally downloaded Ubuntu packages are not evidence of a pinned reproducible production build.",
+    "No testnet or mainnet optimized artifact execution was performed."
+  ],
+  "followup_runtime": {
+    "classification": "PASS_TESTNET",
+    "artifact": "test-support/contract-integration/wasm/showstake-testnet-optimized.wasm",
+    "hash": "db3508f8490d4abc444ea1cee59865337abc15fc38a14897206ae34cf87423de",
+    "evidence": "docs/evidence/testnet-lifecycle-opt1113021957/result.json",
+    "scope": "Subsequent Codex real five-account testnet MockEarn-only lifecycle, not Rhea/mainnet feature proof"
+  }
+}

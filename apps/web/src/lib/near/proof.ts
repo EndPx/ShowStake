@@ -4,8 +4,10 @@
 // values; they must stay identical to packages/wallet-adapter
 // `canonicalChallengeMessage` for a context-less login challenge.
 
+import { NETWORK } from "../config.ts";
+
 export const APP_DOMAIN = "showstake.app";
-export const APP_NETWORK = "testnet";
+export const APP_NETWORK = NETWORK;
 export const APP_PURPOSE = "login";
 export const MAX_CHALLENGE_TTL_MS = 5 * 60 * 1000;
 

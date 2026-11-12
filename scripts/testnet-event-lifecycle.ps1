@@ -7,7 +7,7 @@ $out=Join-Path $repo "docs/evidence/testnet-lifecycle-$RunId"
 if(Test-Path $out){throw 'Run exists; inspect receipts before resuming, never replay funds blindly'}
 New-Item -ItemType Directory -Path $out | Out-Null
 $script:transactions=@()
-$rpc='https://rpc.testnet.near.org'
+$rpc='https://test.rpc.fastnear.com'
 function Rpc($method,$params){
   $response=Invoke-RestMethod $rpc -Method Post -ContentType application/json -Body (@{jsonrpc='2.0';id='lifecycle';method=$method;params=$params}|ConvertTo-Json -Depth 20 -Compress)
   if($response.error){throw ($response.error|ConvertTo-Json -Depth 10 -Compress)}

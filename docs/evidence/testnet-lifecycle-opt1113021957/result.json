@@ -1,0 +1,191 @@
+{
+  "classification": "PASS_TESTNET",
+  "scope": "5 real testnet accounts deposit 2 Mock USDC; real testnet MockEarn supply/redeem zero yield; two attendees actually paid 5 Mock USDC each",
+  "network": "testnet",
+  "provider": "TESTNET_MOCK_EARN",
+  "rheaLive": "NOT_RUN",
+  "contract": "ss-e2e-opt1113021957.testnet",
+  "providerContract": "ss-earn-opt1113021957.testnet",
+  "token": "mockusdc.testnet",
+  "event": {
+    "event_id": "five-two-attendees",
+    "title": "Five participants, two attendees",
+    "location": "ShowStake testnet",
+    "rules_text": "Mock USDC. Testnet Mock Earn zero yield. Organizer-attested attendance. No voluntary withdrawal.",
+    "phase": "Settled",
+    "earn_state": "Redeemed",
+    "earn_attempt": 2,
+    "earn_action_completed": false,
+    "organizer": "showstake-participant-endpx.testnet",
+    "canonical_ft": "mockusdc.testnet",
+    "policy_version": "showstake-native-usdc-event/1",
+    "deposit": "2000000",
+    "capacity": 5,
+    "reg_open": 1794511235796,
+    "reg_close": 1794511476796,
+    "checkin_open": 1794511476796,
+    "checkin_close": 1794511656796,
+    "cancel_cutoff": 1794511476796,
+    "finalize_deadline": 1794598056796,
+    "active_registrations": 5,
+    "total_registrations": 5,
+    "withdrawn_registrations": 0,
+    "rules_hash": "",
+    "created_at": 1794511241806,
+    "accepted_principal": "10000000",
+    "redeemed_amount": "10000000",
+    "realized_yield": "0",
+    "yield_distributed": "0"
+  },
+  "finalBlock": {
+    "height": 277406342,
+    "hash": "GKCxwKVhpqPCK83cJsXb8pRtaSCGKTPbFDRiKTzaopX6"
+  },
+  "observations": [
+    {
+      "accountId": "showstake-participant-endpx.testnet",
+      "principal": "2000000",
+      "allocation": "0",
+      "claim": "Claimable",
+      "attendance": "NoShow",
+      "balance": "999970000000",
+      "passId": "five-two-attendees-pass-0"
+    },
+    {
+      "accountId": "showstake-attendee-a-endpx.testnet",
+      "principal": "2000000",
+      "allocation": "5000000",
+      "claim": "Paid",
+      "attendance": "Attended",
+      "balance": "10000000",
+      "passId": "five-two-attendees-pass-1"
+    },
+    {
+      "accountId": "showstake-attendee-b-endpx.testnet",
+      "principal": "2000000",
+      "allocation": "0",
+      "claim": "Claimable",
+      "attendance": "NoShow",
+      "balance": "0",
+      "passId": "five-two-attendees-pass-2"
+    },
+    {
+      "accountId": "showstake-attendee-c-endpx.testnet",
+      "principal": "2000000",
+      "allocation": "5000000",
+      "claim": "Paid",
+      "attendance": "Attended",
+      "balance": "10000000",
+      "passId": "five-two-attendees-pass-3"
+    },
+    {
+      "accountId": "showstake-attendee-d-endpx.testnet",
+      "principal": "2000000",
+      "allocation": "0",
+      "claim": "Claimable",
+      "attendance": "NoShow",
+      "balance": "0",
+      "passId": "five-two-attendees-pass-4"
+    }
+  ],
+  "receipts": [
+    {
+      "step": "supply",
+      "hash": "5Xp7WMowpqmnZA1WNTRi7cot1ae3mkjXb2Yk4hJHPGtM",
+      "sender": "showstake-participant-endpx.testnet",
+      "final": true,
+      "executors": [
+        "ss-e2e-opt1113021957.testnet",
+        "mockusdc.testnet",
+        "showstake-participant-endpx.testnet",
+        "ss-earn-opt1113021957.testnet",
+        "showstake-participant-endpx.testnet",
+        "ss-e2e-opt1113021957.testnet",
+        "mockusdc.testnet",
+        "ss-earn-opt1113021957.testnet",
+        "showstake-participant-endpx.testnet",
+        "mockusdc.testnet",
+        "showstake-participant-endpx.testnet",
+        "showstake-participant-endpx.testnet",
+        "ss-e2e-opt1113021957.testnet",
+        "mockusdc.testnet",
+        "showstake-participant-endpx.testnet",
+        "ss-earn-opt1113021957.testnet",
+        "showstake-participant-endpx.testnet",
+        "ss-e2e-opt1113021957.testnet",
+        "showstake-participant-endpx.testnet",
+        "showstake-participant-endpx.testnet",
+        "showstake-participant-endpx.testnet",
+        "showstake-participant-endpx.testnet"
+      ]
+    },
+    {
+      "step": "redeem",
+      "hash": "A94gC2rTeWKvL6Nk6PixMatU5TwhmG8auHPmNERQ8AKc",
+      "sender": "showstake-participant-endpx.testnet",
+      "final": true,
+      "executors": [
+        "ss-e2e-opt1113021957.testnet",
+        "ss-earn-opt1113021957.testnet",
+        "mockusdc.testnet",
+        "showstake-participant-endpx.testnet",
+        "ss-earn-opt1113021957.testnet",
+        "showstake-participant-endpx.testnet",
+        "showstake-participant-endpx.testnet",
+        "ss-e2e-opt1113021957.testnet",
+        "mockusdc.testnet",
+        "showstake-participant-endpx.testnet",
+        "ss-earn-opt1113021957.testnet",
+        "showstake-participant-endpx.testnet",
+        "ss-e2e-opt1113021957.testnet",
+        "showstake-participant-endpx.testnet",
+        "showstake-participant-endpx.testnet",
+        "showstake-participant-endpx.testnet"
+      ]
+    },
+    {
+      "step": "settle",
+      "hash": "HtHH6rUb4vHkMwqMTSebQGxLgXKi7hai21Ni6VMrTL5i",
+      "sender": "showstake-participant-endpx.testnet",
+      "final": true,
+      "executors": [
+        "ss-e2e-opt1113021957.testnet",
+        "showstake-participant-endpx.testnet"
+      ]
+    },
+    {
+      "step": "claim-1",
+      "hash": "22Y2EdPPfQ5Sy6XJtRJ8UuLrHzy1DX8yXtWBbgTsDEu9",
+      "sender": "showstake-attendee-a-endpx.testnet",
+      "final": true,
+      "executors": [
+        "ss-e2e-opt1113021957.testnet",
+        "mockusdc.testnet",
+        "showstake-attendee-a-endpx.testnet",
+        "ss-e2e-opt1113021957.testnet",
+        "showstake-attendee-a-endpx.testnet",
+        "showstake-attendee-a-endpx.testnet"
+      ]
+    },
+    {
+      "step": "claim-3",
+      "hash": "AD3sHLcULzfyvhZY6MBu6VXUcCrYszumfxY1DjNqoM2G",
+      "sender": "showstake-attendee-c-endpx.testnet",
+      "final": true,
+      "executors": [
+        "ss-e2e-opt1113021957.testnet",
+        "mockusdc.testnet",
+        "showstake-attendee-c-endpx.testnet",
+        "ss-e2e-opt1113021957.testnet",
+        "showstake-attendee-c-endpx.testnet",
+        "showstake-attendee-c-endpx.testnet"
+      ]
+    }
+  ],
+  "runnerCorrection": "Initial balance assertion omitted 8 USDC of organizer funding to four test users. Fixed without replaying deposits or settlement; resumed only unsubmitted claims.",
+  "remaining": [
+    "browser wallet E2E NOT_RUN",
+    "real Rhea supply/redeem NOT_RUN",
+    "cancel/timeout/failure retry testnet scenarios NOT_RUN"
+  ]
+}

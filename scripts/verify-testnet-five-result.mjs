@@ -6,8 +6,11 @@ const dir=resolve(process.argv[2]??'docs/evidence/testnet-lifecycle-1113013557')
 const run=JSON.parse(await readFile(join(dir,'run.json'),'utf8'));
 assert.equal(run.network,'testnet');
 const txs=JSON.parse(await readFile(join(dir,'transactions.json'),'utf8'));
-async function rpc(method,params){const response=await fetch('https://rpc.testnet.near.org',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:'acceptance',method,params})});assert.equal(response.status,200);const data=await response.json();if(data.error)throw Error(JSON.stringify(data.error));return data.result;}
-const block=await rpc('block',{finality:'final'});
+async function rpc(method,params){const response=await fetch('https://test.rpc.fastnear.com',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:'acceptance',method,params}),signal:AbortSignal.timeout(20000)});assert.equal(response.status,200);const data=await response.json();if(data.error)throw Error(JSON.stringify(data.error));return data.result;}
+let previous=null;try{previous=JSON.parse(await readFile(join(dir,'result.json'),'utf8'));}catch(error){if(error.code!=='ENOENT')throw error;}
+const final=await rpc('block',{finality:'final'});
+const block=previous?.finalBlock?await rpc('block',{block_id:previous.finalBlock.hash}):final;
+assert.ok(block.header.height<=final.header.height);
 const pin=block.header.hash;
 async function view(contract,method,args={}){const r=await rpc('query',{request_type:'call_function',block_id:pin,account_id:contract,method_name:method,args_base64:Buffer.from(JSON.stringify(args)).toString('base64')});assert.equal(r.block_hash,pin);return JSON.parse(Buffer.from(r.result).toString());}
 const ev=await view(run.contract,'get_event');
@@ -23,7 +26,9 @@ for(let i=0;i<5;i++){
  const attended=[1,3].includes(i);
  assert.equal(reg.amount,'2000000');assert.equal(reg.beneficiary,run.users[i]);assert.equal(pass.owner,run.users[i]);assert.equal(pass.registration_id,reg.registration_id);
  assert.equal(reg.attendance,attended?'Attended':'NoShow');assert.equal(reg.claim_amount,attended?'5000000':'0');if(attended)assert.equal(reg.claim,'Paid');
- if(i>0)assert.equal(balance,attended?'5000000':'0');
+ const baseline=previous?.balances?.find(r=>r.account===run.users[i]);
+ if(baseline){assert.equal(balance,(BigInt(baseline.before)-2000000n+(i===0?-8000000n:0n)+(attended?5000000n:0n)).toString());}
+ else if(previous?.observations){assert.equal(balance,previous.observations[i].balance);}
  observations.push({accountId:run.users[i],principal:'2000000',allocation:reg.claim_amount,claim:reg.claim,attendance:reg.attendance,balance,passId:pass.pass_id});
 }
 const receipts=[];

@@ -1,0 +1,162 @@
+{
+  "noSigning": true,
+  "classification": "PASS_LIVE",
+  "observations": [
+    {
+      "blockHash": "5wQeYnSmtzr6PniEjkoWBCJLEXuP78y3tG91twYNYVHn",
+      "args": {},
+      "blockHeight": 224255891,
+      "contract": "contract.main.burrow.near",
+      "method": "storage_balance_bounds",
+      "value": {
+        "min": "100000000000000000000000",
+        "max": null
+      }
+    },
+    {
+      "blockHash": "HhkWTHtFqneFe2dN7UQ4BkdYZwQQ14WnKL2cPPxhaCQb",
+      "args": {
+        "account_id": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5"
+      },
+      "blockHeight": 224255896,
+      "contract": "contract.main.burrow.near",
+      "method": "storage_balance_of",
+      "value": null
+    },
+    {
+      "blockHash": "Gq2F5MkCXqQiuQro2hjs1646YDjPWBbxRHBtqeAA6ALS",
+      "args": {
+        "token_id": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1"
+      },
+      "blockHeight": 224255902,
+      "contract": "contract.main.burrow.near",
+      "method": "get_asset",
+      "value": {
+        "token_id": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "supplied": {
+          "shares": "10812827946078290201910814",
+          "balance": "12525560683770816349213276"
+        },
+        "borrowed": {
+          "shares": "8537173440140222987761513",
+          "balance": "10755887815921896788622883"
+        },
+        "margin_debt": {
+          "shares": "0",
+          "balance": "0"
+        },
+        "margin_pending_debt": "0",
+        "margin_position": "0",
+        "reserved": "200002388111842272668747",
+        "prot_fee": "672994604193599068728",
+        "beneficiary_fees": {
+          "pf.rhealab.near": "16899744123665178393167"
+        },
+        "uahpi": "42948783399248463",
+        "last_update_timestamp": "1794511355595118778",
+        "config": {
+          "reserve_ratio": 2500,
+          "beneficiaries": {
+            "pf.rhealab.near": 10000
+          },
+          "target_utilization": 8000,
+          "target_utilization_rate": "1000000000001847694955734069",
+          "max_utilization_rate": "1000000000012857214234867166",
+          "holding_position_fee_rate": "1000000000000000000000000000",
+          "volatility_ratio": 9500,
+          "extra_decimals": 12,
+          "can_deposit": true,
+          "can_withdraw": true,
+          "can_use_as_collateral": true,
+          "can_borrow": true,
+          "net_tvl_multiplier": 10000,
+          "max_change_rate": null,
+          "supplied_limit": "60000000000000000000000000",
+          "borrowed_limit": "25000000000000000000000000",
+          "min_borrowed_amount": "1000000000"
+        },
+        "lostfound_shares": "0",
+        "supply_apr": "0.094334212900123767070915852",
+        "borrow_apr": "0.146473438976948641778837187",
+        "farms": [
+          {
+            "farm_id": {
+              "TokenNetBalance": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1"
+            },
+            "rewards": {}
+          }
+        ]
+      }
+    },
+    {
+      "blockHash": "5CxKS5Ri7CVP7se4GY7DnY9tXo348eUCipAndeMWgCLw",
+      "args": {},
+      "blockHeight": 224255907,
+      "contract": "contract.main.burrow.near",
+      "method": "get_config",
+      "value": {
+        "oracle_account_id": "priceoracle.near",
+        "pyth_oracle_account_id": "aggregate-oracle.near",
+        "ref_exchange_id": "v2.ref-finance.near",
+        "owner_id": "burrow.sputnik-dao.near",
+        "booster_token_id": "token.burrow.near",
+        "booster_decimals": 18,
+        "max_num_assets": 20,
+        "maximum_recency_duration_sec": 90,
+        "maximum_staleness_duration_sec": 90,
+        "lp_tokens_info_valid_duration_sec": 600,
+        "pyth_price_valid_duration_sec": 60,
+        "minimum_staking_duration_sec": 2592000,
+        "maximum_staking_duration_sec": 7776000,
+        "x_booster_multiplier_at_maximum_staking_duration": 30000,
+        "force_closing_enabled": true,
+        "enable_price_oracle": false,
+        "enable_pyth_oracle": true,
+        "contract_mode": "Running",
+        "boost_suppress_factor": 1000,
+        "dcl_id": "dclv2.ref-labs.near",
+        "pause_operator_id": null
+      }
+    },
+    {
+      "blockHash": "GTzGkgy8zPGcasSABHArsS3hgMP6Qja2DPHEqGWsxahT",
+      "args": {},
+      "blockHeight": 224255912,
+      "contract": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "method": "storage_balance_bounds",
+      "value": {
+        "min": "1250000000000000000000",
+        "max": "1250000000000000000000"
+      }
+    },
+    {
+      "blockHash": "FUmYgMzysY9UngqJTDSajBNK9cNqoRt81ZyWh2qL3Vw8",
+      "args": {},
+      "blockHeight": 224255917,
+      "contract": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "method": "ft_metadata",
+      "value": {
+        "spec": "ft-1.0.0",
+        "name": "USDC",
+        "symbol": "USDC",
+        "icon": "data:image/svg+xml,%3C%3Fxml version=%221.0%22 encoding=%22utf-8%22%3F%3E%3C!-- Generator: Adobe Illustrator 22.0.1, SVG Export Plug-In . SVG Version: 6.00 Build 0) --%3E%3Csvg version=%221.1%22 id=%22Layer_1%22 xmlns=%22http://www.w3.org/2000/svg%22 xmlns:xlink=%22http://www.w3.org/1999/xlink%22 x=%220px%22 y=%220px%22 viewBox=%220 0 256 256%22 style=%22enable-background:new 0 0 256 256;%22 xml:space=%22preserve%22%3E%3Cstyle type=%22text/css%22%3E .st0%7Bfill:%232775CA;%7D .st1%7Bfill:%23FFFFFF;%7D%0A%3C/style%3E%3Ccircle class=%22st0%22 cx=%22128%22 cy=%22128%22 r=%22128%22/%3E%3Cpath class=%22st1%22 d=%22M104,217c0,3-2.4,4.7-5.2,3.8C60,208.4,32,172.2,32,129.3c0-42.8,28-79.1,66.8-91.5c2.9-0.9,5.2,0.8,5.2,3.8 v7.5c0,2-1.5,4.3-3.4,5C69.9,65.4,48,94.9,48,129.3c0,34.5,21.9,63.9,52.6,75.1c1.9,0.7,3.4,3,3.4,5V217z%22/%3E%3Cpath class=%22st1%22 d=%22M136,189.3c0,2.2-1.8,4-4,4h-8c-2.2,0-4-1.8-4-4v-12.6c-17.5-2.4-26-12.1-28.3-25.5c-0.4-2.3,1.4-4.3,3.7-4.3 h9.1c1.9,0,3.5,1.4,3.9,3.2c1.7,7.9,6.3,14,20.3,14c10.3,0,17.7-5.8,17.7-14.4c0-8.6-4.3-11.9-19.5-14.4c-22.4-3-33-9.8-33-27.3 c0-13.5,10.3-24.1,26.1-26.3V69.3c0-2.2,1.8-4,4-4h8c2.2,0,4,1.8,4,4v12.7c12.9,2.3,21.1,9.6,23.8,21.8c0.5,2.3-1.3,4.4-3.7,4.4 h-8.4c-1.8,0-3.3-1.2-3.8-2.9c-2.3-7.7-7.8-11.1-17.4-11.1c-10.6,0-16.1,5.1-16.1,12.3c0,7.6,3.1,11.4,19.4,13.7 c22,3,33.4,9.3,33.4,28c0,14.2-10.6,25.7-27.1,28.3V189.3z%22/%3E%3Cpath class=%22st1%22 d=%22M157.2,220.8c-2.9,0.9-5.2-0.8-5.2-3.8v-7.5c0-2.2,1.3-4.3,3.4-5c30.6-11.2,52.6-40.7,52.6-75.1 c0-34.5-21.9-63.9-52.6-75.1c-1.9-0.7-3.4-3-3.4-5v-7.5c0-3,2.4-4.7,5.2-3.8C196,50.2,224,86.5,224,129.3 C224,172.2,196,208.4,157.2,220.8z%22/%3E%3C/svg%3E%0A",
+        "reference": null,
+        "reference_hash": null,
+        "decimals": 6
+      }
+    },
+    {
+      "blockHash": "813gHtpVebE9VhLBcKjEpEQ9TsnNbpkaxR91x9fc3oqR",
+      "args": {
+        "account_id": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5"
+      },
+      "blockHeight": 224255923,
+      "contract": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "method": "ft_balance_of",
+      "value": "0"
+    }
+  ],
+  "timestamp": "2026-11-12T19:22:26.9897338Z",
+  "noBroadcast": true,
+  "scope": "PUBLIC_READ_ONLY_MAINNET; no transaction or liquidity acceptance"
+}

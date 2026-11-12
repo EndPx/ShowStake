@@ -1,7 +1,7 @@
 // Native NEAR wallet (NEAR Connect / HOT, `@hot-labs/near-connect@0.12.0`).
 //
 // Reuses the accepted connector exactly as the T02 onboarding probe does:
-//   * `NearConnector({ network: "testnet", features: { testnet: true } })` —
+//   * `NearConnector({ network: "testnet", features: { testnet: NETWORK === "testnet" } })` —
 //     testnet wallet picker (the shared manifest is testnet-capable only for
 //     wallets that declare it; HOT's testnet capability is ABSENT/UNPROVEN in
 //     the manifest — a known, documented decision, not an inferred incapability).
@@ -69,7 +69,7 @@ async function getConnector(): Promise<ConnectorShape> {
     const { NearConnector } = (await import("@hot-labs/near-connect")) as {
       NearConnector: new (options: unknown) => ConnectorShape;
     };
-    connector = new NearConnector({ network: NETWORK, features: { testnet: true } });
+    connector = new NearConnector({ network: NETWORK, features: { testnet: NETWORK === "testnet" } });
   }
   return connector;
 }
@@ -171,6 +171,7 @@ export async function readKeyPresence(accountId: string, publicKey?: string): Pr
  * own confirmation. Returns the transaction hash + status, never fabricated.
  */
 export async function signAndSendTransaction(params: SignAndSendParams): Promise<WalletResult<TxResult>> {
+  if (NETWORK !== "testnet" || params.network !== NETWORK) return { ok: false, code: "NETWORK_UNAVAILABLE", detail: "Transactions are unavailable for this network configuration." };
   const c = await getConnector();
   let wallet: { getAccounts: () => Promise<Array<{ accountId: string }>>; signAndSendTransaction?: (p: SignAndSendParams) => Promise<MaybeOutcome> };
   try {

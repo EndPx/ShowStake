@@ -17,7 +17,8 @@
     "artifact_sha256": "de868ccb9d3dbf64409b392ba7e58a38678321bef803d1d0779a3d8abec791ae",
     "artifact_bytes": 395690,
     "test": "WSL Ubuntu cargo test --lib --offline (5 tests)",
-    "build": "WSL Ubuntu cargo build --target wasm32-unknown-unknown --release --offline"
+    "build": "WSL Ubuntu cargo build --target wasm32-unknown-unknown --release --offline",
+    "source_commit": "fe489e6"
   },
   "deployment": {
     "contract": "ss-e2e-1113013557.testnet",
@@ -45,5 +46,6 @@
     "Cancel/timeout/failure retry testnet scenarios NOT_RUN",
     "Candidate worker cancel/refund and nonzero yield not supported yet"
   ],
-  "previous_manifest_artifact": "8764cab08593275f6ff3cadec642c378943baad1450293d5f4295ea18d2fa237"
+  "previous_manifest_artifact": "8764cab08593275f6ff3cadec642c378943baad1450293d5f4295ea18d2fa237",
+  "current_source_note": "Historical testnet result is bound to source commit fe489e6. Current source adds a separately gated mainnet-review candidate; see docs/evidence/mainnet-review-release-20261113.json."
 }
