@@ -1,0 +1,17 @@
+{
+    "ft":  "mockusdc.testnet",
+    "mockWasmHash":  "F780DCF30E3E23B236F842770BE08BA1A763D99E9DF702B56C4A1874B7A2B1D9",
+    "contract":  "ss-e2e-1113013557.testnet",
+    "classification":  "RUNNING",
+    "users":  [
+                  "showstake-participant-endpx.testnet",
+                  "showstake-attendee-a-endpx.testnet",
+                  "showstake-attendee-b-endpx.testnet",
+                  "showstake-attendee-c-endpx.testnet",
+                  "showstake-attendee-d-endpx.testnet"
+              ],
+    "provider":  "TESTNET_MOCK_EARN",
+    "network":  "testnet",
+    "escrowWasmHash":  "DE868CCB9D3DBF64409B392BA7E58A38678321BEF803D1D0779A3D8ABEC791AE",
+    "providerContract":  "ss-earn-1113013557.testnet"
+}

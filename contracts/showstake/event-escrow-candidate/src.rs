@@ -66,6 +66,10 @@ pub enum ClaimState {
 #[derive(Clone, Debug)]
 pub struct EventRules {
     pub event_id: String,
+    pub title: String,
+    pub location: String,
+    pub rules_text: String,
+    pub finalize_deadline: u64,
     pub deposit: U128,
     pub capacity: u32,
     pub reg_open: u64,
@@ -78,6 +82,7 @@ pub struct EventRules {
 #[derive(Clone, Debug)]
 pub struct EventRecord {
     pub rules: EventRules,
+    pub created_at: u64,
     pub organizer: AccountId,
     pub phase: EscrowPhase,
     pub earn_state: EarnState,
@@ -86,6 +91,8 @@ pub struct EventRecord {
     pub redeemed_amount: U128,
     pub realized_yield: U128,
     pub yield_distributed: U128,
+    pub earn_baseline_balance: U128,
+    pub earn_action_completed: bool,
 }
 
 #[near(serializers = [borsh, json])]
@@ -99,6 +106,8 @@ pub struct RegistrationRecord {
     pub amount: U128,
     pub sequence: u64,
     pub attendance: Attendance,
+    pub registration_status: String,
+    pub attendance_status: String,
     pub claim: ClaimState,
     pub claim_amount: U128,
     pub claim_attempt: u64,
@@ -111,6 +120,8 @@ pub struct PassRecord {
     pub event_id: String,
     pub registration_id: String,
     pub owner: AccountId,
+    pub registration_status: String,
+    pub attendance_status: String,
     pub policy_version: String,
 }
 
@@ -130,8 +141,13 @@ pub struct EarnCallView {
 #[derive(Clone, Debug)]
 pub struct EventView {
     pub event_id: String,
+    pub title: String,
+    pub location: String,
+    pub rules_text: String,
     pub phase: EscrowPhase,
     pub earn_state: EarnState,
+    pub earn_attempt: u64,
+    pub earn_action_completed: bool,
     pub organizer: AccountId,
     pub canonical_ft: AccountId,
     pub policy_version: String,
@@ -161,6 +177,8 @@ pub struct ConfigView {
     pub canonical_ft: AccountId,
     pub network: String,
     pub policy_version: String,
+    pub provider_account: AccountId,
+    pub provider_kind: String,
 }
 
 #[derive(Deserialize)]
@@ -180,8 +198,7 @@ struct Config {
     token_name: String,
     token_decimals: u8,
     provider_account: AccountId,
-    provider_code_hash: String,
-    provider_verified: bool,
+    provider_kind: String,
 }
 
 #[near(contract_state)]
@@ -207,7 +224,11 @@ impl EventEscrowContract {
         token_symbol: String,
         token_name: String,
         token_decimals: u8,
+        provider_kind: String,
     ) -> Self {
+        require!(provider_kind == "MOCK_TESTNET", "only MOCK_TESTNET supported");
+        require!(env::current_account_id().as_str().ends_with(".testnet") && provider_account.as_str().ends_with(".testnet") && canonical_ft.as_str().ends_with(".testnet"), "mock provider requires testnet accounts");
+        require!(provider_account != canonical_ft && provider_account != env::current_account_id(), "invalid provider");
         require!(token_symbol == "USDC", "canonical FT symbol must be USDC");
         require!(!token_name.is_empty(), "canonical FT name required");
         require!(token_decimals == 6, "canonical FT decimals must be 6");
@@ -219,8 +240,7 @@ impl EventEscrowContract {
                 token_name,
                 token_decimals,
                 provider_account,
-                provider_code_hash: RHEA_BURROW_READONLY_CODE_HASH.into(),
-                provider_verified: false,
+                provider_kind,
             },
             event: None,
             registrations: LookupMap::new(b"ec-r".to_vec()),
@@ -235,8 +255,13 @@ impl EventEscrowContract {
     pub fn get_event(&self) -> Option<EventView> {
         self.event.as_ref().map(|event| EventView {
             event_id: event.rules.event_id.clone(),
+            title: event.rules.title.clone(),
+            location: event.rules.location.clone(),
+            rules_text: event.rules.rules_text.clone(),
             phase: event.phase,
             earn_state: event.earn_state,
+            earn_attempt: event.earn_attempt,
+            earn_action_completed: event.earn_action_completed,
             organizer: event.organizer.clone(),
             canonical_ft: self.config.canonical_ft.clone(),
             policy_version: "showstake-native-usdc-event/1".into(),
@@ -247,12 +272,12 @@ impl EventEscrowContract {
             checkin_open: event.rules.checkin_open,
             checkin_close: event.rules.checkin_close,
             cancel_cutoff: event.rules.reg_close,
-            finalize_deadline: event.rules.checkin_close.saturating_add(24 * 60 * 60 * 1000),
+            finalize_deadline: event.rules.finalize_deadline,
             active_registrations: self.registration_ids.len() as u32,
             total_registrations: self.registration_ids.len() as u32,
             withdrawn_registrations: 0,
             rules_hash: String::new(),
-            created_at: event.rules.reg_open,
+            created_at: event.created_at,
             accepted_principal: event.accepted_principal,
             redeemed_amount: event.redeemed_amount,
             realized_yield: event.realized_yield,
@@ -266,6 +291,8 @@ impl EventEscrowContract {
             canonical_ft: self.config.canonical_ft.clone(),
             network: "testnet".into(),
             policy_version: "showstake-native-usdc-event/1".into(),
+            provider_account: self.config.provider_account.clone(),
+            provider_kind: self.config.provider_kind.clone(),
         }
     }
 
@@ -281,19 +308,6 @@ impl EventEscrowContract {
 
     pub fn get_block_timestamp_ms(&self) -> u64 {
         env::block_timestamp_ms()
-    }
-
-    pub fn storage_balance_of(&self, account_id: AccountId) -> String {
-        let _ = account_id;
-        "0".into()
-    }
-
-    #[payable]
-    pub fn storage_deposit(&mut self, account_id: Option<AccountId>) -> U128 {
-        let _ = account_id;
-        let attached = env::attached_deposit().as_yoctonear();
-        require!(attached > 0, "storage_deposit requires a positive attached deposit");
-        U128(attached)
     }
 
     pub fn list_event_registrations(
@@ -330,11 +344,13 @@ impl EventEscrowContract {
         require!(
             rules.reg_open < rules.reg_close
                 && rules.reg_close <= rules.checkin_open
-                && rules.checkin_open < rules.checkin_close,
+                && rules.checkin_open < rules.checkin_close
+                && rules.checkin_close < rules.finalize_deadline,
             "invalid event times"
         );
         self.event = Some(EventRecord {
             rules,
+            created_at: env::block_timestamp_ms(),
             organizer: self.config.organizer.clone(),
             phase: EscrowPhase::RegistrationOpen,
             earn_state: EarnState::NotStarted,
@@ -343,6 +359,8 @@ impl EventEscrowContract {
             redeemed_amount: U128(0),
             realized_yield: U128(0),
             yield_distributed: U128(0),
+            earn_baseline_balance: U128(0),
+            earn_action_completed: false,
         });
     }
 
@@ -377,6 +395,8 @@ impl EventEscrowContract {
         {
             return PromiseOrValue::Value(amount);
         }
+        if message.commitment_id.is_empty() || message.commitment_id.len() > 128 { return PromiseOrValue::Value(amount); }
+        let before_storage = env::storage_usage();
         let seq = (event.accepted_principal.0 / event.rules.deposit.0) as u64;
         let registration_id = format!("{}-reg-{}", event.rules.event_id, self.next_registration);
         let pass_id = format!("{}-pass-{}", event.rules.event_id, seq);
@@ -394,10 +414,12 @@ impl EventEscrowContract {
                 pass_id: pass_id.clone(),
                 participant: sender_id.clone(),
                 beneficiary: sender_id.clone(),
-                commitment_id: message.commitment_id,
+                commitment_id: message.commitment_id.clone(),
                 amount,
                 sequence: seq,
                 attendance: Attendance::Unmarked,
+                registration_status: "Active".into(),
+                attendance_status: "Unmarked".into(),
                 claim: ClaimState::None,
                 claim_amount: U128(0),
                 claim_attempt: 0,
@@ -409,8 +431,10 @@ impl EventEscrowContract {
             &PassRecord {
                 pass_id: pass_id.clone(),
                 event_id: event.rules.event_id.clone(),
-                registration_id,
-                owner: sender_id,
+                registration_id: registration_id.clone(),
+                owner: sender_id.clone(),
+                registration_status: "Active".into(),
+                attendance_status: "Unmarked".into(),
                 policy_version: "showstake-native-usdc-event/1".into(),
             },
         );
@@ -422,6 +446,10 @@ impl EventEscrowContract {
                 .unwrap_or_else(|| env::panic_str("principal overflow")),
         );
         self.event = Some(event);
+        let used = env::storage_usage().checked_sub(before_storage).expect("storage underflow");
+        let required = (env::storage_usage() as u128).checked_mul(env::storage_byte_cost().as_yoctonear()).expect("storage cost overflow");
+        require!(env::account_balance().as_yoctonear() >= required, "contract storage funding insufficient");
+        log_event("RegistrationCommitted", near_sdk::serde_json::json!({"event_id":message.event_id,"registration_id":registration_id,"pass_id":pass_id,"participant":sender_id,"beneficiary":sender_id,"commitment_id":message.commitment_id,"amount":amount.0.to_string(),"event_sequence":seq,"storage_bytes":used}));
         PromiseOrValue::Value(U128(0))
     }
 
@@ -435,55 +463,83 @@ impl EventEscrowContract {
         event.phase = EscrowPhase::RegistrationClosed;
     }
 
-    pub fn trigger_earn_supply(&mut self) -> EarnCallView {
-        require!(
-            self.config.provider_verified,
-            "Rhea provider ABI/code hash not accepted"
-        );
-        let provider_account = self.config.provider_account.clone();
+    /// Preflight queries both contracts before sending funds. No retry sends a
+    /// second transfer while a previous one has an unresolved receipt.
+    pub fn trigger_earn_supply(&mut self) -> Promise {
         let event = self.event.as_mut().expect("event missing");
-        require!(
-            event.phase == EscrowPhase::RegistrationClosed
-                && event.earn_state == EarnState::NotStarted
-                && event.accepted_principal.0 > 0,
-            "supply gate closed"
-        );
-        event.earn_attempt += 1;
+        require!(event.phase == EscrowPhase::RegistrationClosed && event.earn_state == EarnState::NotStarted && event.accepted_principal.0 > 0, "supply gate closed");
+        event.earn_attempt = event.earn_attempt.checked_add(1).expect("earn attempt overflow");
         event.earn_state = EarnState::SupplyPending;
-        let args_json = near_sdk::serde_json::json!({
-            "receiver_id": provider_account.clone(),
-            "amount": event.accepted_principal.0.to_string(),
-            "msg": ""
-        })
-        .to_string();
-        EarnCallView {
-            provider_account,
-            provider_code_hash: self.config.provider_code_hash.clone(),
-            method: "ft_transfer_call".into(),
-            args_json,
-            amount: event.accepted_principal,
-            attempt: event.earn_attempt,
-            verification_status: "READ_ONLY_UNVERIFIED_ABI".into(),
-        }
+        event.earn_action_completed = false;
+        let attempt = event.earn_attempt;
+        self.query_earn(attempt, true)
     }
 
-    pub fn on_earn_supply_result(&mut self, attempt: u64, succeeded: bool, amount: U128) {
-        require!(
-            env::predecessor_account_id() == env::current_account_id(),
-            "callback self only"
-        );
-        let event = self.event.as_mut().expect("event missing");
-        require!(
-            event.earn_state == EarnState::SupplyPending
-                && event.earn_attempt == attempt
-                && amount.0 == event.accepted_principal.0,
-            "stale or invalid supply callback"
-        );
-        event.earn_state = if succeeded {
-            EarnState::Supplied
-        } else {
-            EarnState::NotStarted
+    fn query_earn(&self, attempt: u64, preflight: bool) -> Promise {
+        let current = env::current_account_id();
+        let balance = Promise::new(self.config.canonical_ft.clone()).function_call(
+            "ft_balance_of", near_sdk::serde_json::json!({"account_id": current}).to_string().into_bytes(), NearToken::from_yoctonear(0), Gas::from_tgas(10));
+        let position = Promise::new(self.config.provider_account.clone()).function_call(
+            "get_position", near_sdk::serde_json::json!({"account_id": env::current_account_id()}).to_string().into_bytes(), NearToken::from_yoctonear(0), Gas::from_tgas(10));
+        balance.and(position).then(Promise::new(env::current_account_id()).function_call(
+            "on_earn_reconcile", near_sdk::serde_json::json!({"attempt": attempt, "preflight": preflight}).to_string().into_bytes(), NearToken::from_yoctonear(0), Gas::from_tgas(if preflight { 170 } else { 30 })))
+    }
+
+    /// Retry only reads after a terminal operation callback; never reissue funds.
+    pub fn reconcile_earn(&self) -> Promise {
+        let event = self.event.as_ref().expect("event missing");
+        require!(matches!(event.earn_state, EarnState::SupplyPending | EarnState::RedeemPending) && event.earn_action_completed, "reconciliation unavailable");
+        self.query_earn(event.earn_attempt, false)
+    }
+
+    #[private]
+    pub fn on_earn_reconcile(&mut self, attempt: u64, preflight: bool) -> PromiseOrValue<bool> {
+        let event = self.event.as_ref().expect("event missing");
+        if event.earn_attempt != attempt || !matches!(event.earn_state, EarnState::SupplyPending | EarnState::RedeemPending) { return PromiseOrValue::Value(false); }
+        let balance = env::promise_result_checked(0, 128).ok().and_then(|v| near_sdk::serde_json::from_slice::<U128>(&v).ok());
+        let position = env::promise_result_checked(1, 128).ok().and_then(|v| near_sdk::serde_json::from_slice::<U128>(&v).ok());
+        let (Some(balance), Some(position)) = (balance, position) else {
+            if preflight && !event.earn_action_completed { self.event.as_mut().unwrap().earn_state = EarnState::NotStarted; }
+            return PromiseOrValue::Value(false);
         };
+        let event = self.event.as_mut().unwrap();
+        let principal = event.accepted_principal.0;
+        if preflight {
+            if event.earn_state != EarnState::SupplyPending || event.earn_action_completed { return PromiseOrValue::Value(false); }
+            if position.0 != 0 || balance.0 < principal { event.earn_state = EarnState::NotStarted; return PromiseOrValue::Value(false); }
+            event.earn_baseline_balance = balance;
+            // Set before constructing the receipt; the only way to reconcile after
+            // dispatch is the private terminal action callback.
+            let transfer = Promise::new(self.config.canonical_ft.clone()).function_call(
+                "ft_transfer_call", near_sdk::serde_json::json!({"receiver_id": self.config.provider_account, "amount": principal.to_string(), "msg": ""}).to_string().into_bytes(), NearToken::from_yoctonear(ONE_YOCTO), Gas::from_tgas(60));
+            return PromiseOrValue::Promise(transfer.then(Self::earn_action_callback(attempt)));
+        }
+        if !event.earn_action_completed { return PromiseOrValue::Value(false); }
+        let baseline = event.earn_baseline_balance.0;
+        let supplied_balance = baseline.checked_sub(principal).expect("invalid supply baseline");
+        match event.earn_state {
+            EarnState::SupplyPending if balance.0 == supplied_balance && position.0 == principal => event.earn_state = EarnState::Supplied,
+            EarnState::SupplyPending if balance.0 == baseline && position.0 == 0 => event.earn_state = EarnState::NotStarted,
+            EarnState::RedeemPending if balance.0 == baseline && position.0 == 0 => { event.earn_state = EarnState::Redeemed; event.redeemed_amount = U128(principal); event.realized_yield = U128(0); },
+            EarnState::RedeemPending if balance.0 == supplied_balance && position.0 == principal => event.earn_state = EarnState::Supplied,
+            _ => return PromiseOrValue::Value(false),
+        }
+        event.earn_action_completed = false;
+        PromiseOrValue::Value(true)
+    }
+
+    fn earn_action_callback(attempt: u64) -> Promise {
+        Promise::new(env::current_account_id()).function_call("on_earn_action", near_sdk::serde_json::json!({"attempt": attempt}).to_string().into_bytes(), NearToken::from_yoctonear(0), Gas::from_tgas(90))
+    }
+
+    #[private]
+    pub fn on_earn_action(&mut self, attempt: u64) -> PromiseOrValue<bool> {
+        let event = self.event.as_mut().expect("event missing");
+        if event.earn_attempt != attempt || !matches!(event.earn_state, EarnState::SupplyPending | EarnState::RedeemPending) || event.earn_action_completed { return PromiseOrValue::Value(false); }
+        // Inspect the terminal promise result, but never trust it as accounting.
+        let _terminal_result = env::promise_result_checked(0, 1024);
+        event.earn_action_completed = true;
+        PromiseOrValue::Promise(self.query_earn(attempt, false))
     }
 
     pub fn mark_attendance(&mut self, registration_id: String, attended: bool) {
@@ -507,6 +563,10 @@ impl EventEscrowContract {
         } else {
             Attendance::Unmarked
         };
+        registration.attendance_status = if attended { "Attended" } else { "Unmarked" }.into();
+        let mut pass = self.passes.get(&registration.pass_id).expect("pass missing");
+        pass.attendance_status = registration.attendance_status.clone();
+        self.passes.insert(&registration.pass_id, &pass);
         self.registrations.insert(&registration_id, &registration);
     }
 
@@ -519,13 +579,18 @@ impl EventEscrowContract {
         require!(
             event.phase == EscrowPhase::RegistrationClosed
                 && event.earn_state == EarnState::Supplied
-                && env::block_timestamp_ms() >= event.rules.checkin_close,
+                && env::block_timestamp_ms() >= event.rules.checkin_close
+                && env::block_timestamp_ms() < event.rules.finalize_deadline,
             "finalize gate closed"
         );
         for registration_id in self.registration_ids.to_vec() {
             if let Some(mut registration) = self.registrations.get(&registration_id) {
                 if registration.attendance == Attendance::Unmarked {
                     registration.attendance = Attendance::NoShow;
+                    registration.attendance_status = "NoShow".into();
+                    let mut pass = self.passes.get(&registration.pass_id).expect("pass missing");
+                    pass.attendance_status = "NoShow".into();
+                    self.passes.insert(&registration.pass_id, &pass);
                 }
                 registration.claim = ClaimState::Claimable;
                 self.registrations.insert(&registration_id, &registration);
@@ -534,61 +599,34 @@ impl EventEscrowContract {
         self.event.as_mut().expect("event missing").phase = EscrowPhase::AttendanceFinalized;
     }
 
-    pub fn trigger_earn_redeem(&mut self) -> EarnCallView {
-        require!(
-            self.config.provider_verified,
-            "Rhea provider ABI/code hash not accepted"
-        );
-        let provider_account = self.config.provider_account.clone();
+    pub fn trigger_earn_redeem(&mut self) -> Promise {
         let event = self.event.as_mut().expect("event missing");
-        require!(
-            event.earn_state == EarnState::Supplied
-                && env::block_timestamp_ms() >= event.rules.checkin_close,
-            "redeem gate closed"
-        );
-        event.earn_attempt += 1;
+        require!(event.earn_state == EarnState::Supplied && (event.phase == EscrowPhase::Cancelled || event.phase == EscrowPhase::RefundOnly || (event.phase == EscrowPhase::AttendanceFinalized && env::block_timestamp_ms() >= event.rules.checkin_close)), "redeem gate closed");
+        event.earn_attempt = event.earn_attempt.checked_add(1).expect("earn attempt overflow");
         event.earn_state = EarnState::RedeemPending;
-        let args_json = near_sdk::serde_json::json!({
-            "actions": [{
-                "Withdraw": {
-                    "token_id": self.config.canonical_ft,
-                    "max_amount": u128::MAX.to_string()
-                }
-            }]
-        })
-        .to_string();
-        EarnCallView {
-            provider_account,
-            provider_code_hash: self.config.provider_code_hash.clone(),
-            method: "execute".into(),
-            args_json,
-            amount: event.accepted_principal,
-            attempt: event.earn_attempt,
-            verification_status: "READ_ONLY_UNVERIFIED_ABI".into(),
-        }
+        event.earn_action_completed = false;
+        let attempt = event.earn_attempt;
+        Promise::new(self.config.provider_account.clone()).function_call("withdraw", near_sdk::serde_json::json!({"amount": event.accepted_principal.0.to_string()}).to_string().into_bytes(), NearToken::from_yoctonear(0), Gas::from_tgas(80)).then(Self::earn_action_callback(attempt))
     }
 
-    pub fn on_earn_redeem_result(&mut self, attempt: u64, succeeded: bool, amount: U128) {
-        require!(
-            env::predecessor_account_id() == env::current_account_id(),
-            "callback self only"
-        );
-        let event = self.event.as_mut().expect("event missing");
-        require!(
-            event.earn_state == EarnState::RedeemPending && event.earn_attempt == attempt,
-            "stale redeem callback"
-        );
-        if succeeded {
-            require!(
-                amount.0 >= event.accepted_principal.0,
-                "redeemed below principal"
-            );
-            event.redeemed_amount = amount;
-            event.realized_yield = U128(amount.0 - event.accepted_principal.0);
-            event.earn_state = EarnState::Redeemed;
-        } else {
-            event.earn_state = EarnState::Supplied;
-        }
+    pub fn cancel_event(&mut self, event_id: String) {
+        require!(env::predecessor_account_id() == self.config.organizer, "organizer required");
+        let e = self.event.as_mut().expect("event missing");
+        require!(e.rules.event_id == event_id && matches!(e.phase, EscrowPhase::RegistrationOpen | EscrowPhase::RegistrationClosed | EscrowPhase::AttendanceFinalized), "cancel gate closed");
+        e.phase = EscrowPhase::Cancelled;
+        log_event("EventCancelled", near_sdk::serde_json::json!({"event_id":event_id}));
+    }
+
+    pub fn activate_timeout_refund(&mut self, event_id: String) {
+        let e = self.event.as_mut().expect("event missing");
+        require!(e.rules.event_id == event_id && matches!(e.phase, EscrowPhase::RegistrationOpen | EscrowPhase::RegistrationClosed) && env::block_timestamp_ms() >= e.rules.finalize_deadline, "timeout gate closed");
+        e.phase = EscrowPhase::RefundOnly;
+        log_event("RefundModeActivated", near_sdk::serde_json::json!({"event_id":event_id}));
+    }
+
+    pub fn get_storage_state(&self) -> near_sdk::serde_json::Value {
+        let bytes = env::storage_usage();
+        near_sdk::serde_json::json!({"storage_bytes": bytes, "storage_cost_yocto": ((bytes as u128) * env::storage_byte_cost().as_yoctonear()).to_string(), "account_balance_yocto": env::account_balance().as_yoctonear().to_string(), "payer": "contract"})
     }
 
     pub fn settle(&mut self) {
@@ -610,10 +648,11 @@ impl EventEscrowContract {
                 if registration.attendance == Attendance::Attended {
                     attendees.push(registration_id);
                 } else {
-                    no_show += deposit;
+                    no_show = no_show.checked_add(deposit).expect("no-show pool overflow");
                 }
             }
         }
+        require!(count > 0, "no registrations to settle");
         if attendees.is_empty() {
             let base = realized_yield / count;
             let rem = realized_yield % count;
@@ -627,10 +666,10 @@ impl EventEscrowContract {
                 }
             }
         } else {
-            let pool = no_show + realized_yield;
+            let pool = no_show.checked_add(realized_yield).expect("settlement pool overflow");
             let base = pool / attendees.len() as u128;
             let rem = pool % attendees.len() as u128;
-            for registration_id in attendees.iter() {
+            for (ordinal, registration_id) in attendees.iter().enumerate() {
                 let mut registration = self
                     .registrations
                     .get(registration_id)
@@ -638,7 +677,7 @@ impl EventEscrowContract {
                 registration.claim_amount = U128(
                     deposit
                         + base
-                        + if registration.sequence < rem as u64 {
+                        + if (ordinal as u128) < rem {
                             1
                         } else {
                             0
@@ -659,20 +698,20 @@ impl EventEscrowContract {
             "one yocto required"
         );
         let event = self.event.as_ref().expect("event missing");
-        require!(
-            event.phase == EscrowPhase::Settled && event.earn_state == EarnState::Redeemed,
-            "claim gate closed"
-        );
+        let refund = matches!(event.phase, EscrowPhase::Cancelled | EscrowPhase::RefundOnly);
+        require!((event.phase == EscrowPhase::Settled && event.earn_state == EarnState::Redeemed) || (refund && matches!(event.earn_state, EarnState::NotStarted | EarnState::Redeemed)), "claim gate closed");
         let mut registration = self
             .registrations
             .get(&registration_id)
             .expect("registration missing");
+        if refund && matches!(registration.claim, ClaimState::None | ClaimState::Claimable) { registration.claim = ClaimState::Claimable; registration.claim_amount = registration.amount; }
         require!(
             registration.beneficiary == env::predecessor_account_id()
-                && registration.claim == ClaimState::Claimable,
+                && registration.claim == ClaimState::Claimable
+                && registration.claim_amount.0 > 0,
             "claim not authorized"
         );
-        registration.claim_attempt += 1;
+        registration.claim_attempt = registration.claim_attempt.checked_add(1).expect("claim attempt overflow");
         registration.claim = ClaimState::Pending;
         self.registrations.insert(&registration_id, &registration);
         let payout_id = format!("{}:{}", registration_id, registration.claim_attempt);
@@ -698,10 +737,11 @@ impl EventEscrowContract {
         self.registrations.insert(&registration_id, &registration);
     }
 
-    #[cfg(test)]
-    pub fn enable_mock_provider_for_test(&mut self) {
-        self.config.provider_verified = true;
-    }
+
+}
+
+fn log_event(name: &str, data: near_sdk::serde_json::Value) {
+    env::log_str(&format!("EVENT_JSON:{{\"standard\":\"showstake\",\"version\":\"1.0.0\",\"event\":\"{name}\",\"data\":{data}}}"));
 }
 
 #[cfg(test)]
@@ -725,6 +765,10 @@ mod tests {
     fn rules() -> EventRules {
         EventRules {
             event_id: "e".into(),
+            title: "Test".into(),
+            location: "Local".into(),
+            rules_text: "Test rules".into(),
+            finalize_deadline: 40,
             deposit: U128(10),
             capacity: 10,
             reg_open: 10,
@@ -735,41 +779,108 @@ mod tests {
     }
 
     #[test]
-    fn mock_native_usdc_registration_and_earn_gates() {
+    fn nonconsecutive_attendees_receive_deterministic_remainder() {
         context("host.testnet", 0);
-        let mut c = EventEscrowContract::new(
-            account("host.testnet"),
-            account("rhea.mock"),
-            account("mock.usdc.testnet"),
-            "USDC".into(),
-            "Mock USDC".into(),
-            6,
-        );
-        context("host.testnet", 0);
-        c.publish_event(rules());
+        let mut c = EventEscrowContract::new(account("host.testnet"), account("mock-earn.testnet"), account("mock.usdc.testnet"), "USDC".into(), "Mock USDC".into(), 6, "MOCK_TESTNET".into());
+        let mut r = rules(); r.deposit = U128(2); c.publish_event(r);
         context("mock.usdc.testnet", 10);
-        assert_eq!(near_sdk::env::predecessor_account_id(), c.canonical_ft());
-        assert_eq!(near_sdk::env::block_timestamp_ms(), 10);
-        let accepted = c.ft_on_transfer(
-            account("alice.testnet"),
-            U128(10),
-            r#"{"version":1,"event_id":"e","commitment_id":"c1"}"#.into(),
-        );
-        let accepted_is_zero = matches!(&accepted, PromiseOrValue::Value(value) if value.0 == 0);
-        assert!(accepted_is_zero);
-        context("relayer.testnet", 20);
-        c.close_registration();
-        c.enable_mock_provider_for_test();
-        let call = c.trigger_earn_supply();
-        assert_eq!(call.method, "ft_transfer_call");
-        assert!(call.args_json.contains("rhea.mock"));
-        context("event.testnet", 0);
-        c.on_earn_supply_result(1, true, U128(10));
-        context("host.testnet", 30);
-        c.finalize_attendance();
-        c.trigger_earn_redeem();
-        context("event.testnet", 30);
-        c.on_earn_redeem_result(2, true, U128(11));
-        assert_eq!(c.get_event().unwrap().realized_yield, U128(1));
+        for i in 0..5 {
+            let msg = format!(r#"{{"version":1,"event_id":"e","commitment_id":"c{}"}}"#, i);
+            assert!(matches!(c.ft_on_transfer(account(&format!("user{}.testnet", i)), U128(2), msg), PromiseOrValue::Value(U128(0))));
+        }
+        for i in [1, 3] {
+            let id = format!("e-reg-{}", i);
+            let mut registration = c.registrations.get(&id).unwrap();
+            registration.attendance = Attendance::Attended;
+            c.registrations.insert(&id, &registration);
+        }
+        let e = c.event.as_mut().unwrap(); e.phase = EscrowPhase::AttendanceFinalized; e.earn_state = EarnState::Redeemed; e.realized_yield = U128(1);
+        c.settle();
+        assert_eq!(c.get_registration("e-reg-1".into()).unwrap().claim_amount, U128(6));
+        assert_eq!(c.get_registration("e-reg-3".into()).unwrap().claim_amount, U128(5));
+        assert_eq!(c.get_registration("e-reg-0".into()).unwrap().claim_amount, U128(0));
     }
+
+    fn promise_context(results: Vec<near_sdk::PromiseResult>) {
+        let context = VMContextBuilder::new().current_account_id(account("event.testnet")).predecessor_account_id(account("event.testnet")).block_timestamp(30_000_000).build();
+        testing_env!(context, near_sdk::test_vm_config(), near_sdk::RuntimeFeesConfig::test(), Default::default(), results);
+    }
+    fn result(n: u128) -> near_sdk::PromiseResult {
+        near_sdk::PromiseResult::Successful(near_sdk::serde_json::to_vec(&U128(n)).unwrap())
+    }
+    fn earned_candidate() -> EventEscrowContract {
+        context("host.testnet", 0);
+        let mut c = EventEscrowContract::new(account("host.testnet"), account("mock-earn.testnet"), account("mock.usdc.testnet"), "USDC".into(), "Mock USDC".into(), 6, "MOCK_TESTNET".into());
+        c.publish_event(rules());
+        let e = c.event.as_mut().unwrap(); e.accepted_principal = U128(10); e.phase = EscrowPhase::RegistrationClosed;
+        c
+    }
+    #[test]
+    fn mock_supply_and_redeem_require_receipt_and_reconciled_balances() {
+        let mut c = earned_candidate();
+        drop(c.trigger_earn_supply());
+        promise_context(vec![result(10), result(0)]);
+        drop(c.on_earn_reconcile(1, true));
+        assert_eq!(c.event.as_ref().unwrap().earn_state, EarnState::SupplyPending);
+        promise_context(vec![near_sdk::PromiseResult::Successful(b"\"10\"".to_vec())]);
+        drop(c.on_earn_action(1));
+        promise_context(vec![result(0), result(10)]);
+        drop(c.on_earn_reconcile(1, false));
+        assert_eq!(c.event.as_ref().unwrap().earn_state, EarnState::Supplied);
+        c.event.as_mut().unwrap().phase = EscrowPhase::AttendanceFinalized;
+        context("caller.testnet", 30);
+        drop(c.trigger_earn_redeem());
+        promise_context(vec![near_sdk::PromiseResult::Successful(b"null".to_vec())]);
+        drop(c.on_earn_action(2));
+        promise_context(vec![result(10), result(0)]);
+        drop(c.on_earn_reconcile(2, false));
+        assert_eq!(c.event.as_ref().unwrap().earn_state, EarnState::Redeemed);
+        assert_eq!(c.event.as_ref().unwrap().redeemed_amount, U128(10));
+    }
+    #[test]
+    fn failed_and_ambiguous_actions_do_not_duplicate_transfers() {
+        let mut c = earned_candidate();
+        drop(c.trigger_earn_supply());
+        promise_context(vec![result(10), result(0)]);
+        drop(c.on_earn_reconcile(1, true));
+        promise_context(vec![near_sdk::PromiseResult::Failed]);
+        drop(c.on_earn_action(1));
+        promise_context(vec![near_sdk::PromiseResult::Failed, result(0)]);
+        drop(c.on_earn_reconcile(1, false));
+        assert_eq!(c.event.as_ref().unwrap().earn_state, EarnState::SupplyPending);
+        assert!(c.event.as_ref().unwrap().earn_action_completed);
+        context("caller.testnet", 30);
+        drop(c.reconcile_earn());
+        promise_context(vec![result(10), result(0)]);
+        drop(c.on_earn_reconcile(1, false));
+        assert_eq!(c.event.as_ref().unwrap().earn_state, EarnState::NotStarted);
+        drop(c.trigger_earn_supply());
+        assert_eq!(c.event.as_ref().unwrap().earn_attempt, 2);
+    }
+
+    #[test]
+    fn failed_redemption_reconciles_before_retry() {
+        let mut c = earned_candidate();
+        let e = c.event.as_mut().unwrap(); e.earn_state = EarnState::Supplied; e.earn_baseline_balance = U128(10); e.phase = EscrowPhase::AttendanceFinalized;
+        context("caller.testnet", 30); drop(c.trigger_earn_redeem());
+        promise_context(vec![near_sdk::PromiseResult::Failed]); drop(c.on_earn_action(1));
+        promise_context(vec![result(0), result(10)]); drop(c.on_earn_reconcile(1, false));
+        assert_eq!(c.event.as_ref().unwrap().earn_state, EarnState::Supplied);
+        context("caller.testnet", 30); drop(c.trigger_earn_redeem());
+        assert_eq!(c.event.as_ref().unwrap().earn_attempt, 2);
+    }
+    #[test]
+    fn five_two_atomic_and_two_nonconsecutive_attendees_pay_five_each() {
+        context("host.testnet", 0);
+        let mut c = EventEscrowContract::new(account("host.testnet"), account("mock-earn.testnet"), account("mock.usdc.testnet"), "USDC".into(), "Mock USDC".into(), 6, "MOCK_TESTNET".into());
+        let mut r = rules(); r.deposit = U128(2); c.publish_event(r);
+        context("mock.usdc.testnet", 10);
+        for i in 0..5 { let msg = format!(r#"{{"version":1,"event_id":"e","commitment_id":"c{}"}}"#, i); drop(c.ft_on_transfer(account(&format!("u{}.testnet",i)), U128(2), msg)); }
+        for i in [1,3] { let id=format!("e-reg-{}",i); let mut r=c.registrations.get(&id).unwrap(); r.attendance=Attendance::Attended; c.registrations.insert(&id,&r); }
+        let e=c.event.as_mut().unwrap(); e.phase=EscrowPhase::AttendanceFinalized; e.earn_state=EarnState::Redeemed;
+        c.settle();
+        assert_eq!(c.get_registration("e-reg-1".into()).unwrap().claim_amount,U128(5));
+        assert_eq!(c.get_registration("e-reg-3".into()).unwrap().claim_amount,U128(5));
+    }
+
 }
