@@ -1,0 +1,23 @@
+{
+  "schema": "showstake.sandbox-probe.teardown/1.0.0",
+  "observed_at_utc": "2026-11-12T20:17:19Z",
+  "strategy": "owned process group + exact pinned binary + run-owned --home prefix",
+  "pgid": 61120,
+  "harness_pid": 61120,
+  "run_tmp": "/var/tmp/showstake-runs-c3989af8ce837da4/mainnet-storage-20261112T201715Z-60818",
+  "sandbox_bin": "/var/tmp/showstake-target-c3989af8ce837da4/debug/build/near-sandbox-43bc2d0c4452c183/out/.near/near-sandbox-2.14.0/near-sandbox",
+  "sandbox_bin_present": true,
+  "kill_requested": true,
+  "owned": [],
+  "unverified": [],
+  "killed": [],
+  "remaining": [],
+  "unverified_remaining": [],
+  "ownership_verified": true,
+  "proven_stopped": true,
+  "limits": [
+    "Only processes in the run's own PGID with the exact pinned binary and a run-owned --home prefix are considered owned.",
+    "Unverified PGID members are recorded and never killed.",
+    "This proves teardown of this run's sandbox only; it says nothing about unrelated sandbox processes."
+  ]
+}

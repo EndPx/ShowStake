@@ -1,0 +1,114 @@
+{
+  "cases": [
+    {
+      "account": "escrow230.sandbox",
+      "error": null,
+      "final_transaction_debug": "ExecutionFinalResult { total_gas_burnt: NearGas { inner: 18297984406962 }, transaction: SignedTransaction { transaction: V0(TransactionV0 { signer_id: AccountId(\"escrow230.sandbox\"), public_key: ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB, nonce: 1, receiver_id: AccountId(\"escrow230.sandbox\"), block_hash: aF1apsCSWguzWWqgphCnKcKYoJT4tPweoHFSx91m382, actions: [DeployContract(DeployContractAction { code: [3, 7, 108, 74, 148, 150, 232, 174, 30, 106, 246, 140, 121, 23, 82, 212, 167, 34, 5, 151, 148, 46, 255, 208, 195, 161, 131, 154, 37, 43, 233, 210] }), FunctionCall(FunctionCallAction { method_name: \"new\", args: [123, 34, 99, 97, 110, 111, 110, 105, 99, 97, 108, 95, 102, 116, 34, 58, 34, 49, 55, 50, 48, 56, 54, 50, 56, 102, 56, 52, 102, 53, 100, 54, 97, 100, 51, 51, 102, 48, 100, 97, 51, 98, 98, 98, 101, 98, 50, 55, 102, 102, 99, 98, 51, 57, 56, 101, 97, 99, 53, 48, 49, 97, 51, 49, 98, 100, 54, 97, 100, 50, 48, 49, 49, 101, 51, 54, 49, 51, 51, 97, 49, 34, 44, 34, 111, 114, 103, 97, 110, 105, 122, 101, 114, 34, 58, 34, 100, 99, 54, 51, 52, 99, 53, 48, 53, 101, 101, 54, 98, 56, 54, 97, 57, 98, 54, 49, 53, 101, 100, 55, 101, 98, 101, 102, 55, 102, 102, 102, 54, 97, 50, 51, 53, 99, 51, 52, 48, 54, 49, 54, 51, 100, 51, 53, 100, 52, 102, 48, 101, 54, 48, 99, 53, 55, 54, 97, 50, 55, 98, 53, 34, 44, 34, 112, 114, 111, 118, 105, 100, 101, 114, 95, 97, 99, 99, 111, 117, 110, 116, 34, 58, 34, 99, 111, 110, 116, 114, 97, 99, 116, 46, 109, 97, 105, 110, 46, 98, 117, 114, 114, 111, 119, 46, 110, 101, 97, 114, 34, 44, 34, 112, 114, 111, 118, 105, 100, 101, 114, 95, 107, 105, 110, 100, 34, 58, 34, 82, 72, 69, 65, 95, 77, 65, 73, 78, 78, 69, 84, 34, 44, 34, 116, 111, 107, 101, 110, 95, 100, 101, 99, 105, 109, 97, 108, 115, 34, 58, 54, 44, 34, 116, 111, 107, 101, 110, 95, 110, 97, 109, 101, 34, 58, 34, 85, 83, 68, 67, 34, 44, 34, 116, 111, 107, 101, 110, 95, 115, 121, 109, 98, 111, 108, 34, 58, 34, 85, 83, 68, 67, 34, 125], gas: NearGas { inner: 10000000000000 }, deposit: NearToken { inner: 0 } })] }), signature: ed25519:4zKDWuZckhABdRLdJvn4T1y2T1FE67ZEXe1jQEie5Z1qTx2FnFqvrJcbRtxWwXzRZ7rhUemRF9qCCw35wcv4HZJY, hash: OnceLock(<uninit>) }, receipts: [ExecutionOutcome { transaction_hash: FmnrrDnk8WxTbysPKwX3dAHMeJ4hgegdq3UuihXN8PkF, block_hash: QT9hJG56bBwm73fvoLoeJF5cThPW55GfSDunwoyGk9Q, logs: [], receipt_ids: [93PS9NWsA8gM2kTYaqCKYPWBvjYEJinKCWcNj4UsyxDq], gas_burnt: NearGas { inner: 16048787688465 }, tokens_burnt: NearToken { inner: 1604878768846500000000 }, executor_id: AccountId(\"escrow230.sandbox\"), status: SuccessValue(\"\") }, ExecutionOutcome { transaction_hash: 93PS9NWsA8gM2kTYaqCKYPWBvjYEJinKCWcNj4UsyxDq, block_hash: As5fhcothXpr3RgDzSivy6y2Rye5HbKBKkLyAqQpvhfs, logs: [], receipt_ids: [], gas_burnt: NearGas { inner: 223182562500 }, tokens_burnt: NearToken { inner: 0 }, executor_id: AccountId(\"escrow230.sandbox\"), status: SuccessValue(\"\") }], status: SuccessValue(\"\") }",
+      "funding_yocto": "2300000000000000000000000",
+      "gas_burnt": 18297984406962,
+      "prepaid_tgas": 10,
+      "success": true,
+      "views": {
+        "get_config": {
+          "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+          "network": "mainnet",
+          "organizer": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5",
+          "policy_version": "showstake-native-usdc-rhea-review/1",
+          "provider_account": "contract.main.burrow.near",
+          "provider_kind": "RHEA_MAINNET"
+        },
+        "get_event": null,
+        "get_rhea_control": {
+          "baseline_ft": "0",
+          "expected_return": "0",
+          "last_internal_balance": "0",
+          "paused": true,
+          "principal_cap": "0",
+          "shares": "0",
+          "stage": "Idle"
+        },
+        "get_storage_state": {
+          "account_balance_yocto": "2298192519815553800000000",
+          "payer": "contract",
+          "storage_bytes": 225503,
+          "storage_cost_yocto": "2255030000000000000000000"
+        }
+      }
+    },
+    {
+      "account": "escrow235.sandbox",
+      "error": null,
+      "final_transaction_debug": "ExecutionFinalResult { total_gas_burnt: NearGas { inner: 18300264406962 }, transaction: SignedTransaction { transaction: V0(TransactionV0 { signer_id: AccountId(\"escrow235.sandbox\"), public_key: ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB, nonce: 1, receiver_id: AccountId(\"escrow235.sandbox\"), block_hash: 3feQPnDochc3FUgaphfer8xttUHhNqDPNAp2WKesjb7D, actions: [DeployContract(DeployContractAction { code: [3, 7, 108, 74, 148, 150, 232, 174, 30, 106, 246, 140, 121, 23, 82, 212, 167, 34, 5, 151, 148, 46, 255, 208, 195, 161, 131, 154, 37, 43, 233, 210] }), FunctionCall(FunctionCallAction { method_name: \"new\", args: [123, 34, 99, 97, 110, 111, 110, 105, 99, 97, 108, 95, 102, 116, 34, 58, 34, 49, 55, 50, 48, 56, 54, 50, 56, 102, 56, 52, 102, 53, 100, 54, 97, 100, 51, 51, 102, 48, 100, 97, 51, 98, 98, 98, 101, 98, 50, 55, 102, 102, 99, 98, 51, 57, 56, 101, 97, 99, 53, 48, 49, 97, 51, 49, 98, 100, 54, 97, 100, 50, 48, 49, 49, 101, 51, 54, 49, 51, 51, 97, 49, 34, 44, 34, 111, 114, 103, 97, 110, 105, 122, 101, 114, 34, 58, 34, 100, 99, 54, 51, 52, 99, 53, 48, 53, 101, 101, 54, 98, 56, 54, 97, 57, 98, 54, 49, 53, 101, 100, 55, 101, 98, 101, 102, 55, 102, 102, 102, 54, 97, 50, 51, 53, 99, 51, 52, 48, 54, 49, 54, 51, 100, 51, 53, 100, 52, 102, 48, 101, 54, 48, 99, 53, 55, 54, 97, 50, 55, 98, 53, 34, 44, 34, 112, 114, 111, 118, 105, 100, 101, 114, 95, 97, 99, 99, 111, 117, 110, 116, 34, 58, 34, 99, 111, 110, 116, 114, 97, 99, 116, 46, 109, 97, 105, 110, 46, 98, 117, 114, 114, 111, 119, 46, 110, 101, 97, 114, 34, 44, 34, 112, 114, 111, 118, 105, 100, 101, 114, 95, 107, 105, 110, 100, 34, 58, 34, 82, 72, 69, 65, 95, 77, 65, 73, 78, 78, 69, 84, 34, 44, 34, 116, 111, 107, 101, 110, 95, 100, 101, 99, 105, 109, 97, 108, 115, 34, 58, 54, 44, 34, 116, 111, 107, 101, 110, 95, 110, 97, 109, 101, 34, 58, 34, 85, 83, 68, 67, 34, 44, 34, 116, 111, 107, 101, 110, 95, 115, 121, 109, 98, 111, 108, 34, 58, 34, 85, 83, 68, 67, 34, 125], gas: NearGas { inner: 10000000000000 }, deposit: NearToken { inner: 0 } })] }), signature: ed25519:uGV945i2723ncu1DioW4AFhMd7tGvnQsLegCEmjFMXHM6ECSQ1jUkMk8FxoYvAgwrLdPLhsHdMo3EKBk2cjbR1K, hash: OnceLock(<uninit>) }, receipts: [ExecutionOutcome { transaction_hash: 4zdikBp5Kgd1RcCXwezWpiUHac6VSHwChMKfLQpsiYd4, block_hash: BsR9FZCgHH9ezudiumLQkTtaF1RCj1r2tvJ8uVjMzhzv, logs: [], receipt_ids: [9eyrnmdBF14WqUsAuvF3XSi4BohdqxCpPg41RH9U9uns], gas_burnt: NearGas { inner: 16051067688465 }, tokens_burnt: NearToken { inner: 1605106768846500000000 }, executor_id: AccountId(\"escrow235.sandbox\"), status: SuccessValue(\"\") }, ExecutionOutcome { transaction_hash: 9eyrnmdBF14WqUsAuvF3XSi4BohdqxCpPg41RH9U9uns, block_hash: FZgwA3fkBjx3t7Hto1sCsJ8Qw9MPc3LZPcFQRP2aQ9VW, logs: [], receipt_ids: [], gas_burnt: NearGas { inner: 223182562500 }, tokens_burnt: NearToken { inner: 0 }, executor_id: AccountId(\"escrow235.sandbox\"), status: SuccessValue(\"\") }], status: SuccessValue(\"\") }",
+      "funding_yocto": "2350000000000000000000000",
+      "gas_burnt": 18300264406962,
+      "prepaid_tgas": 10,
+      "success": true,
+      "views": {
+        "get_config": {
+          "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+          "network": "mainnet",
+          "organizer": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5",
+          "policy_version": "showstake-native-usdc-rhea-review/1",
+          "provider_account": "contract.main.burrow.near",
+          "provider_kind": "RHEA_MAINNET"
+        },
+        "get_event": null,
+        "get_rhea_control": {
+          "baseline_ft": "0",
+          "expected_return": "0",
+          "last_internal_balance": "0",
+          "paused": true,
+          "principal_cap": "0",
+          "shares": "0",
+          "stage": "Idle"
+        },
+        "get_storage_state": {
+          "account_balance_yocto": "2348192291815553800000000",
+          "payer": "contract",
+          "storage_bytes": 225503,
+          "storage_cost_yocto": "2255030000000000000000000"
+        }
+      }
+    },
+    {
+      "account": "escrow300.sandbox",
+      "error": null,
+      "final_transaction_debug": "ExecutionFinalResult { total_gas_burnt: NearGas { inner: 18300264406962 }, transaction: SignedTransaction { transaction: V0(TransactionV0 { signer_id: AccountId(\"escrow300.sandbox\"), public_key: ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB, nonce: 1, receiver_id: AccountId(\"escrow300.sandbox\"), block_hash: H9LgVtXe4gQGBQKBLo8u9LF2mBfKmoGdPXGBFEhFhYui, actions: [DeployContract(DeployContractAction { code: [3, 7, 108, 74, 148, 150, 232, 174, 30, 106, 246, 140, 121, 23, 82, 212, 167, 34, 5, 151, 148, 46, 255, 208, 195, 161, 131, 154, 37, 43, 233, 210] }), FunctionCall(FunctionCallAction { method_name: \"new\", args: [123, 34, 99, 97, 110, 111, 110, 105, 99, 97, 108, 95, 102, 116, 34, 58, 34, 49, 55, 50, 48, 56, 54, 50, 56, 102, 56, 52, 102, 53, 100, 54, 97, 100, 51, 51, 102, 48, 100, 97, 51, 98, 98, 98, 101, 98, 50, 55, 102, 102, 99, 98, 51, 57, 56, 101, 97, 99, 53, 48, 49, 97, 51, 49, 98, 100, 54, 97, 100, 50, 48, 49, 49, 101, 51, 54, 49, 51, 51, 97, 49, 34, 44, 34, 111, 114, 103, 97, 110, 105, 122, 101, 114, 34, 58, 34, 100, 99, 54, 51, 52, 99, 53, 48, 53, 101, 101, 54, 98, 56, 54, 97, 57, 98, 54, 49, 53, 101, 100, 55, 101, 98, 101, 102, 55, 102, 102, 102, 54, 97, 50, 51, 53, 99, 51, 52, 48, 54, 49, 54, 51, 100, 51, 53, 100, 52, 102, 48, 101, 54, 48, 99, 53, 55, 54, 97, 50, 55, 98, 53, 34, 44, 34, 112, 114, 111, 118, 105, 100, 101, 114, 95, 97, 99, 99, 111, 117, 110, 116, 34, 58, 34, 99, 111, 110, 116, 114, 97, 99, 116, 46, 109, 97, 105, 110, 46, 98, 117, 114, 114, 111, 119, 46, 110, 101, 97, 114, 34, 44, 34, 112, 114, 111, 118, 105, 100, 101, 114, 95, 107, 105, 110, 100, 34, 58, 34, 82, 72, 69, 65, 95, 77, 65, 73, 78, 78, 69, 84, 34, 44, 34, 116, 111, 107, 101, 110, 95, 100, 101, 99, 105, 109, 97, 108, 115, 34, 58, 54, 44, 34, 116, 111, 107, 101, 110, 95, 110, 97, 109, 101, 34, 58, 34, 85, 83, 68, 67, 34, 44, 34, 116, 111, 107, 101, 110, 95, 115, 121, 109, 98, 111, 108, 34, 58, 34, 85, 83, 68, 67, 34, 125], gas: NearGas { inner: 300000000000000 }, deposit: NearToken { inner: 0 } })] }), signature: ed25519:2KHx1WvUoVgGwmcdj5Lmy3NSz1NtKwVgJFHtPv3qz8979wHYCXzsEAydTV18HbLH7RdVvY7XK6WhbnvifWP94zvG, hash: OnceLock(<uninit>) }, receipts: [ExecutionOutcome { transaction_hash: 4wqQQQZFNRyoDBXeKkUUxbDbLYzvz5o6ahkYsgKaV9PL, block_hash: 8KJx8pJxGHmn3MTrrnVaRPmN2dVTWn1PBpJNYP6RmfN9, logs: [], receipt_ids: [4dKGwegTrURXyZUj5aEnsJCga2mcemTLA8nJUSNb7efb], gas_burnt: NearGas { inner: 16051067688465 }, tokens_burnt: NearToken { inner: 1605106768846500000000 }, executor_id: AccountId(\"escrow300.sandbox\"), status: SuccessValue(\"\") }, ExecutionOutcome { transaction_hash: 4dKGwegTrURXyZUj5aEnsJCga2mcemTLA8nJUSNb7efb, block_hash: 5A9uCmrfQPnCq13UUteAPrcFKhs5HLvdWnMcqexmT4ky, logs: [], receipt_ids: [], gas_burnt: NearGas { inner: 223182562500 }, tokens_burnt: NearToken { inner: 0 }, executor_id: AccountId(\"escrow300.sandbox\"), status: SuccessValue(\"\") }], status: SuccessValue(\"\") }",
+      "funding_yocto": "3000000000000000000000000",
+      "gas_burnt": 18300264406962,
+      "prepaid_tgas": 300,
+      "success": true,
+      "views": {
+        "get_config": {
+          "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+          "network": "mainnet",
+          "organizer": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5",
+          "policy_version": "showstake-native-usdc-rhea-review/1",
+          "provider_account": "contract.main.burrow.near",
+          "provider_kind": "RHEA_MAINNET"
+        },
+        "get_event": null,
+        "get_rhea_control": {
+          "baseline_ft": "0",
+          "expected_return": "0",
+          "last_internal_balance": "0",
+          "paused": true,
+          "principal_cap": "0",
+          "shares": "0",
+          "stage": "Idle"
+        },
+        "get_storage_state": {
+          "account_balance_yocto": "2998192291815553800000000",
+          "payer": "contract",
+          "storage_bytes": 225503,
+          "storage_cost_yocto": "2255030000000000000000000"
+        }
+      }
+    }
+  ],
+  "scope": "sandbox only; no provider calls; sandbox gas prices do not prove mainnet fees",
+  "status": "PASS_LOCAL",
+  "wasm_bytes": 224939,
+  "wasm_path": "/mnt/d/Belajar/Hackacton/Hackacton yang masih jalan/ShowStake/test-support/contract-integration/wasm/showstake-mainnet-review.wasm"
+}
+timed_out=0 harness_exit=0 teardown_exit=0

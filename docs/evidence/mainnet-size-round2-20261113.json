@@ -1,0 +1,100 @@
+{
+  "classification": "PASS_LOCAL",
+  "scope": "Same-source compiler/optimizer size experiment only; accepted mainnet candidate remains unchanged. No signing/broadcast.",
+  "source_commit": "e49f748",
+  "baseline": {
+    "path": "test-support/contract-integration/wasm/showstake-mainnet-review.wasm",
+    "bytes": 224939,
+    "codeStorageNear": "2.24939",
+    "sha256": "03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2"
+  },
+  "variants": [
+    {
+      "variant": "oz-strip.wasm",
+      "bytes": 224633,
+      "codeStorageNear": "2.24633",
+      "sha256": "0642e051b878e2cbb0c9604a429944e7771487246d5d43bd243e5c2ebea3326b",
+      "same_export_names_kinds": true,
+      "wasm_validation": "PASS_LOCAL",
+      "runtime_behavior": "NOT_RUN"
+    },
+    {
+      "variant": "oz-converge.wasm",
+      "bytes": 224712,
+      "codeStorageNear": "2.24712",
+      "sha256": "d0ac136b3e38725b4b7aa06154e57dfca2c0a365bcd88caa7d88a59c9da5423c",
+      "same_export_names_kinds": true,
+      "wasm_validation": "PASS_LOCAL",
+      "runtime_behavior": "NOT_RUN"
+    },
+    {
+      "variant": "os-converge.wasm",
+      "bytes": 227618,
+      "codeStorageNear": "2.27618",
+      "sha256": "8d96d79c8f1b5690f218f748aa2150a179dca88c31ecefc42c821a2128d05e00",
+      "same_export_names_kinds": true,
+      "wasm_validation": "PASS_LOCAL",
+      "runtime_behavior": "NOT_RUN"
+    },
+    {
+      "variant": "rust-s-oz.wasm",
+      "bytes": 250750,
+      "codeStorageNear": "2.50750",
+      "sha256": "7208b1e7ccf1cde0c475797dff5a0481edc82cc562f4adfae25b83c81bd0d8e0",
+      "same_export_names_kinds": true,
+      "wasm_validation": "PASS_LOCAL",
+      "runtime_behavior": "NOT_RUN"
+    },
+    {
+      "variant": "rust-2-oz.wasm",
+      "bytes": 274365,
+      "codeStorageNear": "2.74365",
+      "sha256": "efa2312a0500105b36ec1d2890d8ef44e8fd67fd6f7990d354784b3033575ddf",
+      "same_export_names_kinds": true,
+      "wasm_validation": "PASS_LOCAL",
+      "runtime_behavior": "NOT_RUN"
+    },
+    {
+      "variant": "rust-3-oz.wasm",
+      "bytes": 277832,
+      "codeStorageNear": "2.77832",
+      "sha256": "d6bfe7225255473b32568e39608153f2c880a83efdd3c33e92f1829267f95cca",
+      "same_export_names_kinds": true,
+      "wasm_validation": "PASS_LOCAL",
+      "runtime_behavior": "NOT_RUN"
+    }
+  ],
+  "bestSavingBytes": 306,
+  "bestSavingCodeStorageNear": "0.00306",
+  "commands": {
+    "oz": "wasm-opt baseline-raw.wasm -Oz --converge --strip-debug --strip-producers -o oz-strip.wasm",
+    "os": "wasm-opt baseline-raw.wasm -Os --converge -o os-converge.wasm",
+    "compiler": "CARGO_PROFILE_RELEASE_OPT_LEVEL=s|2|3 cargo +1.99.1 build --features mainnet-review --target wasm32-unknown-unknown --release --locked --offline; then wasm-opt -Oz --converge --strip-debug --strip-producers"
+  },
+  "recommendation": "Retain reviewed production artifact: 306-byte saving is too small to justify replacing it without runtime acceptance. Measure storage/state to tighten funding buffer separately.",
+  "limits": [
+    "Same exports and valid Wasm do not prove behavioral equivalence.",
+    "No tests or lifecycle features removed.",
+    "No source contract changes.",
+    "0.25 NEAR cannot cover code storage of any variant measured."
+  ],
+  "unoptimized_release": {
+    "bytes": 440958,
+    "sha256": "f1de661a282d2de158a9e9fc076af678e3fbf79bc93c43e6e200db0b3954b51e",
+    "codeStorageNear": "4.40958"
+  },
+  "measurement_errors": [
+    "First experiment shell ended with a CRLF-related stat-display failure after creating/validating rust-s-oz.wasm; Node independently enumerated and validated every artifact and its export names/kinds."
+  ],
+  "mainnet_read_only": {
+    "observed_at": "2026-11-12T20:21:28.005Z",
+    "rpc": "https://rpc.mainnet.near.org",
+    "storage_amount_per_byte_yocto": "10000000000000000000",
+    "gas_price_yocto": "100000000",
+    "scope": "Public protocol reads; recheck dynamic configuration before an authorized transaction",
+    "account_creation_min_top_level_length": 65,
+    "registrar_account_id": "registrar",
+    "proposed_name_correction": "showstake-mainnet-escrow-endpx-2026.near; UNKNOWN_ACCOUNT at final block224261600"
+  },
+  "empty_deployment_budget_report": "docs/evidence/mainnet-storage-budget-20261113.json"
+}

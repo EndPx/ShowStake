@@ -1,0 +1,141 @@
+{
+  "classification": "PASS_LOCAL",
+  "network": "LOCAL_NEAR_SANDBOX",
+  "artifact": "test-support/contract-integration/wasm/showstake-mainnet-review.wasm",
+  "sha256": "03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2",
+  "scope": "Actual atomic DeployContract+new of unchanged mainnet-review Wasm, paused cap0/noevent. No provider calls, no public-network signing.",
+  "cases": [
+    {
+      "account": "escrow230.sandbox",
+      "error": null,
+      "funding_yocto": "2300000000000000000000000",
+      "gas_burnt": 18297984406962,
+      "prepaid_tgas": 10,
+      "success": true,
+      "views": {
+        "get_config": {
+          "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+          "network": "mainnet",
+          "organizer": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5",
+          "policy_version": "showstake-native-usdc-rhea-review/1",
+          "provider_account": "contract.main.burrow.near",
+          "provider_kind": "RHEA_MAINNET"
+        },
+        "get_event": null,
+        "get_rhea_control": {
+          "baseline_ft": "0",
+          "expected_return": "0",
+          "last_internal_balance": "0",
+          "paused": true,
+          "principal_cap": "0",
+          "shares": "0",
+          "stage": "Idle"
+        },
+        "get_storage_state": {
+          "account_balance_yocto": "2298192519815553800000000",
+          "payer": "contract",
+          "storage_bytes": 225503,
+          "storage_cost_yocto": "2255030000000000000000000"
+        }
+      }
+    },
+    {
+      "account": "escrow235.sandbox",
+      "error": null,
+      "funding_yocto": "2350000000000000000000000",
+      "gas_burnt": 18300264406962,
+      "prepaid_tgas": 10,
+      "success": true,
+      "views": {
+        "get_config": {
+          "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+          "network": "mainnet",
+          "organizer": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5",
+          "policy_version": "showstake-native-usdc-rhea-review/1",
+          "provider_account": "contract.main.burrow.near",
+          "provider_kind": "RHEA_MAINNET"
+        },
+        "get_event": null,
+        "get_rhea_control": {
+          "baseline_ft": "0",
+          "expected_return": "0",
+          "last_internal_balance": "0",
+          "paused": true,
+          "principal_cap": "0",
+          "shares": "0",
+          "stage": "Idle"
+        },
+        "get_storage_state": {
+          "account_balance_yocto": "2348192291815553800000000",
+          "payer": "contract",
+          "storage_bytes": 225503,
+          "storage_cost_yocto": "2255030000000000000000000"
+        }
+      }
+    },
+    {
+      "account": "escrow300.sandbox",
+      "error": null,
+      "funding_yocto": "3000000000000000000000000",
+      "gas_burnt": 18300264406962,
+      "prepaid_tgas": 300,
+      "success": true,
+      "views": {
+        "get_config": {
+          "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+          "network": "mainnet",
+          "organizer": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5",
+          "policy_version": "showstake-native-usdc-rhea-review/1",
+          "provider_account": "contract.main.burrow.near",
+          "provider_kind": "RHEA_MAINNET"
+        },
+        "get_event": null,
+        "get_rhea_control": {
+          "baseline_ft": "0",
+          "expected_return": "0",
+          "last_internal_balance": "0",
+          "paused": true,
+          "principal_cap": "0",
+          "shares": "0",
+          "stage": "Idle"
+        },
+        "get_storage_state": {
+          "account_balance_yocto": "2998192291815553800000000",
+          "payer": "contract",
+          "storage_bytes": 225503,
+          "storage_cost_yocto": "2255030000000000000000000"
+        }
+      }
+    }
+  ],
+  "raw_evidence": "test-support/contract-integration/evidence/runs/mainnet-storage-20261112T201835Z-65899",
+  "teardown": {
+    "ownership_verified": true,
+    "proven_stopped": true,
+    "remaining": []
+  },
+  "negative_prior_run": "test-support/contract-integration/evidence/runs/mainnet-storage-20261112T201715Z-60818: 300Tgas with2.30/2.35 fails LackBalanceForState; do not equate gas allowance with actual burned fee",
+  "proposal": {
+    "contract_funding_near": "2.30",
+    "extra_fee_cap_near": "0.02",
+    "maximum_total_near": "2.32",
+    "initializer_prepaid_tgas": 10,
+    "scope": "Empty paused deployment only; no event, USDC, provider storage or supply",
+    "gas_price_max_observed_yocto": "100000000",
+    "requires_recheck": true
+  },
+  "limits": [
+    "Mainnet NOT_RUN. Sandbox prices/config/account names are not proof of mainnet cost.",
+    "10Tgas is the new function-call allowance; total transaction+receipt burnt gas includes deployment overhead.",
+    "Observed300Tgas failure does not alone identify its precise gas-price/prepaid-reserve cause.",
+    "Provider liquidity/redeem/public deposits remain NOT_ACCEPTED.",
+    "Successful receipt tokens_burnt/gas_burnt indicates1e8; no claim that sandbox gas price was higher than mainnet."
+  ],
+  "reproduce": {
+    "command": "wsl.exe -d Ubuntu -e bash test-support/contract-integration/run-mainnet-storage-local.sh",
+    "prerequisite": "Existing reviewed .local sandbox-probe harness/toolchain/cache; clean-checkout bootstrap NOT_RUN",
+    "runner": "test-support/contract-integration/runner/src/bin/mainnet_storage.rs",
+    "script": "test-support/contract-integration/run-mainnet-storage-local.sh",
+    "runner_sha256": "4c29d722afcef27557adfbb727bd692ea562d89ec35d1722b6f70130c5760423"
+  }
+}

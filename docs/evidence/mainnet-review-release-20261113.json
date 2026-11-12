@@ -46,22 +46,24 @@
       "evidence": "docs/evidence/testnet-lifecycle-opt1113021957/result.json",
       "artifact": "test-support/contract-integration/wasm/showstake-testnet-optimized.wasm"
     },
-    "mainnet_rhea_feature_runtime": "NOT_RUN",
+    "mainnet_rhea_feature_runtime": "PASS_LOCAL: real local NEAR Sandbox atomic deploy+new; mainnet public deployment remains NOT_RUN",
     "provider_redemption_liquidity": "NOT_RUN",
     "browser_mainnet": "NOT_RUN",
     "independent_review": "Codex reviewed plus independent Terra re-review: no new paused/cap0/noevent stage1 blocker if deploy+new atomic. Funded route NOT ACCEPTED: detached withdrawal failure/ambiguity and post-dispatch transfer provenance remain open.",
     "required_atomic_deploy_init": true,
     "retry_and_pre_dispatch_donation_fixes": "PASS_LOCAL: organizer-only Preparing retry; unsolicited FT quarantined from allocations at supply completion and redeem preflight",
-    "execution_authorization": "NOT_APPROVED_FOR_EXACT_BUDGET; current broad mainnet direction is recorded, no blockchain signing or spending performed",
+    "execution_authorization": "NOT_APPROVED_FOR_EXACT_REVISED_BUDGET; preparation and local tests only, no mainnet signing or spending",
     "api_worker_runtime": "docs/evidence/candidate-api-worker-runtime-20261113.json",
-    "frontend": "PASS_LOCAL: typecheck, lifecycle reducer, 100 frontend checks. Mainnet actions blocked until approved deployment; browser wallet acceptance NOT_RUN."
+    "frontend": "PASS_LOCAL: typecheck, lifecycle reducer, 100 frontend checks. Mainnet actions blocked until approved deployment; browser wallet acceptance NOT_RUN.",
+    "empty_account_budget": "docs/evidence/mainnet-storage-budget-20261113.json",
+    "optimizer_experiments": "docs/evidence/mainnet-size-round2-20261113.json"
   },
   "accounts": {
     "funder": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5",
     "funder_native_near": "0.25",
     "funder_usdc_atomic": "0",
-    "proposed_contract": "showstake-mainnet-escrow-endpx-2026",
-    "proposed_contract_status": "UNKNOWN_ACCOUNT when checked; recheck before creation",
+    "proposed_contract": "showstake-mainnet-escrow-endpx-2026.near",
+    "proposed_contract_status": "UNKNOWN_ACCOUNT at final mainnet block224261600. Use named .near registration path; raw top-level proposal superseded by live account_creation_config minimum65.",
     "organizer": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5",
     "signer": "NEAR CLI 0.31.1 Windows Credential Manager; imported/readback verified locally, public key matched final mainnet access key. Mainnet CLI transaction signing NOT_RUN"
   },
@@ -106,15 +108,19 @@
     "stage1": {
       "actions": [
         "Create new dedicated contract account with new local key",
-        "Fund that account with 2.5 NEAR",
+        "Fund that account with 2.30 NEAR",
         "Deploy exact Wasm AND initialize new in ONE ATOMIC ACTION BATCH; never deploy uninitialized code separately",
         "Verify finalized batch outcome plus code bytes/config/paused cap0/noevent"
       ],
-      "maximum_total_native_near": "2.55",
-      "includes_gas_limit_near": "0.05",
+      "maximum_total_native_near": "2.32",
+      "includes_gas_limit_near": "0.02",
       "maximum_usdc_atomic": "0",
       "provider_calls_allowed": false,
-      "public_deposits_allowed": false
+      "public_deposits_allowed": false,
+      "init_prepaid_tgas": 10,
+      "preflight_max_gas_price_yocto": "100000000",
+      "preflight_storage_amount_per_byte_yocto": "10000000000000000000",
+      "stop_if_configuration_exceeds_basis": true
     },
     "stage2_proposed_only": {
       "demo_usdc_max_atomic": "1000000",
@@ -122,9 +128,14 @@
       "ft_storage_near": "0.00125",
       "requires_separate_authorization": true
     },
-    "suggested_funder_balance_near": "2.75",
-    "suggested_topup_near": "2.50",
-    "funding_is_not_spend_authorization": true
+    "suggested_funder_balance_near": "2.50",
+    "suggested_topup_near": "2.25",
+    "funding_is_not_spend_authorization": true,
+    "storage_protocol_amount_per_byte_yocto": "10000000000000000000",
+    "gas_price_observed_yocto": "100000000",
+    "previous_stage1_maximum_near": "2.55",
+    "measured_empty_account_storage_bytes": 225503,
+    "measured_empty_storage_near": "2.25503"
   },
   "authority": {
     "new_contract_key": "FullAccess key kept in local OS credential store; enables upgrade. Do not remove or export during micro-test.",
