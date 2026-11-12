@@ -11,7 +11,8 @@
   ],
   "host_only": [
     "/events/{eventId}/checkin-requests",
-    "/events/{eventId}/attendance"
+    "/events/{eventId}/attendance",
+    "/events/{eventId}/checkin/scan"
   ],
   "routes": [
     {
@@ -99,6 +100,18 @@
     },
     {
       "path": "/me",
+      "method": "get"
+    },
+    {
+      "path": "/events/{eventId}/checkin/challenge",
+      "method": "post"
+    },
+    {
+      "path": "/events/{eventId}/checkin/scan",
+      "method": "post"
+    },
+    {
+      "path": "/events/{eventId}/content/{resourceId}",
       "method": "get"
     }
   ]

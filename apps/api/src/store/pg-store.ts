@@ -395,4 +395,21 @@ export class PgStore implements Store {
     if(res.rows.length===0) return null;
     return res.rows.map(r=>({objectKey:r.object_key,title:r.title,mimeType:r.mime_type,publishedAt:r.published_at?iso(r.published_at):null,observedAt:iso(r.observed_at)}));
   }
+  async findPass(eventId:string, passId:string, owner:string): Promise<{registrationId:string;chainPassId:string}|null> {
+    const q=await this.pool.query<{registration_id:string;pass_id:string}>(`SELECT p.registration_id,p.pass_id FROM passes_projection p JOIN registrations_projection r ON r.id=p.registration_id WHERE r.event_id=$1 AND p.id=$2 AND p.owner_account=$3`,[eventId,passId,owner]);
+    const r=q.rows[0]; return r ? {registrationId:r.registration_id,chainPassId:r.pass_id} : null;
+  }
+  async createQr(a:{id:string;registrationId:string;nonceHash:string;owner:string;issuedAt:number;expiresAt:number}):Promise<void> {
+    await this.pool.query(`INSERT INTO qr_challenges(id,registration_id,nonce_hash,owner_account,key_id,issued_at,expires_at) VALUES($1,$2,$3,$4,'v1',to_timestamp($5::double precision/1000),to_timestamp($6::double precision/1000))`,[a.id,a.registrationId,a.nonceHash,a.owner,a.issuedAt,a.expiresAt]);
+  }
+  async consumeQr(a:{id:string;eventId:string;nonceHash:string;owner:string;organizer:string;requestId:string}):Promise<boolean> {
+    const client=await this.pool.connect();
+    try { await client.query('BEGIN');
+      const q=await client.query<{registration_id:string}>(`UPDATE qr_challenges q SET consumed_at=clock_timestamp() FROM registrations_projection r WHERE q.id=$1 AND q.registration_id=r.id AND r.event_id=$2 AND q.nonce_hash=$3 AND q.owner_account=$4 AND q.consumed_at IS NULL AND q.expires_at>clock_timestamp() RETURNING q.registration_id`,[a.id,a.eventId,a.nonceHash,a.owner]);
+      if(!q.rows[0]) { await client.query('ROLLBACK'); return false; }
+      await client.query(`INSERT INTO checkin_requests(id,registration_id,qr_challenge_id,organizer_account,state) VALUES($1,$2,$3,$4,'PROPOSED')`,[a.requestId,q.rows[0].registration_id,a.id,a.organizer]);
+      await client.query('COMMIT'); return true;
+    } catch(e) { await client.query('ROLLBACK'); throw e; } finally {client.release();}
+  }
+
 }

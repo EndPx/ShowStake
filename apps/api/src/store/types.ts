@@ -7,6 +7,9 @@ import type { AttendanceRead, ChallengeRow, ClaimRead, ContentResourceRead, Even
  */
 export interface Store {
   ping(): Promise<boolean>;
+  findPass(eventId: string, passId: string, owner: string): Promise<{registrationId:string; chainPassId:string} | null>;
+  createQr(args: {id:string; registrationId:string; nonceHash:string; owner:string; issuedAt:number; expiresAt:number}): Promise<void>;
+  consumeQr(args: {id:string; eventId:string; nonceHash:string; owner:string; organizer:string; requestId:string}): Promise<boolean>;
 
   listEvents(opts: { limit: number; cursor: { regOpen: string; id: string } | null }): Promise<EventListData>;
   getEvent(id: string): Promise<PublicEvent | null>;

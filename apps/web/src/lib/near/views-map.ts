@@ -37,7 +37,7 @@ export function mapContractEventState(value: unknown): EventState | null {
     case "RegistrationOpen":
       return "PUBLISHED";
     case "RegistrationClosed":
-      return "ATTENDANCE_FINALIZED";
+      return "PUBLISHED";
     case "Published":
       return "PUBLISHED";
     case "Cancelled":

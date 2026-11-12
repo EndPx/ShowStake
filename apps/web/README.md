@@ -125,3 +125,9 @@ pnpm verify:t08-frontend                 # pre-existing static/timezone/money/st
 `onboarding-probe/` is the T02 Vite diagnostic harness, run separately with the
 root `dev:t02-harness` / `build:t02-harness` / `verify:t02-*` scripts. It is not
 part of this Next.js application and is excluded from its `tsconfig.json`.
+
+## Five-account result page
+
+Open http://localhost:3010/events/five-two-attendees/results after a production build and `pnpm --dir apps/web exec next start --port 3010`. It reads the actual final candidate testnet event and registration table directly, without treating database progress as payout authority. Two rows show Paid 5 Mock USDC and three no-show allocations are zero. MockEarn is explicitly labelled; this is not Rhea mainnet proof.
+
+The API runs separately on 3001 (see apps/api/README.md). Its event UUID is 31fe9bbc-3db8-4c65-ae46-f5d4aef07e2b. While the worker catches up, API-backed services may be stale/unavailable; public onchain results remain usable. Interactive browser/wallet E2E and responsive review are NOT_RUN: the computer-use browser host was unavailable during coordinator review. HTTP routes, builds and final RPC results were verified independently.

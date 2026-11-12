@@ -17,6 +17,7 @@ export class MemoryStore implements Store {
   private readonly attendance = new Map<string, AttendanceRead[]>();
   private readonly content = new Map<string, ContentResourceRead[]>();
   private seq = 0;
+  private readonly qr = new Map<string,{registrationId:string;nonceHash:string;owner:string;expiresAt:number;consumed:boolean}>();
 
   seedEvent(e: PublicEvent): void {
     this.events.push(e);
@@ -188,4 +189,12 @@ export class MemoryStore implements Store {
     const pass = this.passes.find((p) => p.eventId === eventId && p.ownerAccount === accountId && p.attendanceStatus && p.registrationStatus !== 'WITHDRAWN');
     return pass ? (this.content.get(eventId) ?? []) : null;
   }
+  async findPass(eventId:string,passId:string,owner:string):Promise<{registrationId:string;chainPassId:string}|null> {
+    const p=this.passes.find(x=>x.eventId===eventId && x.id===passId && x.ownerAccount===owner); return p?{registrationId:p.id,chainPassId:p.id}:null;
+  }
+  async createQr(a:{id:string;registrationId:string;nonceHash:string;owner:string;issuedAt:number;expiresAt:number}):Promise<void> {this.qr.set(a.id,{...a,consumed:false});}
+  async consumeQr(a:{id:string;eventId:string;nonceHash:string;owner:string;organizer:string;requestId:string}):Promise<boolean> {
+    const q=this.qr.get(a.id); const p=q && this.passes.find(x=>x.id===q.registrationId && x.eventId===a.eventId); if(!q || !p || q.consumed || q.expiresAt<=Date.now() || q.owner!==a.owner || q.nonceHash!==a.nonceHash) return false; q.consumed=true; return true;
+  }
+
 }

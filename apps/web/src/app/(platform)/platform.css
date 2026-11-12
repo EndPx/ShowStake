@@ -3366,3 +3366,7 @@
 .lifecycle-stats div { border: 1px solid var(--border, #dcdcd5); border-radius: 10px; padding: 14px; display: grid; gap: 4px; }
 .status-inline { display: block; margin-top: 12px; color: #5b645e; }
 @media (max-width: 640px) { .lifecycle-form-grid, .lifecycle-stats { grid-template-columns: 1fr; } .lifecycle-card { padding: 18px; } }
+
+.lifecycle-table-wrap { overflow-x: auto; }
+.lifecycle-results-table { width: 100%; border-collapse: collapse; text-align: left; }
+.lifecycle-results-table th, .lifecycle-results-table td { padding: 12px; border-bottom: 1px solid var(--border, #dcdcd5); white-space: nowrap; }

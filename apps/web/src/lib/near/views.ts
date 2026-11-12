@@ -8,6 +8,7 @@ import {
   type RpcResult,
 } from "./rpc";
 import type { ContractEventState } from "./views-map";
+import { acceptedContract } from "../config";
 export {
   msToIso,
   mapEventViewToSummary as eventViewToSummary,
@@ -153,14 +154,11 @@ export function getEvent(
 ): Promise<RpcResult<ContractEventView>> {
   const fetcher = fetchImpl ?? fetch;
   return (async () => {
-    const primary = await callView<ContractEventView>(contractId, "get_event", { event_id: eventId }, rpcUrl, fetcher);
-    if (primary.ok) return primary;
-
-    // The deployable native-USDC candidate exposes a single-event view with no
-    // argument. Keep the accepted v6 ABI path first, then adapt that bounded
-    // shape without weakening the fail-closed error returned by either call.
+    const deployment = acceptedContract(contractId);
+    if (!deployment || deployment.eventId !== eventId) return { ok: false, code: "UNKNOWN_EVENT", message: "Contract and event are not configured together." };
+    if (deployment.abi === "v6") return callView<ContractEventView>(contractId, "get_event", { event_id: eventId }, rpcUrl, fetcher);
     const candidate = await callView<CandidateEventView>(contractId, "get_event", {}, rpcUrl, fetcher);
-    if (!candidate.ok) return primary;
+    if (!candidate.ok) return candidate;
     const value = candidate.value;
     if (value.event_id !== eventId) {
       return { ok: false, code: "UNKNOWN_EVENT", message: `contract returned ${value.event_id}` };
@@ -199,13 +197,13 @@ export function getRegistration(
   rpcUrl: string,
   fetchImpl?: typeof fetch,
 ): Promise<RpcResult<ContractRegistrationView>> {
-  return callView<ContractRegistrationView>(
-    contractId,
-    "get_registration",
-    { registration_id: registrationId },
-    rpcUrl,
-    fetchImpl ?? fetch,
-  );
+  return (async () => {
+    const result = await callView<ContractRegistrationView & { claim?: string }>(contractId, "get_registration", { registration_id: registrationId }, rpcUrl, fetchImpl ?? fetch);
+    if (!result.ok || !result.value) return result;
+    const deployment = acceptedContract(contractId);
+    if (deployment?.abi !== "single-event" || result.value.event_id) return result;
+    return { ...result, value: { ...result.value, event_id: deployment.eventId, financial_status: result.value.claim ?? "unknown" } };
+  })();
 }
 
 export function getPass(
@@ -297,13 +295,12 @@ export function listEventRegistrations(
   rpcUrl: string,
   fetchImpl?: typeof fetch,
 ): Promise<RpcResult<ContractRegistrationView[]>> {
-  return callView<ContractRegistrationView[]>(
-    contractId,
-    "list_event_registrations",
-    { event_id: eventId, from, limit },
-    rpcUrl,
-    fetchImpl ?? fetch,
-  );
+  return (async () => {
+    const result = await callView<Array<ContractRegistrationView & { claim?: string }>>(contractId, "list_event_registrations", { event_id: eventId, from, limit }, rpcUrl, fetchImpl ?? fetch);
+    const deployment = acceptedContract(contractId);
+    if (!result.ok || deployment?.abi !== "single-event" || deployment.eventId !== eventId) return result;
+    return { ...result, value: result.value.map(r => r.event_id ? r : { ...r, event_id: eventId, financial_status: r.claim ?? "unknown" }) };
+  })();
 }
 
 export function listEvents(

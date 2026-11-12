@@ -3,6 +3,11 @@ import { isKnownNetwork } from '@showstake/domain';
 /** Fixed, server-side configuration. No secrets live here (only non-secret policy). */
 export interface Config {
   host: string;
+  accessContractAllowlist?: string[];
+  /** Explicit deployment-to-ABI binding, e.g. testnet:escrow.testnet=candidate-v1. */
+  accessContractAbis: Record<string, string>;
+  qrHmacKey?: string;
+  privateContentDir?: string;
   port: number;
   /** Fixed expected app domain (the NEP-413 `recipient` the user is shown). */
   authDomain: string;
@@ -53,6 +58,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   if (!authPurpose) throw new Error('AUTH_PURPOSE must not be empty');
 
   return {
+    accessContractAllowlist: (env.ACCESS_CONTRACT_ALLOWLIST ?? '').split(',').map(x=>x.trim()).filter(Boolean),
+    accessContractAbis: Object.fromEntries((env.ACCESS_CONTRACT_ABIS ?? '').split(',').map(x=>x.trim()).filter(Boolean).map(x=>{ const parts=x.split('='); if(parts.length!==2 || !parts[0] || !['candidate-v1','legacy-v6'].includes(parts[1]!)) throw new Error('invalid ACCESS_CONTRACT_ABIS'); return [parts[0]!,parts[1]!]; })),
+    qrHmacKey: env.QR_HMAC_KEY,
+    privateContentDir: env.PRIVATE_CONTENT_DIR,
     host: env.HOST ?? '127.0.0.1',
     port: N(env.PORT, 3001),
     authDomain,

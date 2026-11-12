@@ -10,8 +10,12 @@
 export const NETWORK = "testnet" as const;
 export type NetworkId = typeof NETWORK;
 
+/** Filled only after review and deployment of the clean mock-Earn instance. */
+export const CANDIDATE_LIFECYCLE_TARGET: { contractId: string; eventId: string; apiEventId: string; policyVersion: string; canonicalFt: string; abi: "single-event"; network: NetworkId } | null = { contractId: "ss-e2e-1113013557.testnet", eventId: "five-two-attendees", apiEventId: "31fe9bbc-3db8-4c65-ae46-f5d4aef07e2b", policyVersion: "showstake-native-usdc-event/1", canonicalFt: "mockusdc.testnet", abi: "single-event", network: NETWORK };
+export function candidateTarget(): typeof CANDIDATE_LIFECYCLE_TARGET { return CANDIDATE_LIFECYCLE_TARGET; }
+
 /** Public read-only NEAR testnet RPC. No keys are ever sent. */
-export const RPC_URL = "https://rpc.testnet.near.org";
+export const RPC_URL = "https://test.rpc.fastnear.com";
 
 /**
  * Accepted v6 product deployment (README/ABI, source b744c00, deployed
@@ -36,6 +40,7 @@ export interface AcceptedEvent {
   policyVersion: string;
   /** Event-specific canonical FT when the deployment does not use the v6 default. */
   canonicalFt?: string;
+  abi: "v6" | "single-event";
 }
 
 export const ACCEPTED_EVENTS: Readonly<Record<string, AcceptedEvent>> = {
@@ -44,6 +49,7 @@ export const ACCEPTED_EVENTS: Readonly<Record<string, AcceptedEvent>> = {
     contractId: SHOWSTAKE_CONTRACT,
     network: NETWORK,
     policyVersion: POLICY_VERSION,
+    abi: "v6",
   },
 };
 
@@ -61,20 +67,26 @@ export const OPEN_TEST_EVENT_SLOT: AcceptedEvent | null = {
   network: NETWORK,
   policyVersion: "showstake-native-usdc-event/1",
   canonicalFt: "mockusdc.testnet",
+  abi: "single-event",
 };
 
 export function isAcceptedEvent(eventId: string): boolean {
+  if (candidateTarget()?.eventId === eventId) return true;
   if (Object.prototype.hasOwnProperty.call(ACCEPTED_EVENTS, eventId)) return true;
   return OPEN_TEST_EVENT_SLOT !== null && OPEN_TEST_EVENT_SLOT.eventId === eventId;
 }
 
 export function acceptedEvent(eventId: string): AcceptedEvent | null {
+  const candidate = candidateTarget();
+  if (candidate?.eventId === eventId) return candidate;
   if (Object.prototype.hasOwnProperty.call(ACCEPTED_EVENTS, eventId)) return ACCEPTED_EVENTS[eventId]!;
   return OPEN_TEST_EVENT_SLOT !== null && OPEN_TEST_EVENT_SLOT.eventId === eventId ? OPEN_TEST_EVENT_SLOT : null;
 }
 
 /** Accepted deployment (contract) whose single event we may resolve by id. */
 export function acceptedContract(contractId: string): AcceptedEvent | null {
+  const candidate = candidateTarget();
+  if (candidate?.contractId === contractId) return candidate;
   const open = OPEN_TEST_EVENT_SLOT;
   if (open !== null && open.contractId === contractId) return open;
   for (const key of Object.keys(ACCEPTED_EVENTS)) {

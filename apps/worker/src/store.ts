@@ -26,6 +26,7 @@
 // consumer. Canonical hash + official-finality proof happen in the production
 // ingest path itself, not only in tests.
 import { randomUUID } from 'node:crypto';
+import { isCandidate, parseCandidateEvent, parseCandidateRegistration, validateCandidatePass, validateCandidateConfig, validateCandidateCoverage } from './candidate.js';
 import { Pool, type Client, type PoolConfig } from 'pg';
 import { WORKER_DB_ROLE, type DeploymentAllowlist } from './config.js';
 import { assertAllowlistIdentity } from './identity.js';
@@ -334,12 +335,43 @@ export class WorkerStore {
       );
     }
 
+    if (this.allowlist.policyVersion === 'showstake-native-usdc-event/1' && !isCandidate(this.allowlist)) throw new Error('candidate code hash is not reviewed');
+    const candidate = isCandidate(this.allowlist);
     const kept = block.receipts.filter((r) => r.executorId === this.allowlist.contractId && r.success);
     const units: { classified: ReturnType<typeof classifyEvent>; chainEvent: ChainEventInsert }[] = [];
     for (const receipt of kept) {
       for (const ev of parseShowStakeLogs(receipt.logs)) {
         const classified = classifyEvent(ev);
         units.push({ classified, chainEvent: buildChainEvent(classified, receipt.receiptId, block) });
+      }
+    }
+
+    let snapshot: { event: NonNullable<ReturnType<typeof parseCandidateEvent>>; registrations: ReturnType<typeof parseCandidateRegistration>[] } | null = null;
+    if (candidate && kept.length) {
+      const read = async (method: string, args: unknown, accountId = this.allowlist.contractId): Promise<unknown> => {
+        const result = await this.live.viewSource.callView(method, { accountId, args }, block.hash);
+        this.assertPinned(result.blockHeight, result.blockHash, block, method);
+        return result.result;
+      };
+      const provider = validateCandidateConfig(await read('get_config', {}), this.allowlist);
+      const event = parseCandidateEvent(await read('get_event', {}), this.allowlist);
+      if (event) {
+        const registrations: ReturnType<typeof parseCandidateRegistration>[] = [];
+        for (let from = 0; from < event.count; from += 50) {
+          const raw = await read('list_event_registrations', { event_id: event.rules.eventId, from, limit: 50 });
+          if (!Array.isArray(raw) || raw.length !== Math.min(50, event.count - from)) throw new Error('candidate registration page incomplete');
+          for (const item of raw) {
+            const registration = parseCandidateRegistration(item, event, registrations.length);
+            validateCandidatePass(await read('get_pass', { pass_id: registration.passId }), registration, this.allowlist);
+            registrations.push(registration);
+          }
+        }
+        if (new Set(registrations.map(r => r.registrationId)).size !== event.count || new Set(registrations.map(r => r.passId)).size !== event.count || new Set(registrations.map(r => r.participant)).size !== event.count || new Set(registrations.map(r => r.commitmentId)).size !== event.count) throw new Error('candidate duplicate registration identity');
+        if (event.phase === 'Settled' && registrations.reduce((sum, r) => sum + BigInt(r.claimAmount), 0n) !== BigInt(event.accepted)) throw new Error('candidate settlement conservation failed');
+        const balance = await read('ft_balance_of', { account_id: this.allowlist.contractId }, this.allowlist.ftContractId);
+        const position = await read('get_position', { account_id: this.allowlist.contractId }, provider);
+        validateCandidateCoverage(event, registrations, balance, position);
+        snapshot = { event, registrations };
       }
     }
 
@@ -355,6 +387,7 @@ export class WorkerStore {
     const payoutViews = new Map<number, PayoutViewData>();
     for (let i = 0; i < units.length; i++) {
       const c = units[i]!.classified;
+      if (candidate) continue;
       if (c.kind === 'PUBLISH') {
         const viewResult = await this.live.viewSource.callView(
           'get_event',
@@ -434,6 +467,7 @@ export class WorkerStore {
         const { classified, chainEvent } = units[i]!;
         const inserted = await this.insertChainEvent(client, deploymentId, chainEvent);
         if (!inserted) continue; // already ingested (idempotent replay)
+        if (candidate) { provenance++; continue; }
         switch (classified.kind) {
           case 'PUBLISH':
             await this.insertEventProjection(client, deploymentId, publishRules.get(i)!, chainEvent.blockTimeMs);
@@ -478,6 +512,28 @@ export class WorkerStore {
           default:
             provenance++;
         }
+      }
+
+      if (snapshot && (current === null || block.height > current.block_height)) {
+        await this.insertEventProjection(client, deploymentId, snapshot.event.rules, block.timestampMs);
+        for (const registration of snapshot.registrations) await this.applyCommit(client, deploymentId, registration, block.timestampMs);
+        const row = await client.query<{ accepted_atomic: string; deposit_atomic: string; capacity: number; organizer_account: string; asset_contract: string; policy_version: string }>(`SELECT accepted_atomic::text, deposit_atomic::text, capacity, organizer_account, asset_contract, policy_version FROM events_projection WHERE deployment_id = $1 AND chain_event_id = $2`, [deploymentId, snapshot.event.rules.eventId]);
+        const ev = row.rows[0], rules = snapshot.event.rules;
+        if (!ev || ev.accepted_atomic !== snapshot.event.accepted || ev.deposit_atomic !== rules.deposit || ev.capacity !== rules.capacity || ev.organizer_account !== rules.organizer || ev.asset_contract !== rules.canonicalFt || ev.policy_version !== rules.policyVersion) throw new Error('candidate projected event mismatch');
+        const rows = await client.query<{ chain_registration_id: string; sequence_no: string; participant_account: string; beneficiary_account: string; commitment_id: string; principal_atomic: string; pass_id: string; owner_account: string }>(`SELECT r.chain_registration_id, r.sequence_no::text, r.participant_account, r.beneficiary_account, r.commitment_id, r.principal_atomic::text, p.pass_id, p.owner_account FROM registrations_projection r JOIN events_projection e ON e.id = r.event_id JOIN passes_projection p ON p.registration_id = r.id WHERE e.deployment_id = $1 AND e.chain_event_id = $2 ORDER BY r.sequence_no`, [deploymentId, rules.eventId]);
+        if (rows.rows.length !== snapshot.registrations.length || rows.rows.some((r, i) => { const v = snapshot!.registrations[i]!; return r.chain_registration_id !== v.registrationId || r.sequence_no !== String(v.eventSequence) || r.participant_account !== v.participant || r.beneficiary_account !== v.beneficiary || r.commitment_id !== v.commitmentId || r.principal_atomic !== v.amount || r.pass_id !== v.passId || r.owner_account !== v.participant; })) throw new Error('candidate projected registrations mismatch');
+        const final = snapshot.event.phase === 'AttendanceFinalized' || snapshot.event.phase === 'Settled';
+        let paid = 0n, pending = 0n;
+        for (const r of snapshot.registrations) {
+          const settled = snapshot.event.phase === 'Settled';
+          const payout = !settled ? 'NOT_CLAIMABLE' : r.claimAmount === '0' ? 'ZERO' : r.claim === 'Paid' ? 'PAID' : r.claim === 'Pending' ? 'PENDING' : 'CLAIMABLE';
+          if (r.claim === 'Paid') paid += BigInt(r.claimAmount);
+          if (r.claim === 'Pending') pending += BigInt(r.claimAmount);
+          await client.query(`UPDATE registrations_projection SET state = $3, attended = $4, claim_atomic = $5::numeric, payout_state = $6 WHERE event_id = (SELECT id FROM events_projection WHERE deployment_id = $1 AND chain_event_id = $2) AND chain_registration_id = $7`, [deploymentId, rules.eventId, final ? (r.attendance === 'Attended' ? 'ATTENDED' : 'NO_SHOW') : 'COMMITTED', r.attendance === 'Attended', settled ? r.claimAmount : '0', payout, r.registrationId]);
+        }
+        const liability = BigInt(snapshot.event.accepted) - paid - pending;
+        if (liability < 0n) throw new Error('candidate negative liability');
+        await client.query(`UPDATE events_projection SET state = $3, paid_atomic = $4::numeric, pending_atomic = $5::numeric, liability_atomic = $6::numeric WHERE deployment_id = $1 AND chain_event_id = $2`, [deploymentId, rules.eventId, snapshot.event.phase === 'Settled' ? 'SETTLED' : final ? 'ATTENDANCE_FINALIZED' : 'PUBLISHED', paid.toString(), pending.toString(), liability.toString()]);
       }
 
       // Reconcile the block's financial state exactly once (contract totals are

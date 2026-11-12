@@ -452,14 +452,14 @@ paths:
 
   /events/{eventId}/content:
     get:
-      summary: Attended + SETTLED gated content (60s signed URL)
-      description: Requires current wallet-bound ownership, finalized attendance, SETTLED event state, and fresh chain-backed projections. If private object-storage signing is unavailable the route fails closed with 503; it never returns a public fallback URL.
+      summary: List private materials for an attended and settled pass
+      description: Requires fresh finalized onchain ownership and attendance. Returns opaque resource identifiers; downloads recheck authorization and never expose object storage paths or public fallback URLs.
       tags: [content]
       parameters:
         - $ref: '#/components/parameters/EventId'
       responses:
         '200':
-          description: Signed resource URLs
+          description: Private resource identifiers
           content:
             application/json:
               schema: { $ref: '#/components/schemas/ContentEnvelope' }
@@ -471,6 +471,67 @@ paths:
           $ref: '#/components/responses/NotFound'
         '503':
           $ref: '#/components/responses/Unavailable'
+
+  /events/{eventId}/checkin/challenge:
+    post:
+      summary: Issue an owner-bound check-in token valid for 60 seconds
+      tags: [checkin]
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [passId], properties: { passId: { type: string, format: uuid } } }
+      responses:
+        '200':
+          description: Opaque signed token and expiry; no attendance is changed
+          content:
+            application/json:
+              schema: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, required: [token, expiresAt], properties: { token: { type: string }, expiresAt: { type: string, format: date-time } } } } } ] }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /events/{eventId}/checkin/scan:
+    post:
+      summary: Consume a check-in token and create an organizer proposal
+      description: HOST-ONLY. Requires the finalized onchain organizer. Atomically consumes the token once and creates PROPOSED; the organizer must separately sign mark_attendance.
+      tags: [checkin]
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [token], properties: { token: { type: string, maxLength: 4096 } } }
+      responses:
+        '200':
+          description: Pending check-in proposal only
+          content:
+            application/json:
+              schema: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, required: [requestId, passId, ownerAccount, state], properties: { requestId: { type: string, format: uuid }, passId: { type: string, format: uuid }, ownerAccount: { type: string }, state: { type: string, enum: [PROPOSED] } } } } } ] }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /events/{eventId}/content/{resourceId}:
+    get:
+      summary: Download a private file after fresh onchain authorization
+      tags: [content]
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+        - { name: resourceId, in: path, required: true, schema: { type: string, pattern: '^[a-f0-9]{64}$' } }
+      responses:
+        '200':
+          description: Private attachment; no-store and authorization on every request
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '503': { $ref: '#/components/responses/Unavailable' }
 
 components:
   securitySchemes:
@@ -882,7 +943,7 @@ components:
                     reason: { type: string, enum: [ABI_NOT_FROZEN] }
                 observedAt: { type: string, format: date-time }
     ClaimListEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, properties: { items: { type: array, items: { type: object, properties: { principalAtomic: { $ref: '#/components/schemas/Money' }, bonusAtomic: { $ref: '#/components/schemas/Money' }, payoutState: { $ref: '#/components/schemas/PayoutState' }, finalized: { type: boolean } } } } } } } } ] }
-    ContentEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, properties: { items: { type: array, items: { type: object, properties: { objectKey: { type: string }, url: { type: string }, urlExpiresAt: { type: string, format: date-time } } } } } } } } ] }
+    ContentEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, properties: { items: { type: array, items: { type: object, required: [id, title], properties: { id: { type: string, pattern: '^[a-f0-9]{64}$' }, title: { type: string }, mimeType: { type: string }, publishedAt: { type: string, format: date-time, nullable: true } } } } } } } } ] }
     DraftEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, required: [id, revision], properties: { id: { type: string, format: uuid }, revision: { type: integer } } } } } ] }
     PublishIntentEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, required: [intentId, targetContract, method, argsHash, expiresAt], properties: { intentId: { type: string, format: uuid }, targetContract: { type: string }, method: { type: string, enum: [create_event] }, argsHash: { type: string }, expiresAt: { type: string, format: date-time } } } } } ] }
     PrivyAuthEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, required: [userId, nearBindingPresent], properties: { userId: { type: string, format: uuid }, nearBindingPresent: { type: boolean, description: 'false => participant actions are unavailable until a NEAR binding is proved' } } } } } ] }

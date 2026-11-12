@@ -251,3 +251,9 @@ have unique ids.
 
 Money is canonical u128 base-10 strings; time is checked integer milliseconds;
 projections carry `receipt_id`/`log_index`/block hash+height provenance.
+
+## Candidate MockEarn adapter
+
+Policy showstake-native-usdc-event/1 is handled only for the exact reviewed candidate Wasm hash in src/candidate.ts. Set WORKER_CANDIDATE_PROVIDER_ACCOUNT explicitly. A successful finalized receipt from that executor, including empty-log receipts, triggers a pinned bounded event/registration/pass snapshot. The adapter verifies pinned MockEarn identity and FT escrow/provider position. Zero-yield settlement and claim states map to existing projection rows; it creates no fictional payout records. Cancel/refund phases and nonzero yield remain fail-closed pending their own implementation/tests.
+
+Candidate-specific real PostgreSQL tests cover two 5-USDC allocations from five 2-USDC deposits, pending/paid, stable UUID replay, and insufficient escrow rollback. Existing cursor/canonical/source-completeness rules remain mandatory. This is local component acceptance; a full live scan must separately catch up before the API projection is current.

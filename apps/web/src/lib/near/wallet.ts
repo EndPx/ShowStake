@@ -13,7 +13,7 @@
 
 import { NETWORK, RPC_URL } from "../config";
 import { viewAccessKeyView } from "./rpc";
-import { APP_DOMAIN, MAX_CHALLENGE_TTL_MS, canonicalProofMessage } from "./proof";
+import { APP_DOMAIN, canonicalProofMessage } from "./proof";
 import type { SignAndSendParams } from "./actions";
 
 export interface WalletAccount {
@@ -114,15 +114,24 @@ export async function signProof(accountId: string): Promise<WalletResult<SignedP
   if (typeof wallet.signMessage !== "function") {
     return { ok: false, code: "SIGNING_UNSUPPORTED", detail: "The selected wallet does not expose NEP-413 signMessage." };
   }
-  const nonce = crypto.getRandomValues(new Uint8Array(32));
-  const issuedAtMs = Date.now();
-  const expiresAtMs = issuedAtMs + MAX_CHALLENGE_TTL_MS;
-  const message = canonicalProofMessage(accountId, nonce, issuedAtMs, expiresAtMs);
   try {
+    const response = await fetch("/api/v1/auth/challenge", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ accountId, network: NETWORK, domain: APP_DOMAIN }) });
+    const envelope = await response.json();
+    const challenge = envelope.data as { challengeId: string; nonce: string; domain: string; network: string; accountId: string; message: string; issuedAtMs: number; expiresAtMs: number } | null;
+    if (!response.ok || !challenge || challenge.accountId !== accountId || challenge.network !== NETWORK || challenge.domain !== APP_DOMAIN || !/^[0-9a-f]{64}$/.test(challenge.nonce) || challenge.expiresAtMs <= Date.now()) throw new Error("The server login challenge is unavailable or invalid.");
+    const nonce = Uint8Array.from(challenge.nonce.match(/../g)!.map((byte) => parseInt(byte, 16)));
+    const { issuedAtMs, expiresAtMs, message } = challenge;
+    if (message !== canonicalProofMessage(accountId, nonce, issuedAtMs, expiresAtMs)) throw new Error("The server login challenge does not match the expected message.");
     const signed = await wallet.signMessage({ message, recipient: APP_DOMAIN, nonce, network: NETWORK });
     if (signed.accountId !== accountId) {
       return { ok: false, code: "ACCOUNT_MISMATCH", detail: `Wallet signed as ${signed.accountId}, not ${accountId}.` };
     }
+    const currentWallet = await c.wallet();
+    const accounts = await currentWallet.getAccounts();
+    if (accounts[0]?.accountId !== accountId) return { ok: false, code: "ACCOUNT_MISMATCH", detail: "The wallet account changed. Reconnect before signing in." };
+    const verified = await fetch("/api/v1/auth/verify", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ challengeId: challenge.challengeId, accountId, network: NETWORK, domain: APP_DOMAIN, nonce: challenge.nonce, publicKey: signed.publicKey, signature: signed.signature }) });
+    const result = await verified.json();
+    if (!verified.ok || result.data?.accountId !== accountId || result.data?.network !== NETWORK) throw new Error(result.error?.message ?? "Server could not verify the wallet proof.");
     return {
       ok: true,
       code: "SIGNED",
@@ -163,7 +172,7 @@ export async function readKeyPresence(accountId: string, publicKey?: string): Pr
  */
 export async function signAndSendTransaction(params: SignAndSendParams): Promise<WalletResult<TxResult>> {
   const c = await getConnector();
-  let wallet: { signAndSendTransaction?: (p: SignAndSendParams) => Promise<MaybeOutcome> };
+  let wallet: { getAccounts: () => Promise<Array<{ accountId: string }>>; signAndSendTransaction?: (p: SignAndSendParams) => Promise<MaybeOutcome> };
   try {
     wallet = await c.wallet();
   } catch (error) {
@@ -173,6 +182,10 @@ export async function signAndSendTransaction(params: SignAndSendParams): Promise
     return { ok: false, code: "TX_SIGNING_UNSUPPORTED", detail: "The selected wallet does not expose signAndSendTransaction." };
   }
   try {
+    const accounts = await wallet.getAccounts();
+    if (accounts[0]?.accountId !== params.signerId) {
+      return { ok: false, code: "ACCOUNT_MISMATCH", detail: "The wallet account changed. Reconnect before signing." };
+    }
     const outcome = await wallet.signAndSendTransaction(params);
     return {
       ok: true,

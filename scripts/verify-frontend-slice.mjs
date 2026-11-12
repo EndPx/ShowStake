@@ -17,6 +17,7 @@ const viewsMap = await import("../apps/web/src/lib/near/views-map.ts");
 const proof = await import("../apps/web/src/lib/near/proof.ts");
 const attempt = await import("../apps/web/src/lib/attempt.ts");
 const receipt = await import("../apps/web/src/lib/near/receipt.ts");
+const lifecycleReceipt = await import("../apps/web/src/lib/near/lifecycle-receipt.ts");
 const commitFlow = await import("../apps/web/src/lib/commit-flow.ts");
 
 let passed = 0;
@@ -36,6 +37,16 @@ function assert(name, cond, detail) {
   else bad(name, detail);
 }
 
+const actionAttempt = { account: "alice.testnet", contract: "escrow.testnet", event: "event", method: "claim", args: { registration_id: "r", nested: { a: 1, b: 2 } }, hash: "hash" };
+const actionOutcome = { transaction: { hash: "hash", signer_id: actionAttempt.account, receiver_id: actionAttempt.contract, actions: [{ FunctionCall: { method_name: "claim", deposit: "1", args: btoa(JSON.stringify({ nested: { b: 2, a: 1 }, registration_id: "r" })) } }] }, status: { SuccessValue: "" }, receipts_outcome: [{ outcome: { executor_id: actionAttempt.contract, status: { SuccessValue: "" } } }] };
+assert("lifecycle receipt accepts reordered exact arguments", lifecycleReceipt.finalLifecycleReceipt(actionOutcome, actionAttempt) === "success");
+assert("lifecycle receipt rejects wrong hash", lifecycleReceipt.finalLifecycleReceipt(actionOutcome, { ...actionAttempt, hash: "other" }) === "pending");
+assert("lifecycle receipt rejects wrong deposit", lifecycleReceipt.finalLifecycleReceipt({ ...actionOutcome, transaction: { ...actionOutcome.transaction, actions: [{ FunctionCall: { ...actionOutcome.transaction.actions[0].FunctionCall, deposit: "0" } }] } }, actionAttempt) === "pending");
+assert("lifecycle receipt rejects changed arguments", lifecycleReceipt.finalLifecycleReceipt(actionOutcome, { ...actionAttempt, args: { registration_id: "other" } }) === "pending");
+
+assert("candidate: reviewed testnet contract and event configured", config.CANDIDATE_LIFECYCLE_TARGET?.contractId === "ss-e2e-1113013557.testnet" && config.CANDIDATE_LIFECYCLE_TARGET?.eventId === "five-two-attendees");
+assert("candidate: projected API event id configured", config.CANDIDATE_LIFECYCLE_TARGET?.apiEventId === "31fe9bbc-3db8-4c65-ae46-f5d4aef07e2b");
+
 // ---- accepted deployment identity (never a fixture catalogue) ---------------
 assert("accepted event resolves", config.acceptedEvent("d036-settle-five")?.eventId === "d036-settle-five", config.acceptedEvent("d036-settle-five")?.eventId);
 assert("accepted contract fixed", config.acceptedEvent("d036-settle-five")?.contractId === "showstake-settle-endpx.testnet", "contract");
@@ -43,6 +54,8 @@ assert("accepted policy v6", config.acceptedEvent("d036-settle-five")?.policyVer
 assert("FT identity fixed", config.CANONICAL_FT === "showstake-ft-endpx.testnet" && config.CANONICAL_FT_DECIMALS === 6, `${config.CANONICAL_FT}/${config.CANONICAL_FT_DECIMALS}`);
 assert("unknown event rejected", config.isAcceptedEvent("d036-settle-five") && !config.isAcceptedEvent("invented-event"), "unknown");
 assert("contract -> accepted resolves", config.acceptedContract("showstake-settle-endpx.testnet")?.eventId === "d036-settle-five", "acceptedContract");
+assert("ABI: historical v6 and single-event deployments are explicit", config.acceptedContract("showstake-settle-endpx.testnet")?.abi === "v6" && config.acceptedContract("showstake-event-v2-endpx.testnet")?.abi === "single-event");
+assert("closed registration does not imply final attendance", viewsMap.mapContractEventState("RegistrationClosed") === "PUBLISHED");
 assert("api is same-origin /api/v1", config.API_PUBLIC_BASE === "/api/v1" && config.apiBaseUrl() === "/api/v1", config.apiBaseUrl());
 
 // ---- money / u128 ----------------------------------------------------------

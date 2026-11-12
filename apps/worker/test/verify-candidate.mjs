@@ -1,0 +1,27 @@
+import assert from 'node:assert/strict';
+import { parseCandidateEvent, parseCandidateRegistration, validateCandidatePass, validateCandidateConfig, validateCandidateCoverage, isCandidate, CANDIDATE_HASH } from '../dist/candidate.js';
+const d = { environment:'testnet', wasmSha256:CANDIDATE_HASH, policyVersion:'showstake-native-usdc-event/1', organizer:'organizer.testnet', ftContractId:'mockusdc.testnet', contractId:'candidate.testnet', network:'testnet', candidateProviderAccount:'earn.testnet' };
+const v = {event_id:'event',title:'Title',location:'Place',rules_text:'Rules',phase:'RegistrationOpen',earn_state:'NotStarted',earn_attempt:0,earn_action_completed:false,organizer:d.organizer,canonical_ft:d.ftContractId,policy_version:d.policyVersion,deposit:'2000000',capacity:5,reg_open:1,reg_close:2,checkin_open:3,checkin_close:4,cancel_cutoff:2,finalize_deadline:5,active_registrations:1,total_registrations:1,withdrawn_registrations:0,rules_hash:'',created_at:1,accepted_principal:'2000000',redeemed_amount:'0',realized_yield:'0',yield_distributed:'0'};
+const r = {registration_id:'event-reg-0',pass_id:'event-pass-0',participant:'alice.testnet',beneficiary:'alice.testnet',commitment_id:'commit-0',amount:'2000000',sequence:0,attendance:'Unmarked',registration_status:'Active',attendance_status:'Unmarked',claim:'None',claim_amount:'0',claim_attempt:0};
+const p = {pass_id:r.pass_id,event_id:'event',registration_id:r.registration_id,owner:r.participant,registration_status:'Active',attendance_status:'Unmarked',policy_version:d.policyVersion};
+assert(isCandidate(d)); assert(!isCandidate({...d,wasmSha256:'0'.repeat(64)}));
+const ev = parseCandidateEvent(v,d); const reg = parseCandidateRegistration(r,ev,0); validateCandidatePass(p,reg,d);
+assert.equal(ev.accepted,'2000000');
+const cfg={organizer:d.organizer,canonical_ft:d.ftContractId,network:d.network,policy_version:d.policyVersion,provider_account:d.candidateProviderAccount,provider_kind:'MOCK_TESTNET'};
+assert.equal(validateCandidateConfig(cfg,d),'earn.testnet');
+assert.throws(()=>validateCandidateConfig({...cfg,provider_account:'other.testnet'},d));
+validateCandidateCoverage(ev,[reg],'2000001','0');
+assert.throws(()=>validateCandidateCoverage(ev,[reg],'1999999','0'));
+const supplied={...ev,earnState:'Supplied'}; validateCandidateCoverage(supplied,[reg],'0','2000000');
+assert.throws(()=>validateCandidateCoverage(supplied,[reg],'2000000','1999999'));
+
+assert.throws(()=>parseCandidateEvent({...v,accepted_principal:'1999999'},d));
+assert.throws(()=>parseCandidateEvent({...v,phase:'RefundOnly'},d));
+const settled = parseCandidateEvent({...v,phase:'Settled',earn_state:'Redeemed',redeemed_amount:'2000000'},d);
+const paid = parseCandidateRegistration({...r,attendance:'Attended',attendance_status:'Attended',claim:'Paid',claim_amount:'2000000',claim_attempt:1},settled,0);
+assert.equal(paid.claim, 'Paid'); assert.equal(paid.claimAmount,'2000000');
+assert.throws(()=>parseCandidateRegistration({...r,claim:'Paid',claim_amount:'2000000'},ev,0));
+assert.throws(()=>parseCandidateEvent({...v,extra:true},d));
+assert.throws(()=>parseCandidateRegistration({...r,amount:'02000000'},ev,0));
+assert.throws(()=>validateCandidatePass({...p,owner:'other.testnet'},reg,d));
+console.log('PASS_LOCAL candidate view shape, identity, principal and fail-closed lifecycle');

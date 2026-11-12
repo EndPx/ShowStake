@@ -240,6 +240,7 @@ export function EventDetailClient({ eventId }: { eventId: string }) {
             {summary.policyVersion && <span>{summary.policyVersion}</span>}
           </div>
           <h1>{title}</h1>
+          <p><a className="button button--secondary" href={`/events/${encodeURIComponent(eventId)}/results`}>View on-chain results</a></p>
           <div className="detail-status">
             <StatusBadge state={summary.state} />
           </div>

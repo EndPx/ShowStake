@@ -31,3 +31,44 @@ Defaults: `HOST=127.0.0.1`, `PORT=3001`, challenge TTL capped at5minutes, sessio
 The initial executor was DeepSeek Harness/GATER, with later MiniMax work. Codex identified defects, stopped the incompatible worker attempt with process confirmation, and implemented/tested the final integration fixes. The review/implementation provenance is recorded in `docs/evidence/api-codex-integration-review.json`; this is not an independent external security audit.
 
 QR/check-in/funding routes, contract ingestion and indexing, browser wallet integration, social/email/EVM login, and a persistent hosted deployment remain future scope. A fresh empty database has no catalog events until a verified worker projects contract activity. No testnet API authentication or full T05/E2E acceptance is claimed; local route behavior does not prove live storage signing or chain finality.
+
+## Local integrated testnet review (2026-11-13)
+
+Run PostgreSQL in its dedicated loopback-only development cluster using the existing package helpers:
+
+```powershell
+wsl -d Ubuntu-24.04 -- bash scripts/dev-database.sh
+$env:DATABASE_URL='postgresql://showstake@127.0.0.1:55440/showstake_dev'
+pnpm migrations:up
+wsl -d Ubuntu-24.04 -- bash scripts/dev-database.sh
+```
+
+The operator URL above is only for local migrations. Serve HTTP using the restricted LOGIN below; never run API as the operator:
+
+```powershell
+$env:DATABASE_URL='postgresql://showstake_dev_api@127.0.0.1:55440/showstake_dev'
+$env:DB_ROLE='showstake_api'
+$env:AUTH_DOMAIN='showstake.app'
+$env:AUTH_NETWORK='testnet'
+$env:COOKIE_SECURE='false'
+$env:AUTH_ALLOWED_ORIGINS='http://localhost:3010,http://127.0.0.1:3010'
+$env:RPC_TESTNET_URL='https://test.rpc.fastnear.com'
+$env:ACCESS_CONTRACT_ALLOWLIST='testnet:ss-e2e-1113013557.testnet'
+$env:ACCESS_CONTRACT_ABIS='testnet:ss-e2e-1113013557.testnet=candidate-v1'
+$bytes=[byte[]]::new(48)
+[Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
+$env:QR_HMAC_KEY=[Convert]::ToBase64String($bytes)
+pnpm --filter @showstake/api build
+node apps/api/dist/index.js
+```
+
+This development DB trusts only loopback connections; do not expose it or reuse this configuration in production. QR keys above remain in process memory and are not logged. Set PRIVATE_CONTENT_DIR to an actual private local directory to serve resources; authorized downloads recheck final chain ownership and attendance, reject stale projections and traversal/symlink escapes, and expose no storage paths.
+
+New implemented routes:
+- POST /v1/events/{API_EVENT_UUID}/checkin/challenge {passId: API_PASS_UUID} returns an opaque 60-second token.
+- POST /v1/events/{API_EVENT_UUID}/checkin/scan {token} atomically creates PROPOSED. Organizer must separately sign mark_attendance.
+- GET /v1/events/{API_EVENT_UUID}/content lists opaque resource IDs; GET the resource ID suffix to download after authorization.
+
+Both check-in POSTs require a verified wallet session and allowed Origin. API UUIDs are projection identifiers, distinct from onchain event/pass IDs. Actual candidate receipt ingestion must populate these rows; restarting the API does not create registration or payout rights.
+
+PASS_LOCAL: new endpoint behavior and restricted PostgreSQL tests. Full browser wallet/session/QR/content E2E remains NOT_RUN.

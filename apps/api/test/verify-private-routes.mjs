@@ -28,7 +28,7 @@ const claimRead = await app.inject({method:'GET',url:'/v1/me/claims',headers:{co
 assert.equal(claimRead.json().data.items[0].claimAtomic,'12');
 assert.equal(claimRead.json().data.items[0].finalized,true);
 assert.equal((await app.inject({method:'GET',url:`/v1/events/${id}/attendance`,headers:{cookie:participantCookie}})).statusCode,403);
-assert.equal((await app.inject({method:'GET',url:`/v1/events/${id}/attendance`,headers:{cookie:hostCookie}})).json().data.items.length,1);
+assert.equal((await app.inject({method:'GET',url:`/v1/events/${id}/attendance`,headers:{cookie:hostCookie}})).statusCode,503);
 assert.equal((await app.inject({method:'GET',url:`/v1/events/${id}/content`,headers:{cookie:participantCookie}})).statusCode,503);
 const results = await app.inject({method:'GET',url:`/v1/events/${id}/results`});
 assert.equal(results.statusCode,200);

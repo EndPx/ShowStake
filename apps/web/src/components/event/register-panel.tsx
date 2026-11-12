@@ -24,7 +24,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, CheckCircle2, Circle, CircleX, Info, Loader2, RefreshCw } from "lucide-react";
 import type { EventState, EventTimes } from "@/lib/types";
-import { NETWORK, RPC_URL, acceptedContract } from "@/lib/config";
+import { NETWORK, RPC_URL, acceptedContract, candidateTarget } from "@/lib/config";
 import {
   computeDepositPreflight,
   newCommitmentId,
@@ -54,7 +54,7 @@ import {
   mapContractEventState,
   showstakeStorageBalance,
 } from "@/lib/near/views";
-import { transactionStatus } from "@/lib/near/rpc";
+import { callView, transactionStatus } from "@/lib/near/rpc";
 import { verifyDepositReceipt } from "@/lib/near/receipt";
 import { signAndSendTransaction } from "@/lib/near/wallet";
 import { runCommitSteps, attemptBlocksNewSend } from "@/lib/commit-flow";
@@ -96,6 +96,7 @@ type Busy = "ft_storage" | "native_storage" | "deposit" | "refresh" | "check" | 
 
 export function RegisterPanel(props: RegisterPanelProps) {
   const wallet = useWallet();
+  const candidate = candidateTarget()?.contractId === props.contractId;
   const accountId = wallet.account?.accountId ?? null;
   const accountRef = useRef<string | null>(accountId);
   accountRef.current = accountId;
@@ -159,13 +160,13 @@ export function RegisterPanel(props: RegisterPanelProps) {
         ftStorageBalance(props.ftContractId, account, RPC_URL),
         ftStorageBalance(props.ftContractId, props.contractId, RPC_URL),
         ftBalanceOf(props.ftContractId, account, RPC_URL),
-        showstakeStorageBalance(props.contractId, account, RPC_URL),
+        candidate ? callView<{ payer: string; storage_cost_yocto: string; account_balance_yocto: string }>(props.contractId, "get_storage_state", {}, RPC_URL) : showstakeStorageBalance(props.contractId, account, RPC_URL),
       ]);
       if (isStaleGeneration(boundaryRef.current, gen) || accountRef.current !== account) return;
       const ftRegistered = myFt.ok ? !!(myFt.value && myFt.value.total !== "0") : null;
       const ftBalanceAtomic = balance.ok ? balance.value : null;
       const escRegistered = ecFt.ok ? !!(ecFt.value && ecFt.value.total !== "0") : null;
-      setNativeStorageCredit(snow.ok ? snow.value : null);
+      setNativeStorageCredit(!candidate && snow.ok && typeof snow.value === "string" ? snow.value : null);
       setEscrowFtRegistered(escRegistered);
       setPreflight(
         computeDepositPreflight({
@@ -181,7 +182,7 @@ export function RegisterPanel(props: RegisterPanelProps) {
           nowMs,
           ftRegistered,
           ftBalanceAtomic,
-          nativeStorageDeposited: nativeDepositedRef.current,
+          nativeStorageDeposited: candidate ? (snow.ok && typeof snow.value === "object" && snow.value !== null && snow.value.payer === "contract" && /^(0|[1-9][0-9]*)$/.test(snow.value.account_balance_yocto) && /^(0|[1-9][0-9]*)$/.test(snow.value.storage_cost_yocto) ? BigInt(snow.value.account_balance_yocto) > BigInt(snow.value.storage_cost_yocto) : null) : nativeDepositedRef.current,
           escrowFtRegistered: escRegistered,
         }),
       );
@@ -345,8 +346,6 @@ export function RegisterPanel(props: RegisterPanelProps) {
               financialStatus: "",
               reason: verdict.reason,
             });
-            clearAttemptIfCommitmentMatches(attemptKey(account), record.commitmentId);
-            setAttempt(null);
           } else {
             setConfirmation({
               status: "pending",
@@ -467,7 +466,7 @@ export function RegisterPanel(props: RegisterPanelProps) {
         ftStorageBalance(props.ftContractId, account, RPC_URL),
         ftStorageBalance(props.ftContractId, props.contractId, RPC_URL),
         ftBalanceOf(props.ftContractId, account, RPC_URL),
-        showstakeStorageBalance(props.contractId, account, RPC_URL),
+        candidate ? callView<{ payer: string; storage_cost_yocto: string; account_balance_yocto: string }>(props.contractId, "get_storage_state", {}, RPC_URL) : showstakeStorageBalance(props.contractId, account, RPC_URL),
       ]);
       if (isStaleGeneration(boundary, gen) || accountRef.current !== account) return;
       const ftRegistered = myFt.ok ? !!(myFt.value && myFt.value.total !== "0") : null;
@@ -487,10 +486,10 @@ export function RegisterPanel(props: RegisterPanelProps) {
         nowMs,
         ftRegistered,
         ftBalanceAtomic,
-        nativeStorageDeposited: nativeDepositedRef.current,
+        nativeStorageDeposited: candidate ? (snow.ok && typeof snow.value === "object" && snow.value !== null && snow.value.payer === "contract" && /^(0|[1-9][0-9]*)$/.test(snow.value.account_balance_yocto) && /^(0|[1-9][0-9]*)$/.test(snow.value.storage_cost_yocto) ? BigInt(snow.value.account_balance_yocto) > BigInt(snow.value.storage_cost_yocto) : null) : nativeDepositedRef.current,
         escrowFtRegistered: escRegistered,
       });
-      setNativeStorageCredit(snow.ok ? snow.value : null);
+      setNativeStorageCredit(!candidate && snow.ok && typeof snow.value === "string" ? snow.value : null);
       setEscrowFtRegistered(escRegistered);
       setPreflight(phase);
       if (phase.phase !== "open" || !phase.readyToSign) {
@@ -702,7 +701,7 @@ const reconcileManualHash = useCallback(async () => {
                 {busy === "ft_storage" ? <Loader2 size={16} className="spin" /> : "Approve FT storage"}
               </button>
             )}
-            {preflight.steps.find((s) => s.id === "native_storage")?.kind === "action" && (
+            {!candidate && preflight.steps.find((s) => s.id === "native_storage")?.kind === "action" && (
               <button className="button" disabled={isBusy} onClick={() => void runApproval("native_storage")}>
                 {busy === "native_storage" ? <Loader2 size={16} className="spin" /> : "Approve native storage"}
               </button>

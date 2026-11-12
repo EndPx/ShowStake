@@ -86,6 +86,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setProof(null);
     setKeyPermission(null);
     setError(null);
+    await fetch("/api/v1/auth/logout", { method: "POST" }).catch(() => undefined);
     await disconnectWallet();
   }, []);
 
@@ -101,7 +102,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setError(null);
     setProof(null);
     const result = await signProof(current.accountId);
-    if (generation.current !== gen) return; // disconnected or switched while signing
+    if (generation.current !== gen) {
+      if (result.ok) await fetch("/api/v1/auth/logout", { method: "POST" }).catch(() => undefined);
+      return;
+    }
     if (!result.ok) {
       setStatus("error");
       setError(result.detail);

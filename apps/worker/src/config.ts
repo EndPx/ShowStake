@@ -21,6 +21,8 @@ export interface DeploymentAllowlist {
   policyVersion: string;
   /** explicit start height (must be >= deployments.start_block). */
   startHeight: number;
+  /** Explicit mock provider identity for the reviewed candidate adapter. */
+  candidateProviderAccount?: string;
 }
 
 export interface WorkerConfig {
@@ -63,6 +65,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): WorkerConfig {
   const wasmSha256 = env.WORKER_WASM_SHA256 ?? '';
   const organizer = env.WORKER_ORGANIZER ?? '';
   const policyVersion = env.WORKER_POLICY_VERSION ?? '';
+  const candidateProviderAccount = env.WORKER_CANDIDATE_PROVIDER_ACCOUNT ?? '';
+  if (policyVersion === 'showstake-native-usdc-event/1' && !candidateProviderAccount) throw new Error('WORKER_CANDIDATE_PROVIDER_ACCOUNT is required');
   if (!contractId) throw new Error('WORKER_CONTRACT_ID is required (allowlisted event contract)');
   if (!ftContractId) throw new Error('WORKER_FT_CONTRACT_ID is required (canonical FT)');
   if (!codeHash) throw new Error('WORKER_CODE_HASH is required (base58 contract code hash)');
@@ -100,6 +104,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): WorkerConfig {
       organizer,
       policyVersion,
       startHeight,
+      candidateProviderAccount: candidateProviderAccount || undefined,
     },
     databaseUrl: env.DATABASE_URL ?? null,
   };

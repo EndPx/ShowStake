@@ -147,6 +147,26 @@ async function run() {
     const store = new PgStore(pool);
     const config = loadConfig({ AUTH_DOMAIN: DOMAIN, AUTH_NETWORK: NETWORK, COOKIE_SECURE: 'false' });
     const kp = makeKeypair();
+    // Real PostgreSQL QR consumption is atomic under concurrent scans and cannot
+    // change the worker-owned attendance projection.
+    const registrationId='00000000-0000-4000-8000-0000000000d1';
+    const passId='00000000-0000-4000-8000-0000000000d2';
+    await client.query('SET ROLE showstake_worker');
+    await client.query(`INSERT INTO registrations_projection(id,event_id,chain_registration_id,sequence_no,participant_account,beneficiary_account,commitment_id,principal_atomic,state,attended,claim_atomic,payout_state,observed_at) VALUES($1,$2,'chain-reg',0,$3,$3,'commitment','10','COMMITTED',false,'0','NOT_CLAIMABLE',now())`,[registrationId,EVENT_ID,kp.accountId]);
+    await client.query(`INSERT INTO passes_projection(id,registration_id,deployment_id,pass_id,owner_account,issued_at,observed_at) VALUES($1,$2,$3,'chain-pass',$4,now(),now())`,[passId,registrationId,DEPLOYMENT_ID,kp.accountId]);
+    await client.query('RESET ROLE');
+    const found=await store.findPass(EVENT_ID,passId,kp.accountId);
+    check('DB_QR_PASS_LOOKUP',found?.chainPassId==='chain-pass' && found.registrationId===registrationId,'projection lookup maps to chain pass',String(found?.chainPassId));
+    const qrId=newUuid(), nonceHash=sha256Hex('fixture-nonce'), issued=Date.now();
+    await store.createQr({id:qrId,registrationId,nonceHash,owner:kp.accountId,issuedAt:issued,expiresAt:issued+60000});
+    const base={id:qrId,eventId:EVENT_ID,nonceHash,owner:kp.accountId,organizer:'bob.testnet'};
+    const consumed=await Promise.all([store.consumeQr({...base,requestId:newUuid()}),store.consumeQr({...base,requestId:newUuid()})]);
+    const stored=await client.query(`SELECT q.consumed_at, r.attended, c.state FROM qr_challenges q JOIN registrations_projection r ON r.id=q.registration_id JOIN checkin_requests c ON c.qr_challenge_id=q.id WHERE q.id=$1`,[qrId]);
+    check('DB_QR_CONCURRENT_SINGLE_PROPOSAL',consumed.filter(Boolean).length===1 && stored.rows.length===1 && stored.rows[0].state==='PROPOSED' && stored.rows[0].attended===false,'one proposal, no attendance mutation',JSON.stringify(consumed));
+    const expiredId=newUuid(), old=Date.now()-61000;
+    await store.createQr({id:expiredId,registrationId,nonceHash:sha256Hex('expired-fixture'),owner:kp.accountId,issuedAt:old,expiresAt:old+60000});
+    const expiredResult=await store.consumeQr({id:expiredId,eventId:EVENT_ID,nonceHash:sha256Hex('expired-fixture'),owner:kp.accountId,organizer:'bob.testnet',requestId:newUuid()});
+    check('DB_QR_EXPIRED',expiredResult===false,'expired QR cannot be consumed',String(expiredResult));
     const app = buildApp({ store, config, accessKeyVerifier: makeFakeResolver(kp.accountId, kp.publicKey, NETWORK) });
 
     // 5. Health against a real DB.
@@ -179,6 +199,24 @@ async function run() {
     if (!cookie) throw new Error('verification did not create a session cookie');
     const me = await inject(app, 'GET', '/v1/me', undefined, cookie);
     check('DB_ME_ACTIVE', me.statusCode === 200 && me.json().data?.active === true, 'session active', String(me.statusCode));
+
+    // Exercise the endpoint through the real restricted PgStore with candidate-shaped final views.
+    config.accessContractAllowlist=['testnet:escrow.showstake.testnet'];
+    config.accessContractAbis={'testnet:escrow.showstake.testnet':'candidate-v1'};
+    config.qrHmacKey='0123456789abcdef0123456789abcdef';
+    const realFetch=globalThis.fetch;
+    globalThis.fetch=async (_url,options)=>{
+      const request=JSON.parse(options.body), now=Date.now();
+      const view=request.params?.method_name==='get_event'
+        ? {event_id:'evt-api-1',organizer:'bob.testnet',phase:'RegistrationClosed',checkin_open:now-1000,checkin_close:now+60000}
+        : {event_id:'evt-api-1',pass_id:'chain-pass',owner:kp.accountId,registration_status:'Active',attendance_status:'Unmarked'};
+      const result=request.method==='block' ? {header:{hash:'final-block',timestamp_nanosec:String(BigInt(now)*1000000n)}} : {block_hash:'final-block',result:[...Buffer.from(JSON.stringify(view))]};
+      return new Response(JSON.stringify({jsonrpc:'2.0',id:request.id,result}),{status:200});
+    };
+    try {
+      const endpoint=await inject(app,'POST',`/v1/events/${EVENT_ID}/checkin/challenge`,{passId},cookie);
+      check('DB_QR_ENDPOINT_CANDIDATE',endpoint.statusCode===200 && !!endpoint.json().data?.token,'restricted PgStore and finalized candidate view issue challenge',String(endpoint.statusCode));
+    } finally { globalThis.fetch=realFetch; }
 
     // 8. Replay -> 401.
     const replay = await inject(app, 'POST', '/v1/auth/verify', { challengeId: chId, accountId: kp.accountId, network: NETWORK, domain: DOMAIN, nonce: c.data.nonce, publicKey: kp.publicKey, signature: sig }, undefined, ORIGIN);

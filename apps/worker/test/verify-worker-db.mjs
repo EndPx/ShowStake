@@ -14,6 +14,7 @@
 // upsert, malformed-cursor fail-closed, crash rollback, and two-connection
 // different-height/opposite-order attempts (higher height first => gap, then
 // lower height, then retry) plus same-height overlap exactly-once.
+import { candidateDbTest } from './candidate-db.mjs';
 import { writeFile, mkdir } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -581,6 +582,7 @@ async function main() {
     const resumeFrom = await resumeStore.resolveStartHeight(settleDeploymentId, settleStartBlock);
     check('DB_SETTLE_BATCH_RESUME', resumeFrom === 213, 'resolveStartHeight resumes from cursor+1 = 213 (same DB lifecycle)', resumeFrom);
 
+    await candidateDbTest({client, pool, canonical, registerBlock, check});
     const failed = results.filter((r) => !r.ok);
     const summary = {
       id: 'worker-increment-db',
