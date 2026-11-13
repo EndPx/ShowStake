@@ -113,5 +113,16 @@
     "registrationEnabled": false,
     "concurrentEarnAccepted": false
   },
-  "handoff": "docs/mainnet-user-test.md"
+  "handoff": "docs/mainnet-user-test.md",
+  "finalVerification": {
+    "observedAt": "2026-11-13T19:51:13.702Z",
+    "gitCommit": "b510e96",
+    "vercelStatus": "success",
+    "vercelDashboardUrl": "https://vercel.com/muhammad-meidy-noor-al-barrys-projects/showstake/4pFUZQ9rBAuEPUKysvubwD9VARVG",
+    "latestCopyVisible": true,
+    "contractWorkingTreeDiffEmpty": true,
+    "artifactSha256Unchanged": true,
+    "createFormAndWalletPickerVerified": true,
+    "allEightObservedServicesActive": true
+  }
 }
