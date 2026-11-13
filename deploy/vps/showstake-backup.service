@@ -1,0 +1,10 @@
+[Unit]
+Description=ShowStake private local database and content backup
+After=docker.service
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/bin/bash /opt/showstake/ops/backup.sh
+UMask=0077
+NoNewPrivileges=true

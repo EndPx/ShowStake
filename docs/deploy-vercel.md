@@ -12,7 +12,12 @@ The organizer comes from the connected wallet and the contract's predecessor che
 
 ## API boundary
 
-The current API runs locally on loopback port3002. No public hosted API origin has been configured. A Vercel deployment cannot access that computer's loopback. With no `SHOWSTAKE_API_UPSTREAM_URL`, hosted `/api/v1/*` returns explicit `503 BACKEND_UNAVAILABLE`, `data:null`, `meta.stale:true`. It does not invent a session or event and does not attempt a local proxy. This frontend publication is not full hosted backend or mainnet financial acceptance.
+The VPS API is deployed at `https://srv1330754.hstgr.cloud`. Vercel's server-only
+`SHOWSTAKE_API_UPSTREAM_URL` is configured to that HTTPS origin and requires a
+fresh Git-backed deployment to take effect. It never points to a developer's
+loopback address. If this variable is absent in a deployment, `/api/v1/*` returns
+explicit `503 BACKEND_UNAVAILABLE`, `data:null`, `meta.stale:true`; no session or
+event is invented. Backend hosting is separate from financial mainnet acceptance.
 
 When a reviewed public API is deployed, set the server-only `SHOWSTAKE_API_UPSTREAM_URL` to its HTTPS origin, without credentials, path, query or fragment, then rebuild. Configure its secure session cookie, exact frontend allowed Origin and NEP-413 recipient; migrate its production database with an operator role, run its API with the restricted service role and supervise its finalized-receipt worker. These backend resources are not created by this frontend deployment.
 

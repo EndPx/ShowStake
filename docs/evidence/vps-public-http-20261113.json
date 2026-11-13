@@ -1,0 +1,45 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "VPS HTTPS/API access boundaries; no financial transaction",
+  "observedAt": "2026-11-13T04:27:13.836Z",
+  "url": "https://srv1330754.hstgr.cloud",
+  "checks": [
+    {
+      "path": "/health",
+      "status": 200
+    },
+    {
+      "path": "/v1/mainnet/readiness",
+      "status": 200,
+      "data": {
+        "contractId": "showstake-mainnet-escrow-endpx-2026.near",
+        "codeHash": "CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os",
+        "paused": true,
+        "principalCapAtomic": "0",
+        "eventPresent": false,
+        "providerStatus": "UNVERIFIED",
+        "signingAuthority": false
+      }
+    },
+    {
+      "path": "/v1/events",
+      "status": 200,
+      "items": 0,
+      "stale": true
+    },
+    {
+      "path": "/v1/me",
+      "status": 401
+    },
+    {
+      "path": "/private/example",
+      "status": 404
+    },
+    {
+      "path": "/v1/auth/verify",
+      "origin": "foreign",
+      "status": 403
+    }
+  ],
+  "blockchainTransactions": 0
+}

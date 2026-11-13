@@ -1,0 +1,23 @@
+[Unit]
+Description=ShowStake API (isolated mainnet read service)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=showstake-api
+Group=showstake-api
+WorkingDirectory=/opt/showstake/current
+EnvironmentFile=/etc/showstake/api.env
+ExecStart=/opt/showstake/tools/node-v24.18.0-linux-x64/bin/node /opt/showstake/current/apps/api/dist/index.js
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/showstake/private
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

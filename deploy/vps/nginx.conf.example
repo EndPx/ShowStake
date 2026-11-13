@@ -1,0 +1,25 @@
+# Replace placeholders with one exact DNS hostname; provision its certificate first.
+server {
+    listen 80;
+    listen [::]:80;
+    server_name REPLACE_API_HOST;
+    location ^~ /.well-known/acme-challenge/ { root /var/www/showstake-acme; }
+    location / { return 308 https://$host$request_uri; }
+}
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name REPLACE_API_HOST;
+    ssl_certificate /etc/letsencrypt/live/REPLACE_API_HOST/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/REPLACE_API_HOST/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    client_max_body_size 1m;
+    location = /health { proxy_pass http://127.0.0.1:3912/health; }
+    location /v1/ {
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_pass http://127.0.0.1:3912;
+    }
+    location / { return 404; }
+}

@@ -1,6 +1,6 @@
 # ShowStake
 
-Public frontend: **https://showstake.vercel.app** — built from this GitHub repository on Vercel. Connected wallets are organizers for new factory events; the old allocated escrow is Legacy review only. The hosted API is not configured yet, so hosted login/indexed reads return explicit503. Factory and Earn financial gates remain disabled. See [deployment setup](docs/deploy-vercel.md) and [public HTTP proof](docs/evidence/vercel-frontend-public-20261113.json).
+Public frontend: **https://showstake.vercel.app** — built from this GitHub repository on Vercel. VPS API: **https://srv1330754.hstgr.cloud**. Connected wallets are organizers for new factory events; the old allocated escrow is Legacy review only. Factory and Earn financial gates remain disabled. See [deployment setup](docs/deploy-vercel.md), [VPS setup](deploy/vps/README.md) and the environment-scoped evidence under `docs/evidence`.
 
 Current mainnet review handoff (2026-11-13): [browser steps and scoped treasury plan](docs/mainnet-user-test.md), [review evidence and remaining gates](docs/evidence/mainnet-integration-review-20261113.json). The production mainnet frontend build passes locally, but funded event/Rhea acceptance is still blocked: actual withdrawal, contract recovery/provenance, real browser wallet and final PostgreSQL migration tests remain open. The deployed escrow stays empty and paused. Do not interpret the mainnet build as permission to deposit.
 

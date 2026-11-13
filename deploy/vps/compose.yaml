@@ -1,0 +1,25 @@
+name: showstake-prod
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: ${SHOWSTAKE_DOCKER_SUBNET:?set a verified non-overlapping dedicated subnet}
+services:
+  postgres:
+    image: ${SHOWSTAKE_POSTGRES_IMAGE:?set an immutable postgres 18 image digest}
+    container_name: showstake-postgres18
+    restart: unless-stopped
+    env_file: /etc/showstake/postgres.env
+    environment:
+      PGDATA: /var/lib/postgresql/18/docker
+    ports:
+      - "127.0.0.1:55441:5432"
+    volumes:
+      - /var/lib/showstake/postgres:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    security_opt:
+      - no-new-privileges:true
