@@ -1,0 +1,38 @@
+{
+  "status": "BLOCKED_EXTERNAL",
+  "scope": "NearBlocks/SourceScan source verification request",
+  "timestamp": "2026-11-13T22:14:35.915925+00:00",
+  "chainBytecode": {
+    "classification": "PASS_LIVE",
+    "scope": "Read-only deployed bytes compared with approved artifact; not explorer source verification",
+    "account": "showstake-mainnet-escrow-endpx-2026.near",
+    "blockHeight": 224424765,
+    "codeHash": "EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY",
+    "bytes": 225667,
+    "sha256": "c81cf3d7293c111fc29c930ac19f94d3c88cdcf4d7dcf70a73f73911c87999e7",
+    "expectedSha256": "c81cf3d7293c111fc29c930ac19f94d3c88cdcf4d7dcf70a73f73911c87999e7",
+    "matches": true,
+    "metadata": {
+      "version": "0.1.0",
+      "link": null,
+      "standards": [
+        {
+          "standard": "nep330",
+          "version": "1.3.0"
+        }
+      ],
+      "build_info": null
+    }
+  },
+  "sourceSnapshot": "PASS_LOCAL",
+  "explorer": "https://nearblocks.io/address/showstake-mainnet-escrow-endpx-2026.near?tab=contract",
+  "observedBlockers": [
+    "Browser verification page stopped at Cloudflare security verification; no challenge bypass attempted",
+    "Deployed contract_source_metadata has no repository link or reproducible build_info required by the documented automatic verification workflow"
+  ],
+  "providerGuide": "https://github.com/SourceScan/verification-guide",
+  "verifiedBadgeObserved": false,
+  "providerSubmissionPerformed": false,
+  "newMainnetTransaction": false,
+  "next": "Complete human browser security check and inspect supported verification route. If reproducible NEP330 metadata is required, prepare a separately reviewed build/upgrade instead of relabeling existing Wasm as explorer-verified."
+}

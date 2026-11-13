@@ -1,0 +1,61 @@
+{
+  "status": "PASS_LOCAL",
+  "sourceCommit": "331a2f7b2e5c3ebe7929986559f4071191754cca",
+  "sourceFiles": [
+    {
+      "path": "contracts/showstake/event-escrow-candidate/Cargo.toml",
+      "sha256": "20967ef80c823c3dcc709cea02a7b9470c732c2c740a335bfda6386f0b3a1ecb",
+      "accepted": "20967ef80c823c3dcc709cea02a7b9470c732c2c740a335bfda6386f0b3a1ecb",
+      "matches": true
+    },
+    {
+      "path": "contracts/showstake/event-escrow-candidate/Cargo.lock",
+      "sha256": "9aa5cdba4e42ee87c4e9d36d0a1c02a0bb217e9581198cbe3e888a5a599a3298",
+      "accepted": "9aa5cdba4e42ee87c4e9d36d0a1c02a0bb217e9581198cbe3e888a5a599a3298",
+      "matches": true
+    },
+    {
+      "path": "contracts/showstake/event-escrow-candidate/lib.rs",
+      "sha256": "269049a3662bf928cfcb088239d7c455477abcd47a589fdea536f94bed26a19d",
+      "accepted": "269049a3662bf928cfcb088239d7c455477abcd47a589fdea536f94bed26a19d",
+      "matches": true
+    },
+    {
+      "path": "contracts/showstake/event-escrow-candidate/src.rs",
+      "sha256": "15f260cccbd8b4093af52ce0033f15828e3602ecbd689d0cda4fde593d183b72",
+      "accepted": "15f260cccbd8b4093af52ce0033f15828e3602ecbd689d0cda4fde593d183b72",
+      "matches": true
+    },
+    {
+      "path": "contracts/showstake/event-escrow-candidate/rhea_adapter.rs",
+      "sha256": "79c1069c5aba04afb245b7ddd4866253e623c4469278a75bd87e2a5af0af8805",
+      "accepted": "79c1069c5aba04afb245b7ddd4866253e623c4469278a75bd87e2a5af0af8805",
+      "matches": true
+    },
+    {
+      "path": "contracts/showstake/event-escrow-candidate/multi_event.rs",
+      "sha256": "3f2987fbeb7f9ccd430ea38f0ce7335e1e7528670c3c264e06cbb430c31976da",
+      "accepted": "3f2987fbeb7f9ccd430ea38f0ce7335e1e7528670c3c264e06cbb430c31976da",
+      "matches": true
+    }
+  ],
+  "buildEnvironment": "Recorded build: Rust1.99.1 and Binaryen120; no NEP330 reproducible-build metadata in deployed artifact",
+  "commands": [
+    "cargo +1.99.1 test --locked --offline --lib --features multi-event",
+    "cargo +1.99.1 test --locked --offline --lib --features rhea-linked-withdraw-review",
+    "cargo +1.99.1 test --locked --offline --lib",
+    "cargo +1.99.1 build --locked --offline --lib --target wasm32-unknown-unknown --release --features multi-event",
+    "wasm-opt <build> -Oz -o <artifact>"
+  ],
+  "artifact": {
+    "path": "test-support/contract-integration/wasm/showstake-multievent-create-v2.wasm",
+    "bytes": 225667,
+    "sha256": "c81cf3d7293c111fc29c930ac19f94d3c88cdcf4d7dcf70a73f73911c87999e7",
+    "codeHash": "EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY"
+  },
+  "limits": [
+    "This archive is a source snapshot, not a successful independent rebuild or explorer verification",
+    "Onchain contract_source_metadata link and build_info are null",
+    "No new contract deployment, upgrade, signature or funded transaction was performed"
+  ]
+}

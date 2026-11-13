@@ -79,3 +79,7 @@ Backend uses schema8 (25 PK tables,40 validated FKs). New code revision starts
 at the verified upgrade block224402760 with a distinct consumer; the old cursor
 is retained. Indexing is catch-up work, not financial authority. API/session
 restart/replay/logout proof is separate from onchain settlement.
+
+## Clarified release gate (2026-11-14)
+
+The user clarified that the final contract freeze is conditional on full lifecycle E2E acceptance. This CREATE-only deployment is an intermediate release, not full-product acceptance. Reusing the existing contract account for a reviewed upgrade/migration is preferred over creating a second funded platform account. A factory model still creates separate event child accounts; shared multi-event storage does not. No further mainnet transaction is authorized or performed by this clarification alone.
