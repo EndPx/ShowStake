@@ -1,4 +1,44 @@
-# ShowStake — frontend design & reuse notes (first slice)
+# ShowStake — frontend design & CommitPass reuse
+
+## Current app direction (2026-11-14)
+
+The user explicitly chose the actual CommitPass app frontend, not a new design.
+The read-only source is `../CommitPass Monad/apps/web` at
+`542273df306a7e5887f1dfcabf1383e78930f579`. Preserve its editorial event
+editor, cover/sidebar composition, compact navigation, event cards and detail
+hierarchy. Replace its EVM/Privy/CRE execution with the existing NEAR wallet,
+pinned contract reads, exact storage quote and receipt reconciliation.
+
+This section supersedes the initial-slice scope below for app routes. The landing
+page stays separate. Within `.platform`, restore the source palette:
+canvas `#faf9f6`, ink `#252622`, muted `#686963`, line `#e5e5de`,
+accent `#b9462d`, accent-soft `#fae6db`, white `#fff`, green `#315c45`.
+The source minimal theme adds three broad radial washes (sky at the top,
+accent at bottom-left, mist at right), using `page-theme.tsx`'s 16%, 14%,
+and 6% color mixtures with the canvas. These are app surfaces, not new artwork.
+Typography follows the source DM Sans / DM Serif Display with system fallbacks.
+Reuse the original CSS measurements and shared controls instead of creating a
+second theme. The document owns scrolling; the header is sticky; the create
+editor has a cover aside and a shrinking main column, stacked on mobile.
+
+### Shared app primitives and states
+
+- Navigation: source icon/text links, current-page indication, NEAR account menu,
+  connected/disconnected/signing/error states and visible keyboard focus.
+- Event editor: source cover, title, schedule rows and option rows; validated
+  editable fields, inline error and preview state. Artwork is presentation only
+  until the frozen ABI accepts cover metadata.
+- Event card/detail: source cover and date/location/host hierarchy; loading,
+  empty, unavailable and error states never invent registrations or balances.
+- Publish panel: exact native storage reservation, gas separate, wallet sign-in,
+  submitted/unknown/final-receipt states and durable pending recovery. A quote
+  does not imply a transaction and a transaction hash does not imply success.
+
+The frozen mainnet release supports CREATE only. Clearly disclose before any
+storage payment that USDC registration and Earn are not enabled. Never enable
+deposit, attendance, settlement or claims merely through frontend styling.
+Desktop and 390px browser verification must include these same app primitives;
+no new showcase framework or development instrumentation is needed.
 
 ## Direction
 

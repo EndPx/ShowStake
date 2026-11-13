@@ -1,0 +1,88 @@
+/* CommitPass app palette and navigation, scoped away from the landing page.
+   Source: CommitPass Monad workspace.css / globals.css, baseline 542273d. */
+.platform--commitpass {
+  --canvas: #faf9f6;
+  --white: #fff;
+  --ink: #252622;
+  --muted: #686963;
+  --line: #e5e5de;
+  --accent: #b9462d;
+  --accent-soft: #fae6db;
+  --green: #315c45;
+  --green-soft: #e5eee4;
+  --shadow: 0 4px 8px #25262208, 0 24px 64px -20px #25262230;
+  --font-sans: var(--font-commitpass-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-commitpass-serif), Georgia, serif;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  background-image:
+    radial-gradient(ellipse at 50% 0%, color-mix(in srgb, #91bbdc 16%, var(--canvas)), transparent 65%),
+    radial-gradient(ellipse at 0% 85%, color-mix(in srgb, var(--accent) 14%, var(--canvas)), transparent 65%),
+    radial-gradient(ellipse at 100% 65%, color-mix(in srgb, var(--accent) 6%, var(--canvas)), transparent 70%);
+}
+.platform--commitpass .workspace-header {
+  grid-template-columns: minmax(160px, 1fr) auto minmax(200px, 1fr);
+  padding-inline: max(24px, calc((100% - 1120px) / 2));
+  gap: 24px;
+  min-height: 76px;
+}
+.platform--commitpass .workspace-header > .brand { justify-content: flex-start; }
+.platform--commitpass .workspace-header > .brand > span { font-size: 25px; letter-spacing: -1.2px; }
+.platform--commitpass .workspace-header nav { gap: 28px; }
+.platform--commitpass .workspace-header nav a { font-size: 14px; }
+.platform--commitpass .workspace-create-link { font-size: 13px; gap: 6px; white-space: nowrap; }
+.platform--commitpass .workspace-create-link > svg { display: block; }
+.platform--commitpass .workspace-header-actions { gap: 22px; }
+.platform--commitpass .wallet-connect-area .button {
+  background: var(--ink); color: var(--white); border-color: var(--ink);
+  min-height: 38px; padding: 9px 14px; font-size: 13px;
+}
+.platform--commitpass .workspace-footer { margin-top: 80px; }
+.platform--commitpass .workspace-footer-meta { font-size: 12px; gap: 16px; }
+.platform--commitpass .workspace-footer-meta nav { display: flex; align-items: center; gap: 8px; }
+.platform--commitpass .account-popover { width: min(300px, calc(100vw - 40px)); line-height: 1.5; }
+.platform--commitpass .account-popover > p { color: var(--muted); margin-block: 12px; font-size: 12px; }
+.platform--commitpass .account-popover > a { display: flex; align-items: center; gap: 8px; min-height: 40px; font-size: 13px; }
+.platform--commitpass .wallet-session-details { margin-top: 8px; font-size: 11px; }
+.platform--commitpass .wallet-session-details summary { min-height: 28px; display: flex; width: auto; justify-content: flex-start; }
+.platform--commitpass .wallet-error { max-width: 260px; font-size: 12px; }
+.platform--commitpass .workspace-create-page { max-width: 1064px; padding: 0 20px 40px; }
+.platform--commitpass .create-publish-panel {
+  border-top: 1px solid var(--line); margin-top: 24px; padding-top: 24px;
+  display: grid; gap: 14px; font-size: 13px; line-height: 1.5;
+}
+.platform--commitpass .create-publish-panel h2 { margin: 0; font-size: 18px; letter-spacing: -.3px; }
+.platform--commitpass .create-publish-panel > p { color: var(--muted); }
+.platform--commitpass .create-publish-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.platform--commitpass .create-publish-panel .button { min-height: 44px; font-size: 14px; padding: 11px 18px; }
+.platform--commitpass .create-publish-panel .button--dark { background: var(--ink); color: var(--white); border-color: var(--ink); }
+.platform--commitpass .create-storage-quote { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 14px 16px; background: var(--white); border: 1px solid var(--line); border-radius: 10px; }
+.platform--commitpass .create-storage-quote strong { color: var(--ink); font-size: 16px; font-weight: 500; }
+.platform--commitpass .create-receipt-recovery { padding: 16px; border: 1px solid var(--line); border-radius: 10px; display: grid; gap: 12px; }
+.platform--commitpass .create-receipt-recovery label { display: grid; gap: 8px; }
+.platform--commitpass .create-receipt-recovery input { min-width: 0; width: 100%; border: 1px solid var(--line); padding: 10px; border-radius: 8px; background: var(--white); font: inherit; }
+.platform--commitpass .create-verified-link { display: inline-flex; gap: 8px; align-items: center; color: var(--accent); font-weight: 500; min-height: 44px; }
+@media (max-width: 760px) {
+  .platform--commitpass .workspace-header { grid-template-columns: auto minmax(0, 1fr) auto; padding-inline: 20px; gap: 18px; }
+  .platform--commitpass .workspace-header nav { justify-content: center; gap: 18px; }
+  .platform--commitpass .workspace-header nav a { font-size: 13px; }
+  .platform--commitpass .workspace-header nav svg { display: none; }
+  .platform--commitpass .workspace-header-actions { gap: 14px; }
+  .platform--commitpass .workspace-create-link > span { display: none; }
+  .platform--commitpass .workspace-create-link { width: 36px; justify-content: center; }
+  .platform--commitpass .workspace-header > .brand > span { font-size: 23px; }
+}
+@media (max-width: 480px) {
+  .platform--commitpass .workspace-header { min-height: 66px; padding-inline: 16px; gap: 12px; }
+  .platform--commitpass .workspace-header > .brand > span { font-size: 21px; letter-spacing: -1px; }
+  .platform--commitpass .workspace-header nav { gap: 12px; }
+  .platform--commitpass .workspace-header-actions { gap: 4px; }
+  .platform--commitpass .workspace-header-actions .wallet-connect-area .button { padding: 0; min-height: 40px; width: 40px; }
+  .platform--commitpass .workspace-header-actions .wallet-connect-label { display: none; }
+  .platform--commitpass .workspace-create-link { width: 34px; min-height: 44px; }
+  .platform--commitpass .workspace-footer { padding-inline: 20px; }
+  .platform--commitpass .workspace-footer-meta { align-items: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .platform--commitpass *, .platform--commitpass *::before, .platform--commitpass *::after { scroll-behavior: auto; }
+}

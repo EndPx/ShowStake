@@ -6,7 +6,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
-import { Plus } from "lucide-react";
+import { CalendarDays, Compass, Plus } from "lucide-react";
 import { Brand } from "@/components/landing/brand";
 import { WalletMenu } from "@/components/wallet/wallet-menu";
 
@@ -22,36 +22,39 @@ export function PlatformShell({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <div className="platform">
+    <div className="platform platform--commitpass">
+      <a className="skip-link" href="#workspace-main">Skip to content</a>
       <header className={`workspace-header${scrolled ? " is-scrolled" : ""}`}>
-        <Brand />
+        <Brand href="/discover" />
         <nav aria-label="Primary">
           <Link
             href="/discover"
             className={pathname === "/discover" ? "active" : undefined}
+            aria-current={pathname === "/discover" ? "page" : undefined}
           >
-            Discover
+            <Compass size={17} aria-hidden="true" /><span>Discover</span>
           </Link>
           <Link
             href="/events"
             className={pathname?.startsWith("/events") ? "active" : undefined}
+            aria-current={pathname?.startsWith("/events") ? "page" : undefined}
           >
-            Events
+            <CalendarDays size={17} aria-hidden="true" /><span>Events</span>
           </Link>
         </nav>
         <div className="workspace-header-actions">
           <WalletMenu />
-          <a className="button button--small" href="/events/new" aria-label="Create event">
+          <Link className="workspace-create-link" href="/events/new" aria-label="Create event">
             <Plus className="workspace-create-icon" size={16} aria-hidden="true" />
             <span className="workspace-create-label">Create event</span>
-          </a>
+          </Link>
         </div>
       </header>
       {children}
       <footer className="workspace-footer">
-        <Brand compact />
+        <Brand compact href="/" />
         <div className="workspace-footer-meta">
-          <span>ShowStake · NEAR-centered event commitments</span>
+          <span>ShowStake · NEAR mainnet · Event creation</span>
           <nav aria-label="More pages"><Link href="/funding">Funding</Link>{" / "}<Link href="/earn">Earn</Link></nav>
         </div>
       </footer>

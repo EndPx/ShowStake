@@ -2,7 +2,7 @@
 
 // Native NEAR wallet connection and server-verified sign-in.
 
-import { LogOut, PenLine, Wallet } from "lucide-react";
+import { CalendarDays, LogOut, PenLine, Wallet } from "lucide-react";
 import { useWallet } from "./wallet-context";
 
 function short(value: string, head = 10, tail = 6): string {
@@ -22,7 +22,7 @@ export function WalletMenu() {
             <span>{wallet.account.accountId.slice(0, 1).toUpperCase()}</span>
           </summary>
           <div className="account-popover">
-            <strong>NEAR account</strong>
+            <strong>Your NEAR wallet</strong>
             <div className="account-wallet">
               <div className="account-wallet-details">
                 <span className="account-wallet-label">
@@ -37,25 +37,25 @@ export function WalletMenu() {
               </div>
             </div>
             <p>
-              This is the account that would own your pass and receive any refund.
-              It is shown directly from your NEAR wallet.
+              Events you create belong to this account. Transactions are approved
+              in your wallet.
             </p>
             {wallet.proof && (
               <div className="wallet-proof">
                 <strong>Signed in</strong>
                 <span className="wallet-proof-note">
-                  Wallet control was verified by the server. Private pages check the session again; signing is not a deposit.
+                  Wallet ownership verified. Signing in does not move funds.
                 </span>
-                <code className="wallet-proof-field">nonce {short(wallet.proof.nonceHex, 14, 8)}</code>
-                <code className="wallet-proof-field">sig {short(wallet.proof.signature, 16, 10)}</code>
-                <code className="wallet-proof-field">expires {new Date(wallet.proof.expiresAtMs).toISOString()}</code>
+                <details className="wallet-session-details"><summary>Session details</summary>
+                  <code className="wallet-proof-field">expires {new Date(wallet.proof.expiresAtMs).toISOString()}</code>
+                </details>
               </div>
             )}
             <button type="button" onClick={() => void wallet.sign()} disabled={wallet.status === "signing"}>
               <PenLine size={15} />
               {wallet.status === "signing" ? "Signing…" : wallet.proof ? "Sign in again" : "Sign in"}
             </button>
-            <a href="/events">My events, passes and claims</a>
+            <a href="/events"><CalendarDays size={15} /> My events</a>
             <button type="button" onClick={() => void wallet.disconnect()}>
               <LogOut size={15} />
               Disconnect

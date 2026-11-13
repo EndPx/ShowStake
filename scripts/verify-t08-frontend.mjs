@@ -122,10 +122,14 @@ const sourceText = files
   .join("\n");
 
 // legacy provider / chain imports must be absent (attribution comments allowed)
-for (const token of ["@privy-io", 'from "@commitpass', 'from "viem"', 'from "next/font', "res.cloudinary.com", "NEXT_PUBLIC_GOOGLE_MAPS_EMBED_API_KEY", "depositedToYield", "protocolRevenue", "testnetGasSponsorship"]) {
+for (const token of ["@privy-io", 'from "@commitpass', 'from "viem"', "res.cloudinary.com", "NEXT_PUBLIC_GOOGLE_MAPS_EMBED_API_KEY", "depositedToYield", "protocolRevenue", "testnetGasSponsorship"]) {
   const hit = sourceText.includes(token);
   assert(`no legacy token: ${token}`, !hit, token);
 }
+// The full CommitPass app reuse now includes its typography. next/font bundles
+// these at build time; it is not an EVM/provider runtime dependency.
+const appLayout = readFileSync(new URL("../apps/web/src/app/(platform)/layout.tsx", import.meta.url), "utf8");
+assert("CommitPass app typography remains scoped", appLayout.includes('DM_Sans') && appLayout.includes('DM_Serif_Display') && appLayout.includes('--font-commitpass-sans'));
 
 // package manifest: pin compatible deps, no EVM/Privy/QR/scan deps
 const pkg = JSON.parse(readFileSync(new URL("../apps/web/package.json", import.meta.url), "utf8"));

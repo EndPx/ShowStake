@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "ShowStake frontend reuse provenance (bounded first slice)",
-  "reviewer": "DeepSeek Harness / GATER (sole main writer, per dispatch T08)",
+  "title": "ShowStake frontend reuse provenance (CommitPass app adaptation)",
+  "reviewer": "Codex coordinator with Codex Terra implementation and independent review",
   "classifier": "PASS_LOCAL",
   "reference": {
     "repo_path": "D:/Belajar/Hackacton/Hackacton yang masih jalan/CommitPass Monad",
@@ -13,7 +13,8 @@
   "assets": {
     "imported": "none (no logo, font, generated image or remote media binaries/URLs)",
     "logo": "text wordmark (ShowStake), no CommitPass/Keyfolio art",
-    "media": "native CSS poster artwork + event-cover-art; Cloudinary manifest brand-media.json and lib/media.ts NOT copied"
+    "media": "native CSS poster artwork + event-cover-art; Cloudinary manifest brand-media.json and lib/media.ts NOT copied",
+    "fonts": "CommitPass DM Sans and DM Serif Display via next/font/google, build-time bundled and scoped to app layout; landing unchanged"
   },
   "reused_adapted": [
     {
@@ -195,5 +196,78 @@
     "A positive native storage credit is never treated as sufficient, an unknown reserved-count is never defaulted to 0, the chain clock/phase is re-read before commit, and an unknown submission is never auto-retried or auto re-deposited.",
     "The API is reached same-origin via a closed Next rewrite (single upstream, /v1 prefix); the API projection's chain event id is absent, so accepted deployments are resolved read-only via the contract list_events (API owner=Codex).",
     "This provenance records only apps/web + frontend verification scripts; apps/api, apps/worker, packages/domain, packages/wallet-adapter, Rust and the root package.json/pnpm-lock remain untouched by this writer."
-  ]
+  ],
+  "app_adaptation_20261114": {
+    "status": "PASS_LOCAL",
+    "source_commit": "542273df306a7e5887f1dfcabf1383e78930f579",
+    "contract_changed": false,
+    "release_scope": "MAINNET_CREATE_ONLY",
+    "wallet": "Existing NEAR Connect and NEP-413; no Privy/EVM integration",
+    "sources": [
+      {
+        "path": "apps/web/src/components/events/create-event.tsx",
+        "sha256": "fe7802a73d9e242dd348b7092aba8724d3f58d2d8261d051fb0e0b58edd1e51f",
+        "read_only": true
+      },
+      {
+        "path": "apps/web/src/components/events/event-detail.tsx",
+        "sha256": "1a90053dd3bbe1f1a25932e1c26c9c0d0d0f4fb1207c49b3fe7c9d1a85853924",
+        "read_only": true
+      },
+      {
+        "path": "apps/web/src/components/events/event-list.tsx",
+        "sha256": "087ff3befe3403e2a6020006390c692c38fc3d357ab1a993d0d3ee5fa9c49811",
+        "read_only": true
+      },
+      {
+        "path": "apps/web/src/components/events/event-list-card.tsx",
+        "sha256": "5ee25fffa9b3c10d34d06731f0a9bb3ed8e9c4e94dd25a1e5c8316c3da3eee8b",
+        "read_only": true
+      },
+      {
+        "path": "apps/web/src/components/events/platform-runtime.tsx",
+        "sha256": "f6e081e25ac8c9e27995c328aedf2d65dc5a51b8d48f8312cfe34c402cfe8cac",
+        "read_only": true
+      },
+      {
+        "path": "apps/web/src/components/events/page-theme.tsx",
+        "sha256": "0cf59ffbf03d01289cd351fee0c4b213e9d32a9b2bce40acbba8eb897dbad37a",
+        "read_only": true
+      },
+      {
+        "path": "apps/web/src/app/(platform)/workspace.css",
+        "sha256": "15926f81336c63460c749e65f54142cc087946ee623abbd252a6058a40f43398",
+        "read_only": true
+      },
+      {
+        "path": "apps/web/src/app/(platform)/editor.css",
+        "sha256": "aed157d7031194b0ea03210fb2d45d12f4377802611b5de8acf51adde573f900",
+        "read_only": true
+      },
+      {
+        "path": "apps/web/src/app/(platform)/vault.css",
+        "sha256": "d4f1b8cfb26e13f867fcccf1d266578bb0a293035b9b61387540720d88553ddb",
+        "read_only": true
+      },
+      {
+        "path": "apps/web/src/app/layout.tsx",
+        "sha256": "ed2552e9be6881d836c4f2b37afe2f4d71fda4fb63058e0ae2794f8e086a02b6",
+        "read_only": true
+      }
+    ],
+    "destinations": [
+      "apps/web/src/components/event/mainnet-create-preview.tsx",
+      "apps/web/src/components/event/shared-event-route.tsx",
+      "apps/web/src/components/event/personal-dashboard.tsx",
+      "apps/web/src/components/shell/platform-shell.tsx",
+      "apps/web/src/app/(platform)/commitpass-editor.css",
+      "apps/web/src/app/(platform)/commitpass-events.css",
+      "apps/web/src/app/(platform)/commitpass-shell.css"
+    ],
+    "limits": [
+      "USDC registration, pass issuance, attendance, settlement, claim and Earn not enabled by the frozen mainnet release",
+      "Cover is local presentation artwork, not persisted by the frozen event ABI",
+      "No mainnet transaction was signed for this UI adaptation"
+    ]
+  }
 }

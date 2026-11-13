@@ -1,0 +1,35 @@
+﻿/* Adapted from CommitPass Monad workspace.css and editor.css create editor. */
+.commitpass-create { max-width: 1024px; padding-top: 40px; margin: 0 auto; }
+.commitpass-create .create-grid { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 32px; align-items: start; }
+.commitpass-create .create-fields { min-width: 0; }
+.commitpass-create .create-context { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 16px; color: var(--muted); font-size: 12px; }
+.commitpass-create .create-context span { display: inline-flex; align-items: center; gap: 7px; }
+.commitpass-create .event-name-input { width: 100%; padding: 0 0 24px; border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 44px; font-weight: 550; line-height: 1.2; }
+.commitpass-create .event-name-input::placeholder { color: #aaa9a1; }
+.commitpass-create .event-cover { border-radius: 14px; overflow: hidden; }
+.commitpass-create .cover-note { color: var(--muted); font-size: 12px; line-height: 1.5; }
+.commitpass-create .create-schedule { padding: 16px; border: 1px solid var(--line); border-radius: 12px; }
+.commitpass-create .create-date-rows { display: grid; gap: 12px; }
+.commitpass-create .create-date-row { display: grid; grid-template-columns: 10px minmax(135px, 1fr) minmax(0, 1.3fr); gap: 10px; align-items: center; font-size: 13px; }
+.commitpass-create .schedule-dot { width: 9px; height: 9px; border: 2px solid var(--accent); border-radius: 50%; }
+.commitpass-create input:not(.event-name-input), .commitpass-create textarea { min-width: 0; width: 100%; border: 1px solid var(--line); border-radius: 8px; background: var(--white, #fff); color: var(--ink); padding: 9px 10px; font: inherit; }
+.commitpass-create .schedule-note { margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.commitpass-create .editor-row-trigger { display: flex; align-items: flex-start; gap: 14px; padding: 20px 0; border-bottom: 1px solid var(--line); }
+.commitpass-create .editor-row-trigger > svg { flex: none; margin-top: 3px; color: var(--muted); }
+.commitpass-create .editor-row-trigger > span { display: grid; gap: 8px; width: 100%; font-size: 14px; }
+.commitpass-create textarea { resize: vertical; }
+.commitpass-create .create-fields h2 { margin: 28px 0 12px; font-size: 16px; }
+.commitpass-create .create-options { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.commitpass-create .create-options label { display: grid; grid-template-columns: 20px 1fr 120px; gap: 12px; align-items: center; padding: 12px 16px; font-size: 14px; }
+.commitpass-create .create-options label + label { border-top: 1px solid var(--line); }
+.commitpass-create .create-options svg, .commitpass-create small { color: var(--muted); }
+.commitpass-create .create-advanced { margin: 20px 0; font-size: 13px; }
+.commitpass-create .create-advanced summary { cursor: pointer; color: var(--muted); }
+.commitpass-create .create-advanced label { display: grid; gap: 8px; margin-top: 12px; }
+.commitpass-create .create-release-notice { padding: 16px; border-radius: 10px; background: #f5eee5; font-size: 13px; line-height: 1.5; }
+.commitpass-create .create-release-notice p { margin: 5px 0 0; }
+.commitpass-create .create-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 20px 0; }
+.commitpass-create .create-actions p, .commitpass-create .create-feedback { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+.commitpass-create .lifecycle-card { margin-top: 20px; }
+@media (max-width: 760px) { .commitpass-create { padding-top: 20px; } .commitpass-create .create-grid { grid-template-columns: minmax(0, 1fr); gap: 22px; } .commitpass-create .create-cover-column { max-width: 340px; width: 100%; margin: 0 auto; } .commitpass-create .event-name-input { font-size: 36px; } }
+@media (max-width: 420px) { .commitpass-create .create-date-row { grid-template-columns: 10px 1fr; } .commitpass-create .create-date-row input { grid-column: 2; } .commitpass-create .create-options label { grid-template-columns: 20px 1fr 96px; } }

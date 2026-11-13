@@ -1,32 +1,63 @@
-"use client";
+﻿"use client";
+
 import { useEffect, useState } from "react";
+import { AlignLeft, CalendarDays, Globe2, MapPin, Ticket, Users } from "lucide-react";
 import { parseUnits } from "@/lib/money";
-import { RPC_URL } from "@/lib/config";
-import { eventRulesPreview } from "@/lib/mainnet-event-preview";
-import { MultiCreate } from "./multi-create";
-import { MainnetEventDesk } from "./mainnet-event-desk";
-import { MANUAL_TARGET, resolveManualTarget } from "@/lib/near/manual-target";
-import type { FactoryIdentity } from "@/lib/near/factory";
-import { FactoryProvision } from "./factory-provision";
+import { eventRulesPreview, type EventDraft } from "@/lib/mainnet-event-preview";
 import { useWallet } from "@/components/wallet/wallet-context";
+import { EventCover } from "./event-cover";
+import { MultiCreate } from "./multi-create";
+
+const initial: EventDraft = { event_id: "", title: "", location: "", rules_text: "", deposit: "", capacity: "5", reg_open: "", reg_close: "", checkin_open: "", checkin_close: "" };
 
 export function MainnetCreatePreview() {
   const wallet = useWallet();
+  const [fields, setFields] = useState<EventDraft>(initial);
+  const [rules, setRules] = useState<Record<string, unknown> | null>(null);
   const [notice, setNotice] = useState("");
-  const [fields, setFields] = useState({ event_id: "", title: "", location: "", rules_text: "", deposit: "", capacity: "5", reg_open: "", reg_close: "", checkin_open: "", checkin_close: "" });
-  const [selection, setSelection] = useState<{ child: string; identity: FactoryIdentity; manual: boolean } | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
-  useEffect(() => { setFields(previous=>previous.event_id?previous:{...previous,event_id:`event-${crypto.randomUUID().replaceAll("-","")}`}); }, []);
-  function change(key: keyof typeof fields, value: string) { setFields(previous => ({ ...previous, [key]: value })); setPreview(null); }
+  useEffect(() => { setFields(previous => previous.event_id ? previous : { ...previous, event_id: `event-${crypto.randomUUID().replaceAll("-", "")}` }); }, []);
+  function change(key: keyof EventDraft, value: string) {
+    setFields(previous => ({ ...previous, [key]: value }));
+    setRules(null);
+    setNotice("");
+  }
   function prepare() {
     const deposit = parseUnits(fields.deposit, 6);
     const result = deposit === null ? null : eventRulesPreview({ ...fields, deposit });
-    if (!result) { setNotice("Enter valid event details, a USDC deposit, capacity, and ordered times."); return; }
-    setNotice(""); setPreview(JSON.stringify(result, null, 2));
+    if (!result) { setRules(null); setNotice("Enter valid event details, a USDC deposit, capacity, and ordered times."); return; }
+    setRules(result.args.rules);
+    setNotice("Event rules are ready. Review the storage quote below before publishing.");
   }
-  return <><section className="lifecycle-card"><h2>Create an event</h2><p>Create an event on the shared contract with your connected NEAR wallet.</p><p>Event creation is live. USDC registration and Earn are not enabled in this release.</p>{!wallet.account&&<button className="button" onClick={()=>void wallet.connect()}>Connect NEAR wallet</button>}{wallet.account&&<p>Organizer: {wallet.account.accountId}</p>}<button className="button button--secondary" onClick={()=>{setSelection(null);setFields(previous=>({...previous,capacity:"5"}));setPreview(null);}}>Prepare shared event</button></section><details className="lifecycle-card"><summary>Legacy factory deployment</summary><FactoryProvision onReady={(attempt, identity) => setSelection({ child:attempt.child, identity, manual:false })} /></details><details className="lifecycle-card"><summary>Legacy allocated contract review</summary><p>This existing contract belongs to its original organizer and has a FullAccess key. It is a separate review path, not the general event-creation flow.</p><details><summary>Allocated contract access</summary><p>Organizer: {MANUAL_TARGET.organizer}</p><p>FullAccess key: {MANUAL_TARGET.publicKey}</p></details><button className="button button--secondary" onClick={() => void resolveManualTarget(null,RPC_URL).then(v => {setFields(previous=>({...previous,capacity:"1"}));setPreview(null);setSelection({child:v.contractId,manual:true,identity:{factory:"",factoryCodeSha256:"",factoryCodeHash:"",organizer:MANUAL_TARGET.organizer,canonicalFt:MANUAL_TARGET.canonicalFt,policy:MANUAL_TARGET.policy,provider:MANUAL_TARGET.provider,providerKind:"RHEA_MAINNET"}});setNotice("Legacy contract verified. This path remains closed until separately approved.");}).catch(e => setNotice(String(e)))}>Review allocated contract</button></details><section className="lifecycle-card"><h2>Prepare a mainnet event</h2><p>Review the event details, then approve the storage reservation with your connected wallet.</p>
-    {!wallet.account && <button className="button" onClick={() => void wallet.connect()}>Connect NEAR wallet</button>}
-    {wallet.account && <p>Connected: {wallet.account.accountId}</p>}
-    <div className="lifecycle-form-grid">{([ ["title", "Title"], ["location", "Location"], ["rules_text", "Rules"], ["deposit", "Deposit (USDC)"], ["capacity", "Capacity"], ["reg_open", "Registration opens"], ["reg_close", "Registration closes and cancellation cutoff"], ["checkin_open", "Check-in opens"], ["checkin_close", "Check-in closes"] ] as const).map(([key, label]) => <label key={key}>{label}<input value={fields[key]} type={key.includes("open") || key.includes("close") ? "datetime-local" : "text"} onChange={e => change(key, e.target.value)} /></label>)}</div>
-    <details><summary>Advanced event ID</summary><label>Event ID<input value={fields.event_id} onChange={e=>change("event_id",e.target.value)} /></label></details><p>The finalization deadline is 24 hours after check-in closes. The registration close time is also the cancellation cutoff.</p><button className="button" onClick={prepare}>Preview event rules</button>{preview && <><p>Deposit: {fields.deposit} USDC / Capacity: {fields.capacity}</p><details><summary>Advanced proof details</summary><pre style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{preview}</pre></details></>}{notice && <p role="status">{notice}</p>}</section><MultiCreate rules={preview ? JSON.parse(preview).args.rules : null} />{selection && <MainnetEventDesk selection={selection} rules={preview ? JSON.parse(preview).args.rules : null} />}</>;
+  return <div className="commitpass-create create-workspace">
+    <div className="create-grid">
+      <aside className="create-cover-column">
+        <EventCover title={fields.title} />
+        <p className="cover-note">Sample cover · presentation only. Cover artwork is not saved with your event.</p>
+      </aside>
+      <div className="create-fields">
+        <div className="create-context"><span><CalendarDays size={15} /> New event</span><span><Globe2 size={14} /> Public</span></div>
+        <label className="sr-only" htmlFor="create-event-title">Event name</label>
+        <input id="create-event-title" className="event-name-input" placeholder="Event name" value={fields.title} onChange={e => change("title", e.target.value)} />
+        <div className="create-schedule">
+          <div className="create-date-rows">
+            {([ ["reg_open", "Registration opens"], ["reg_close", "Registration closes"], ["checkin_open", "Check-in opens"], ["checkin_close", "Check-in closes"] ] as const).map(([key, label]) => <label className="create-date-row" key={key}><span className="schedule-dot" aria-hidden="true" /><span>{label}</span><input type="datetime-local" value={fields[key]} onChange={e => change(key, e.target.value)} /></label>)}
+          </div>
+          <p className="schedule-note">Times use your device's local time. Registration close is also the cancellation cutoff. Finalization is due 24 hours after check-in closes.</p>
+        </div>
+        <label className="create-location editor-row-trigger"><MapPin size={18} /><span><strong>Location</strong><input placeholder="Offline location or virtual link" value={fields.location} onChange={e => change("location", e.target.value)} /></span></label>
+        <label className="create-description editor-row-trigger"><AlignLeft size={18} /><span><strong>Event rules</strong><textarea placeholder="Describe the event and attendance rules" value={fields.rules_text} onChange={e => change("rules_text", e.target.value)} rows={3} /></span></label>
+        <h2>Event options</h2>
+        <div className="create-options">
+          <label><Ticket size={18} /><span>Commitment <small>USDC</small></span><input type="text" inputMode="decimal" placeholder="0.00" value={fields.deposit} onChange={e => change("deposit", e.target.value)} /></label>
+          <label><Users size={18} /><span>Capacity</span><input type="text" inputMode="numeric" value={fields.capacity} onChange={e => change("capacity", e.target.value)} /></label>
+        </div>
+        <details className="create-advanced"><summary>Advanced event ID</summary><label>Event ID<input value={fields.event_id} onChange={e => change("event_id", e.target.value)} /></label></details>
+        <div className="create-release-notice"><strong>CREATE-only release</strong><p>You can create an event on the shared NEAR contract. USDC registration and Earn are unavailable in this release.</p></div>
+        <div className="create-actions">{!wallet.account ? <button type="button" className="button" onClick={() => void wallet.connect()}>Connect NEAR wallet</button> : <p>Organizer: {wallet.account.accountId}</p>}<button type="button" className="button button--secondary" onClick={prepare}>Review event rules</button></div>
+        {notice && <p className="create-feedback" role="status">{notice}</p>}
+        {rules && <p className="create-feedback">Commitment: {fields.deposit} USDC · Capacity: {fields.capacity}</p>}
+        <MultiCreate rules={rules} />
+      </div>
+    </div>
+  </div>;
 }

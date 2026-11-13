@@ -1,12 +1,20 @@
 import type { ReactNode } from "react";
+import { DM_Sans, DM_Serif_Display } from "next/font/google";
 import { PlatformShell } from "@/components/shell/platform-shell";
 import { WalletProvider } from "@/components/wallet/wallet-context";
 import "./platform.css";
+import "./commitpass-editor.css";
+import "./commitpass-events.css";
+import "./commitpass-shell.css";
+
+// Match the user's CommitPass app typography without changing the landing page.
+const sans = DM_Sans({ subsets: ["latin"], variable: "--font-commitpass-sans", display: "swap" });
+const serif = DM_Serif_Display({ subsets: ["latin"], weight: "400", style: ["normal", "italic"], variable: "--font-commitpass-serif", display: "swap" });
 
 export default function PlatformLayout({ children }: { children: ReactNode }) {
   return (
-    <WalletProvider>
+    <div className={`${sans.variable} ${serif.variable}`}><WalletProvider>
       <PlatformShell>{children}</PlatformShell>
-    </WalletProvider>
+    </WalletProvider></div>
   );
 }
