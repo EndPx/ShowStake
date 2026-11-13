@@ -1,0 +1,33 @@
+   Compiling showstake-event-escrow-candidate v0.1.0 (/work/contracts/showstake/event-escrow-candidate)
+    Finished `test` profile [unoptimized] target(s) in 2.50s
+     Running unittests src.rs (/cache/target/debug/deps/showstake_event_escrow_candidate-1d619207b01782e9)
+
+running 26 tests
+test rhea_adapter::tests::asset_flags_fail_closed ... ok
+test rhea_adapter::tests::calls_are_fixed_and_one_yocto ... ok
+test rhea_adapter::tests::linked_withdraw_uses_checked_exact_inner_units ... ok
+test rhea_adapter::tests::position_uses_integer_floor_and_preserves_dust ... ok
+test rhea_adapter::tests::refuses_exposure_wrong_token_and_noncanonical_numbers ... ok
+test tests::failed_and_ambiguous_actions_do_not_duplicate_transfers ... ok
+test tests::failed_redemption_reconciles_before_retry ... ok
+test tests::five_two_atomic_and_two_nonconsecutive_attendees_pay_five_each ... ok
+test tests::linked_ambiguous_recovery_quarantines_cash_and_accepts_restored_value_with_new_shares ... ok
+test tests::linked_failed_or_malformed_receipt_and_donations_cannot_complete ... ok
+test tests::linked_false_requires_restored_value_not_original_shares ... ok
+test tests::linked_full_redeem_requires_organizer ... ok
+test tests::linked_lost_supply_preflight_can_be_reset_after_timeout ... ok
+test tests::linked_missing_callback_cannot_enter_recovery ... ok
+test tests::linked_partial_preflight_is_bounded_and_stale_reads_cannot_dispatch ... ok
+test tests::linked_refund_permissionless_full_retry_and_ambiguous_cooldown ... ok
+test tests::linked_repeated_returns_conserve_value_and_exclude_dust_and_donations ... ok
+test tests::linked_supply_expiry_and_async_phase_change_do_not_dispatch ... ok
+test tests::linked_supply_waits_until_event_start_without_mutation ... ok
+test tests::mainnet_initializes_paused_with_zero_cap_and_fixed_identity ... ok
+test tests::mainnet_rejects_arbitrary_finalization_deadline - should panic ... ok
+test tests::mock_supply_and_redeem_require_receipt_and_reconciled_balances ... ok
+test tests::nonconsecutive_attendees_receive_deterministic_remainder ... ok
+test tests::rhea_malformed_action_result_never_retries_and_short_position_never_supplies ... ok
+test tests::rhea_preflight_retry_invalidates_stale_and_refund_requires_terminal_proof ... ok
+test tests::rhea_unauthorized_preflight_retry_cannot_invalidate_attempt ... ok
+
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.69s

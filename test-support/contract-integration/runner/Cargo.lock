@@ -2081,6 +2081,7 @@ dependencies = [
  "borsh",
  "near-api",
  "near-sandbox",
+ "reqwest",
  "serde",
  "serde_json",
  "tokio",

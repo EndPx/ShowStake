@@ -8,6 +8,9 @@ license = "MIT"
 
 [features]
 mainnet-review = []
+# Clean instances only: existing pending redemption state has different meaning.
+# Candidate policy; provider source equivalence and receipt behavior remain unaccepted.
+rhea-linked-withdraw-review = ["mainnet-review"]
 
 [lib]
 path = "src.rs"

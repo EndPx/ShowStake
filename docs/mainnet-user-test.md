@@ -1,5 +1,7 @@
 # Mainnet user test handoff
 
+Latest update: the hosted frontend is `https://showstake.vercel.app`, with HTTPS API on `https://srv1330754.hstgr.cloud`. The reviewed API identity release f21e699 is live. The new linked-withdraw leaf and public global factory now pass real local Sandbox tests using the public Rhea binary, including controlled failure and retry, but are not publicly deployed. See `mainnet-factory-v2-plan.md` for the exact pending deployment budget and `evidence/mainnet-feature-unlock-20261113/acceptance.json` for artifact identities and test scope. The earlier detached-withdrawal source limitation below describes the preserved old manual escrow, not the new linked candidate. Mainnet liquidity and complete browser-wallet financial acceptance remain NOT_RUN; new controls stay gated until their corresponding deployment, provider acceptance and scoped authorization exist.
+
 Updated 2026-11-13. This is a staged review build, not acceptance of funded event Earn. The mainnet account `showstake-mainnet-escrow-endpx-2026.near` is deployed with code hash `CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os`, paused, cap zero and no event at the stage-1 verification. No participant USDC or provider calls were authorized or executed in stage 1.
 
 ## Local website review

@@ -40,6 +40,15 @@ pub fn withdraw_all_call(network: &str, provider: &str, token: &str, asset: &Ass
     if !asset.can_withdraw { return Err("withdraw disabled"); }
     Ok(Call { receiver: PROVIDER, method: "execute", args: args(json!({"actions":[{"Withdraw":{"token_id":USDC}}]})), deposit_yocto: ONE_YOCTO })
 }
+/// Candidate ABI; amount is whole FT atomic units, never a full-balance sentinel.
+#[cfg(feature = "rhea-linked-withdraw-review")]
+pub fn linked_withdraw_call(network: &str, provider: &str, token: &str, amount: u128, asset: &Asset) -> Result<Call, &'static str> {
+    check_network(network,provider,token)?;
+    if amount == 0 || !asset.can_withdraw { return Err("withdraw disabled or zero"); }
+    let scale = 10u128.checked_pow(asset.extra_decimals.into()).ok_or("decimal scale overflow")?;
+    let inner = amount.checked_mul(scale).ok_or("amount overflow")?;
+    Ok(Call { receiver: PROVIDER, method: "simple_withdraw", args: args(json!({"token_id":USDC,"amount_with_inner_decimal":inner.to_string(),"recipient_id":null})), deposit_yocto: ONE_YOCTO })
+}
 pub fn decode_asset(network: &str, provider: &str, token: &str, data: &[u8]) -> Result<Asset, &'static str> {
     check_network(network,provider,token)?;
     let v: Value = serde_json::from_slice(data).map_err(|_| "invalid asset JSON")?;
@@ -86,6 +95,14 @@ mod tests {
     #[test] fn position_uses_integer_floor_and_preserves_dust() {
         let d=account(json!([{"token_id":USDC,"shares":"9","balance":"1000000000001"}]),json!([]),json!([]));
         assert_eq!(decode_position("mainnet",PROVIDER,USDC,"escrow.near",&d,&asset()).unwrap(),Position{shares:9,internal_balance:1000000000001,token_atomics_floor:1,internal_remainder:1});
+    }
+    #[cfg(feature = "rhea-linked-withdraw-review")]
+    #[test] fn linked_withdraw_uses_checked_exact_inner_units() {
+        let c=linked_withdraw_call("mainnet",PROVIDER,USDC,42,&asset()).unwrap();
+        assert_eq!(c.method,"simple_withdraw"); assert_eq!(c.deposit_yocto,1);
+        assert_eq!(serde_json::from_slice::<Value>(&c.args).unwrap(),json!({"token_id":USDC,"amount_with_inner_decimal":"42000000000000","recipient_id":null}));
+        assert!(linked_withdraw_call("mainnet",PROVIDER,USDC,0,&asset()).is_err());
+        assert!(linked_withdraw_call("mainnet",PROVIDER,USDC,u128::MAX,&asset()).is_err());
     }
     #[test] fn refuses_exposure_wrong_token_and_noncanonical_numbers() {
         for (s,b,c) in [(json!([]),json!([{}]),json!([])),(json!([]),json!([]),json!([{}])),(json!([{"token_id":"evil.near","shares":"1","balance":"1"}]),json!([]),json!([])),(json!([{"token_id":USDC,"shares":"01","balance":"1"}]),json!([]),json!([])),(json!([{},{}]),json!([]),json!([]))] { assert!(decode_position("mainnet",PROVIDER,USDC,"escrow.near",&account(s,b,c),&asset()).is_err()); }

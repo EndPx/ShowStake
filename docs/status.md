@@ -1,5 +1,17 @@
 # ShowStake status
 
+## Feature-unlock release checkpoint — 2026-11-13, after API f21e699
+
+The linked-withdraw candidate now uses `simple_withdraw` and a private terminal bool callback. The final new-instance artifact is 235060 bytes / `49a591ba26a4a23d05c01cc343779f1c66aa5da0384e3a663a37f4e5edb59b70`; the global schema-2 factory is 200691 bytes / `3819343c5024a4e6f290d8d45cc31c71f18ab35302e9b1783823fc3038ddf742`. Neither new artifact has been deployed publicly. The old manual escrow remains unchanged.
+
+Codex accepted PASS_LOCAL: linked unit26, legacy18, default5, storage-budget1, factory29, worker fixtures90 and real PostgreSQL91. Actual public Rhea 0.16.2 Wasm was deployed into a clean local Sandbox with Mock USDC: five deposits of2USDC, receiver-storage withdrawal failure with restored position, successful retry, two5USDC payouts, final escrow/provider balances0. Complete sanitized action/receipt graphs and before/after snapshots are in `docs/evidence/mainnet-feature-unlock-20261113/`. Frontend receipt helpers were checked against these actual graphs; this is not mainnet withdrawal liquidity evidence.
+
+Review fixes include timeout refunds without an organizer, a20-block public read-retry cooldown, no retry of a Dispatched unknown action, and supply phase/start/deadline rechecks immediately before asynchronous dispatch. The linked root layout changed; use fresh instances, no migration or silent upgrade.
+
+The reviewed private API identity change f21e699 was pushed and deployed to the existing VPS. HTTPS NEP-413 session, replay/origin/wallet binding denial, restart persistence and logout were reverified through Vercel with no financial transaction. The worker remains an observational canonical-history consumer; no cursor was jumped and no factory trust was enabled.
+
+Next financial action is explicitly proposed in `docs/mainnet-factory-v2-plan.md`: a new public factory account funded2.05NEAR, maximum total debit2.08NEAR, with no USDC/provider transaction. Scoped authorization and sufficient deployer funding are pending. Rhea is SELECTED_FOR_HACKATHON, not TECHNICALLY_ACCEPTED; actual mainnet USDC return, source/audit relationship and funded browser lifecycle remain open. Prior checkpoints below are historical.
+
 ## VPS backend checkpoint — 2026-11-13
 
 API and PostgreSQL are live at `https://srv1330754.hstgr.cloud`, connected through

@@ -6,8 +6,11 @@ use showstake_event_escrow_candidate::{EventEscrowContract, EventRules};
 fn id(value: &str) -> AccountId { value.parse().unwrap() }
 
 #[test]
-fn bounded_metadata_and_registration_storage_for_pinned_leaf() {
+fn bounded_metadata_and_registration_storage_by_profile() {
     for mainnet in [false, true] {
+        // The linked policy identifier adds 16 bytes to each mainnet entry.
+        // This candidate bound does not change the frozen legacy leaf's bound.
+        let registration_budget = if cfg!(feature = "rhea-linked-withdraw-review") && mainnet { 2320 } else { 2304 };
         let host = id(&"a".repeat(64));
         let escrow = id(if mainnet { "escrow.near" } else { "escrow.testnet" });
         let ft = id(if mainnet { "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1" } else { "usdc.testnet" });
@@ -43,8 +46,8 @@ fn bounded_metadata_and_registration_storage_for_pinned_leaf() {
                 near_sdk::PromiseOrValue::Value(U128(0))));
             let growth = env::storage_usage()-storage;
             max_entry = max_entry.max(growth);
-            assert!(growth <= 2304, "registration {n} consumed {growth} bytes");
+            assert!(growth <= registration_budget, "registration {n} consumed {growth} bytes (profile budget {registration_budget})");
         }
-        println!("mainnet={mainnet}, event_growth={event_growth}, max_registration_bytes={max_entry}");
+        println!("mainnet={mainnet}, linked_feature={}, event_growth={event_growth}, max_registration_bytes={max_entry}, registration_budget={registration_budget}", cfg!(feature = "rhea-linked-withdraw-review"));
     }
 }

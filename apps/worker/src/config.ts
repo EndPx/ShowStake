@@ -68,7 +68,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): WorkerConfig {
   const organizer = env.WORKER_ORGANIZER ?? '';
   const policyVersion = env.WORKER_POLICY_VERSION ?? '';
   const candidateProviderAccount = env.WORKER_CANDIDATE_PROVIDER_ACCOUNT ?? '';
-  if (['showstake-native-usdc-event/1','showstake-native-usdc-rhea-review/1'].includes(policyVersion) && !candidateProviderAccount) throw new Error('WORKER_CANDIDATE_PROVIDER_ACCOUNT is required');
+  if (['showstake-native-usdc-event/1','showstake-native-usdc-rhea-review/1','showstake-native-usdc-rhea-linked-withdraw-review/2'].includes(policyVersion) && !candidateProviderAccount) throw new Error('WORKER_CANDIDATE_PROVIDER_ACCOUNT is required');
   if (!contractId) throw new Error('WORKER_CONTRACT_ID is required (allowlisted event contract)');
   if (!ftContractId) throw new Error('WORKER_FT_CONTRACT_ID is required (canonical FT)');
   if (!codeHash) throw new Error('WORKER_CODE_HASH is required (base58 contract code hash)');

@@ -5,8 +5,13 @@ import { validateAccountIdShape } from '@showstake/domain';
 // This adapter is tied to the reviewed testnet candidate bytecode, not merely its self-reported ABI.
 export const CANDIDATE_HASH = 'de868ccb9d3dbf64409b392ba7e58a38678321bef803d1d0779a3d8abec791ae';
 export const MAINNET_CANDIDATE_HASH = '03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2';
-export const isMainnetCandidate = (d: DeploymentAllowlist): boolean => d.environment === 'mainnet' && d.network === 'mainnet' && (d.contractId === 'showstake-mainnet-escrow-endpx-2026.near' || (!!d.verifiedFactoryId && /^[a-f0-9]{16}$/.test(d.contractId.slice(0,16)) && d.contractId === d.contractId.slice(0,16)+'.'+d.verifiedFactoryId)) && d.ftContractId === '17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1' && d.ftDecimals === 6 && d.codeHash === 'CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os' && d.wasmSha256 === MAINNET_CANDIDATE_HASH && d.policyVersion === 'showstake-native-usdc-rhea-review/1' && d.candidateProviderAccount === 'contract.main.burrow.near';
-export const isCandidate = (d: DeploymentAllowlist): boolean => (d.environment === 'testnet' && d.network === 'testnet' && [CANDIDATE_HASH,MAINNET_CANDIDATE_HASH].includes(d.wasmSha256) && d.policyVersion === 'showstake-native-usdc-event/1' && !!d.candidateProviderAccount && d.candidateProviderAccount.endsWith('.testnet') && d.ftContractId.endsWith('.testnet')) || isMainnetCandidate(d);
+export const LINKED_CANDIDATE_HASH='49a591ba26a4a23d05c01cc343779f1c66aa5da0384e3a663a37f4e5edb59b70';
+export const LINKED_CODE_HASH='5xVC9cyZDeCJXpS8rhD4Hh3tNMBB4MNnvh5eYpW9y5Aw';
+export const LINKED_POLICY='showstake-native-usdc-rhea-linked-withdraw-review/2';
+const isFactoryChild=(d:DeploymentAllowlist)=>!!d.verifiedFactoryId&&/^[a-f0-9]{16}$/.test(d.contractId.slice(0,16))&&d.contractId===d.contractId.slice(0,16)+'.'+d.verifiedFactoryId;
+export const isLinkedCandidate=(d:DeploymentAllowlist):boolean=>d.environment==='mainnet'&&d.network==='mainnet'&&isFactoryChild(d)&&d.ftContractId==='17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1'&&d.ftDecimals===6&&d.codeHash===LINKED_CODE_HASH&&d.wasmSha256===LINKED_CANDIDATE_HASH&&d.policyVersion===LINKED_POLICY&&d.candidateProviderAccount==='contract.main.burrow.near';
+export const isMainnetCandidate = (d: DeploymentAllowlist): boolean => isLinkedCandidate(d)||(d.environment === 'mainnet' && d.network === 'mainnet' && (d.contractId === 'showstake-mainnet-escrow-endpx-2026.near' || isFactoryChild(d)) && d.ftContractId === '17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1' && d.ftDecimals === 6 && d.codeHash === 'CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os' && d.wasmSha256 === MAINNET_CANDIDATE_HASH && d.policyVersion === 'showstake-native-usdc-rhea-review/1' && d.candidateProviderAccount === 'contract.main.burrow.near');
+export const isCandidate = (d: DeploymentAllowlist): boolean => (d.environment === 'testnet' && d.network === 'testnet' && [CANDIDATE_HASH,MAINNET_CANDIDATE_HASH,LINKED_CANDIDATE_HASH].includes(d.wasmSha256) && d.policyVersion === 'showstake-native-usdc-event/1' && !!d.candidateProviderAccount && d.candidateProviderAccount.endsWith('.testnet') && d.ftContractId.endsWith('.testnet')) || isMainnetCandidate(d);
 function obj(v: unknown, keys: string[]): Record<string, unknown> {
   if (!v || typeof v !== 'object' || Array.isArray(v)) throw new Error('candidate view must be object');
   const o = v as Record<string, unknown>;
@@ -20,13 +25,14 @@ function account(v: unknown): string { const s = str(v); if (!validateAccountIdS
 const eventKeys = 'event_id title location rules_text phase earn_state earn_attempt earn_action_completed organizer canonical_ft policy_version deposit capacity reg_open reg_close checkin_open checkin_close cancel_cutoff finalize_deadline active_registrations total_registrations withdrawn_registrations rules_hash created_at accepted_principal redeemed_amount realized_yield yield_distributed'.split(' ');
 const regKeys = 'registration_id pass_id participant beneficiary commitment_id amount sequence attendance registration_status attendance_status claim claim_amount claim_attempt'.split(' ');
 const passKeys = 'pass_id event_id registration_id owner registration_status attendance_status policy_version'.split(' ');
-export interface CandidateEvent { rules: PublishRules; title: string; location: string; rulesText: string; count: number; accepted: string; realizedYield: string; allocatedYield: string; phase: string; earnState: string }
+export interface CandidateEvent { rules: PublishRules; title: string; location: string; rulesText: string; count: number; accepted: string; redeemed: string; realizedYield: string; allocatedYield: string; phase: string; earnState: string }
 export function parseCandidateEvent(raw: unknown, d: DeploymentAllowlist): CandidateEvent | null {
   if (raw === null) return null;
   const v = obj(raw, eventKeys);
   // Later phases need separate receipt-driven payout reconciliation; stop before stale rights can be exposed.
   if (!['RegistrationOpen', 'RegistrationClosed', 'AttendanceFinalized', 'Settled', ...(isMainnetCandidate(d) ? ['Cancelled','RefundOnly'] : [])].includes(String(v.phase))) throw new Error(`candidate phase not supported: ${String(v.phase)}`);
   if (!['NotStarted','SupplyPending','Supplied','RedeemPending','Redeemed'].includes(String(v.earn_state))) throw new Error('candidate unknown earn state');
+  if(v.phase==='Settled'&&v.earn_state!=='Redeemed')throw new Error('candidate settlement before redemption');
   num(v.earn_attempt); if (typeof v.earn_action_completed !== 'boolean') throw new Error('candidate invalid earn action');
   const title=str(v.title), location=str(v.location), rulesText=str(v.rules_text); num(v.created_at);
   if (Buffer.byteLength(title)>256 || Buffer.byteLength(location)>512 || Buffer.byteLength(rulesText)>8192) throw new Error('candidate metadata too large');
@@ -43,7 +49,7 @@ export function parseCandidateEvent(raw: unknown, d: DeploymentAllowlist): Candi
   if (capacity < 1 || capacity > 200 || count > capacity || v.active_registrations !== count || v.withdrawn_registrations !== 0 || BigInt(accepted) !== BigInt(deposit) * BigInt(count) || deposit === '0') throw new Error('candidate count or principal mismatch');
   const regOpenMs = num(v.reg_open), regCloseMs = num(v.reg_close), cancelCutoffMs = num(v.cancel_cutoff), checkinOpenMs = num(v.checkin_open), checkinCloseMs = num(v.checkin_close), finalizeDeadlineMs = num(v.finalize_deadline);
   if (!(regOpenMs < regCloseMs && cancelCutoffMs === regCloseMs && regCloseMs <= checkinOpenMs && checkinOpenMs < checkinCloseMs && checkinCloseMs < finalizeDeadlineMs)) throw new Error('candidate invalid timing');
-  return { title, location, rulesText, count, accepted, realizedYield, allocatedYield, phase: String(v.phase), earnState: String(v.earn_state), rules: { eventId: str(v.event_id), organizer, canonicalFt, policyVersion, deposit, capacity, regOpenMs, regCloseMs, cancelCutoffMs, checkinOpenMs, checkinCloseMs, finalizeDeadlineMs, rulesHash: '' } };
+  return { title, location, rulesText, count, accepted, redeemed:atomic(v.redeemed_amount), realizedYield, allocatedYield, phase: String(v.phase), earnState: String(v.earn_state), rules: { eventId: str(v.event_id), organizer, canonicalFt, policyVersion, deposit, capacity, regOpenMs, regCloseMs, cancelCutoffMs, checkinOpenMs, checkinCloseMs, finalizeDeadlineMs, rulesHash: '' } };
 }
 export type CandidateRegistration = CommitData & { attendance: string; claim: string; claimAmount: string };
 export function parseCandidateRegistration(raw: unknown, event: CandidateEvent, index: number): CandidateRegistration {
@@ -74,4 +80,19 @@ export function validateCandidateCoverage(event: CandidateEvent, registrations: 
   if (event.earnState === 'NotStarted' && balance < outstanding) throw new Error('candidate escrow balance below outstanding principal');
   if (event.earnState === 'Supplied' && position < outstanding) throw new Error('candidate provider position below outstanding principal');
   if (event.earnState === 'Redeemed' && balance < outstanding + BigInt(event.realizedYield) - BigInt(event.allocatedYield)) throw new Error('candidate redeemed escrow balance below outstanding principal and unallocated yield');
+}
+
+/** Observational coverage only; provider code, liquidity and terminal receipts are not accepted here. */
+export function validateLinkedCoverage(event:CandidateEvent,registrations:CandidateRegistration[],balanceRaw:unknown,positionRaw:unknown,assetRaw:unknown,contractId:string,tokenId:string):void {
+  const balance=BigInt(atomic(balanceRaw));
+  const paid=registrations.reduce((sum,r)=>sum+(r.claim==='Paid'||r.claim==='Pending'?BigInt(r.claimAmount):0n),0n);
+  const owed=BigInt(event.accepted)+BigInt(event.allocatedYield)-paid;if(owed<0n)throw new Error('candidate negative outstanding principal');
+  if(event.earnState==='NotStarted'||event.earnState==='Redeemed'){validateCandidateCoverage(event,registrations,balanceRaw,'0');return;}
+  if(!['Supplied','RedeemPending'].includes(event.earnState))return;
+  if(!assetRaw||typeof assetRaw!=='object'||Array.isArray(assetRaw))throw new Error('linked asset invalid');const asset=assetRaw as Record<string,unknown>, config=asset.config as Record<string,unknown>;
+  if(asset.token_id!==tokenId||!config||typeof config!=='object'||config.extra_decimals!==12)throw new Error('linked asset identity mismatch');
+  const p=positionRaw as Record<string,unknown>;if(!p||typeof p!=='object'||Array.isArray(p)||p.account_id!==contractId||!Array.isArray(p.supplied)||!Array.isArray(p.borrowed)||!Array.isArray(p.collateral)||p.borrowed.length||p.collateral.length||p.supplied.length>1)throw new Error('linked position invalid');
+  for(const key of ['positions','margin_positions','margin_debt'])if(p[key]!=null&&(!Array.isArray(p[key])||(p[key] as unknown[]).length))throw new Error('linked unsupported exposure');
+  let internal=0n;if(p.supplied.length){const x=p.supplied[0] as Record<string,unknown>;if(!x||typeof x!=='object'||x.token_id!==tokenId)throw new Error('linked supplied token mismatch');const shares=BigInt(atomic(x.shares));internal=BigInt(atomic(x.balance));if((shares===0n)!==(internal===0n))throw new Error('linked inconsistent position');}
+  if(balance<BigInt(event.redeemed)||balance*1000000000000n+internal<owed*1000000000000n)throw new Error('linked observed coverage insufficient');
 }

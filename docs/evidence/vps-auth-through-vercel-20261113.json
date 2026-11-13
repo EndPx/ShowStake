@@ -1,12 +1,12 @@
 {
   "classification": "PASS_LIVE",
   "scope": "Actual mainnet NEP413 offchain sign and HTTPS Vercel-to-VPS auth/session/replay/restart/revoke; no chain transaction, no browser-wallet signature claim",
-  "observedAt": "2026-11-13T04:34:46.642Z",
+  "observedAt": "2026-11-13T07:20:54.768Z",
   "frontend": "https://showstake.vercel.app",
   "api": "https://srv1330754.hstgr.cloud",
   "accountId": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5",
   "network": "mainnet",
-  "messageHash": "68d945b79bb9099286f9dc9be7956f39e1bec30e005c6ece1ef4864ec5c5744c",
+  "messageHash": "f8eee71ca4b0ec0f4a05ac22a09a57f315a09bdfbac3310ac169e244f3762333",
   "checks": [
     {
       "name": "real_mainnet_NEP413_through_Vercel",

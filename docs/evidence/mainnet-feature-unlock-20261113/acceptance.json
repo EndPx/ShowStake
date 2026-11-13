@@ -1,0 +1,122 @@
+{
+  "classification": "PASS_LOCAL",
+  "observedAt": "2026-11-13T07:27:19.259Z",
+  "reviewer": "Codex",
+  "scope": "Source and actual-Wasm Sandbox acceptance; fresh clean provider state and Mock USDC, not public mainnet liquidity",
+  "sourceSha256": {
+    "contracts/showstake/event-escrow-candidate/Cargo.toml": "9600e9b218411551662c0415ec8d0dcc373d13631d04a1cf85b5a07cd9f7878a",
+    "contracts/showstake/event-escrow-candidate/src.rs": "d6fb195ce87fbae9707e3816275aa0f43312929eb8f8968adbcf67bf9d38e32d",
+    "contracts/showstake/event-escrow-candidate/rhea_adapter.rs": "79c1069c5aba04afb245b7ddd4866253e623c4469278a75bd87e2a5af0af8805",
+    "contracts/showstake/event-escrow-candidate/tests/storage_budget.rs": "3cbe820dbd51de02d009aef26a5076a7afe4cd1b62069771a5b0a4d73d46a8d4",
+    "contracts/factory/src/lib.rs": "764583551090a0c0f537e3f0955a99472a7340102e7f3ea2a5c8a304cef9a724",
+    "contracts/factory/tests/test_factory.rs": "bc646890cd0fcfcc9d5731b7917dd39b919175286f8199f63fcf2158ab81d860",
+    "test-support/contract-integration/runner/src/bin/factory_global_smoke.rs": "b2a44055c070d1ddf067aad6a36d655c2569cdf218935fcaa693404cf4c2b620",
+    "test-support/contract-integration/runner/src/bin/rhea_event_cycle.rs": "2b8ce3f5a00cef1265fa03c0c0a70f023c1fb1a1d30552fe38fa788d6c2511ba",
+    "test-support/contract-integration/runner/src/bin/rhea_provider_probe.rs": "1970caac263a96a3c3ef8ed5de29c0fc3f3006ab1c8f7f2281fa85c8a3fc919f"
+  },
+  "artifacts": [
+    {
+      "path": "test-support/contract-integration/wasm/showstake-linked-withdraw-candidate-v3.wasm",
+      "sha256": "49a591ba26a4a23d05c01cc343779f1c66aa5da0384e3a663a37f4e5edb59b70",
+      "bytes": 235060
+    },
+    {
+      "path": "test-support/contract-integration/wasm/showstake-factory-global-v3.wasm",
+      "sha256": "3819343c5024a4e6f290d8d45cc31c71f18ab35302e9b1783823fc3038ddf742",
+      "bytes": 200691
+    }
+  ],
+  "tests": {
+    "linkedUnit": 26,
+    "legacyUnit": 18,
+    "defaultUnit": 5,
+    "storageBudget": 1,
+    "factoryUnit": 29,
+    "actualProviderBinaryCycle": true,
+    "globalReadyTwoOrganizers": true,
+    "metadataMaxBytes": {
+      "eventId": 128,
+      "title": 256,
+      "location": 512,
+      "rulesText": 8192
+    },
+    "registrationReserveBytes": 2320
+  },
+  "proof": {
+    "rheaWasmSha256": "4fd64e59a0466cf3392ff1914959c59c7c086ed82300571c6e8fc89d9f7dede1",
+    "rheaVersion": "0.16.2",
+    "sandboxBinarySha256": "797b9d7a9a23907048d68a427e86a55c94f1de232dbfb8b8a1eec09ecef3bf13",
+    "ftFixtureSha256": "d1c7d009a2c49bee5ad4997fe7e3114899fa667a06876fb6e435d9a72fffb195",
+    "mockUsdcDecimals": 6,
+    "principalAtomic": "10000000",
+    "attendeePayoutsAtomic": [
+      "5000000",
+      "5000000"
+    ],
+    "noShowPayoutsAtomic": [
+      "0",
+      "0",
+      "0"
+    ],
+    "finalEscrowAtomic": "0",
+    "finalProviderAtomic": "0",
+    "controlledReceiverStorageFailure": true,
+    "failedProviderBool": false,
+    "successfulRetryProviderBool": true,
+    "rawReceiptGraphs": true,
+    "financialStatePatched": false,
+    "localSyntheticEscrowFullAccessKey": true,
+    "productionKeylessChildCannotUnregisterStorage": true
+  },
+  "fixes": [
+    "Private linked simple_withdraw bool callback binds cumulative redeemed amount to exact attempt",
+    "Donations and fractional dust excluded from allocations",
+    "Public full refund redemption and bounded 20-block read retry/recovery when organizer absent",
+    "Supply preflight rechecks phase/start/deadline before dispatch",
+    "No retry while Dispatched or callback outcome unknown",
+    "Exact global Ready-only factory index and caller-funded storage reserve",
+    "Measured 300 Tgas provisioning; lower-gas failures preserved outside accepted run"
+  ],
+  "limits": [
+    "Fresh instance only; linked layout adds retry_after_block and has no migration",
+    "Local cloned deployment cannot prove mainnet liquidity or authority/audit equivalence",
+    "Lost action callback in Dispatched remains fail-closed; no unsafe recovery",
+    "Actual funded mainnet supply/partial/full withdrawal and browser lifecycle NOT_RUN",
+    "Public factory NOT_DEPLOYED; no operator trust enabled",
+    "Rhea SELECTED_FOR_HACKATHON; TECHNICALLY_ACCEPTED=false"
+  ],
+  "mainnetFinancialTransactions": 0,
+  "commands": [
+    "cargo +1.99.1 test --locked --offline --lib --features rhea-linked-withdraw-review",
+    "cargo +1.99.1 test --locked --offline --lib --features mainnet-review",
+    "cargo +1.99.1 test --locked --offline --lib",
+    "cargo +1.99.1 test --locked --offline --test storage_budget --features rhea-linked-withdraw-review -- --nocapture",
+    "cargo +1.99.1 build --locked --offline --lib --target wasm32-unknown-unknown --release --features rhea-linked-withdraw-review",
+    "wasm-opt <leaf> -Oz -o <artifact>",
+    "cargo +1.99.1 test --locked --offline --test test_factory",
+    "cargo +1.99.1 build --locked --offline --target wasm32-unknown-unknown --release",
+    "wasm-opt <factory> -Oz -o <artifact>",
+    "cargo +1.99.1 build --locked --offline --bin rhea_event_cycle --bin factory_global_smoke",
+    "OUTPUT_DIR=<out> RHEA_WASM=<public Rhea code> FT_WASM=<frozen Mock FT> LINKED_WASM=<49a leaf> rhea_event_cycle",
+    "SHOWSTAKE_WASM=<49a leaf> FACTORY_WASM=<381934 factory> factory_global_smoke"
+  ],
+  "executionEnvironment": {
+    "testLocation": "Existing VPS, isolated resource-limited Docker with no wallet credentials/host ports; no production DB used",
+    "rust": "1.99.1",
+    "optimizer": "Binaryen 120",
+    "runtime": "Ubuntu 24.04 + NEAR Sandbox 2.14.0",
+    "publicRheaUsedWith": "fresh local mock-only state, initialized through normal methods"
+  },
+  "sourceSnapshotNote": "sourceSha256 hashes the exact Windows working-tree bytes archived for Linux build; gitBlobSha256 hashes staged repository LF content. Only terminal blank lines trimmed from copied test logs; raw originals retained in isolated VPS output directories.",
+  "gitBlobSha256": {
+    "contracts/showstake/event-escrow-candidate/Cargo.toml": "9600e9b218411551662c0415ec8d0dcc373d13631d04a1cf85b5a07cd9f7878a",
+    "contracts/showstake/event-escrow-candidate/src.rs": "15f260cccbd8b4093af52ce0033f15828e3602ecbd689d0cda4fde593d183b72",
+    "contracts/showstake/event-escrow-candidate/rhea_adapter.rs": "79c1069c5aba04afb245b7ddd4866253e623c4469278a75bd87e2a5af0af8805",
+    "contracts/showstake/event-escrow-candidate/tests/storage_budget.rs": "3cbe820dbd51de02d009aef26a5076a7afe4cd1b62069771a5b0a4d73d46a8d4",
+    "contracts/factory/src/lib.rs": "764583551090a0c0f537e3f0955a99472a7340102e7f3ea2a5c8a304cef9a724",
+    "contracts/factory/tests/test_factory.rs": "bc646890cd0fcfcc9d5731b7917dd39b919175286f8199f63fcf2158ab81d860",
+    "test-support/contract-integration/runner/src/bin/factory_global_smoke.rs": "00fbb3f3ebb1044ef48a9cea9c4f2eb85dc965b005660d6acd594addfe2f78a4",
+    "test-support/contract-integration/runner/src/bin/rhea_event_cycle.rs": "2b8ce3f5a00cef1265fa03c0c0a70f023c1fb1a1d30552fe38fa788d6c2511ba",
+    "test-support/contract-integration/runner/src/bin/rhea_provider_probe.rs": "1970caac263a96a3c3ef8ed5de29c0fc3f3006ab1c8f7f2281fa85c8a3fc919f"
+  }
+}

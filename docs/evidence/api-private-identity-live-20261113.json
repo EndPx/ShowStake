@@ -1,0 +1,66 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "Reviewed API identity DTO release and live offchain HTTPS session proof only; no blockchain financial transaction",
+  "observedAt": "2026-11-13T07:29:14.938Z",
+  "sourceCommit": "f21e699",
+  "backendRelease": "/opt/showstake/releases/f21e699",
+  "archiveSha256": "343f02c27d330786e6c3cfadaec18dc6a4d5c05cee2a6a37f9dcb31ee7952fb0",
+  "frontend": "https://showstake.vercel.app",
+  "api": "https://srv1330754.hstgr.cloud",
+  "servicesActive": [
+    "showstake-api",
+    "showstake-worker"
+  ],
+  "apiHealth": {
+    "status": "ok",
+    "db": "up"
+  },
+  "authChecks": [
+    {
+      "name": "real_mainnet_NEP413_through_Vercel",
+      "status": 200,
+      "cookie": {
+        "secure": true,
+        "httpOnly": true,
+        "sameSite": "lax",
+        "hostOnly": true
+      }
+    },
+    {
+      "name": "verified_session",
+      "status": 200
+    },
+    {
+      "name": "nonce_replay_denied",
+      "status": 401
+    },
+    {
+      "name": "foreign_origin_denied",
+      "status": 403
+    },
+    {
+      "name": "wallet_binding_mismatch_denied",
+      "status": 401
+    },
+    {
+      "name": "session_survives_API_restart",
+      "status": 200
+    },
+    {
+      "name": "logout_and_revocation",
+      "logout": 200,
+      "revoked": 401
+    }
+  ],
+  "readiness": {
+    "paused": true,
+    "cap": "0",
+    "eventPresent": false,
+    "signingAuthority": false
+  },
+  "financialTransactions": 0,
+  "noSchemaChanges": true,
+  "workerRestarted": false,
+  "secretsRecorded": false,
+  "firstBuildAttempt": "offline cache missing public near-connect tarball; production untouched; frozen-lockfile online install/build succeeded"
+}

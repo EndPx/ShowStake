@@ -16,6 +16,7 @@
 // lower height, then retry) plus same-height overlap exactly-once.
 import { candidateDbTest } from './candidate-db.mjs';
 import { factoryDbTest } from './factory-db.mjs';
+import { linkedDbTest } from './linked-db.mjs';
 import { writeFile, mkdir } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -585,6 +586,7 @@ async function main() {
 
     await candidateDbTest({client, pool, canonical, registerBlock, check});
     await factoryDbTest({client, pool, check});
+    await linkedDbTest({client, pool, canonical, registerBlock, check});
     const failed = results.filter((r) => !r.ok);
     const summary = {
       id: 'worker-increment-db',

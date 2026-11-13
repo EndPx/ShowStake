@@ -10,7 +10,7 @@
 //!     `new(organizer = original caller)`, all in one child receipt,
 //!   * a private factory callback that marks the registry row `Ready` only on
 //!     success, and refunds the child funding exactly once on failure,
-//!   * caller-funded measured factory registry growth in exact yocto,
+//!   * caller-funded measured registry growth and prepaid global-index reserve,
 //!   * replay/idempotency per (organizer, nonce) and a bounded permissionless
 //!     recovery probe for a lost callback,
 //!   * native-only accounting; no FT interface, no event/pass/seat/claim.
@@ -25,8 +25,8 @@
 //! Leaf bytes are supplied per call and checked against the pinned candidate hash.
 //! The leaf is a review candidate, not a deployment or provider acceptance.
 
-use near_sdk::collections::LookupMap;
-use near_sdk::json_types::{U128, Base64VecU8};
+use near_sdk::collections::{LookupMap, Vector};
+use near_sdk::json_types::{Base64VecU8, U128};
 use near_sdk::{
     env, near, require, AccountId, Gas, NearToken, PanicOnDefault, Promise, PromiseOrValue,
 };
@@ -34,15 +34,16 @@ use serde::Deserialize;
 
 /// Factory policy identity. Distinct from the leaf identity; a factory built
 /// from this source must never be labelled with another rule set.
-pub const FACTORY_POLICY_IDENTITY: &str = "showstake-factory-d039/1";
+pub const FACTORY_POLICY_IDENTITY: &str = "showstake-factory-d039-global-ready/2";
 
 /// The only leaf policy identity accepted by this factory generation.
 pub const LEAF_POLICY_IDENTITY: &str = "showstake-native-usdc-event/1";
-pub const MAINNET_LEAF_POLICY_IDENTITY: &str = "showstake-native-usdc-rhea-review/1";
+pub const MAINNET_LEAF_POLICY_IDENTITY: &str =
+    "showstake-native-usdc-rhea-linked-withdraw-review/2";
 
 /// Factory state/schema version. No migration exists; a new layout is a new
 /// factory deployment.
-pub const SCHEMA_VERSION: u32 = 1;
+pub const SCHEMA_VERSION: u32 = 2;
 
 /// Child ID = 8 digest bytes (16 lowercase hex chars) + "." + parent.
 pub const CHILD_ID_HEX_LEN: usize = 16;
@@ -75,9 +76,10 @@ pub const CHILD_RECEIPT_GAS_TGAS: u64 = 60;
 /// one refund transfer).
 pub const PROVISION_CALLBACK_GAS_TGAS: u64 = 25;
 
-/// Enforced minimum prepaid gas for `provision`. Child (60) + callback (25) +
-/// method headroom (35).
-pub const MIN_PROVISION_GAS_TGAS: u64 = 120;
+/// Enforced minimum prepaid gas for `provision`: 300 Tgas, including the
+/// large deploy action costs as well as child (60) and callback (25) gas.
+/// Sandbox verification for this profile is pending; unused gas is refunded.
+pub const MIN_PROVISION_GAS_TGAS: u64 = 300;
 
 /// Gas forwarded to the leaf `get_config` recovery probe.
 pub const RESOLVE_PROBE_GAS_TGAS: u64 = 20;
@@ -91,9 +93,15 @@ pub const MIN_RESOLVE_GAS_TGAS: u64 = 50;
 /// Bounded public list page size.
 pub const MAX_LIST_LIMIT: u32 = 20;
 
+/// Largest nonce exactly representable by JavaScript JSON number consumers.
+pub const MAX_SAFE_REQUEST_NONCE: u64 = 9_007_199_254_740_991;
+
 /// Review candidate leaf: bytes are supplied by the caller and checked on-chain.
-pub const LEAF_WASM_LEN: usize = 224939;
-pub const LEAF_SHA256: [u8; 32] = [0x03,0x07,0x6c,0x4a,0x94,0x96,0xe8,0xae,0x1e,0x6a,0xf6,0x8c,0x79,0x17,0x52,0xd4,0xa7,0x22,0x05,0x97,0x94,0x2e,0xff,0xd0,0xc3,0xa1,0x83,0x9a,0x25,0x2b,0xe9,0xd2];
+pub const LEAF_WASM_LEN: usize = 235060;
+pub const LEAF_SHA256: [u8; 32] = [
+    0x49, 0xa5, 0x91, 0xba, 0x26, 0xa4, 0xa2, 0x3d, 0x05, 0xc0, 0x1c, 0xc3, 0x43, 0x77, 0x9f, 0x1c,
+    0x66, 0xaa, 0x5d, 0xa0, 0x38, 0x4e, 0x3a, 0x66, 0x3a, 0x37, 0xf4, 0xe5, 0xed, 0xb5, 0x9b, 0x70,
+];
 const MAIN_USDC: &str = "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1";
 const MAIN_PROVIDER: &str = "contract.main.burrow.near";
 
@@ -109,7 +117,12 @@ pub enum ProvisionState {
 
 #[near(serializers = [borsh, json])]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum RefundState { None, InFlight, Claimable, Paid }
+pub enum RefundState {
+    None,
+    InFlight,
+    Claimable,
+    Paid,
+}
 
 /// Immutable factory configuration.
 #[near(serializers = [borsh])]
@@ -266,7 +279,9 @@ pub struct Contract {
     child_ids: LookupMap<AccountId, ChildRecord>,
     /// organizer -> number of registry rows/children.
     counts: LookupMap<AccountId, u64>,
-    /// Exact measured factory storage cost charged to callers.
+    /// Ready children in callback completion order, across all organizers.
+    ready_children: Vector<AccountId>,
+    /// Measured registry growth plus prepaid global-index reserves.
     registry_fees_collected: u128,
     /// Native child funding committed by callers.
     funding_committed: u128,
@@ -283,27 +298,52 @@ impl Contract {
     /// identity are immutable for the lifetime of this factory. The factory
     /// has no admin/owner parameter: no account can mutate this config.
     #[init]
-    pub fn new(canonical_ft: AccountId, network: String, policy_version: String, provider_account: AccountId, provider_kind: String) -> Self {
+    pub fn new(
+        canonical_ft: AccountId,
+        network: String,
+        policy_version: String,
+        provider_account: AccountId,
+        provider_kind: String,
+    ) -> Self {
         require!(
             valid_text(&network),
             "network must be 1..=64 printable ASCII chars"
         );
         require!(
-            policy_version == if network == "mainnet" { MAINNET_LEAF_POLICY_IDENTITY } else { LEAF_POLICY_IDENTITY },
+            policy_version
+                == if network == "mainnet" {
+                    MAINNET_LEAF_POLICY_IDENTITY
+                } else {
+                    LEAF_POLICY_IDENTITY
+                },
             "policy_version must equal the pinned leaf identity for this network"
         );
         let factory_account = env::current_account_id();
         require!(
-            factory_account.as_str().len() >= 2
-                && factory_account.as_str().len() <= PARENT_MAX_LEN,
+            factory_account.as_str().len() >= 2 && factory_account.as_str().len() <= PARENT_MAX_LEN,
             "factory account id length must be 2..=47 for bounded child ids"
         );
         match network.as_str() {
-            "mainnet" => require!(canonical_ft.as_str() == MAIN_USDC && provider_account.as_str() == MAIN_PROVIDER && provider_kind == "RHEA_MAINNET" && !factory_account.as_str().ends_with(".testnet"), "invalid mainnet identity"),
-            "testnet" => require!(factory_account.as_str().ends_with(".testnet") && canonical_ft.as_str().ends_with(".testnet") && provider_account.as_str().ends_with(".testnet") && provider_kind == "MOCK_TESTNET", "invalid testnet identity"),
+            "mainnet" => require!(
+                canonical_ft.as_str() == MAIN_USDC
+                    && provider_account.as_str() == MAIN_PROVIDER
+                    && provider_kind == "RHEA_MAINNET"
+                    && !factory_account.as_str().ends_with(".testnet"),
+                "invalid mainnet identity"
+            ),
+            "testnet" => require!(
+                factory_account.as_str().ends_with(".testnet")
+                    && canonical_ft.as_str().ends_with(".testnet")
+                    && provider_account.as_str().ends_with(".testnet")
+                    && provider_kind == "MOCK_TESTNET",
+                "invalid testnet identity"
+            ),
             _ => env::panic_str("unsupported network"),
         }
-        require!(canonical_ft != provider_account && provider_account != factory_account, "invalid provider");
+        require!(
+            canonical_ft != provider_account && provider_account != factory_account,
+            "invalid provider"
+        );
         let leaf_code_sha256 = LEAF_SHA256;
         Self {
             config: Config {
@@ -318,6 +358,7 @@ impl Contract {
             children: LookupMap::new(b"ch".to_vec()),
             child_ids: LookupMap::new(b"ci".to_vec()),
             counts: LookupMap::new(b"ct".to_vec()),
+            ready_children: Vector::new(b"gr".to_vec()),
             registry_fees_collected: 0,
             funding_committed: 0,
             funding_delivered: 0,
@@ -346,8 +387,8 @@ impl Contract {
 
     /// Exact next-request quote for `organizer`: deterministic child funding
     /// plus the serialized registry-row growth at the current storage price.
-    /// The measured fee in `provision` is authoritative; this view mirrors the
-    /// same row sizes so a well-formed call can attach exactly `total`.
+    /// The fee combines measured immediate growth and a future index reserve.
+    /// This view mirrors the row sizes so a call can attach exactly `total`.
     pub fn quote_provision(&self, organizer: AccountId) -> QuoteView {
         let index = self.counts.get(&organizer).unwrap_or(0);
         let child_id = self.child_id_for(&organizer, 0);
@@ -410,6 +451,35 @@ impl Contract {
         out
     }
 
+    /// Bounded global listing of Ready children in callback completion order.
+    pub fn list_all_children(&self, from_index: u64, limit: u32) -> Vec<ChildView> {
+        require!(
+            limit >= 1 && limit <= MAX_LIST_LIMIT,
+            "limit must be 1..=20"
+        );
+        let mut out = Vec::new();
+        let mut index = from_index;
+        while index < self.ready_children.len() && out.len() < limit as usize {
+            let child_id = self
+                .ready_children
+                .get(index)
+                .unwrap_or_else(|| env::panic_str("global registry index missing"));
+            let record = self
+                .child_ids
+                .get(&child_id)
+                .unwrap_or_else(|| env::panic_str("child registry row missing"));
+            require!(
+                record.state == ProvisionState::Ready,
+                "global registry row not ready"
+            );
+            out.push(self.child_view(&record));
+            index = index
+                .checked_add(1)
+                .unwrap_or_else(|| env::panic_str("registry index overflow"));
+        }
+        out
+    }
+
     /// Native-only accounting. `funding_held` is zero after every callback
     /// resolves; `account_balance` is the live factory balance. This contract
     /// has no FT entry point, so `ft_interface_present` is always false and
@@ -441,7 +511,7 @@ impl Contract {
     /// Provision one dedicated one-event leaf instance for the caller.
     ///
     /// The caller attaches at least the exact child storage funding plus the
-    /// measured registry growth. Excess native is returned in the same call.
+    /// measured registry growth and the global-index reserve.
     /// The child batch is atomic: create account, transfer child funding,
     /// deploy the frozen leaf Wasm and call `new` with the caller as the
     /// immutable organizer. The private callback is the only path that can
@@ -451,7 +521,15 @@ impl Contract {
     /// second child; attached native is returned in full. A replay of a
     /// `Pending` row traps; use `resolve_request` after the pending timeout.
     #[payable]
-    pub fn provision(&mut self, request_nonce: u64, code: Base64VecU8) -> PromiseOrValue<RequestView> {
+    pub fn provision(
+        &mut self,
+        request_nonce: u64,
+        code: Base64VecU8,
+    ) -> PromiseOrValue<RequestView> {
+        require!(
+            request_nonce <= MAX_SAFE_REQUEST_NONCE,
+            "request nonce exceeds safe JSON integer"
+        );
         let organizer = env::predecessor_account_id();
         let attached = env::attached_deposit().as_yoctonear();
         let key = (organizer.clone(), request_nonce);
@@ -464,7 +542,10 @@ impl Contract {
             return self.replay(record, attached);
         }
 
-        require!(code.0.len() == LEAF_WASM_LEN && env::sha256(&code.0).as_slice() == LEAF_SHA256, "invalid leaf code");
+        require!(
+            code.0.len() == LEAF_WASM_LEN && env::sha256(&code.0).as_slice() == LEAF_SHA256,
+            "invalid leaf code"
+        );
         require!(
             env::prepaid_gas() >= Gas::from_tgas(MIN_PROVISION_GAS_TGAS),
             "insufficient prepaid gas for provision"
@@ -474,7 +555,10 @@ impl Contract {
         let child_funding = self.child_funding(&organizer, &child_id);
         require!(child_funding > 0, "child funding must be positive");
         let index = self.counts.get(&organizer).unwrap_or(0);
-        let quoted=self.registry_growth_quote(&organizer,&child_id,index).checked_add(child_funding).expect("quote overflow");
+        let quoted = self
+            .registry_growth_quote(&organizer, &child_id, index)
+            .checked_add(child_funding)
+            .expect("quote overflow");
         require!(attached == quoted, "attach exact quote");
         let attempt: u32 = 1;
         let now = env::block_timestamp_ms();
@@ -482,7 +566,7 @@ impl Contract {
 
         // Measure the exact registry growth of this request: request row,
         // child row, per-organizer index row and (on the first request) the
-        // count row. The measured value, not the quote, is charged.
+        // count row. Add the prepaid future Ready-index entry to this measurement.
         let before = env::storage_usage();
         let placeholder = RequestRecord {
             organizer: organizer.clone(),
@@ -510,10 +594,7 @@ impl Contract {
         };
         self.requests.insert(&key, &placeholder);
         self.child_ids.insert(&child_id, &child_record);
-        self.children.insert(
-            &(organizer.clone(), index),
-            &child_id,
-        );
+        self.children.insert(&(organizer.clone(), index), &child_id);
         self.counts.insert(
             &organizer,
             &index
@@ -521,7 +602,9 @@ impl Contract {
                 .unwrap_or_else(|| env::panic_str("registry index overflow")),
         );
         let after = env::storage_usage();
-        let registry_fee = storage_cost(before, after);
+        let registry_fee = storage_cost(before, after)
+            .checked_add(self.ready_index_cost(&child_id))
+            .unwrap_or_else(|| env::panic_str("registry fee overflow"));
         let required = child_funding
             .checked_add(registry_fee)
             .unwrap_or_else(|| env::panic_str("provision quote overflow"));
@@ -685,7 +768,10 @@ impl Contract {
         child_id: AccountId,
         attempt: u32,
     ) -> PromiseOrValue<RequestView> {
-        require!(env::predecessor_account_id() == env::current_account_id(), "private callback");
+        require!(
+            env::predecessor_account_id() == env::current_account_id(),
+            "private callback"
+        );
         require!(
             env::promise_results_count() == 1,
             "provision callback requires exactly one promise result"
@@ -720,7 +806,10 @@ impl Contract {
         organizer: AccountId,
         request_nonce: u64,
     ) -> PromiseOrValue<RequestView> {
-        require!(env::predecessor_account_id() == env::current_account_id(), "private callback");
+        require!(
+            env::predecessor_account_id() == env::current_account_id(),
+            "private callback"
+        );
         require!(
             env::promise_results_count() == 1,
             "resolve callback requires exactly one promise result"
@@ -738,43 +827,80 @@ impl Contract {
             return PromiseOrValue::Value(self.request_view(&record));
         }
         let matched = match env::promise_result_checked(0, 4096) {
-            Ok(bytes) => {
-                near_sdk::serde_json::from_slice::<LeafConfigProbe>(&bytes)
-                    .map(|probe| self.probe_matches(&record.organizer, &probe))
-                    .unwrap_or(false)
-            }
+            Ok(bytes) => near_sdk::serde_json::from_slice::<LeafConfigProbe>(&bytes)
+                .map(|probe| self.probe_matches(&record.organizer, &probe))
+                .unwrap_or(false),
             _ => false,
         };
-        if matched { self.finish_provision(record, true, true) } else { PromiseOrValue::Value(self.request_view(&record)) }
+        if matched {
+            self.finish_provision(record, true, true)
+        } else {
+            PromiseOrValue::Value(self.request_view(&record))
+        }
     }
 
     /// Only the original organizer can retry a refund whose previous receipt failed.
     pub fn claim_failed_funding(&mut self, request_nonce: u64) -> Promise {
-        let organizer=env::predecessor_account_id();
-        let key=(organizer.clone(),request_nonce);
-        let mut record=self.requests.get(&key).unwrap_or_else(|| env::panic_str("request missing"));
-        require!(record.state == ProvisionState::Failed && record.refund_state == RefundState::Claimable, "refund not claimable");
-        record.refund_attempt=record.refund_attempt.checked_add(1).expect("refund attempt overflow");
-        record.refund_state=RefundState::InFlight;
-        self.requests.insert(&key,&record);
+        let organizer = env::predecessor_account_id();
+        let key = (organizer.clone(), request_nonce);
+        let mut record = self
+            .requests
+            .get(&key)
+            .unwrap_or_else(|| env::panic_str("request missing"));
+        require!(
+            record.state == ProvisionState::Failed && record.refund_state == RefundState::Claimable,
+            "refund not claimable"
+        );
+        record.refund_attempt = record
+            .refund_attempt
+            .checked_add(1)
+            .expect("refund attempt overflow");
+        record.refund_state = RefundState::InFlight;
+        self.requests.insert(&key, &record);
         Promise::new(organizer.clone()).transfer(NearToken::from_yoctonear(record.child_funding.0)).then(Promise::new(env::current_account_id()).function_call("on_failed_funding_refund",near_sdk::serde_json::json!({"organizer":organizer,"request_nonce":request_nonce,"attempt":record.refund_attempt}).to_string().into_bytes(),NearToken::from_yoctonear(0),Gas::from_tgas(15)))
     }
 
     #[private]
-    pub fn on_failed_funding_refund(&mut self, organizer: AccountId, request_nonce: u64, attempt: u32) -> bool {
-        require!(env::predecessor_account_id() == env::current_account_id(), "private callback");
-        require!(env::promise_results_count()==1,"one receipt required");
-        let key=(organizer,request_nonce);
-        let mut record=self.requests.get(&key).unwrap_or_else(|| env::panic_str("request missing"));
-        if record.state != ProvisionState::Failed || record.refund_state != RefundState::InFlight || record.refund_attempt != attempt { return false; }
-        let success=match env::promise_result_checked(0,1024) {
+    pub fn on_failed_funding_refund(
+        &mut self,
+        organizer: AccountId,
+        request_nonce: u64,
+        attempt: u32,
+    ) -> bool {
+        require!(
+            env::predecessor_account_id() == env::current_account_id(),
+            "private callback"
+        );
+        require!(env::promise_results_count() == 1, "one receipt required");
+        let key = (organizer, request_nonce);
+        let mut record = self
+            .requests
+            .get(&key)
+            .unwrap_or_else(|| env::panic_str("request missing"));
+        if record.state != ProvisionState::Failed
+            || record.refund_state != RefundState::InFlight
+            || record.refund_attempt != attempt
+        {
+            return false;
+        }
+        let success = match env::promise_result_checked(0, 1024) {
             Ok(_) => true,
             Err(near_sdk::PromiseError::Failed) => false,
             Err(_) => return false,
         };
-        record.refund_state=if success { RefundState::Paid } else { RefundState::Claimable };
-        if success { self.funding_refunded=self.funding_refunded.checked_add(record.child_funding.0).expect("refund overflow"); }
-        self.requests.insert(&key,&record); success
+        record.refund_state = if success {
+            RefundState::Paid
+        } else {
+            RefundState::Claimable
+        };
+        if success {
+            self.funding_refunded = self
+                .funding_refunded
+                .checked_add(record.child_funding.0)
+                .expect("refund overflow");
+        }
+        self.requests.insert(&key, &record);
+        success
     }
 
     // ------------------------------------------------------------ internals
@@ -799,6 +925,7 @@ impl Contract {
             child.ready_at_ms = now;
             self.requests.insert(&key, &record);
             self.child_ids.insert(&record.child_id, &child);
+            self.ready_children.push(&record.child_id);
             self.funding_delivered = self
                 .funding_delivered
                 .checked_add(record.child_funding.0)
@@ -832,7 +959,10 @@ impl Contract {
             self.child_ids.insert(&record.child_id, &child);
             record.refund_state = RefundState::Claimable;
             self.requests.insert(&key, &record);
-            log_event("ProvisionFailed", near_sdk::serde_json::json!({"organizer":record.organizer,"request_nonce":record.request_nonce,"child_id":record.child_id,"child_funding_claimable":record.child_funding.0.to_string()}));
+            log_event(
+                "ProvisionFailed",
+                near_sdk::serde_json::json!({"organizer":record.organizer,"request_nonce":record.request_nonce,"child_id":record.child_id,"child_funding_claimable":record.child_funding.0.to_string()}),
+            );
             PromiseOrValue::Value(self.request_view(&record))
         }
     }
@@ -904,6 +1034,12 @@ impl Contract {
             .saturating_add(self.config.provider_account.as_str().len() as u128)
             .saturating_add(self.config.provider_kind.len() as u128)
             .saturating_add(4 + 4 + 1)
+            // RHEA_MAINNET initializes an additional retry_after_block u64.
+            .saturating_add(if self.config.provider_kind == "RHEA_MAINNET" {
+                8
+            } else {
+                0
+            })
             .saturating_add(CHILD_STORAGE_MARGIN_BYTES);
         bytes
             .checked_mul(env::storage_byte_cost().as_yoctonear())
@@ -912,7 +1048,7 @@ impl Contract {
 
     /// Serialized growth of the four registry entries written by the next
     /// request. Mirrors the exact Borsh row sizes and legacy LookupMap
-    /// prefix+key encoding; `provision` still charges the measured growth.
+    /// prefix+key encoding, plus a reserve for a future Ready-index entry.
     fn registry_growth_quote(
         &self,
         organizer: &AccountId,
@@ -964,7 +1100,17 @@ impl Contract {
         }
         bytes
             .checked_mul(env::storage_byte_cost().as_yoctonear())
+            .and_then(|cost| cost.checked_add(self.ready_index_cost(child_id)))
             .unwrap_or_else(|| env::panic_str("registry quote overflow"))
+    }
+
+    // Legacy Vector stores each element under its two-byte prefix plus a
+    // little-endian u64 index; its length lives in the fixed-size root state.
+    // Reserve one entry per request, including requests that later fail.
+    fn ready_index_cost(&self, child_id: &AccountId) -> u128 {
+        (40u128 + 2 + 8 + borsh_len(child_id))
+            .checked_mul(env::storage_byte_cost().as_yoctonear())
+            .unwrap_or_else(|| env::panic_str("global index cost overflow"))
     }
 
     fn config_view(&self) -> FactoryConfigView {
@@ -1028,7 +1174,9 @@ impl Contract {
 }
 
 fn valid_text(value: &str) -> bool {
-    !value.is_empty() && value.len() <= 64 && value.bytes().all(|byte| (0x20..=0x7e).contains(&byte))
+    !value.is_empty()
+        && value.len() <= 64
+        && value.bytes().all(|byte| (0x20..=0x7e).contains(&byte))
 }
 
 fn storage_cost(before: u64, after: u64) -> u128 {

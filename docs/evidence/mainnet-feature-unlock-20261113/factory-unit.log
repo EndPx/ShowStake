@@ -1,0 +1,226 @@
+   Compiling showstake-factory v0.1.0 (/work/contracts/factory)
+warning: unused variable: `child`
+   --> tests/test_factory.rs:527:9
+    |
+527 |     let child = contract.get_child_id(organizer(), 61);
+    |         ^^^^^ help: if this is intentional, prefix it with an underscore: `_child`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused `PromiseOrValue` that must be used
+   --> tests/test_factory.rs:284:5
+    |
+284 |     contract.provision(1, leaf());
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: return or detach explicitly via `.detach()`
+    = note: `#[warn(unused_must_use)]` (part of `#[warn(unused)]`) on by default
+help: use `let _ = ...` to ignore the resulting value
+    |
+284 |     let _ = contract.provision(1, leaf());
+    |     +++++++
+
+warning: unused `PromiseOrValue` that must be used
+   --> tests/test_factory.rs:295:5
+    |
+295 |     contract.provision(2, leaf());
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: return or detach explicitly via `.detach()`
+help: use `let _ = ...` to ignore the resulting value
+    |
+295 |     let _ = contract.provision(2, leaf());
+    |     +++++++
+
+warning: unused `PromiseOrValue` that must be used
+   --> tests/test_factory.rs:314:5
+    |
+314 |     contract.provision(9, leaf());
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: return or detach explicitly via `.detach()`
+help: use `let _ = ...` to ignore the resulting value
+    |
+314 |     let _ = contract.provision(9, leaf());
+    |     +++++++
+
+warning: unused `PromiseOrValue` that must be used
+   --> tests/test_factory.rs:356:5
+    |
+356 |     contract.provision(11, leaf());
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: return or detach explicitly via `.detach()`
+help: use `let _ = ...` to ignore the resulting value
+    |
+356 |     let _ = contract.provision(11, leaf());
+    |     +++++++
+
+warning: unused `PromiseOrValue` that must be used
+   --> tests/test_factory.rs:406:5
+    |
+406 |     contract.provision(21, leaf());
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: return or detach explicitly via `.detach()`
+help: use `let _ = ...` to ignore the resulting value
+    |
+406 |     let _ = contract.provision(21, leaf());
+    |     +++++++
+
+warning: unused `PromiseOrValue` that must be used
+   --> tests/test_factory.rs:411:5
+    |
+411 |     contract.on_provision(organizer(), 21, child, 1);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: return or detach explicitly via `.detach()`
+help: use `let _ = ...` to ignore the resulting value
+    |
+411 |     let _ = contract.on_provision(organizer(), 21, child, 1);
+    |     +++++++
+
+warning: unused `PromiseOrValue` that must be used
+   --> tests/test_factory.rs:440:5
+    |
+440 |     contract.provision(31, leaf());
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: return or detach explicitly via `.detach()`
+help: use `let _ = ...` to ignore the resulting value
+    |
+440 |     let _ = contract.provision(31, leaf());
+    |     +++++++
+
+warning: unused `PromiseOrValue` that must be used
+   --> tests/test_factory.rs:500:5
+    |
+500 |     contract.provision(51, leaf());
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: return or detach explicitly via `.detach()`
+help: use `let _ = ...` to ignore the resulting value
+    |
+500 |     let _ = contract.provision(51, leaf());
+    |     +++++++
+
+warning: unused `PromiseOrValue` that must be used
+   --> tests/test_factory.rs:529:5
+    |
+529 |     contract.provision(61, leaf());
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: return or detach explicitly via `.detach()`
+help: use `let _ = ...` to ignore the resulting value
+    |
+529 |     let _ = contract.provision(61, leaf());
+    |     +++++++
+
+warning: unused `PromiseOrValue` that must be used
+   --> tests/test_factory.rs:550:5
+    |
+550 |     contract.provision(71, leaf());
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: return or detach explicitly via `.detach()`
+help: use `let _ = ...` to ignore the resulting value
+    |
+550 |     let _ = contract.provision(71, leaf());
+    |     +++++++
+
+warning: unused `PromiseOrValue` that must be used
+   --> tests/test_factory.rs:574:5
+    |
+574 |     contract.provision(81, leaf());
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: return or detach explicitly via `.detach()`
+help: use `let _ = ...` to ignore the resulting value
+    |
+574 |     let _ = contract.provision(81, leaf());
+    |     +++++++
+
+warning: unused `near_sdk::Promise` that must be used
+   --> tests/test_factory.rs:577:5
+    |
+577 |     contract.resolve_request(organizer(), 81);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: return or detach explicitly via `.detach()`
+help: use `let _ = ...` to ignore the resulting value
+    |
+577 |     let _ = contract.resolve_request(organizer(), 81);
+    |     +++++++
+
+warning: unused `PromiseOrValue` that must be used
+   --> tests/test_factory.rs:602:5
+    |
+602 |     contract.provision(91, leaf());
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: return or detach explicitly via `.detach()`
+help: use `let _ = ...` to ignore the resulting value
+    |
+602 |     let _ = contract.provision(91, leaf());
+    |     +++++++
+
+warning: unused `near_sdk::Promise` that must be used
+   --> tests/test_factory.rs:605:5
+    |
+605 |     contract.resolve_request(organizer(), 91);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: return or detach explicitly via `.detach()`
+help: use `let _ = ...` to ignore the resulting value
+    |
+605 |     let _ = contract.resolve_request(organizer(), 91);
+    |     +++++++
+
+warning: unused `PromiseOrValue` that must be used
+   --> tests/test_factory.rs:650:9
+    |
+650 |         contract.provision(nonce, leaf());
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: return or detach explicitly via `.detach()`
+help: use `let _ = ...` to ignore the resulting value
+    |
+650 |         let _ = contract.provision(nonce, leaf());
+    |         +++++++
+
+warning: `showstake-factory` (test "test_factory") generated 16 warnings (run `cargo fix --test "test_factory" -p showstake-factory` to apply 1 suggestion)
+    Finished `test` profile [unoptimized] target(s) in 2.04s
+     Running tests/test_factory.rs (/cache/target/debug/deps/test_factory-06d2afdf5ecdc1b0)
+
+running 29 tests
+test callback_argument_mismatch_traps ... ok
+test cardle_unused_u128_import_guard ... ok
+test child_funding_accounts_for_mainnet_retry_field_only ... ok
+test child_id_is_deterministic_and_bounded ... ok
+test config_is_immutable_and_pins_leaf_hash ... ok
+test global_ready_list_orders_callbacks_across_organizers_and_excludes_failures ... ok
+test insufficient_attached_traps_without_row ... ok
+test insufficient_prepaid_gas_traps_without_row ... ok
+test list_children_is_bounded_and_ordered ... ok
+test mainnet_identity_is_pinned ... ok
+test native_accounting_is_native_only ... ok
+test new_rejects_invalid_network ... ok
+test new_rejects_long_parent_account ... ok
+test new_rejects_wrong_policy ... ok
+test oversized_callback_results_do_not_release_or_retry_funds ... ok
+test private_callback_rejects_external_callers ... ok
+test provision_failure_callback_refunds_once_and_keeps_fee ... ok
+test provision_measures_exact_registry_fee ... ok
+test provision_success_callback_marks_ready_only_once ... ok
+test quote_is_positive_and_linear_in_organizer_length ... ok
+test quote_matches_measured_fee_for_first_and_second_rows ... ok
+test recovered_ready_child_is_indexed_once ... ok
+test rejects_unsafe_json_nonce_before_mutation ... ok
+test rejects_wrong_code_length_and_same_length_hash ... ok
+test replay_pending_traps ... ok
+test replay_ready_refunds_attached_without_new_child_or_fee ... ok
+test resolve_mismatched_or_failed_probe_stays_pending ... ok
+test resolve_requires_pending_timeout ... ok
+test resolve_success_marks_ready_without_second_funding ... ok
+
+test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.39s

@@ -1,0 +1,103 @@
+{
+  "classification": "PASS_LOCAL",
+  "ownedContainers": [
+    {
+      "container": "showstake-linked-leaf-v4-build",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 0,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-11-13T07:11:05.374669635Z",
+        "FinishedAt": "2026-11-13T07:11:47.487682988Z"
+      }
+    },
+    {
+      "container": "showstake-rhea-graph-build-v1",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 0,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-11-13T07:08:57.621532811Z",
+        "FinishedAt": "2026-11-13T07:09:04.257352844Z"
+      }
+    },
+    {
+      "container": "showstake-rhea-linked-cycle-final",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 0,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-11-13T07:12:49.968523451Z",
+        "FinishedAt": "2026-11-13T07:19:02.006577246Z"
+      }
+    },
+    {
+      "container": "showstake-factory-final-build",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 0,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-11-13T07:14:27.005918679Z",
+        "FinishedAt": "2026-11-13T07:14:51.708644021Z"
+      }
+    },
+    {
+      "container": "showstake-factory-final-runtime",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 0,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-11-13T07:14:52.084512589Z",
+        "FinishedAt": "2026-11-13T07:15:02.091271121Z"
+      }
+    },
+    {
+      "container": "showstake-unlock-linked-pg-final",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 0,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-11-13T07:24:35.905508781Z",
+        "FinishedAt": "2026-11-13T07:24:41.975879915Z"
+      }
+    }
+  ],
+  "allStopped": true,
+  "productionServicesStopped": false
+}

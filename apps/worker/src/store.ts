@@ -26,7 +26,7 @@
 // consumer. Canonical hash + official-finality proof happen in the production
 // ingest path itself, not only in tests.
 import { randomUUID } from 'node:crypto';
-import { isCandidate, isMainnetCandidate, parseCandidateEvent, parseCandidateRegistration, validateCandidatePass, validateCandidateConfig, validateCandidateCoverage } from './candidate.js';
+import { isCandidate, isMainnetCandidate, isLinkedCandidate, LINKED_POLICY, parseCandidateEvent, parseCandidateRegistration, validateCandidatePass, validateCandidateConfig, validateCandidateCoverage, validateLinkedCoverage } from './candidate.js';
 import { Pool, type Client, type PoolConfig } from 'pg';
 import { WORKER_DB_ROLE, type DeploymentAllowlist } from './config.js';
 import { assertAllowlistIdentity } from './identity.js';
@@ -336,7 +336,7 @@ export class WorkerStore {
       );
     }
 
-    if (['showstake-native-usdc-event/1','showstake-native-usdc-rhea-review/1'].includes(this.allowlist.policyVersion) && !isCandidate(this.allowlist)) throw new Error('candidate code hash is not reviewed');
+    if (['showstake-native-usdc-event/1','showstake-native-usdc-rhea-review/1',LINKED_POLICY].includes(this.allowlist.policyVersion) && !isCandidate(this.allowlist)) throw new Error('candidate code hash is not reviewed');
     const candidate = isCandidate(this.allowlist);
     const kept = block.receipts.filter((r) => r.executorId === this.allowlist.contractId && r.success);
     const units: { classified: ReturnType<typeof classifyEvent>; chainEvent: ChainEventInsert }[] = [];
@@ -370,7 +370,11 @@ export class WorkerStore {
         if (new Set(registrations.map(r => r.registrationId)).size !== event.count || new Set(registrations.map(r => r.passId)).size !== event.count || new Set(registrations.map(r => r.participant)).size !== event.count || new Set(registrations.map(r => r.commitmentId)).size !== event.count) throw new Error('candidate duplicate registration identity');
         if (event.phase === 'Settled' && registrations.reduce((sum, r) => sum + BigInt(r.claimAmount), 0n) !== BigInt(event.accepted) + BigInt(event.allocatedYield)) throw new Error('candidate settlement conservation failed');
         const balance = await read('ft_balance_of', { account_id: this.allowlist.contractId }, this.allowlist.ftContractId);
-        if (isMainnetCandidate(this.allowlist)) {
+        if (isLinkedCandidate(this.allowlist)) {
+          const needsPosition=['Supplied','RedeemPending'].includes(event.earnState);
+          const [position,asset]=needsPosition?await Promise.all([read('get_account',{account_id:this.allowlist.contractId},provider),read('get_asset',{token_id:this.allowlist.ftContractId},provider)]):[null,null];
+          validateLinkedCoverage(event,registrations,balance,position,asset,this.allowlist.contractId,this.allowlist.ftContractId);
+        } else if (isMainnetCandidate(this.allowlist)) {
           // Rhea position and detached withdrawal receipts are not yet accepted as financial proof.
           // Only assert wallet coverage in states in which the contract says funds are local.
           if (event.earnState === 'NotStarted' || event.earnState === 'Redeemed') validateCandidateCoverage(event, registrations, balance, '0');

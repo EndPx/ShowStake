@@ -1,0 +1,1117 @@
+{
+  "accepted_principal": "10000000",
+  "beneficiary1": "5000000",
+  "beneficiary3": "5000000",
+  "claim1": [
+    {
+      "bool": null,
+      "children": [
+        "GxRTQVhYtrpKJc6FSo1NZKJXzq1eu6mKpMWt9rZfuAKv",
+        "6K5gNMjSi2c7Kzp9N5uKj6h4Xr8tzHGteQgHBFBn9bo9",
+        "AZA62C2LK56HERMbYESPsouQMoYUjFrkcRyFAoipgAsK"
+      ],
+      "executor": "event.near",
+      "failure": false,
+      "gas_burnt": 3309066531971,
+      "id": "92M83CXQCgF1MpvWR4cwVFzK7m1RvDMd5Ph9A6Qt9iBD",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "9TabvkkJ4cuvQYDWamQys1vAAXC2yBQvLE6Sfk9uPwKj"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": false,
+      "gas_burnt": 1907665595827,
+      "id": "GxRTQVhYtrpKJc6FSo1NZKJXzq1eu6mKpMWt9rZfuAKv",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "user1.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "9TabvkkJ4cuvQYDWamQys1vAAXC2yBQvLE6Sfk9uPwKj",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "7R9qjgAG6EavTSo17BnPJE8Ayhsn6jieYAiUTWiqZDT9"
+      ],
+      "executor": "event.near",
+      "failure": false,
+      "gas_burnt": 2509385694828,
+      "id": "6K5gNMjSi2c7Kzp9N5uKj6h4Xr8tzHGteQgHBFBn9bo9",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "user1.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "7R9qjgAG6EavTSo17BnPJE8Ayhsn6jieYAiUTWiqZDT9",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "user1.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "AZA62C2LK56HERMbYESPsouQMoYUjFrkcRyFAoipgAsK",
+      "success": true
+    }
+  ],
+  "claim3": [
+    {
+      "bool": null,
+      "children": [
+        "CDpp4FiTynUhYPoGFqzSsT52ju2QysaGeekMBwq7VQvh",
+        "33SadPZJ41SHXP7uDxtpqPetRGiEFMie3pUZDxTcGmrD",
+        "4s4g2x8pzwWsBFQ4VaSdhxxVEAZPhYBBi9cEwua5mgi4"
+      ],
+      "executor": "event.near",
+      "failure": false,
+      "gas_burnt": 3309066531971,
+      "id": "G8xW5BBgP23WqTzgkTUMNyjEredipsHuDPMXjoqxv76r",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "3r5ZGoUJS3Cc54HycN2CsJdk5skUx4SKe7oDPyAYPZZi"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": false,
+      "gas_burnt": 1907665595827,
+      "id": "CDpp4FiTynUhYPoGFqzSsT52ju2QysaGeekMBwq7VQvh",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "user3.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "3r5ZGoUJS3Cc54HycN2CsJdk5skUx4SKe7oDPyAYPZZi",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "4DBNqJ9xFKJAXKUyipLsTpt7vSMcSdTGJSKY615ZcYsY"
+      ],
+      "executor": "event.near",
+      "failure": false,
+      "gas_burnt": 2509385694828,
+      "id": "33SadPZJ41SHXP7uDxtpqPetRGiEFMie3pUZDxTcGmrD",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "user3.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "4DBNqJ9xFKJAXKUyipLsTpt7vSMcSdTGJSKY615ZcYsY",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "user3.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "4s4g2x8pzwWsBFQ4VaSdhxxVEAZPhYBBi9cEwua5mgi4",
+      "success": true
+    }
+  ],
+  "claims_before_payout": [
+    {
+      "amount": "2000000",
+      "attendance": "NoShow",
+      "attendance_status": "NoShow",
+      "beneficiary": "user0.testnet",
+      "claim": "Claimable",
+      "claim_amount": "0",
+      "claim_attempt": 0,
+      "commitment_id": "c000",
+      "participant": "user0.testnet",
+      "pass_id": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-pass-0",
+      "registration_id": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-reg-0",
+      "registration_status": "Active",
+      "sequence": 0
+    },
+    {
+      "amount": "2000000",
+      "attendance": "Attended",
+      "attendance_status": "Attended",
+      "beneficiary": "user1.testnet",
+      "claim": "Claimable",
+      "claim_amount": "5000000",
+      "claim_attempt": 0,
+      "commitment_id": "c001",
+      "participant": "user1.testnet",
+      "pass_id": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-pass-1",
+      "registration_id": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-reg-1",
+      "registration_status": "Active",
+      "sequence": 1
+    },
+    {
+      "amount": "2000000",
+      "attendance": "NoShow",
+      "attendance_status": "NoShow",
+      "beneficiary": "user2.testnet",
+      "claim": "Claimable",
+      "claim_amount": "0",
+      "claim_attempt": 0,
+      "commitment_id": "c002",
+      "participant": "user2.testnet",
+      "pass_id": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-pass-2",
+      "registration_id": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-reg-2",
+      "registration_status": "Active",
+      "sequence": 2
+    },
+    {
+      "amount": "2000000",
+      "attendance": "Attended",
+      "attendance_status": "Attended",
+      "beneficiary": "user3.testnet",
+      "claim": "Claimable",
+      "claim_amount": "5000000",
+      "claim_attempt": 0,
+      "commitment_id": "c003",
+      "participant": "user3.testnet",
+      "pass_id": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-pass-3",
+      "registration_id": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-reg-3",
+      "registration_status": "Active",
+      "sequence": 3
+    },
+    {
+      "amount": "2000000",
+      "attendance": "NoShow",
+      "attendance_status": "NoShow",
+      "beneficiary": "user4.testnet",
+      "claim": "Claimable",
+      "claim_amount": "0",
+      "claim_attempt": 0,
+      "commitment_id": "c004",
+      "participant": "user4.testnet",
+      "pass_id": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-pass-4",
+      "registration_id": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-reg-4",
+      "registration_status": "Active",
+      "sequence": 4
+    }
+  ],
+  "config": {
+    "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+    "network": "mainnet",
+    "organizer": "organizer.near",
+    "policy_version": "showstake-native-usdc-rhea-linked-withdraw-review/2",
+    "provider_account": "contract.main.burrow.near",
+    "provider_kind": "RHEA_MAINNET"
+  },
+  "failed_redeem": {
+    "claim_denied": true,
+    "gas": 48023748896521,
+    "receipts": [
+      {
+        "bool": null,
+        "children": [
+          "8MttY4EyWTFiMrALwFf7VQ1WVYhDNkUTatQjbou6D89",
+          "2n9MyYEWgG6qyJbsv4EsGW5xLtp9RAfcXG5FmAoCgXgQ",
+          "5iaWHTUBYw77pAY5YxcATUUdcmtickp8fYsCg8pL5V7K",
+          "6tT3isVw1BvjGaVdXoRXPwxiQfvZEZ7s8NRyDnbKzYsz",
+          "9rfr9ehkSkegXuQBdfCiHUzWQaLLvXsk6eq8VQ3ZoZip"
+        ],
+        "executor": "event.near",
+        "failure": false,
+        "gas_burnt": 3847010231172,
+        "id": "B1diB5H3Fj1Ziw1WyK8RJ7ZnfL8WQwARXsrmkyQkDdAU",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "5LHVQ5x5yfbmYemjZE9W2F1Bk7ez2bt8XMbKD5KA1uJG"
+        ],
+        "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "failure": false,
+        "gas_burnt": 1352406163667,
+        "id": "8MttY4EyWTFiMrALwFf7VQ1WVYhDNkUTatQjbou6D89",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "5LHVQ5x5yfbmYemjZE9W2F1Bk7ez2bt8XMbKD5KA1uJG",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "GG2LsNbg62t7juoCq3eeyvBcNiN9cr5ngQ6MnyJ6qxJw"
+        ],
+        "executor": "contract.main.burrow.near",
+        "failure": false,
+        "gas_burnt": 4038133536087,
+        "id": "2n9MyYEWgG6qyJbsv4EsGW5xLtp9RAfcXG5FmAoCgXgQ",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "GG2LsNbg62t7juoCq3eeyvBcNiN9cr5ngQ6MnyJ6qxJw",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "6TNDoUU3zGcNac3z452anWACEmvQwkBCD22HDweR99de"
+        ],
+        "executor": "contract.main.burrow.near",
+        "failure": false,
+        "gas_burnt": 4724797535673,
+        "id": "5iaWHTUBYw77pAY5YxcATUUdcmtickp8fYsCg8pL5V7K",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "6TNDoUU3zGcNac3z452anWACEmvQwkBCD22HDweR99de",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "EYJJhjPxas6TVFFqDTNYkEqRwqnSkd9idh3xdfFNNgkj",
+          "9fHoq9KhD54dbgryEwkLFZ7wzpZ1rdsyMzGhRaid3aym",
+          "CWnCMeT9LiM2jGyWRHQBKee7erFSqR4FUMU4Karo7h9A"
+        ],
+        "executor": "event.near",
+        "failure": false,
+        "gas_burnt": 3348372438142,
+        "id": "6tT3isVw1BvjGaVdXoRXPwxiQfvZEZ7s8NRyDnbKzYsz",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "6SFeRVTUuNy4EfrNapE8nyzbZW672b4USMLNAYuCUJKz",
+          "7xQPChP7w75oh54i3nCv1M3ET7suM2NRSrXmJqEgRBpP",
+          "EjyNiUYVMgLQ57zGFjm91CotTxTxMCNZFvWPLxqA9L4F"
+        ],
+        "executor": "contract.main.burrow.near",
+        "failure": false,
+        "gas_burnt": 6071546503763,
+        "id": "EYJJhjPxas6TVFFqDTNYkEqRwqnSkd9idh3xdfFNNgkj",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "65DoVcoHcqKBtAr7w2jpCAdXShRajbv1C4KUj45ewqfC",
+          "9uUMHBVuwU6WVqPFDZyBPrkynE19wFmBXoQwgsg8C23e"
+        ],
+        "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "failure": true,
+        "gas_burnt": 1553344853170,
+        "id": "6SFeRVTUuNy4EfrNapE8nyzbZW672b4USMLNAYuCUJKz",
+        "success": false
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "contract.main.burrow.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "65DoVcoHcqKBtAr7w2jpCAdXShRajbv1C4KUj45ewqfC",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "9uUMHBVuwU6WVqPFDZyBPrkynE19wFmBXoQwgsg8C23e",
+        "success": true
+      },
+      {
+        "bool": false,
+        "children": [
+          "8NYGoqzMVtrMPBQVBSugCmVNVp4XD21m3LeGMDaE2xUb"
+        ],
+        "executor": "contract.main.burrow.near",
+        "failure": false,
+        "gas_burnt": 4200236957435,
+        "id": "7xQPChP7w75oh54i3nCv1M3ET7suM2NRSrXmJqEgRBpP",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "8NYGoqzMVtrMPBQVBSugCmVNVp4XD21m3LeGMDaE2xUb",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "EjyNiUYVMgLQ57zGFjm91CotTxTxMCNZFvWPLxqA9L4F",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "Dg7iHWFvnVQaGagB53qPKvdWtpWrWAmeQH5EhT1T18zA",
+          "4xPWmwB3QQgYizpajJ8YpktayDEaWEZhZsZjCA7xAp6t",
+          "8H37hU9BRT1zMqenzm2Ybe1H2BPvuHUWeRMk74hBG355",
+          "9p1v2Ro5GxyYCCxFMFf3BZWvYQUG56yJACXGJC2ekcxZ",
+          "5tLnZdR9xrghaGv4sfh3Yn9e7aN1CNtydNpTFBrU812v"
+        ],
+        "executor": "event.near",
+        "failure": false,
+        "gas_burnt": 3868842361672,
+        "id": "9fHoq9KhD54dbgryEwkLFZ7wzpZ1rdsyMzGhRaid3aym",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "5vsaTnCEYXUL7YDRkgo9NrzzpynRq18WgBQ3UXzUxL58"
+        ],
+        "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "failure": false,
+        "gas_burnt": 1352406163667,
+        "id": "Dg7iHWFvnVQaGagB53qPKvdWtpWrWAmeQH5EhT1T18zA",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "5vsaTnCEYXUL7YDRkgo9NrzzpynRq18WgBQ3UXzUxL58",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "AtWzxMSQLzjUASJEywgqELwi9YUTgwpjw1REfycDzYkY"
+        ],
+        "executor": "contract.main.burrow.near",
+        "failure": false,
+        "gas_burnt": 3488521832259,
+        "id": "4xPWmwB3QQgYizpajJ8YpktayDEaWEZhZsZjCA7xAp6t",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "AtWzxMSQLzjUASJEywgqELwi9YUTgwpjw1REfycDzYkY",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "FbjKSasLvMxeyt5y4t8ZyvKWwiVL48nUkYZrtx45XSsR"
+        ],
+        "executor": "contract.main.burrow.near",
+        "failure": false,
+        "gas_burnt": 4175185831845,
+        "id": "8H37hU9BRT1zMqenzm2Ybe1H2BPvuHUWeRMk74hBG355",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "FbjKSasLvMxeyt5y4t8ZyvKWwiVL48nUkYZrtx45XSsR",
+        "success": true
+      },
+      {
+        "bool": true,
+        "children": [
+          "BPg3YbSVZx9Vx6ByoXMjkqnsv47fwCw8nPmxmm7mjxjM"
+        ],
+        "executor": "event.near",
+        "failure": false,
+        "gas_burnt": 2569327754954,
+        "id": "9p1v2Ro5GxyYCCxFMFf3BZWvYQUG56yJACXGJC2ekcxZ",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "BPg3YbSVZx9Vx6ByoXMjkqnsv47fwCw8nPmxmm7mjxjM",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "5tLnZdR9xrghaGv4sfh3Yn9e7aN1CNtydNpTFBrU812v",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "CWnCMeT9LiM2jGyWRHQBKee7erFSqR4FUMU4Karo7h9A",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "9rfr9ehkSkegXuQBdfCiHUzWQaLLvXsk6eq8VQ3ZoZip",
+        "success": true
+      }
+    ],
+    "rhea_after_failure": {
+      "account_id": "event.near",
+      "booster_staking": null,
+      "booster_stakings": {},
+      "borrowed": [],
+      "collateral": [],
+      "farms": [],
+      "has_non_farmed_assets": false,
+      "supplied": [
+        {
+          "apr": "0.0",
+          "balance": "10000000000000000000",
+          "shares": "10000000000000000000",
+          "token_id": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1"
+        }
+      ]
+    }
+  },
+  "final_escrow": "0",
+  "final_provider": "0",
+  "fixture_forced_failure": "Sandbox escrow bootstrap full-access key unregisters empty FT; production keyless child lacks this key",
+  "redeem": {
+    "gas": 44082431275631,
+    "receipts": [
+      {
+        "bool": null,
+        "children": [
+          "E9GEER3z1TdvjWCvDo6WT2TXsmkzQ4rhGLgnPgYSWpqu",
+          "A4WYcTmdMYZ6vywKW4LL3f2AfAf4vY3fjTR8mYJrnRNt",
+          "76X7dokGyxAzfFNYDTNWUMZCAABdkPh3prqe2K3gTKQF",
+          "CXcYsfTLBPcDTDyaUi6wuuY5Aup9aDfs3tA34u87fVvT",
+          "5wHgNGq9Bh6KBfgBbUDduL5dSG5TubFvJdspH3UDJu9g"
+        ],
+        "executor": "event.near",
+        "failure": false,
+        "gas_burnt": 3847010231172,
+        "id": "BXdNmctGjS52fu2e9fAYk6qKFsRhmnnnxgQua34eoBvD",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "36MtK1CqFRrtAicvRP56zWd3fSQnoCkL6pmsnabr6fMb"
+        ],
+        "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "failure": false,
+        "gas_burnt": 1362399864994,
+        "id": "E9GEER3z1TdvjWCvDo6WT2TXsmkzQ4rhGLgnPgYSWpqu",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "36MtK1CqFRrtAicvRP56zWd3fSQnoCkL6pmsnabr6fMb",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "DXDBeDzjkBRvrpHyQPonTYVXbd7Scz964iEujW4uw7XF"
+        ],
+        "executor": "contract.main.burrow.near",
+        "failure": false,
+        "gas_burnt": 3699783358647,
+        "id": "A4WYcTmdMYZ6vywKW4LL3f2AfAf4vY3fjTR8mYJrnRNt",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "DXDBeDzjkBRvrpHyQPonTYVXbd7Scz964iEujW4uw7XF",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "2Qp2PWTXWcNPWz6p6Dmen2UseJcK1e8sbi1icTLj3eZu"
+        ],
+        "executor": "contract.main.burrow.near",
+        "failure": false,
+        "gas_burnt": 4386447358233,
+        "id": "76X7dokGyxAzfFNYDTNWUMZCAABdkPh3prqe2K3gTKQF",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "2Qp2PWTXWcNPWz6p6Dmen2UseJcK1e8sbi1icTLj3eZu",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "BZYCxbtcfdiJchVy2NChfkothdHpgcqzE5nH5VD6QwRv",
+          "EPhNDk5SCiGGCQBPSaSQrXgz6vHUHiM98FZXaED1ajPx",
+          "AdMyM24WxZ3rtPwkjTMyydYejXCnnYJnNcYd9Qrnezut"
+        ],
+        "executor": "event.near",
+        "failure": false,
+        "gas_burnt": 3348372438142,
+        "id": "CXcYsfTLBPcDTDyaUi6wuuY5Aup9aDfs3tA34u87fVvT",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "A2Mhxe39d1wWEGbH1R9sYSCgJZ8oXgfBEzNU3HrXumd9",
+          "FDyGugEvYJHJsnuR9ZsZsz1exZSH2bHdeuaUDt2sWowy",
+          "8KBXRP7DkfedkQKAQeS3P2pGucqXFFKCh2v3HmJ8zRJs"
+        ],
+        "executor": "contract.main.burrow.near",
+        "failure": false,
+        "gas_burnt": 5649576343019,
+        "id": "BZYCxbtcfdiJchVy2NChfkothdHpgcqzE5nH5VD6QwRv",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "44nG8T8mCHHAJDArPwqUXWwqgQHUbMcnsuRyfgU9FWqp"
+        ],
+        "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "failure": false,
+        "gas_burnt": 1845648297858,
+        "id": "A2Mhxe39d1wWEGbH1R9sYSCgJZ8oXgfBEzNU3HrXumd9",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "44nG8T8mCHHAJDArPwqUXWwqgQHUbMcnsuRyfgU9FWqp",
+        "success": true
+      },
+      {
+        "bool": true,
+        "children": [
+          "9oVfzgF2i3qU5BxhBPgFCH5ZPZdpDaGPxzZXK3EFk1LZ"
+        ],
+        "executor": "contract.main.burrow.near",
+        "failure": false,
+        "gas_burnt": 2442768700378,
+        "id": "FDyGugEvYJHJsnuR9ZsZsz1exZSH2bHdeuaUDt2sWowy",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "9oVfzgF2i3qU5BxhBPgFCH5ZPZdpDaGPxzZXK3EFk1LZ",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "8KBXRP7DkfedkQKAQeS3P2pGucqXFFKCh2v3HmJ8zRJs",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "8HxHJKkmWo489nvMBrEHKdoeP12oweuUnrMJ7DLrWLCs",
+          "5tvAnhybgQWUi7SByhgRCPVR9LfYcZ8xGRBUnu6MiadL",
+          "EbNn1TFWd8DHF3KASWXmAK71gczWwtd4fczrA3Vteqmh",
+          "GxrZRLT7wzhdZxbhpDMG6Rf2AJzBfsjcMBXELEyTg7iB",
+          "5EzRX3cCRD6SKhxfAk3UGKAceNjxLYh1561mgu8neqE3"
+        ],
+        "executor": "event.near",
+        "failure": false,
+        "gas_burnt": 3868815679414,
+        "id": "EPhNDk5SCiGGCQBPSaSQrXgz6vHUHiM98FZXaED1ajPx",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "6nUqqcB6bgiWggK1GwDWVxwguMWpu6PFh4ASuFfFX5KS"
+        ],
+        "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "failure": false,
+        "gas_burnt": 1363325032647,
+        "id": "8HxHJKkmWo489nvMBrEHKdoeP12oweuUnrMJ7DLrWLCs",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "6nUqqcB6bgiWggK1GwDWVxwguMWpu6PFh4ASuFfFX5KS",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "4HjB8NkHjEJdeAPCMvc5DGpEoo2NEStTA5LnkRDf5CCi"
+        ],
+        "executor": "contract.main.burrow.near",
+        "failure": false,
+        "gas_burnt": 2400994556881,
+        "id": "5tvAnhybgQWUi7SByhgRCPVR9LfYcZ8xGRBUnu6MiadL",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "4HjB8NkHjEJdeAPCMvc5DGpEoo2NEStTA5LnkRDf5CCi",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "9UKsGrqUjrGmggwke4kQdBWYYk5PbRtRU6GYnpShkUek"
+        ],
+        "executor": "contract.main.burrow.near",
+        "failure": false,
+        "gas_burnt": 4121067526979,
+        "id": "EbNn1TFWd8DHF3KASWXmAK71gczWwtd4fczrA3Vteqmh",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "9UKsGrqUjrGmggwke4kQdBWYYk5PbRtRU6GYnpShkUek",
+        "success": true
+      },
+      {
+        "bool": true,
+        "children": [
+          "7zVZJxYL5to2KiqZS6MrwZS7maYeA2YWBz8UFSxRdfUM"
+        ],
+        "executor": "event.near",
+        "failure": false,
+        "gas_burnt": 2535787716752,
+        "id": "GxrZRLT7wzhdZxbhpDMG6Rf2AJzBfsjcMBXELEyTg7iB",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "7zVZJxYL5to2KiqZS6MrwZS7maYeA2YWBz8UFSxRdfUM",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "5EzRX3cCRD6SKhxfAk3UGKAceNjxLYh1561mgu8neqE3",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "AdMyM24WxZ3rtPwkjTMyydYejXCnnYJnNcYd9Qrnezut",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "5wHgNGq9Bh6KBfgBbUDduL5dSG5TubFvJdspH3UDJu9g",
+        "success": true
+      }
+    ],
+    "rhea_after": {
+      "account_id": "event.near",
+      "booster_staking": null,
+      "booster_stakings": {},
+      "borrowed": [],
+      "collateral": [],
+      "farms": [],
+      "has_non_farmed_assets": false,
+      "supplied": []
+    }
+  },
+  "registrations": [
+    "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-reg-0",
+    "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-reg-1",
+    "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-reg-2",
+    "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-reg-3",
+    "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-reg-4"
+  ],
+  "scope": "Sandbox actual public Rhea Wasm with local clean state, pinned linked leaf, mock USDC; no financial state patch, no production proof",
+  "settle_gas": 4098421047484,
+  "status": "PASS_LOCAL",
+  "supply": {
+    "gas": 43513025565755,
+    "receipts": [
+      {
+        "bool": null,
+        "children": [
+          "7FHCV9wtkg4zCrQ8ZqYnpvMKdS5Rftuu1wSUH24Hs218",
+          "4CLmURnRZ3ZAfha2KvnhMWoYK8fyBqb9oYdHsnypPtXB",
+          "5uCH6QMRhwTydzk5JqaXH4UT2eDkBfnEhjk3nunLgzFQ",
+          "AiuwTUEdDM1vvaE4wQppCdpePpEGDZn4wuwgtwxd1XEM",
+          "FjSAHTTWTpmXh3fvFwKFR1J2dkPURXCxYfhMugBGPPHw"
+        ],
+        "executor": "event.near",
+        "failure": false,
+        "gas_burnt": 3836227845522,
+        "id": "5r4hhf2avsNLw5nHt6pbcW4JuKNvR8knFShE3Rj5Ac1w",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "8MbCJjzMshMxT9J8drKVk9GmBBu6az2CzZmSZzPtpPJN"
+        ],
+        "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "failure": false,
+        "gas_burnt": 1363325032647,
+        "id": "7FHCV9wtkg4zCrQ8ZqYnpvMKdS5Rftuu1wSUH24Hs218",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "8MbCJjzMshMxT9J8drKVk9GmBBu6az2CzZmSZzPtpPJN",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "Es1L3o1Dr5kpDFac9yBU8rHfQi7JVjzbueJX7cnc3cSC"
+        ],
+        "executor": "contract.main.burrow.near",
+        "failure": false,
+        "gas_burnt": 2400994556881,
+        "id": "4CLmURnRZ3ZAfha2KvnhMWoYK8fyBqb9oYdHsnypPtXB",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "Es1L3o1Dr5kpDFac9yBU8rHfQi7JVjzbueJX7cnc3cSC",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "4Eh9eLv5o9vYySjMJEz82Qtd4gSjb8MSWntaDg97iPPQ"
+        ],
+        "executor": "contract.main.burrow.near",
+        "failure": false,
+        "gas_burnt": 4627210563059,
+        "id": "5uCH6QMRhwTydzk5JqaXH4UT2eDkBfnEhjk3nunLgzFQ",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "4Eh9eLv5o9vYySjMJEz82Qtd4gSjb8MSWntaDg97iPPQ",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "FHFrqE2RgLRTKsLZUM9sKkeyh7wcnxZeD4qziychvDd5",
+          "BWk62x7dTpgUeKHw4JhWXZweSdeLwgPLnrTSsyR4Bbe6",
+          "77XyjzmssX42dN4v6MD9vVxa94gfrS6NJ4CYxgJwK4Qx"
+        ],
+        "executor": "event.near",
+        "failure": false,
+        "gas_burnt": 3314964877959,
+        "id": "AiuwTUEdDM1vvaE4wQppCdpePpEGDZn4wuwgtwxd1XEM",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "4JQ1TuLsG7x2qwbcyJGiNwXGKMzyL8FivJPdScQmNVPH",
+          "Evz165UM3bMs5E8CFsGeKjQPSabqeRuvWAibbStgtYiD",
+          "EWqWBrj4M8vn1YMgkwLVtXqXbcQxiijjdzEp34J4ejtV"
+        ],
+        "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "failure": false,
+        "gas_burnt": 2636415528015,
+        "id": "FHFrqE2RgLRTKsLZUM9sKkeyh7wcnxZeD4qziychvDd5",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "HLqksN17DJo4d7nA3UXdUmPqw6AE7kCmdrNdoJW1hBsK"
+        ],
+        "executor": "contract.main.burrow.near",
+        "failure": false,
+        "gas_burnt": 5219969638432,
+        "id": "4JQ1TuLsG7x2qwbcyJGiNwXGKMzyL8FivJPdScQmNVPH",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "HLqksN17DJo4d7nA3UXdUmPqw6AE7kCmdrNdoJW1hBsK",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "9tSsRc12SU5aptEieLQJDE2pjjwCZi2hpwqbHFx6XFCm"
+        ],
+        "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "failure": false,
+        "gas_burnt": 1436189358687,
+        "id": "Evz165UM3bMs5E8CFsGeKjQPSabqeRuvWAibbStgtYiD",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "9tSsRc12SU5aptEieLQJDE2pjjwCZi2hpwqbHFx6XFCm",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "EWqWBrj4M8vn1YMgkwLVtXqXbcQxiijjdzEp34J4ejtV",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "2h9UKRe9y3oDtXMRbtcDgsHriVNFnEuH3u5sfhEm7ojC",
+          "3JWmfFd58g8N2zs2vR6Ytcwk3nQm67gcgwzWxAGBTcUf",
+          "DMfGErVpMSz5WhtoAknUAJXAfnh1UMw5TY7v7G2fHPbE",
+          "8yv7M7V9NeU5oH98d5mgVp2dUzb7JzDXurSQerV8VK6g",
+          "5XGqB84CV7ABDPWiPb1ZfTN5HA6ADo8rcjwY5kEzq2nC"
+        ],
+        "executor": "event.near",
+        "failure": false,
+        "gas_burnt": 3870761976238,
+        "id": "BWk62x7dTpgUeKHw4JhWXZweSdeLwgPLnrTSsyR4Bbe6",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "8VDfWQTSSAVocjYPpCCiuqs1yLLgydqL3NekvKBrN9oW"
+        ],
+        "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "failure": false,
+        "gas_burnt": 1362399864994,
+        "id": "2h9UKRe9y3oDtXMRbtcDgsHriVNFnEuH3u5sfhEm7ojC",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "8VDfWQTSSAVocjYPpCCiuqs1yLLgydqL3NekvKBrN9oW",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "A1xXknP8TXGqD4RPp9K3w85c8sgfDbtZBLrNFxNpmxMR"
+        ],
+        "executor": "contract.main.burrow.near",
+        "failure": false,
+        "gas_burnt": 3489074724291,
+        "id": "3JWmfFd58g8N2zs2vR6Ytcwk3nQm67gcgwzWxAGBTcUf",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "A1xXknP8TXGqD4RPp9K3w85c8sgfDbtZBLrNFxNpmxMR",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [
+          "Bz9Bmh2P8J1rZPqUp283Y92BNCfX4A73e8MwW6m1629M"
+        ],
+        "executor": "contract.main.burrow.near",
+        "failure": false,
+        "gas_burnt": 4175738723877,
+        "id": "DMfGErVpMSz5WhtoAknUAJXAfnh1UMw5TY7v7G2fHPbE",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "Bz9Bmh2P8J1rZPqUp283Y92BNCfX4A73e8MwW6m1629M",
+        "success": true
+      },
+      {
+        "bool": true,
+        "children": [
+          "A8Copdpir2BX4PtKri7fnEZYhmLzaXyb7LKzHqvUatAz"
+        ],
+        "executor": "event.near",
+        "failure": false,
+        "gas_burnt": 2569318704638,
+        "id": "8yv7M7V9NeU5oH98d5mgVp2dUzb7JzDXurSQerV8VK6g",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "A8Copdpir2BX4PtKri7fnEZYhmLzaXyb7LKzHqvUatAz",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "5XGqB84CV7ABDPWiPb1ZfTN5HA6ADo8rcjwY5kEzq2nC",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "77XyjzmssX42dN4v6MD9vVxa94gfrS6NJ4CYxgJwK4Qx",
+        "success": true
+      },
+      {
+        "bool": null,
+        "children": [],
+        "executor": "organizer.near",
+        "failure": false,
+        "gas_burnt": 223182562500,
+        "id": "FjSAHTTWTpmXh3fvFwKFR1J2dkPURXCxYfhMugBGPPHw",
+        "success": true
+      }
+    ],
+    "rhea_before_redeem": {
+      "account_id": "event.near",
+      "booster_staking": null,
+      "booster_stakings": {},
+      "borrowed": [],
+      "collateral": [],
+      "farms": [],
+      "has_non_farmed_assets": false,
+      "supplied": [
+        {
+          "apr": "0.0",
+          "balance": "10000000000000000000",
+          "shares": "10000000000000000000",
+          "token_id": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1"
+        }
+      ]
+    }
+  }
+}
