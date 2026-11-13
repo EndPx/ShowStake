@@ -30,6 +30,11 @@ export interface ScanResult {
   reason: string;
 }
 
+/** Sequential watch loop; each cycle resolves its durable cursor again. */
+export async function runWorkerCycles(cycle:()=>Promise<boolean>,watch:boolean,stopped:()=>boolean,wait:()=>Promise<void>,log:(message:string)=>void):Promise<void>{
+  do {let progressed=false;try{progressed=await cycle();}catch(e){if(!watch)throw e;log(e instanceof Error?e.message:String(e));}if(watch&&!progressed&&!stopped())await wait();}while(watch&&!stopped());
+}
+
 export function makeLiveChain(rpcUrl: string): LiveChain {
   const rpc = new NearRpcClient(rpcUrl);
   const viewSource: ViewSource = new NearRpcViewSource(rpc);
@@ -75,6 +80,8 @@ export async function runBoundedScan(opts: {
   nextHeight: number;
   maxBlocks: number;
   untilHeight?: number;
+  prefetchNext?: boolean;
+  sourceAvailabilityBound?: boolean;
   log?: ScanLog;
 }): Promise<ScanResult> {
   const { store, blockSource, verifier, deploymentId, nextHeight, maxBlocks, untilHeight, log } = opts;
@@ -85,17 +92,25 @@ export async function runBoundedScan(opts: {
   }
 
   const officialFinalHeight = await verifier.lastFinalHeight();
-  const endLimit = untilHeight === undefined ? officialFinalHeight : Math.min(untilHeight, officialFinalHeight);
+  let endLimit = untilHeight === undefined ? officialFinalHeight : Math.min(untilHeight, officialFinalHeight);
+  if(opts.sourceAvailabilityBound && blockSource.lastFinalHeight){const available=await blockSource.lastFinalHeight();if(!Number.isSafeInteger(available)||available<0)throw new Error('invalid source availability height');endLimit=Math.min(endLimit,available);}
   let height = nextHeight;
   let count = 0;
   let lastIngested = nextHeight - 1;
   const heightsSkipped: number[] = [];
   const pendingMissing: number[] = [];
+  type FetchResult = {ok:true;block:Awaited<ReturnType<BlockSource['fetchBlock']>>}|{ok:false;error:unknown};
+  const fetchSafe=(h:number):Promise<FetchResult>=>Promise.resolve().then(()=>blockSource.fetchBlock(h)).then(block=>({ok:true,block} as const),error=>({ok:false,error} as const));
+  let prefetched:{height:number;result:Promise<FetchResult>}|null=null;
+  const readFetch=(h:number,ready:{height:number;result:Promise<FetchResult>}|null):Promise<FetchResult>=>ready?.height===h?ready.result:fetchSafe(h);
 
   while (count < maxBlocks && height <= endLimit) {
     let block;
     try {
-      block = await blockSource.fetchBlock(height);
+      const result:FetchResult = await readFetch(height,prefetched);
+      prefetched=null;
+      if (!result.ok) throw result.error;
+      block=result.block;
     } catch (e) {
       if (e instanceof BlockNotFoundError) {
         // A 404 is only a skip CANDIDATE (it may be a pruned existing block).
@@ -110,9 +125,10 @@ export async function runBoundedScan(opts: {
       throw e;
     }
     if (block.height !== height) throw new Error(`source returned block ${block.height}, expected ${height}`);
+    if(opts.prefetchNext && count+1<maxBlocks && height+1<=endLimit) prefetched={height:height+1,result:fetchSafe(height+1)};
     let summary;
     try {
-      summary = await store.ingestBlock(deploymentId, block);
+      summary = await store.ingestBlock(deploymentId, block, height === endLimit || count + 1 >= maxBlocks);
     } catch (e) {
       if (e instanceof CanonicalBlockMissingError) {
         // The OFFICIAL RPC has no canonical block at this height (a chain gap);

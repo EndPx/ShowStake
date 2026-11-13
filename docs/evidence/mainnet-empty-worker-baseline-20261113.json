@@ -1,0 +1,33 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "Final mainnet empty paused baseline only; local operator inserts verified deployment metadata, no event/projection row fabricated; no funded transaction",
+  "block": {
+    "height": 224297464,
+    "hash": "4BefyU9L6U3voY2eYxTyhsALUgkZBKGtSpxdA5QnVJvh"
+  },
+  "contract": "showstake-mainnet-escrow-endpx-2026.near",
+  "codeHash": "CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os",
+  "canonicalFt": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+  "balanceAtomic": "0",
+  "config": {
+    "organizer": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5",
+    "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+    "network": "mainnet",
+    "policy_version": "showstake-native-usdc-rhea-review/1",
+    "provider_account": "contract.main.burrow.near",
+    "provider_kind": "RHEA_MAINNET"
+  },
+  "control": {
+    "paused": true,
+    "stage": "Idle",
+    "principal_cap": "0",
+    "shares": "0",
+    "last_internal_balance": "0",
+    "baseline_ft": "0",
+    "expected_return": "0"
+  },
+  "event": null,
+  "deploymentId": "f250c74e-34cb-4761-92fe-0a58fd4ccdf8",
+  "startHeight": 224297464,
+  "historicalScope": "Starts at verified empty baseline; earlier deployment receipts are separate stage1 evidence. Not a full historical scan."
+}

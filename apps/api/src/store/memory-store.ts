@@ -1,5 +1,6 @@
 import type { AttendanceRead, ChallengeRow, ClaimRead, ContentResourceRead, EventListData, EventResultsRead, PassRead, PublicEvent, SessionRow, WalletBindingRow } from '../types.js';
-import type { Store } from './types.js';
+import type { Store, RheaRun } from './types.js';
+import { claimBonusAtomic } from '../lib/util.js';
 
 /**
  * In-memory test double with the SAME single-use/expiry semantics as PgStore.
@@ -18,9 +19,18 @@ export class MemoryStore implements Store {
   private readonly content = new Map<string, ContentResourceRead[]>();
   private seq = 0;
   private readonly qr = new Map<string,{registrationId:string;nonceHash:string;owner:string;expiresAt:number;consumed:boolean}>();
+  private readonly rheaRuns = new Map<string,RheaRun>();
+  private readonly rheaLocks = new Map<string,Promise<void>>();
+
+  async getRheaRun(id:string):Promise<RheaRun|null>{return structuredClone(this.rheaRuns.get(id) ?? null);}
+  async updateRheaRun(seed:RheaRun,change:(run:RheaRun)=>RheaRun):Promise<RheaRun>{
+    const prev=this.rheaLocks.get(seed.approvalId) ?? Promise.resolve();let release!:()=>void;const next=new Promise<void>(r=>{release=r;});this.rheaLocks.set(seed.approvalId,next);await prev;
+    try {const run=structuredClone(this.rheaRuns.get(seed.approvalId) ?? seed);if(run.treasury!==seed.treasury || run.planHash!==seed.planHash)throw new Error('approval identity mismatch');const result=change(run);this.rheaRuns.set(seed.approvalId,structuredClone(result));return structuredClone(result);}finally{release();if(this.rheaLocks.get(seed.approvalId)===next)this.rheaLocks.delete(seed.approvalId);}
+  }
 
   seedEvent(e: PublicEvent): void {
-    this.events.push(e);
+    const realized=e.totals.realizedYieldAtomic ?? '0',allocated=e.totals.allocatedYieldAtomic ?? '0';
+    this.events.push({ ...e, title:e.title ?? null, location:e.location ?? null, rulesText:e.rulesText ?? null, totals: { ...e.totals, realizedYieldAtomic:realized,allocatedYieldAtomic:allocated,unallocatedYieldAtomic:(BigInt(realized)-BigInt(allocated)).toString() } });
   }
   seedPass(p: Omit<PassRead, 'finalized'> | PassRead): void { this.passes.push({ ...p, finalized: true }); }
   seedClaim(c: Omit<ClaimRead, 'finalized'> | ClaimRead): void { this.claims.push({ ...c, finalized: true }); }
@@ -37,8 +47,8 @@ export class MemoryStore implements Store {
     return true;
   }
 
-  async listEvents(opts: { limit: number; cursor: { regOpen: string; id: string } | null }): Promise<EventListData> {
-    const sorted = [...this.events].sort((a, b) => {
+  async listEvents(opts: { limit: number; cursor: { regOpen: string; id: string } | null; network?:string }): Promise<EventListData> {
+    const sorted = this.events.filter(e=>!opts.network || e.network===opts.network).sort((a, b) => {
       const d = Date.parse(a.times.regOpen) - Date.parse(b.times.regOpen);
       if (d !== 0) return d;
       return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
@@ -57,11 +67,11 @@ export class MemoryStore implements Store {
   async getEvent(id: string): Promise<PublicEvent | null> {
     return this.events.find((e) => e.id === id) ?? null;
   }
-  async getEventByChainEventId(id: string): Promise<PublicEvent | null> {
-    return this.events.find((e) => e.chainEventId === id) ?? null;
+  async getEventByChainEventId(id: string, network?:string, contractId?:string): Promise<PublicEvent | null> {
+    const matches=this.events.filter(e=>e.chainEventId===id && (!network || e.network===network) && (!contractId || e.contractId===contractId));return matches.length===1?matches[0]!:null;
   }
   async getEventResults(id: string): Promise<EventResultsRead | null> {
-    const event = this.events.find((e) => e.id === id || e.chainEventId === id);
+    const event = this.events.find((e) => e.id === id) ?? this.events.find((e) => e.chainEventId === id);
     if (!event) return null;
     const rows = this.claims.filter((c) => c.eventId === event.id);
     const attendees = this.attendance.get(event.id) ?? [];
@@ -177,7 +187,7 @@ export class MemoryStore implements Store {
   }
   async listClaims(accountId: string, network: string): Promise<ClaimRead[]> {
     const eventIds = new Set(this.events.filter((e) => e.network === network).map((e) => e.id));
-    return this.claims.filter((c) => c.beneficiaryAccount === accountId && eventIds.has(c.eventId));
+    return this.claims.filter((c) => c.beneficiaryAccount === accountId && eventIds.has(c.eventId)).map(c=>({...c,bonusAtomic:claimBonusAtomic(c.principalAtomic,c.claimAtomic)}));
   }
   async getAttendance(eventId: string, organizerAccount: string, network: string): Promise<AttendanceRead[] | null> {
     const event = this.events.find((e) => e.id === eventId);
@@ -188,6 +198,13 @@ export class MemoryStore implements Store {
     if (!event || event.network !== network || event.state !== 'SETTLED') return null;
     const pass = this.passes.find((p) => p.eventId === eventId && p.ownerAccount === accountId && p.attendanceStatus && p.registrationStatus !== 'WITHDRAWN');
     return pass ? (this.content.get(eventId) ?? []) : null;
+  }
+  async publishResource(a:{id:string;eventId:string;objectKey:string;title:string;mimeType:string;bytesSize:number}):Promise<string> {
+    if (!this.events.some(e=>e.id===a.eventId)) throw new Error('event unavailable');
+    const publishedAt=new Date().toISOString();
+    const rows=this.content.get(a.eventId) ?? [];
+    rows.push({objectKey:a.objectKey,title:a.title,mimeType:a.mimeType,publishedAt,observedAt:publishedAt});
+    this.content.set(a.eventId,rows); return publishedAt;
   }
   async findPass(eventId:string,passId:string,owner:string):Promise<{registrationId:string;chainPassId:string}|null> {
     const p=this.passes.find(x=>x.eventId===eventId && x.id===passId && x.ownerAccount===owner); return p?{registrationId:p.id,chainPassId:p.id}:null;

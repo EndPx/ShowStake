@@ -23,8 +23,6 @@ export function requireSession(store: Store, config: Config) {
     if (!verdict.ok) {
       throw Errors.unauthorized(verdict.code, 'session is not active');
     }
-    // Slide the idle deadline on authenticated activity.
-    await store.touchSession(tokenHash, nowMs, idleDeadlineFrom(nowMs, config.sessionIdleMs));
     req.auth = {
       userId: verdict.session!.userId,
       sessionId: verdict.session!.id,
@@ -38,5 +36,9 @@ export function requireSession(store: Store, config: Config) {
       req.auth.accountId = binding.accountId;
       req.auth.network = binding.network;
     }
+    // Unsigned wallet hints can only reject a mismatched session; they never authenticate.
+    const walletAccount=req.headers['x-wallet-account'], walletNetwork=req.headers['x-wallet-network'];
+    if ((walletAccount !== undefined || walletNetwork !== undefined) && (typeof walletAccount !== 'string' || typeof walletNetwork !== 'string' || walletAccount!==req.auth.accountId || walletNetwork!==req.auth.network)) throw Errors.unauthorized('WALLET_BINDING_MISMATCH','connected wallet differs from verified session');
+    await store.touchSession(tokenHash, nowMs, idleDeadlineFrom(nowMs, config.sessionIdleMs));
   };
 }

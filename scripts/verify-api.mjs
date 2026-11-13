@@ -162,6 +162,11 @@ async function run() {
 
     const me = await get(app, '/v1/me', { cookie });
     check('ME_ACTIVE', me.statusCode === 200 && me.json().data?.active === true, 'session active via cookie', String(me.statusCode));
+    check('ME_VERIFIED_BINDING', me.json().data?.accountId===kp.accountId && me.json().data?.network===NETWORK && me.json().meta?.network===NETWORK, 'identity is immutable verified session binding', JSON.stringify({accountId:me.json().data?.accountId,network:me.json().data?.network}));
+    const spoof=await get(app,'/v1/me?accountId=attacker.near&network=mainnet',{cookie,'x-account-id':'attacker.near'});
+    check('ME_SPOOF_IGNORED',spoof.json().data?.accountId===kp.accountId && spoof.json().data?.network===NETWORK,'unsigned account and network ignored',String(spoof.statusCode));
+    const switched=await get(app,'/v1/me',{cookie,'x-wallet-account':'other.near','x-wallet-network':NETWORK});
+    check('ME_SWITCHED_WALLET_DENIED',switched.statusCode===401 && switched.json().error?.code==='WALLET_BINDING_MISMATCH','wallet hints may only deny a mismatched session',String(switched.statusCode));
 
     const replay = await post(app, '/v1/auth/verify', { challengeId, accountId: kp.accountId, network: NETWORK, domain: DOMAIN, nonce: nonceHex, publicKey: kp.publicKey, signature: sig }, { origin: ORIGIN });
     check('REPLAY_REJECTED', replay.statusCode === 401 && replay.json().error?.code === 'CHALLENGE_ALREADY_CONSUMED', 'replayed nonce 401 already-consumed', `${replay.statusCode} ${replay.json().error?.code}`);

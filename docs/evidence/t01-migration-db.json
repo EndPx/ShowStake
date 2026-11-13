@@ -4,17 +4,17 @@
   "classifier": "PASS_LOCAL",
   "ok": true,
   "reviewer_pending": true,
-  "base_commit": "bb4cc9470315db44ac24158267352074dbbdb910",
-  "run_id": "run-20261106T155958Z-13542",
+  "base_commit": "784ccc92122da4d675541253d1a0e0c0c5f476c5",
+  "run_id": "run-20261113T015308Z-12991",
   "mode": "full",
   "problems": [],
   "source": {
-    "base_commit": "bb4cc9470315db44ac24158267352074dbbdb910",
+    "base_commit": "784ccc92122da4d675541253d1a0e0c0c5f476c5",
     "files": {
-      "package.json": "c5a2bb5df5d049e4a5ece5a4ede242d4f57c6f1938c80e0ed5647e3f124cc039",
-      "pnpm-lock.yaml": "a582cedb6f621ff8489dde4f288b19a36a05ffa70771705b6f0c3ea8d9f152c0",
+      "package.json": "0f83590935bb6519ce110ca5e2696bfc30ab0509391e2d93cfd8d0923a77fc06",
+      "pnpm-lock.yaml": "31e2e61f1635a0a56c3812dd2059f4f3eb2ac87630ddb4e6c5df0e4d209a2c9a",
       "pnpm-workspace.yaml": "4c852704c7587dec520b146b0a110ecec78234c224848117bf97b7176ed1e392",
-      ".gitattributes": "235dd8bee4d6958a1c51966683d1dca8a95ff0cbb59e771f151183fee963f1b9",
+      ".gitattributes": "faa0cfb571b2973c2c002f8ac6b827de5aa75b62dab117511655147cc9988d53",
       ".env.example": "c66002bf02f5b0e5bdfcb78cf408bd585c474dd6b60c6c846f809d08b9b5f2c3",
       "migrations/schema/0001_initial.sql": "45b6469488b84e0da39965c209ace910d398e8d6d53dbcadf2fef6b2be423db2",
       "migrations/schema/0002_roles_grants.sql": "e5074c6f2a5fdd370f442532a169b6d0723ac33093cac07e7bd2e5dfdca9f74a",
@@ -23,7 +23,7 @@
       "migrations/verify-baseline.mjs": "45460fd0d2f5680bd5aca4352b2cf3558239ba6887a760381ae246d7b38b47fd",
       "migrations/README.md": "b0da31de4a81a935b79d7bb3fe2eea4c016e8c0eb1aec54171bef25522e573d5",
       "migrations/COMMIT-MANIFEST.md": "dbba2dca1c8bb38744543f8cacc58d29005e2a1a42e1cff6a816b560a38d8e5a",
-      "migrations/tests/run-t01.mjs": "853d58e739577da9cd65133ff94f9fedaa1ccc45cddbb012e5ef09c2245c6f78",
+      "migrations/tests/run-t01.mjs": "42f20ba9f4e97d76cb22cf7b15beff6d0431cb4d0c0e95a74a751f8fae185c44",
       "migrations/tests/lib.mjs": "bf7dc3b3e6b0aab54a5f5476fa064554d5188197d6ade29182824eca852dd27d",
       "migrations/tests/aggregate.mjs": "9a7a370840a1668eef4017a13c57fcf1b6d89e756b51e495613242f5049c68b2",
       "migrations/tests/replay.mjs": "04528c50c0faedfa3b913717b351f90fb1d22c760d70b8b5ab268471aeb6c65f",
@@ -38,11 +38,11 @@
       "packages/domain/src/capability.mjs": "971750bc44e988ac5161077d72cdfcc8956b4458a90241c06a13b5751712f30a",
       "packages/domain/src/states.mjs": "ac59a6ac4b424dd693a6f11ff7fdf2ca8608c02e7411830180b39cdbe04edf94",
       "packages/domain/src/envelope.mjs": "6005352b28ae9dd1b84126ac46589640b7d1042f2db1392345dd5a42545d51cc",
-      "packages/api-contract/openapi.yaml": "14c79228e1fe48ff808faf1ecb5b71b70e24d5112b885bb3b015978ad13ba381",
-      "packages/api-contract/routes.json": "c7e5890adbb10c7551d47020847268785891f460999481ef83fb78dfd7093cab",
+      "packages/api-contract/openapi.yaml": "33fbafb25a6056367f27b64b41fd3bef73c6e6383e53b67500fca600e48ec150",
+      "packages/api-contract/routes.json": "90fd61b91f4b124d1bfbf07f7848db756e92a5400c7c52fcadbed90e3ca99748",
       "packages/api-contract/README.md": "3feb8d87571071dc30f5e3f48a65a22c72139921995d5f146f4e8991c18e4a00",
       "scripts/verify-openapi.mjs": "b3a457e548edf395a68871a68131db8a049f4c10e4de3f3dc522221dbe1567cc",
-      "scripts/verify-t01-aggregate.mjs": "98bf4de5b4e7777f5ebb7923bf9b6ac5753e115521e57bb8653f9b7770cdd574",
+      "scripts/verify-t01-aggregate.mjs": "25a400c0a7cc01da8810a1ddfaf5fb15415183ef98eade46d93866907f1d3fa9",
       "scripts/verify-bootstrap.mjs": "5bcd128940e56b995bbebba8a14a55b4ace83e3d38ad2d95c0476bb3936a06bd",
       "scripts/verify-packet.mjs": "4b1c1d0d51cce9a8d2e6eb1a3013f864df64eba1a48cc09a4fe043ac80133cb9",
       "scripts/run-packet-verifier.mjs": "fcde0cb8c902d7e4a3ebef7336c7449bfcd2e5203a018ea16ae1fa384c8d5e96",
@@ -53,9 +53,9 @@
     },
     "environment": {
       "node": "v24.18.0",
-      "pnpm": "10.21.0",
+      "pnpm": "unknown",
       "uname": "Linux 6.18.33.2-microsoft-standard-WSL2",
-      "postgres": "postgres (PostgreSQL) 18.6 (Ubuntu 18.6-0ubuntu0.26.04.1)"
+      "postgres": "postgres (PostgreSQL) 18.6 (Ubuntu 18.6-1.pgdg24.04+2)"
     }
   },
   "environment": {
@@ -65,7 +65,7 @@
     "postgresql": {
       "cluster": "disposable (official postgresql-18 apt extracted to owned temp dir)",
       "listener": "per-run Unix socket (loopback TCP disabled for the client)",
-      "port": "39691",
+      "port": "42563",
       "superuser": "showstake",
       "databases": [
         "showstake_disposable",
@@ -129,7 +129,7 @@
     "d01": {
       "phase": "d01",
       "title": "D01 apply + checksum + idempotency + drift + atomic rollback + stale + TEMP",
-      "run_id": "run-20261106T155958Z-13542",
+      "run_id": "run-20261113T015308Z-12991",
       "ok": true,
       "passed": 10,
       "failed": 0,
@@ -137,8 +137,8 @@
         {
           "id": "D01_APPLY_AND_REAPPLY",
           "ok": true,
-          "expected": "2 migrations applied, then 0 on re-run",
-          "observed": "applied=1,2 re-run=0"
+          "expected": "7 migrations applied, then 0 on re-run",
+          "observed": "applied=1,2,3,4,5,6,7 re-run=0"
         },
         {
           "id": "D01_NO_DRIFT_OR_PENDING",
@@ -156,7 +156,7 @@
           "id": "D01_REAL_POSTGRESQL",
           "ok": true,
           "expected": "real PostgreSQL server reports version",
-          "observed": "PostgreSQL 18.6 (Ubuntu 18.6-0ubuntu0.26.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0, 64-bit"
+          "observed": "PostgreSQL 18.6 (Ubuntu 18.6-1.pgdg24.04+2) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0, 64-bit"
         },
         {
           "id": "D01_LOOPBACK_OR_SOCKET_ONLY",
@@ -196,14 +196,14 @@
         }
       ],
       "meta": {},
-      "at": "2026-11-06T16:00:05.069Z"
+      "at": "2026-11-13T01:53:15.393Z"
     },
     "d02": {
       "phase": "d02",
       "title": "D02 FK/unique/identity/idempotency/rules",
-      "run_id": "run-20261106T155958Z-13542",
+      "run_id": "run-20261113T015308Z-12991",
       "ok": true,
-      "passed": 10,
+      "passed": 15,
       "failed": 0,
       "checks": [
         {
@@ -249,6 +249,36 @@
           "observed": "code=23514"
         },
         {
+          "id": "D02_REALIZED_YIELD_CONSERVATION",
+          "ok": true,
+          "expected": "10 principal + 2 realized yield supports 12 paid",
+          "observed": "2"
+        },
+        {
+          "id": "D02_UNALLOCATED_YIELD_NOT_A_CLAIM",
+          "ok": true,
+          "expected": "realized funds may remain outside participant allocations",
+          "observed": "2"
+        },
+        {
+          "id": "D02_REALIZED_YIELD_MISMATCH",
+          "ok": true,
+          "expected": "yield conservation mismatch rejected",
+          "observed": "code=23514"
+        },
+        {
+          "id": "D02_ALLOCATED_YIELD_BOUNDED",
+          "ok": true,
+          "expected": "allocated yield cannot exceed realized yield",
+          "observed": "code=23514"
+        },
+        {
+          "id": "D02_PRINCIPAL_PLUS_YIELD_U128",
+          "ok": true,
+          "expected": "combined principal and yield must fit u128",
+          "observed": "code=23514"
+        },
+        {
           "id": "D02_CAPACITY_RANGE",
           "ok": true,
           "expected": "capacity 0 CHECK 23514",
@@ -268,12 +298,12 @@
         }
       ],
       "meta": {},
-      "at": "2026-11-06T16:00:07.428Z"
+      "at": "2026-11-13T01:53:17.754Z"
     },
     "d03": {
       "phase": "d03",
       "title": "D03 SET ROLE least-privilege",
-      "run_id": "run-20261106T155958Z-13542",
+      "run_id": "run-20261113T015308Z-12991",
       "ok": true,
       "passed": 9,
       "failed": 0,
@@ -334,12 +364,12 @@
         }
       ],
       "meta": {},
-      "at": "2026-11-06T16:00:08.670Z"
+      "at": "2026-11-13T01:53:18.913Z"
     },
     "d04-fixtures": {
       "phase": "d04-fixtures",
       "title": "D04 immutable labeled replay ledger loaded",
-      "run_id": "run-20261106T155958Z-13542",
+      "run_id": "run-20261113T015308Z-12991",
       "ok": true,
       "passed": 1,
       "failed": 0,
@@ -352,12 +382,12 @@
         }
       ],
       "meta": {},
-      "at": "2026-11-06T16:00:10.024Z"
+      "at": "2026-11-13T01:53:20.101Z"
     },
     "d04-verify": {
       "phase": "d04-verify",
       "title": "D04 dump/restore roundtrip + independent chain_events replay",
-      "run_id": "run-20261106T155958Z-13542",
+      "run_id": "run-20261113T015308Z-12991",
       "ok": true,
       "passed": 12,
       "failed": 0,
@@ -436,12 +466,12 @@
         }
       ],
       "meta": {},
-      "at": "2026-11-06T16:00:11.630Z"
+      "at": "2026-11-13T01:53:21.646Z"
     },
     "d05": {
       "phase": "d05",
       "title": "D05 atomic_amount numeric boundary + canonical string round-trip",
-      "run_id": "run-20261106T155958Z-13542",
+      "run_id": "run-20261113T015308Z-12991",
       "ok": true,
       "passed": 5,
       "failed": 0,
@@ -478,12 +508,12 @@
         }
       ],
       "meta": {},
-      "at": "2026-11-06T16:00:13.088Z"
+      "at": "2026-11-13T01:53:22.831Z"
     },
     "d06": {
       "phase": "d06",
       "title": "D06 two-connection cursor/projection tx, rollback recovery, migration lock",
-      "run_id": "run-20261106T155958Z-13542",
+      "run_id": "run-20261113T015308Z-12991",
       "ok": true,
       "passed": 5,
       "failed": 0,
@@ -520,11 +550,11 @@
         }
       ],
       "meta": {},
-      "at": "2026-11-06T16:00:14.509Z"
+      "at": "2026-11-13T01:53:24.803Z"
     }
   },
   "totals": {
-    "checks": 52,
+    "checks": 57,
     "failed": 0
   },
   "note": "LABELED design-sample fixtures only; no chain/live data, no secrets. D04 replay rebuilds projections from immutable labeled chain_events with the Product01 invariant accepted=paid+pending+liability (withdrawn credit included). DB1==DB2 roundtrip and replay are local sandbox equivalence, never chained evidence. Full acceptance aggregates static/readiness/cli/dump/stop/cleanup plus every phase from the same run; a no-dump \"all\" run is NOT_RUN (partial), never PASS_LOCAL. Worker-authored; Codex review pending."

@@ -8,7 +8,8 @@
 // PostgreSQL cluster; projections are seeded by the worker role, the API role's
 // read-only projection grants are re-asserted, and challenge/session rows are
 // written through the real PgStore (transactional single-use nonce).
-import { writeFile, mkdir } from 'node:fs/promises';
+import { writeFile, mkdir, mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildApp } from '../dist/app.js';
@@ -145,6 +146,10 @@ async function run() {
     await unsafePool.end();
     check('DB_OPERATOR_LOGIN_REJECTED', unsafeRejected, 'operator credentials rejected by pool', String(unsafeRejected));
     const store = new PgStore(pool);
+    const journalSeed={approvalId:'00000000-0000-4000-8000-0000000000e1',treasury:'journal.test.near',planHash:'a'.repeat(64),nativeReservedAtomic:'0',usdcReservedAtomic:'0',journal:{}};
+    let winners=0;await Promise.all(Array.from({length:5},()=>store.updateRheaRun(journalSeed,run=>{if(!run.journal.operation){winners++;run.journal.operation='one';run.nativeReservedAtomic='50';}return run;})));
+    const journal=await new PgStore(pool).getRheaRun(journalSeed.approvalId);check('DB_RHEA_SINGLE_RESERVATION',winners===1&&journal?.nativeReservedAtomic==='50'&&journal?.journal.operation==='one','restricted role serializes one reservation and survives new store',JSON.stringify({winners,native:journal?.nativeReservedAtomic}));
+    let mismatch=false;try{await store.updateRheaRun({...journalSeed,planHash:'b'.repeat(64)},r=>r);}catch{mismatch=true;}check('DB_RHEA_IMMUTABLE_PLAN',mismatch,'same approval cannot be reused with another plan',String(mismatch));
     const config = loadConfig({ AUTH_DOMAIN: DOMAIN, AUTH_NETWORK: NETWORK, COOKIE_SECURE: 'false' });
     const kp = makeKeypair();
     // Real PostgreSQL QR consumption is atomic under concurrent scans and cannot
@@ -185,6 +190,20 @@ async function run() {
     const detail = await inject(app, 'GET', `/v1/events/${EVENT_ID}`);
     check('DB_EVENT_DETAIL', detail.statusCode === 200 && detail.json().data?.organizerAccount === 'bob.testnet', 'event detail', String(detail.statusCode));
     check('DB_CHAIN_EVENT_ID', detail.json().data?.chainEventId === 'evt-api-1' && detail.json().data?.chainEventId !== EVENT_ID, 'contract event ID is distinct from database UUID', detail.json().data?.chainEventId);
+    const mainDep='00000000-0000-4000-8000-0000000000e2',mainEvent='00000000-0000-4000-8000-0000000000e3';
+    await client.query(`INSERT INTO deployments(id,environment,network,contract_id,ft_contract_id,ft_decimals,start_block,code_hash) VALUES($1,'mainnet','mainnet','fixture.near','token.near',6,1,$2)`,[mainDep,'0'.repeat(64)]);
+    await client.query('SET ROLE showstake_worker');
+    await client.query(`INSERT INTO events_projection(id,deployment_id,chain_event_id,organizer_account,asset_contract,deposit_atomic,capacity,reg_open,reg_close,cancel_cutoff,checkin_open,checkin_close,finalize_deadline,state,policy_version,rules_hash,observed_at) SELECT $1,$2,chain_event_id,organizer_account,asset_contract,9007199254740993,capacity,reg_open,reg_close,cancel_cutoff,checkin_open,checkin_close,finalize_deadline,state,policy_version,rules_hash,observed_at FROM events_projection WHERE id=$3`,[mainEvent,mainDep,EVENT_ID]);
+    await client.query('RESET ROLE');
+    const mainApp=buildApp({store,config:{...config,authNetwork:'mainnet'},accessKeyVerifier:makeFakeResolver(kp.accountId,kp.publicKey,'mainnet')});
+    try {const ml=await inject(mainApp,'GET','/v1/events'),tl=await inject(app,'GET','/v1/events');const md=await inject(mainApp,'GET','/v1/events/evt-api-1'),td=await inject(app,'GET','/v1/events/evt-api-1');const mr=await inject(mainApp,'GET','/v1/events/evt-api-1/results'),tr=await inject(app,'GET','/v1/events/evt-api-1/results');const cross=await inject(mainApp,'GET',`/v1/events/${EVENT_ID}/results`);check('DB_PUBLIC_NETWORK_ISOLATION',ml.json().data.items.length===1&&ml.json().data.items[0].id===mainEvent&&tl.json().data.items.length===1&&tl.json().data.items[0].id===EVENT_ID&&md.json().data.id===mainEvent&&md.json().data.depositAtomic==='9007199254740993'&&td.json().data.id===EVENT_ID&&mr.json().data.eventId===mainEvent&&tr.json().data.eventId===EVENT_ID&&cross.statusCode===404,'network-scoped list and colliding chain ids on real PG',String(cross.statusCode));
+      const otherDep='00000000-0000-4000-8000-0000000000e4',otherEvent='00000000-0000-4000-8000-0000000000e5',uuidEvent='00000000-0000-4000-8000-0000000000e6',uuidChain='00000000-0000-4000-8000-0000000000e7';
+      await client.query(`INSERT INTO deployments(id,environment,network,contract_id,ft_contract_id,ft_decimals,start_block,code_hash) VALUES($1,'mainnet','mainnet','other.near','token.near',6,1,$2)`,[otherDep,'0'.repeat(64)]);await client.query('SET ROLE showstake_worker');
+      await client.query(`INSERT INTO events_projection(id,deployment_id,chain_event_id,organizer_account,asset_contract,deposit_atomic,capacity,reg_open,reg_close,cancel_cutoff,checkin_open,checkin_close,finalize_deadline,state,policy_version,rules_hash,observed_at) SELECT $1,$2,chain_event_id,organizer_account,asset_contract,deposit_atomic,capacity,reg_open,reg_close,cancel_cutoff,checkin_open,checkin_close,finalize_deadline,state,policy_version,rules_hash,observed_at FROM events_projection WHERE id=$3`,[otherEvent,otherDep,mainEvent]);
+      await client.query(`INSERT INTO events_projection(id,deployment_id,chain_event_id,organizer_account,asset_contract,deposit_atomic,capacity,reg_open,reg_close,cancel_cutoff,checkin_open,checkin_close,finalize_deadline,state,policy_version,rules_hash,observed_at) SELECT $1,$2,$3,organizer_account,asset_contract,deposit_atomic,capacity,reg_open,reg_close,cancel_cutoff,checkin_open,checkin_close,finalize_deadline,state,policy_version,rules_hash,observed_at FROM events_projection WHERE id=$4`,[uuidEvent,otherDep,uuidChain,mainEvent]);await client.query('RESET ROLE');
+      const ambiguous=await inject(mainApp,'GET','/v1/events/evt-api-1'),exact=await inject(mainApp,'GET','/v1/events/evt-api-1/results?contractId=other.near'),uuid=await inject(mainApp,'GET',`/v1/events/${uuidChain}`),wrong=await inject(mainApp,'GET',`/v1/events/${uuidChain}?contractId=fixture.near`);
+      check('DB_PUBLIC_CONTRACT_IDENTITY',ambiguous.statusCode===404&&exact.statusCode===200&&exact.json().data.eventId===otherEvent&&uuid.statusCode===200&&uuid.json().data.id===uuidEvent&&wrong.statusCode===404,'ambiguous chain id fails closed, contract and UUID-like chain id resolve exactly',`${ambiguous.statusCode}/${exact.statusCode}/${uuid.statusCode}/${wrong.statusCode}`);
+    }finally{await mainApp.close();}
 
     // 7. Full NEP-413 challenge -> verify -> session (real DB rows).
     const chal = await inject(app, 'POST', '/v1/auth/challenge', { accountId: kp.accountId, network: NETWORK, domain: DOMAIN });
@@ -204,11 +223,12 @@ async function run() {
     config.accessContractAllowlist=['testnet:escrow.showstake.testnet'];
     config.accessContractAbis={'testnet:escrow.showstake.testnet':'candidate-v1'};
     config.qrHmacKey='0123456789abcdef0123456789abcdef';
+    const privateDir=await mkdtemp(join(tmpdir(),'showstake-api-db-content-'));config.privateContentDir=privateDir;
     const realFetch=globalThis.fetch;
     globalThis.fetch=async (_url,options)=>{
       const request=JSON.parse(options.body), now=Date.now();
       const view=request.params?.method_name==='get_event'
-        ? {event_id:'evt-api-1',organizer:'bob.testnet',phase:'RegistrationClosed',checkin_open:now-1000,checkin_close:now+60000}
+        ? {event_id:'evt-api-1',organizer:kp.accountId,phase:'RegistrationClosed',checkin_open:now-1000,checkin_close:now+60000}
         : {event_id:'evt-api-1',pass_id:'chain-pass',owner:kp.accountId,registration_status:'Active',attendance_status:'Unmarked'};
       const result=request.method==='block' ? {header:{hash:'final-block',timestamp_nanosec:String(BigInt(now)*1000000n)}} : {block_hash:'final-block',result:[...Buffer.from(JSON.stringify(view))]};
       return new Response(JSON.stringify({jsonrpc:'2.0',id:request.id,result}),{status:200});
@@ -216,7 +236,10 @@ async function run() {
     try {
       const endpoint=await inject(app,'POST',`/v1/events/${EVENT_ID}/checkin/challenge`,{passId},cookie);
       check('DB_QR_ENDPOINT_CANDIDATE',endpoint.statusCode===200 && !!endpoint.json().data?.token,'restricted PgStore and finalized candidate view issue challenge',String(endpoint.statusCode));
-    } finally { globalThis.fetch=realFetch; }
+      const uploaded=await inject(app,'POST',`/v1/events/${EVENT_ID}/content`,{title:'Fixture',mimeType:'text/plain',contentBase64:Buffer.from('private').toString('base64')},cookie,ORIGIN);
+      check('DB_CONTENT_PUBLISH',uploaded.statusCode===201 && /^[a-f0-9]{64}$/.test(uploaded.json().data?.id ?? ''),'restricted PgStore publishes after chain organizer check',String(uploaded.statusCode));
+      const count=await client.query('SELECT count(*)::int n FROM protected_resources WHERE event_id=$1',[EVENT_ID]);check('DB_CONTENT_ROW',count.rows[0].n===1,'one protected resource row',String(count.rows[0].n));
+    } finally { globalThis.fetch=realFetch;await rm(privateDir,{recursive:true,force:true}); }
 
     // 8. Replay -> 401.
     const replay = await inject(app, 'POST', '/v1/auth/verify', { challengeId: chId, accountId: kp.accountId, network: NETWORK, domain: DOMAIN, nonce: c.data.nonce, publicKey: kp.publicKey, signature: sig }, undefined, ORIGIN);

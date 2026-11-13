@@ -23,6 +23,8 @@ export interface DeploymentAllowlist {
   startHeight: number;
   /** Explicit mock provider identity for the reviewed candidate adapter. */
   candidateProviderAccount?: string;
+  /** Set only by the final-chain factory discovery path, never from an environment variable. */
+  verifiedFactoryId?: string;
 }
 
 export interface WorkerConfig {
@@ -52,12 +54,12 @@ const N = (v: string | undefined, d: number): number => {
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): WorkerConfig {
   const network = env.WORKER_NETWORK ?? '';
-  if (network !== 'testnet') {
-    throw new Error(`WORKER_NETWORK must be 'testnet' (only testnet is authorized); got ${JSON.stringify(network)}`);
+  if (network !== 'testnet' && network !== 'mainnet') {
+    throw new Error(`WORKER_NETWORK must be testnet or mainnet; got ${JSON.stringify(network)}`);
   }
   const environment = env.WORKER_ENVIRONMENT ?? '';
-  if (environment !== 'testnet') {
-    throw new Error(`WORKER_ENVIRONMENT must be 'testnet' for this deployment; got ${JSON.stringify(environment)}`);
+  if (environment !== network) {
+    throw new Error(`WORKER_ENVIRONMENT must match WORKER_NETWORK; got ${JSON.stringify(environment)}`);
   }
   const contractId = env.WORKER_CONTRACT_ID ?? '';
   const ftContractId = env.WORKER_FT_CONTRACT_ID ?? '';
@@ -66,7 +68,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): WorkerConfig {
   const organizer = env.WORKER_ORGANIZER ?? '';
   const policyVersion = env.WORKER_POLICY_VERSION ?? '';
   const candidateProviderAccount = env.WORKER_CANDIDATE_PROVIDER_ACCOUNT ?? '';
-  if (policyVersion === 'showstake-native-usdc-event/1' && !candidateProviderAccount) throw new Error('WORKER_CANDIDATE_PROVIDER_ACCOUNT is required');
+  if (['showstake-native-usdc-event/1','showstake-native-usdc-rhea-review/1'].includes(policyVersion) && !candidateProviderAccount) throw new Error('WORKER_CANDIDATE_PROVIDER_ACCOUNT is required');
   if (!contractId) throw new Error('WORKER_CONTRACT_ID is required (allowlisted event contract)');
   if (!ftContractId) throw new Error('WORKER_FT_CONTRACT_ID is required (canonical FT)');
   if (!codeHash) throw new Error('WORKER_CODE_HASH is required (base58 contract code hash)');
@@ -87,10 +89,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): WorkerConfig {
     throw new Error(`WORKER_START_HEIGHT must be a non-negative safe integer; got ${startHeightRaw}`);
   }
 
+  if (network === 'mainnet' && (contractId !== 'showstake-mainnet-escrow-endpx-2026.near' || ftContractId !== '17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1' || ftDecimals !== 6 || codeHash !== 'CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os' || wasmSha256 !== '03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2' || policyVersion !== 'showstake-native-usdc-rhea-review/1' || candidateProviderAccount !== 'contract.main.burrow.near')) throw new Error('unreviewed mainnet deployment');
   return {
     nebula: network,
-    rpcUrl: env.WORKER_RPC_URL || 'https://rpc.testnet.near.org',
-    neardataUrl: env.WORKER_NEARDATA_URL || 'https://testnet.neardata.xyz',
+    rpcUrl: env.WORKER_RPC_URL || `https://rpc.${network}.near.org`,
+    neardataUrl: env.WORKER_NEARDATA_URL || `https://${network}.neardata.xyz`,
     consumer: env.WORKER_CONSUMER || 'showstake-worker',
     maxBlocksPerRun: N(env.WORKER_MAX_BLOCKS_PER_RUN, 1000),
     deployment: {

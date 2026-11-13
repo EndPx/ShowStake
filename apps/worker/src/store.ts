@@ -26,7 +26,7 @@
 // consumer. Canonical hash + official-finality proof happen in the production
 // ingest path itself, not only in tests.
 import { randomUUID } from 'node:crypto';
-import { isCandidate, parseCandidateEvent, parseCandidateRegistration, validateCandidatePass, validateCandidateConfig, validateCandidateCoverage } from './candidate.js';
+import { isCandidate, isMainnetCandidate, parseCandidateEvent, parseCandidateRegistration, validateCandidatePass, validateCandidateConfig, validateCandidateCoverage } from './candidate.js';
 import { Pool, type Client, type PoolConfig } from 'pg';
 import { WORKER_DB_ROLE, type DeploymentAllowlist } from './config.js';
 import { assertAllowlistIdentity } from './identity.js';
@@ -151,6 +151,7 @@ export function createWorkerPool(config: PoolConfig): Pool {
 export async function assertWorkerLeastPrivilege(pool: Pool): Promise<void> {
   const readOnlyTables = [
     'deployments',
+    'factory_deployment_allowlist',
     'app_users',
     'sessions',
     'chain_events',
@@ -316,7 +317,7 @@ export class WorkerStore {
    * showstake events, enrich publication rules from the pinned view, then persist
    * everything atomically with a monotonic cursor.
    */
-  async ingestBlock(deploymentId: string, block: NormalizedBlock): Promise<IngestSummary> {
+  async ingestBlock(deploymentId: string, block: NormalizedBlock, refreshCandidate = false): Promise<IngestSummary> {
     if (block.height < this.allowlist.startHeight) {
       throw new Error(`block ${block.height} precedes configured start height ${this.allowlist.startHeight}`);
     }
@@ -335,7 +336,7 @@ export class WorkerStore {
       );
     }
 
-    if (this.allowlist.policyVersion === 'showstake-native-usdc-event/1' && !isCandidate(this.allowlist)) throw new Error('candidate code hash is not reviewed');
+    if (['showstake-native-usdc-event/1','showstake-native-usdc-rhea-review/1'].includes(this.allowlist.policyVersion) && !isCandidate(this.allowlist)) throw new Error('candidate code hash is not reviewed');
     const candidate = isCandidate(this.allowlist);
     const kept = block.receipts.filter((r) => r.executorId === this.allowlist.contractId && r.success);
     const units: { classified: ReturnType<typeof classifyEvent>; chainEvent: ChainEventInsert }[] = [];
@@ -347,7 +348,7 @@ export class WorkerStore {
     }
 
     let snapshot: { event: NonNullable<ReturnType<typeof parseCandidateEvent>>; registrations: ReturnType<typeof parseCandidateRegistration>[] } | null = null;
-    if (candidate && kept.length) {
+    if (candidate && (kept.length || refreshCandidate)) {
       const read = async (method: string, args: unknown, accountId = this.allowlist.contractId): Promise<unknown> => {
         const result = await this.live.viewSource.callView(method, { accountId, args }, block.hash);
         this.assertPinned(result.blockHeight, result.blockHash, block, method);
@@ -367,10 +368,16 @@ export class WorkerStore {
           }
         }
         if (new Set(registrations.map(r => r.registrationId)).size !== event.count || new Set(registrations.map(r => r.passId)).size !== event.count || new Set(registrations.map(r => r.participant)).size !== event.count || new Set(registrations.map(r => r.commitmentId)).size !== event.count) throw new Error('candidate duplicate registration identity');
-        if (event.phase === 'Settled' && registrations.reduce((sum, r) => sum + BigInt(r.claimAmount), 0n) !== BigInt(event.accepted)) throw new Error('candidate settlement conservation failed');
+        if (event.phase === 'Settled' && registrations.reduce((sum, r) => sum + BigInt(r.claimAmount), 0n) !== BigInt(event.accepted) + BigInt(event.allocatedYield)) throw new Error('candidate settlement conservation failed');
         const balance = await read('ft_balance_of', { account_id: this.allowlist.contractId }, this.allowlist.ftContractId);
-        const position = await read('get_position', { account_id: this.allowlist.contractId }, provider);
-        validateCandidateCoverage(event, registrations, balance, position);
+        if (isMainnetCandidate(this.allowlist)) {
+          // Rhea position and detached withdrawal receipts are not yet accepted as financial proof.
+          // Only assert wallet coverage in states in which the contract says funds are local.
+          if (event.earnState === 'NotStarted' || event.earnState === 'Redeemed') validateCandidateCoverage(event, registrations, balance, '0');
+        } else {
+          const position = await read('get_position', { account_id: this.allowlist.contractId }, provider);
+          validateCandidateCoverage(event, registrations, balance, position);
+        }
         snapshot = { event, registrations };
       }
     }
@@ -523,17 +530,19 @@ export class WorkerStore {
         const rows = await client.query<{ chain_registration_id: string; sequence_no: string; participant_account: string; beneficiary_account: string; commitment_id: string; principal_atomic: string; pass_id: string; owner_account: string }>(`SELECT r.chain_registration_id, r.sequence_no::text, r.participant_account, r.beneficiary_account, r.commitment_id, r.principal_atomic::text, p.pass_id, p.owner_account FROM registrations_projection r JOIN events_projection e ON e.id = r.event_id JOIN passes_projection p ON p.registration_id = r.id WHERE e.deployment_id = $1 AND e.chain_event_id = $2 ORDER BY r.sequence_no`, [deploymentId, rules.eventId]);
         if (rows.rows.length !== snapshot.registrations.length || rows.rows.some((r, i) => { const v = snapshot!.registrations[i]!; return r.chain_registration_id !== v.registrationId || r.sequence_no !== String(v.eventSequence) || r.participant_account !== v.participant || r.beneficiary_account !== v.beneficiary || r.commitment_id !== v.commitmentId || r.principal_atomic !== v.amount || r.pass_id !== v.passId || r.owner_account !== v.participant; })) throw new Error('candidate projected registrations mismatch');
         const final = snapshot.event.phase === 'AttendanceFinalized' || snapshot.event.phase === 'Settled';
+        const refund = snapshot.event.phase === 'Cancelled' || snapshot.event.phase === 'RefundOnly';
         let paid = 0n, pending = 0n;
         for (const r of snapshot.registrations) {
           const settled = snapshot.event.phase === 'Settled';
-          const payout = !settled ? 'NOT_CLAIMABLE' : r.claimAmount === '0' ? 'ZERO' : r.claim === 'Paid' ? 'PAID' : r.claim === 'Pending' ? 'PENDING' : 'CLAIMABLE';
+          const refundReady = refund && ['NotStarted','Redeemed'].includes(snapshot.event.earnState);
+          const payout = !settled && !refundReady ? 'NOT_CLAIMABLE' : settled && r.claimAmount === '0' ? 'ZERO' : r.claim === 'Paid' ? 'PAID' : r.claim === 'Pending' ? 'PENDING' : 'CLAIMABLE';
           if (r.claim === 'Paid') paid += BigInt(r.claimAmount);
           if (r.claim === 'Pending') pending += BigInt(r.claimAmount);
-          await client.query(`UPDATE registrations_projection SET state = $3, attended = $4, claim_atomic = $5::numeric, payout_state = $6 WHERE event_id = (SELECT id FROM events_projection WHERE deployment_id = $1 AND chain_event_id = $2) AND chain_registration_id = $7`, [deploymentId, rules.eventId, final ? (r.attendance === 'Attended' ? 'ATTENDED' : 'NO_SHOW') : 'COMMITTED', r.attendance === 'Attended', settled ? r.claimAmount : '0', payout, r.registrationId]);
+          await client.query(`UPDATE registrations_projection SET state = $3, attended = $4, claim_atomic = $5::numeric, payout_state = $6, observed_at = to_timestamp($8::double precision / 1000) WHERE event_id = (SELECT id FROM events_projection WHERE deployment_id = $1 AND chain_event_id = $2) AND chain_registration_id = $7`, [deploymentId, rules.eventId, refund ? 'REFUNDABLE' : final ? (r.attendance === 'Attended' ? 'ATTENDED' : 'NO_SHOW') : 'COMMITTED', r.attendance === 'Attended', settled ? r.claimAmount : refundReady ? r.amount : '0', payout, r.registrationId, block.timestampMs]);
         }
-        const liability = BigInt(snapshot.event.accepted) - paid - pending;
+        const liability = BigInt(snapshot.event.accepted) + BigInt(snapshot.event.allocatedYield) - paid - pending;
         if (liability < 0n) throw new Error('candidate negative liability');
-        await client.query(`UPDATE events_projection SET state = $3, paid_atomic = $4::numeric, pending_atomic = $5::numeric, liability_atomic = $6::numeric WHERE deployment_id = $1 AND chain_event_id = $2`, [deploymentId, rules.eventId, snapshot.event.phase === 'Settled' ? 'SETTLED' : final ? 'ATTENDANCE_FINALIZED' : 'PUBLISHED', paid.toString(), pending.toString(), liability.toString()]);
+        await client.query(`UPDATE events_projection SET state = $3, paid_atomic = $4::numeric, pending_atomic = $5::numeric, liability_atomic = $6::numeric, observed_at = to_timestamp($7::double precision / 1000), realized_yield_atomic = $8::numeric, onchain_title = $9, onchain_location = $10, onchain_rules_text = $11, allocated_yield_atomic=$12::numeric WHERE deployment_id = $1 AND chain_event_id = $2`, [deploymentId, rules.eventId, snapshot.event.phase === 'Settled' ? 'SETTLED' : snapshot.event.phase === 'Cancelled' ? 'CANCELLED' : snapshot.event.phase === 'RefundOnly' ? 'REFUND_ONLY' : final ? 'ATTENDANCE_FINALIZED' : 'PUBLISHED', paid.toString(), pending.toString(), liability.toString(), block.timestampMs, snapshot.event.realizedYield, snapshot.event.title, snapshot.event.location, snapshot.event.rulesText,snapshot.event.allocatedYield]);
       }
 
       // Reconcile the block's financial state exactly once (contract totals are

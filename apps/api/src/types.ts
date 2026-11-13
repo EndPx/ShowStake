@@ -11,6 +11,9 @@ export interface PublicEvent {
   organizerAccount: string;
   assetContract: string;
   state: string;
+  title: string | null;
+  location: string | null;
+  rulesText: string | null;
   depositAtomic: string;
   capacity: number;
   times: {
@@ -24,6 +27,9 @@ export interface PublicEvent {
   /** Exact projection totals; strings, no implicit zeros. */
   totals: {
     acceptedAtomic: string;
+    realizedYieldAtomic: string;
+    allocatedYieldAtomic: string;
+    unallocatedYieldAtomic: string;
     paidAtomic: string;
     pendingAtomic: string;
     liabilityAtomic: string;

@@ -1,0 +1,63 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "Read-only mainnet finalized empty-deployment baseline through actual worker/restricted local PG and HTTP API; no participant lifecycle or funded tx",
+  "baselineEvidence": "docs/evidence/mainnet-empty-worker-baseline-20261113.json",
+  "worker": {
+    "ok": true,
+    "network": "mainnet",
+    "contract": "showstake-mainnet-escrow-endpx-2026.near",
+    "startHeight": 224297464,
+    "endHeight": 224297466,
+    "blocksIngested": 3,
+    "heightsSkipped": [],
+    "heightsUnprovenMissing": [],
+    "officialFinalHeight": 224297493,
+    "reason": "max_blocks_reached"
+  },
+  "cursor": [
+    {
+      "consumer": "showstake-mainnet-preview",
+      "cursor_value": {
+        "block_hash": "BwU48s3pqaNh63HUVwtEcRKYWywSYUcmrU9DG79Xg7Qy",
+        "block_height": 224297466
+      }
+    }
+  ],
+  "http": [
+    {
+      "path": "/v1/mainnet/readiness",
+      "status": 200,
+      "network": "mainnet",
+      "stale": false,
+      "data": {
+        "contractId": "showstake-mainnet-escrow-endpx-2026.near",
+        "codeHash": "CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os",
+        "paused": true,
+        "principalCapAtomic": "0",
+        "eventPresent": false,
+        "providerStatus": "UNVERIFIED",
+        "signingAuthority": false
+      }
+    },
+    {
+      "path": "/v1/events",
+      "status": 200,
+      "network": "mainnet",
+      "stale": true,
+      "items": 0
+    },
+    {
+      "path": "/v1/me",
+      "status": 401,
+      "network": null,
+      "stale": false
+    },
+    {
+      "path": "/v1/rhea/microtest",
+      "status": 401,
+      "network": null,
+      "stale": false
+    }
+  ],
+  "blockchainTransactions": 0
+}

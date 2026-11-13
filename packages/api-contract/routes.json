@@ -7,7 +7,8 @@
     "/events/{eventId}/results",
     "/auth/challenge",
     "/auth/verify",
-    "/auth/privy"
+    "/auth/privy",
+    "/mainnet/readiness"
   ],
   "host_only": [
     "/events/{eventId}/checkin-requests",
@@ -113,6 +114,30 @@
     {
       "path": "/events/{eventId}/content/{resourceId}",
       "method": "get"
+    },
+    {
+      "path": "/mainnet/readiness",
+      "method": "get"
+    },
+    {
+      "path": "/events/{eventId}/content",
+      "method": "post"
+    },
+    {
+      "path": "/rhea/microtest",
+      "method": "get"
+    },
+    {
+      "path": "/rhea/microtest/reserve",
+      "method": "post"
+    },
+    {
+      "path": "/rhea/microtest/submitted",
+      "method": "post"
+    },
+    {
+      "path": "/rhea/microtest/reconcile",
+      "method": "post"
     }
   ]
 }

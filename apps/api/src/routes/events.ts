@@ -1,4 +1,4 @@
-import { paginationLimit, okEnvelope } from '@showstake/domain';
+import { paginationLimit, okEnvelope, validateAccountIdShape } from '@showstake/domain';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { Errors } from '../errors.js';
 import { isUuid } from '../lib/util.js';
@@ -41,6 +41,14 @@ function itemsStale(items: PublicEvent[], nowMs: number, freshnessMs: number): b
  * "available seats").
  */
 export function registerEvents(app: FastifyInstance, store: Store, config: Config): void {
+  async function resolveEvent(eventId:string,contractId:unknown):Promise<PublicEvent> {
+    if (!isUuid(eventId) && (!/^[A-Za-z0-9._:-]{1,128}$/.test(eventId) || eventId.toLowerCase().includes('uuid'))) throw Errors.invalid('EVENT_ID_INVALID', 'eventId must be a UUID or contract event id');
+    if(contractId!==undefined && (typeof contractId!=='string'||!validateAccountIdShape(contractId)))throw Errors.invalid('CONTRACT_ID_INVALID','contractId must be a valid NEAR account');
+    let event:PublicEvent|null=null;
+    if(typeof contractId==='string')event=await store.getEventByChainEventId(eventId,config.authNetwork,contractId);
+    else {if(isUuid(eventId)){const dbEvent=await store.getEvent(eventId);if(dbEvent?.network===config.authNetwork)event=dbEvent;}if(!event)event=await store.getEventByChainEventId(eventId,config.authNetwork);}
+    if(!event||event.network!==config.authNetwork)throw Errors.notFound('event');return event;
+  }
   app.get<{ Querystring: { cursor?: string; limit?: string } }>('/v1/events', async (req, reply) => {
     let cursor: { regOpen: string; id: string } | null = null;
     if (req.query.cursor !== undefined) {
@@ -53,25 +61,22 @@ export function registerEvents(app: FastifyInstance, store: Store, config: Confi
       if (!/^[0-9]+$/.test(req.query.limit)) throw Errors.invalid('LIMIT_INVALID', 'limit must be a positive integer');
       limit = paginationLimit(Number(req.query.limit));
     }
-    const data = await store.listEvents({ limit, cursor });
-    return reply.send(okEnvelope(data, meta(req, { network: null, stale: itemsStale(data.items, Date.now(), config.projectionFreshnessMs) })));
+    const data = await store.listEvents({ limit, cursor, network:config.authNetwork });
+    return reply.send(okEnvelope(data, meta(req, { network: config.authNetwork, stale: itemsStale(data.items, Date.now(), config.projectionFreshnessMs) })));
   });
 
-  app.get<{ Params: { eventId: string } }>('/v1/events/:eventId', async (req, reply) => {
+  app.get<{ Params: { eventId: string }; Querystring:{contractId?:string} }>('/v1/events/:eventId', async (req, reply) => {
     const { eventId } = req.params;
-    if (!isUuid(eventId) && (!/^[A-Za-z0-9._:-]{1,128}$/.test(eventId) || eventId.toLowerCase().includes('uuid'))) throw Errors.invalid('EVENT_ID_INVALID', 'eventId must be a UUID or contract event id');
-    const event = isUuid(eventId) ? await store.getEvent(eventId) : await store.getEventByChainEventId(eventId);
-    if (!event) throw Errors.notFound('event');
+    const event = await resolveEvent(eventId,req.query.contractId);
     const observedMs = Number.isFinite(Date.parse(event.observedAt)) ? Date.parse(event.observedAt) : null;
     return reply.send(okEnvelope(event, meta(req, { network: event.network, stale: projectionStale(observedMs, Date.now(), config.projectionFreshnessMs) })));
   });
 
-  app.get<{ Params: { eventId: string } }>('/v1/events/:eventId/results', async (req, reply) => {
+  app.get<{ Params: { eventId: string }; Querystring:{contractId?:string} }>('/v1/events/:eventId/results', async (req, reply) => {
     const { eventId } = req.params;
-    if (!isUuid(eventId) && (!/^[A-Za-z0-9._:-]{1,128}$/.test(eventId) || eventId.toLowerCase().includes('uuid'))) throw Errors.invalid('EVENT_ID_INVALID', 'eventId must be a UUID or contract event id');
-    const results = await store.getEventResults(eventId);
+    const event = await resolveEvent(eventId,req.query.contractId);
+    const results = await store.getEventResults(event.id);
     if (!results) throw Errors.notFound('event');
-    const event = isUuid(eventId) ? await store.getEvent(eventId) : await store.getEventByChainEventId(eventId);
     const stale = projectionStale(Date.parse(results.observedAt), Date.now(), config.projectionFreshnessMs);
     return reply.send(okEnvelope(results, meta(req, { network: event?.network ?? null, stale })));
   });

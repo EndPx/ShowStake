@@ -1,5 +1,5 @@
 import { createHmac, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
-import { readFile, realpath } from 'node:fs/promises';
+import { readFile, realpath, lstat, writeFile, link, unlink } from 'node:fs/promises';
 import { isAbsolute, relative, resolve } from 'node:path';
 import { makeOriginCheck } from '../http/origin.js';
 import { InMemoryRateLimiter, makeChallengeRateLimitHandler } from '../http/rate-limit.js';
@@ -24,8 +24,10 @@ type Token = {id:string; eventId:string; passId:string; chainPassId:string; owne
 type Event = NonNullable<Awaited<ReturnType<Store['getEvent']>>>;
 type Snapshot = {event:Record<string,unknown>; pass:Record<string,unknown>|null; blockMs:number; abi:string};
 async function chainSnapshot(config:Config,event:Event,chainPassId?:string):Promise<Snapshot> {
-  if (!config.accessContractAllowlist?.includes(`${event.network}:${event.contractId}`)) throw Errors.unavailable('CONTRACT_NOT_ALLOWED','contract is not configured for authorization');
-  const abi=config.accessContractAbis[`${event.network}:${event.contractId}`];
+  const factoryId = event.network==='mainnet' && /^[a-f0-9]{16}\./.test(event.contractId) ? event.contractId.slice(17) : '';
+  const factoryHash = factoryId ? config.accessFactoryCodeHashes[`mainnet:${factoryId}`] : undefined;
+  if (!config.accessContractAllowlist?.includes(`${event.network}:${event.contractId}`) && !factoryHash) throw Errors.unavailable('CONTRACT_NOT_ALLOWED','contract is not configured for authorization');
+  const abi=factoryHash ? 'candidate-v1' : config.accessContractAbis[`${event.network}:${event.contractId}`];
   if (!['candidate-v1','legacy-v6'].includes(abi ?? '')) throw Errors.unavailable('CONTRACT_ABI_NOT_CONFIGURED','contract ABI is not configured for authorization');
   const url=config.rpcUrls[event.network as keyof Config['rpcUrls']];
   if (!url) throw Errors.unavailable('CHAIN_UNAVAILABLE','final chain state unavailable');
@@ -34,12 +36,28 @@ async function chainSnapshot(config:Config,event:Event,chainPassId?:string):Prom
     const block=await post({jsonrpc:'2.0',id:'block',method:'block',params:{finality:'final'}}) as {result?:{header?:{hash?:string;timestamp_nanosec?:string}};error?:unknown};
     const header=block.result?.header; if(block.error || !header?.hash || typeof header.timestamp_nanosec!=='string' || !/^\d+$/.test(header.timestamp_nanosec)) throw new Error('invalid block');
     const blockMs=Number(BigInt(header.timestamp_nanosec)/1000000n); if(!Number.isSafeInteger(blockMs) || blockMs>Date.now()+5000 || Date.now()-blockMs>30000) throw new Error('stale block');
+    if (event.network === 'mainnet') {
+      const pinned = 'CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os';
+      if ((!factoryHash && event.contractId !== 'showstake-mainnet-escrow-endpx-2026.near' && config.accessContractCodeHashes[`mainnet:${event.contractId}`] !== pinned) || abi !== 'candidate-v1') throw new Error('unreviewed mainnet deployment');
+      const identity=await post({jsonrpc:'2.0',id:'identity',method:'query',params:{request_type:'view_account',block_id:header.hash,account_id:event.contractId}}) as {result?:{code_hash?:string;block_hash?:string};error?:unknown};
+      if(identity.error || identity.result?.block_hash!==header.hash || identity.result.code_hash!==pinned) throw new Error('unreviewed mainnet code');
+    }
     const view=async(method:string,args:object):Promise<Record<string,unknown>>=>{
       const result=await post({jsonrpc:'2.0',id:'access',method:'query',params:{request_type:'call_function',block_id:header.hash,account_id:event.contractId,method_name:method,args_base64:Buffer.from(JSON.stringify(args)).toString('base64')}}) as {result?:{result?:number[];block_hash?:string};error?:unknown};
       const body=result.result; if(result.error || !body || body.block_hash!==header.hash || !Array.isArray(body.result) || Date.now()-blockMs>30000) throw new Error('invalid result');
       const value:unknown=JSON.parse(Buffer.from(body.result).toString()); if(!value || typeof value!=='object' || Array.isArray(value)) throw new Error('invalid view'); return value as Record<string,unknown>;
     };
+    let factoryOrganizer:string|null=null;
+    if(factoryHash) {
+      const query=async(accountId:string,params:object)=>{const r=await post({jsonrpc:'2.0',id:'factory',method:'query',params:{...params,block_id:header.hash,account_id:accountId}}) as {result?:Record<string,unknown>;error?:unknown};if(r.error || !r.result || r.result.block_hash!==header.hash) throw new Error('invalid factory query');return r.result;};
+      const factoryView=async(method_name:string,args:object)=>{const r=await query(factoryId,{request_type:'call_function',method_name,args_base64:Buffer.from(JSON.stringify(args)).toString('base64')});if(!Array.isArray(r.result)) throw new Error('factory view');const v:unknown=JSON.parse(Buffer.from(r.result as number[]).toString());if(!v || typeof v!=='object' || Array.isArray(v)) throw new Error('factory view');return v as Record<string,unknown>;};
+      const [factoryAccount,keys,factoryConfig,child,leaf]=await Promise.all([query(factoryId,{request_type:'view_account'}),query(event.contractId,{request_type:'view_access_key_list'}),factoryView('get_config',{}),factoryView('get_child',{child_id:event.contractId}),view('get_config',{})]);
+      const ft='17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1', policy='showstake-native-usdc-rhea-review/1', sha='03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2';
+      if(factoryAccount.code_hash!==factoryHash || !Array.isArray(keys.keys) || keys.keys.length!==0 || factoryConfig.factory_account!==factoryId || factoryConfig.network!=='mainnet' || factoryConfig.factory_policy_identity!=='showstake-factory-d039/1' || factoryConfig.schema_version!==1 || factoryConfig.canonical_ft!==ft || factoryConfig.provider_account!=='contract.main.burrow.near' || factoryConfig.provider_kind!=='RHEA_MAINNET' || factoryConfig.leaf_code_sha256!==sha || factoryConfig.leaf_policy_version!==policy || child.state!=='Ready' || child.child_id!==event.contractId || typeof child.organizer!=='string' || child.network!=='mainnet' || child.canonical_ft!==ft || child.leaf_code_sha256!==sha || child.leaf_policy_version!==policy || leaf.organizer!==child.organizer || leaf.network!=='mainnet' || leaf.canonical_ft!==ft || leaf.provider_account!=='contract.main.burrow.near' || leaf.provider_kind!=='RHEA_MAINNET' || leaf.policy_version!==policy) throw new Error('untrusted factory child');
+      factoryOrganizer=child.organizer;
+    }
     const [e,p]=await Promise.all([view('get_event',abi==='candidate-v1'?{}:{event_id:event.chainEventId}),chainPassId?view('get_pass',{pass_id:chainPassId}):Promise.resolve(null)]);
+    if(factoryOrganizer && e.organizer!==factoryOrganizer) throw new Error('factory organizer mismatch');
     if(Date.now()-blockMs>30000) throw new Error('stale block'); return {event:e,pass:p,blockMs,abi:abi!};
   } catch {throw Errors.unavailable('CHAIN_UNAVAILABLE','final chain state unavailable');}
 }
@@ -60,6 +78,25 @@ export function registerPrivate(app: FastifyInstance, store: Store, config: Conf
   const auth = requireSession(store, config);
   const origin=makeOriginCheck(config);
   const rate=makeChallengeRateLimitHandler(new InMemoryRateLimiter(config.challengeRateLimit.maxPerWindow,config.challengeRateLimit.windowMs));
+  app.post<{Params:{eventId:string};Body:{title:string;mimeType:string;contentBase64:string}}>('/v1/events/:eventId/content',{bodyLimit:720000,preHandler:[origin,rate,auth]},async(req,reply)=>{
+    const a=account(req); const body=req.body;
+    if(!isUuid(req.params.eventId) || !body || typeof body.title!=='string' || !body.title.trim() || Buffer.byteLength(body.title)>256 || typeof body.mimeType!=='string' || !['application/pdf','text/plain','image/png','image/jpeg'].includes(body.mimeType) || typeof body.contentBase64!=='string' || body.contentBase64.length===0 || body.contentBase64.length>699052 || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(body.contentBase64)) throw Errors.invalid('INVALID_CONTENT','invalid content metadata or base64');
+    const bytes=Buffer.from(body.contentBase64,'base64');
+    if(bytes.length===0 || bytes.length>524288 || bytes.toString('base64')!==body.contentBase64) throw Errors.invalid('INVALID_CONTENT','content must be canonical base64 and at most 512 KiB');
+    const event=await store.getEvent(req.params.eventId); if(!event || event.network!==a.network) throw Errors.notFound('event');
+    const chain=await chainSnapshot(config,event);
+    if(chain.event.event_id!==event.chainEventId || chain.event.organizer!==a.accountId) throw Errors.forbidden('ORGANIZER_REQUIRED','on-chain organizer required');
+    if(!config.privateContentDir) throw Errors.unavailable('CONTENT_UNAVAILABLE','private content directory is not configured');
+    const id=randomUUID(), objectKey=randomUUID(), tempKey=randomUUID()+'.tmp';
+    try {
+      const stat=await lstat(config.privateContentDir); if(stat.isSymbolicLink() || !stat.isDirectory()) throw new Error('invalid directory');
+      const base=await realpath(config.privateContentDir); const temp=resolve(base,tempKey), target=resolve(base,objectKey);
+      try { await writeFile(temp,bytes,{flag:'wx',mode:0o600}); await link(temp,target); } finally { await unlink(temp).catch(()=>{}); }
+    } catch { throw Errors.unavailable('CONTENT_UNAVAILABLE','private content unavailable'); }
+    const publishedAt=await store.publishResource({id,eventId:event.id,objectKey,title:body.title,mimeType:body.mimeType,bytesSize:bytes.length});
+    reply.header('Cache-Control','no-store').code(201);
+    return reply.send(okEnvelope({id:sha256Hex(objectKey),title:body.title,mimeType:body.mimeType,bytesSize:bytes.length,publishedAt},meta(req,a.network,false)));
+  });
   app.post<{Params:{eventId:string};Body:{passId:string}}>('/v1/events/:eventId/checkin/challenge',{preHandler:[origin,rate,auth]},async(req,reply)=>{
     const a=account(req); if(!isUuid(req.params.eventId) || !isUuid(req.body?.passId)) throw Errors.invalid('INVALID_INPUT','eventId and passId must be UUIDs');
     const key=qrKey(config); const event=await store.getEvent(req.params.eventId); if(!event || event.network!==a.network) throw Errors.notFound('event');

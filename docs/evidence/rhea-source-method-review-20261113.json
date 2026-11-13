@@ -1,0 +1,27 @@
+{
+  "status": "SOURCE_ONLY_NOT_PROVEN_DEPLOYED_EQUIVALENT",
+  "repo": "https://github.com/ref-finance/burrowland",
+  "commit": "2110c7047f2d72a9189abcbaad5eafb4e4a87f9e",
+  "source_urls": [
+    "https://github.com/ref-finance/burrowland/blob/2110c7047f2d72a9189abcbaad5eafb4e4a87f9e/contracts/contract/src/actions.rs#L781-L813",
+    "https://github.com/ref-finance/burrowland/blob/2110c7047f2d72a9189abcbaad5eafb4e4a87f9e/contracts/contract/src/actions.rs#L830-L864",
+    "https://github.com/ref-finance/burrowland/blob/2110c7047f2d72a9189abcbaad5eafb4e4a87f9e/contracts/contract/src/actions.rs#L325-L363",
+    "https://github.com/ref-finance/burrowland/blob/2110c7047f2d72a9189abcbaad5eafb4e4a87f9e/contracts/contract/src/fungible_token.rs#L166-L191",
+    "https://github.com/ref-finance/burrowland/blob/2110c7047f2d72a9189abcbaad5eafb4e4a87f9e/contracts/contract/src/fungible_token.rs#L260-L277"
+  ],
+  "simple_withdraw": {
+    "amount": "mandatory U128 internal units, no optional full-position sentinel",
+    "recipient": "Option<AccountId>; None defaults to predecessor",
+    "deposit": "one yoctoNEAR",
+    "return": "Promise resolving to private after_ft_transfer bool; true when FT call successful; false after failure redeposit completes",
+    "caveats": [
+      "over-request attempts collateral decrease / oracle",
+      "amount-to-shares rounds up; accrued interest can leave shares",
+      "FT amount floored by 10^extra decimals while internal amount burned, exposing sub-token remainder",
+      "zero FT amount traps",
+      "returned failure callback may itself fail, requiring fail-closed reconciliation"
+    ]
+  },
+  "client_echo_withdraw_by_shares": "Live Wasm export exists; no occurrence in examined Rust source under contracts/contract/src at this commit; ABI and semantics unknown.",
+  "scope": "read-only source and export inspection; no funded calls, source-bytecode equivalence or liquidity proof"
+}

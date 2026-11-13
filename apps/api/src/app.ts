@@ -10,6 +10,8 @@ import { registerHealth } from './routes/health.js';
 import { registerEvents } from './routes/events.js';
 import { registerAuth } from './routes/auth.js';
 import { registerPrivate } from './routes/private.js';
+import { registerMainnetReadiness } from './routes/mainnet-readiness.js';
+import { registerRheaMicrotest } from './routes/rhea-microtest.js';
 
 export interface BuildOptions {
   store: Store;
@@ -34,6 +36,7 @@ export function buildApp(opts: BuildOptions): FastifyInstance {
 
   app.setErrorHandler((err, req, reply) => {
     const e = err as ApiError & { code?: string };
+    if (e.code === 'FST_ERR_CTP_BODY_TOO_LARGE') return reply.code(413).send(errEnvelope('BODY_TOO_LARGE', 'request body too large', { retryable:false, meta:{requestId:req.id,network:null} }));
     if (err instanceof ApiError && e.expose) {
       return reply.code(e.statusCode).send(
         errEnvelope(e.code, e.message, { retryable: e.retryable, meta: { requestId: req.id, network: null } }),
@@ -47,6 +50,8 @@ export function buildApp(opts: BuildOptions): FastifyInstance {
   });
 
   registerHealth(app, opts.store);
+  registerMainnetReadiness(app, opts.config);
+  registerRheaMicrotest(app, opts.store, opts.config);
   registerEvents(app, opts.store, opts.config);
   registerAuth(app, opts.store, opts.config, opts.accessKeyVerifier);
   registerPrivate(app, opts.store, opts.config);

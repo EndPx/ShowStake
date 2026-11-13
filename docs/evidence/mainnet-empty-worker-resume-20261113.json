@@ -1,0 +1,17 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "Process restart, durable cursor resumes next canonical height; empty paused escrow only, no financial transactions",
+  "previousEnd": 224297466,
+  "resume": {
+    "ok": true,
+    "network": "mainnet",
+    "contract": "showstake-mainnet-escrow-endpx-2026.near",
+    "startHeight": 224297467,
+    "endHeight": 224297469,
+    "blocksIngested": 3,
+    "heightsSkipped": [],
+    "heightsUnprovenMissing": [],
+    "officialFinalHeight": 224298257,
+    "reason": "max_blocks_reached"
+  }
+}

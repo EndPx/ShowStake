@@ -2,8 +2,8 @@ import { assertMoneyString } from '@showstake/domain';
 import type { Pool, PoolClient } from 'pg';
 import { randomUUID } from 'node:crypto';
 import type { AttendanceRead, ChallengeRow, ClaimRead, ContentResourceRead, EventListData, EventResultsRead, PassRead, PublicEvent, SessionRow, WalletBindingRow } from '../types.js';
-import type { Store } from './types.js';
-import { isUuid } from '../lib/util.js';
+import type { Store, RheaRun } from './types.js';
+import { isUuid, claimBonusAtomic } from '../lib/util.js';
 
 /** PostgreSQL `numeric` must round-trip as a canonical money string, never a float. */
 function money(v: unknown): string {
@@ -22,6 +22,9 @@ interface EventRow {
   organizer_account: string;
   asset_contract: string;
   state: string;
+  onchain_title: string | null;
+  onchain_location: string | null;
+  onchain_rules_text: string | null;
   deposit_atomic: string;
   capacity: number;
   reg_open: Date;
@@ -31,6 +34,8 @@ interface EventRow {
   checkin_close: Date;
   finalize_deadline: Date;
   accepted_atomic: string;
+  realized_yield_atomic: string;
+  allocated_yield_atomic: string;
   paid_atomic: string;
   pending_atomic: string;
   liability_atomic: string;
@@ -47,6 +52,7 @@ function mapEvent(r: EventRow): PublicEvent {
     organizerAccount: r.organizer_account,
     assetContract: r.asset_contract,
     state: r.state,
+    title: r.onchain_title, location: r.onchain_location, rulesText: r.onchain_rules_text,
     depositAtomic: money(r.deposit_atomic),
     capacity: Number(r.capacity),
     times: {
@@ -59,6 +65,9 @@ function mapEvent(r: EventRow): PublicEvent {
     },
     totals: {
       acceptedAtomic: money(r.accepted_atomic),
+      realizedYieldAtomic: money(r.realized_yield_atomic),
+      allocatedYieldAtomic: money(r.allocated_yield_atomic),
+      unallocatedYieldAtomic: (BigInt(money(r.realized_yield_atomic))-BigInt(money(r.allocated_yield_atomic))).toString(),
       paidAtomic: money(r.paid_atomic),
       pendingAtomic: money(r.pending_atomic),
       liabilityAtomic: money(r.liability_atomic),
@@ -70,9 +79,12 @@ function mapEvent(r: EventRow): PublicEvent {
 
 const EVENT_SELECT = `
   e.id, e.chain_event_id, d.network, d.contract_id, e.organizer_account, e.asset_contract, e.state,
+  e.onchain_title, e.onchain_location, e.onchain_rules_text,
   e.deposit_atomic::text AS deposit_atomic, e.capacity,
   e.reg_open, e.reg_close, e.cancel_cutoff, e.checkin_open, e.checkin_close, e.finalize_deadline,
   e.accepted_atomic::text AS accepted_atomic, e.paid_atomic::text AS paid_atomic,
+  e.realized_yield_atomic::text AS realized_yield_atomic,
+  e.allocated_yield_atomic::text AS allocated_yield_atomic,
   e.pending_atomic::text AS pending_atomic, e.liability_atomic::text AS liability_atomic,
   e.observed_at,
   (SELECT count(*)::int FROM registrations_projection r
@@ -83,6 +95,10 @@ const EVENT_SELECT = `
 export class PgStore implements Store {
   constructor(private readonly pool: Pool) {}
 
+  private rheaRow(r:{approval_id:string;treasury_account:string;plan_hash:string;native_reserved_atomic:string;usdc_reserved_atomic:string;journal:Record<string,unknown>}):RheaRun{return {approvalId:r.approval_id,treasury:r.treasury_account,planHash:r.plan_hash,nativeReservedAtomic:money(r.native_reserved_atomic),usdcReservedAtomic:money(r.usdc_reserved_atomic),journal:r.journal};}
+  async getRheaRun(id:string):Promise<RheaRun|null>{const q=await this.pool.query(`SELECT approval_id,treasury_account,plan_hash,native_reserved_atomic::text,usdc_reserved_atomic::text,journal FROM rhea_microtest_runs WHERE approval_id=$1`,[id]);return q.rows[0]?this.rheaRow(q.rows[0]):null;}
+  async updateRheaRun(seed:RheaRun,change:(run:RheaRun)=>RheaRun):Promise<RheaRun>{const c=await this.pool.connect();try{await c.query('BEGIN');await c.query(`INSERT INTO rhea_microtest_runs(approval_id,treasury_account,network,plan_hash,native_reserved_atomic,usdc_reserved_atomic,journal) VALUES($1,$2,'mainnet',$3,0,0,'{}') ON CONFLICT(approval_id) DO NOTHING`,[seed.approvalId,seed.treasury,seed.planHash]);const q=await c.query(`SELECT approval_id,treasury_account,plan_hash,native_reserved_atomic::text,usdc_reserved_atomic::text,journal FROM rhea_microtest_runs WHERE approval_id=$1 FOR UPDATE`,[seed.approvalId]);const run=this.rheaRow(q.rows[0]);if(run.treasury!==seed.treasury||run.planHash!==seed.planHash)throw new Error('approval identity mismatch');const out=change(run);await c.query(`UPDATE rhea_microtest_runs SET native_reserved_atomic=$2,usdc_reserved_atomic=$3,journal=$4::jsonb,updated_at=clock_timestamp() WHERE approval_id=$1`,[seed.approvalId,out.nativeReservedAtomic,out.usdcReservedAtomic,JSON.stringify(out.journal)]);await c.query('COMMIT');return out;}catch(e){await c.query('ROLLBACK');throw e;}finally{c.release();}}
+
   async ping(): Promise<boolean> {
     try {
       await this.pool.query('SELECT 1');
@@ -92,13 +108,14 @@ export class PgStore implements Store {
     }
   }
 
-  async listEvents(opts: { limit: number; cursor: { regOpen: string; id: string } | null }): Promise<EventListData> {
+  async listEvents(opts: { limit: number; cursor: { regOpen: string; id: string } | null; network?:string }): Promise<EventListData> {
     const params: unknown[] = [];
     let where = ` WHERE e.state = 'PUBLISHED'`;
     if (opts.cursor) {
       params.push(Date.parse(opts.cursor.regOpen), opts.cursor.id);
-      where += ` AND (e.reg_open, e.id) > (to_timestamp($1::double precision / 1000.0), $2)`;
+      where += ` AND (e.reg_open, e.id) > (to_timestamp($${params.length-1}::double precision / 1000.0), $${params.length})`;
     }
+    if(opts.network){params.push(opts.network);where+=` AND d.network = $${params.length}`;}
     params.push(opts.limit + 1);
     const sql = `SELECT ${EVENT_SELECT}${where} ORDER BY e.reg_open ASC, e.id ASC LIMIT $${params.length}`;
     const res = await this.pool.query<EventRow>(sql, params);
@@ -115,9 +132,10 @@ export class PgStore implements Store {
     const res = await this.pool.query<EventRow>(`SELECT ${EVENT_SELECT} WHERE e.id = $1`, [id]);
     return res.rows[0] ? mapEvent(res.rows[0]) : null;
   }
-  async getEventByChainEventId(id: string): Promise<PublicEvent | null> {
-    const res = await this.pool.query<EventRow>(`SELECT ${EVENT_SELECT} WHERE e.chain_event_id = $1`, [id]);
-    return res.rows[0] ? mapEvent(res.rows[0]) : null;
+  async getEventByChainEventId(id: string, network?:string, contractId?:string): Promise<PublicEvent | null> {
+    const params:unknown[]=[id];let filter='';if(network){params.push(network);filter+=` AND d.network=$${params.length}`;}if(contractId){params.push(contractId);filter+=` AND d.contract_id=$${params.length}`;}
+    const res = await this.pool.query<EventRow>(`SELECT ${EVENT_SELECT} WHERE e.chain_event_id = $1${filter} LIMIT 2`,params);
+    return res.rows.length===1 ? mapEvent(res.rows[0]!) : null;
   }
   async getEventResults(id: string): Promise<EventResultsRead | null> {
     const ev = await this.pool.query<EventRow>(`SELECT ${EVENT_SELECT} WHERE ${isUuid(id) ? "e.id" : "e.chain_event_id"} = $1`, [id]);
@@ -135,7 +153,7 @@ export class PgStore implements Store {
     return {
       eventId: event.id, chainEventId: event.chain_event_id, state: event.state,
       counts: { registrations: Number(c.registrations), activeRegistrations: Number(c.active), withdrawn: Number(c.withdrawn), attendees: Number(c.attendees), noShows: Number(c.no_shows) },
-      totals: { acceptedAtomic: money(event.accepted_atomic), paidAtomic: money(event.paid_atomic), pendingAtomic: money(event.pending_atomic), liabilityAtomic: money(event.liability_atomic) },
+      totals: { acceptedAtomic: money(event.accepted_atomic), realizedYieldAtomic: money(event.realized_yield_atomic), allocatedYieldAtomic: money(event.allocated_yield_atomic), unallocatedYieldAtomic: (BigInt(money(event.realized_yield_atomic))-BigInt(money(event.allocated_yield_atomic))).toString(), paidAtomic: money(event.paid_atomic), pendingAtomic: money(event.pending_atomic), liabilityAtomic: money(event.liability_atomic) },
       finalized, refund: { available: refund, reason: event.state === 'CANCELLED' ? 'CANCELLED' : event.state === 'REFUND_ONLY' ? 'TIMEOUT' : null, principalAtomic: refund ? money(event.deposit_atomic) : null },
       settlement: { available: event.state === 'SETTLED', claimsEnabled: event.state === 'SETTLED', complete: event.state === 'SETTLED' },
       yield: { status: 'UNAVAILABLE', reason: 'ABI_NOT_FROZEN' }, observedAt: iso(event.observed_at),
@@ -381,7 +399,7 @@ export class PgStore implements Store {
 
   async listClaims(accountId: string, network: string): Promise<ClaimRead[]> {
     const res=await this.pool.query<{id:string;event_id:string;beneficiary_account:string;principal_atomic:string;claim_atomic:string;payout_state:string;observed_at:Date}>(`SELECT r.id,r.event_id,r.beneficiary_account,r.principal_atomic::text,r.claim_atomic::text,r.payout_state,r.observed_at FROM registrations_projection r JOIN events_projection e ON e.id=r.event_id JOIN deployments d ON d.id=e.deployment_id WHERE r.beneficiary_account=$1 AND d.network=$2 ORDER BY r.observed_at DESC,r.id`,[accountId,network]);
-    return res.rows.map(r=>{const principal=money(r.principal_atomic), claim=money(r.claim_atomic); return {id:r.id,eventId:r.event_id,beneficiaryAccount:r.beneficiary_account,principalAtomic:principal,bonusAtomic:(BigInt(claim)-BigInt(principal)).toString(),claimAtomic:claim,payoutState:r.payout_state,observedAt:iso(r.observed_at),finalized:true};});
+    return res.rows.map(r=>{const principal=money(r.principal_atomic), claim=money(r.claim_atomic); return {id:r.id,eventId:r.event_id,beneficiaryAccount:r.beneficiary_account,principalAtomic:principal,bonusAtomic:claimBonusAtomic(principal,claim),claimAtomic:claim,payoutState:r.payout_state,observedAt:iso(r.observed_at),finalized:true};});
   }
 
   async getAttendance(eventId: string, organizerAccount: string, network: string): Promise<AttendanceRead[] | null> {
@@ -395,6 +413,10 @@ export class PgStore implements Store {
     const res=await this.pool.query<{object_key:string;title:string;mime_type:string;published_at:Date|null;observed_at:Date}>(`SELECT pr.object_key,pr.title,pr.mime_type,pr.published_at,GREATEST(e.observed_at,r.observed_at) AS observed_at FROM protected_resources pr JOIN events_projection e ON e.id=pr.event_id JOIN deployments d ON d.id=e.deployment_id JOIN registrations_projection r ON r.event_id=e.id WHERE e.id=$1 AND d.network=$2 AND e.state='SETTLED' AND r.participant_account=$3 AND r.beneficiary_account=$3 AND r.attended=true AND r.state='ATTENDED' AND pr.deleted_at IS NULL AND pr.published_at IS NOT NULL`,[eventId,network,accountId]);
     if(res.rows.length===0) return null;
     return res.rows.map(r=>({objectKey:r.object_key,title:r.title,mimeType:r.mime_type,publishedAt:r.published_at?iso(r.published_at):null,observedAt:iso(r.observed_at)}));
+  }
+  async publishResource(a:{id:string;eventId:string;objectKey:string;title:string;mimeType:string;bytesSize:number}):Promise<string> {
+    const result=await this.pool.query<{published_at:Date}>(`INSERT INTO protected_resources(id,event_id,object_key,title,mime_type,bytes_size,published_at) VALUES($1,$2,$3,$4,$5,$6,clock_timestamp()) RETURNING published_at`,[a.id,a.eventId,a.objectKey,a.title,a.mimeType,a.bytesSize]);
+    return iso(result.rows[0]!.published_at);
   }
   async findPass(eventId:string, passId:string, owner:string): Promise<{registrationId:string;chainPassId:string}|null> {
     const q=await this.pool.query<{registration_id:string;pass_id:string}>(`SELECT p.registration_id,p.pass_id FROM passes_projection p JOIN registrations_projection r ON r.id=p.registration_id WHERE r.event_id=$1 AND p.id=$2 AND p.owner_account=$3`,[eventId,passId,owner]);

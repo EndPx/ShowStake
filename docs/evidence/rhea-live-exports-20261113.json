@@ -1,0 +1,781 @@
+{
+  "status": "READ_ONLY",
+  "rpc": "https://rpc.mainnet.near.org",
+  "account": "contract.main.burrow.near",
+  "block_hash": "gH1b57GXDGKMSeqo3aFaTRTqAKSJbwb9dithDxzFAM2",
+  "block_height": 224297805,
+  "account_code_hash": "6Nek1MZ8cwJJ2xMQAUWup9V5AToYS9rkTxJfwo6BCpFa",
+  "computed_code_hash_base58": "6Nek1MZ8cwJJ2xMQAUWup9V5AToYS9rkTxJfwo6BCpFa",
+  "sha256_hex": "4fd64e59a0466cf3392ff1914959c59c7c086ed82300571c6e8fc89d9f7dede1",
+  "wasm_bytes": 1059499,
+  "export_count": 153,
+  "simple_withdraw_exported": true,
+  "exports": [
+    {
+      "name": "memory",
+      "kind": 2,
+      "index": 0
+    },
+    {
+      "name": "upgrade",
+      "kind": 0,
+      "index": 1407
+    },
+    {
+      "name": "get_account",
+      "kind": 0,
+      "index": 1468
+    },
+    {
+      "name": "get_account_all_positions",
+      "kind": 0,
+      "index": 1469
+    },
+    {
+      "name": "list_accounts_all_positions",
+      "kind": 0,
+      "index": 1470
+    },
+    {
+      "name": "get_accounts_all_positions_paged",
+      "kind": 0,
+      "index": 1471
+    },
+    {
+      "name": "list_accounts",
+      "kind": 0,
+      "index": 1472
+    },
+    {
+      "name": "get_accounts_paged",
+      "kind": 0,
+      "index": 1473
+    },
+    {
+      "name": "get_num_accounts",
+      "kind": 0,
+      "index": 1474
+    },
+    {
+      "name": "account_farm_claim_all",
+      "kind": 0,
+      "index": 1475
+    },
+    {
+      "name": "execute",
+      "kind": 0,
+      "index": 1476
+    },
+    {
+      "name": "simple_withdraw",
+      "kind": 0,
+      "index": 1477
+    },
+    {
+      "name": "callback_simple_withdraw_with_pyth",
+      "kind": 0,
+      "index": 1478
+    },
+    {
+      "name": "client_echo_withdraw_by_shares",
+      "kind": 0,
+      "index": 1479
+    },
+    {
+      "name": "get_asset",
+      "kind": 0,
+      "index": 1483
+    },
+    {
+      "name": "get_assets",
+      "kind": 0,
+      "index": 1484
+    },
+    {
+      "name": "get_assets_paged",
+      "kind": 0,
+      "index": 1485
+    },
+    {
+      "name": "get_assets_paged_detailed",
+      "kind": 0,
+      "index": 1486
+    },
+    {
+      "name": "get_asset_farm",
+      "kind": 0,
+      "index": 1492
+    },
+    {
+      "name": "get_asset_farms",
+      "kind": 0,
+      "index": 1493
+    },
+    {
+      "name": "get_asset_farms_paged",
+      "kind": 0,
+      "index": 1494
+    },
+    {
+      "name": "get_asset_farms_all",
+      "kind": 0,
+      "index": 1495
+    },
+    {
+      "name": "account_stake_booster",
+      "kind": 0,
+      "index": 1503
+    },
+    {
+      "name": "account_unstake_booster",
+      "kind": 0,
+      "index": 1504
+    },
+    {
+      "name": "get_config",
+      "kind": 0,
+      "index": 1505
+    },
+    {
+      "name": "set_owner_id",
+      "kind": 0,
+      "index": 1506
+    },
+    {
+      "name": "update_pause_operator_id",
+      "kind": 0,
+      "index": 1507
+    },
+    {
+      "name": "update_price_oracle_config",
+      "kind": 0,
+      "index": 1508
+    },
+    {
+      "name": "update_pyth_oracle_config",
+      "kind": 0,
+      "index": 1509
+    },
+    {
+      "name": "update_lp_config",
+      "kind": 0,
+      "index": 1510
+    },
+    {
+      "name": "update_max_num_assets",
+      "kind": 0,
+      "index": 1511
+    },
+    {
+      "name": "update_force_closing_enabled",
+      "kind": 0,
+      "index": 1512
+    },
+    {
+      "name": "update_contract_mode",
+      "kind": 0,
+      "index": 1513
+    },
+    {
+      "name": "pause_contract",
+      "kind": 0,
+      "index": 1514
+    },
+    {
+      "name": "add_asset",
+      "kind": 0,
+      "index": 1515
+    },
+    {
+      "name": "update_asset",
+      "kind": 0,
+      "index": 1516
+    },
+    {
+      "name": "update_asset_limit",
+      "kind": 0,
+      "index": 1517
+    },
+    {
+      "name": "update_asset_holding_position_fee_rate",
+      "kind": 0,
+      "index": 1518
+    },
+    {
+      "name": "update_asset_max_change_rate",
+      "kind": 0,
+      "index": 1519
+    },
+    {
+      "name": "upsert_beneficiary",
+      "kind": 0,
+      "index": 1520
+    },
+    {
+      "name": "remove_beneficiary",
+      "kind": 0,
+      "index": 1521
+    },
+    {
+      "name": "enable_oracle",
+      "kind": 0,
+      "index": 1522
+    },
+    {
+      "name": "update_dcl_id",
+      "kind": 0,
+      "index": 1523
+    },
+    {
+      "name": "enable_asset_capacity",
+      "kind": 0,
+      "index": 1524
+    },
+    {
+      "name": "disable_asset_capacity",
+      "kind": 0,
+      "index": 1525
+    },
+    {
+      "name": "update_asset_net_tvl_multiplier",
+      "kind": 0,
+      "index": 1526
+    },
+    {
+      "name": "add_asset_farm_reward",
+      "kind": 0,
+      "index": 1527
+    },
+    {
+      "name": "claim_prot_fee",
+      "kind": 0,
+      "index": 1528
+    },
+    {
+      "name": "withdraw_beneficiary_fee",
+      "kind": 0,
+      "index": 1529
+    },
+    {
+      "name": "decrease_reserved",
+      "kind": 0,
+      "index": 1530
+    },
+    {
+      "name": "increase_reserved",
+      "kind": 0,
+      "index": 1531
+    },
+    {
+      "name": "return_margin_account_lostfound_supply_shares",
+      "kind": 0,
+      "index": 1532
+    },
+    {
+      "name": "ft_on_transfer",
+      "kind": 0,
+      "index": 1533
+    },
+    {
+      "name": "after_beneficiary_withdraw",
+      "kind": 0,
+      "index": 1535
+    },
+    {
+      "name": "after_ft_transfer",
+      "kind": 0,
+      "index": 1536
+    },
+    {
+      "name": "after_ft_transfer_call",
+      "kind": 0,
+      "index": 1537
+    },
+    {
+      "name": "after_margin_asset_ft_transfer",
+      "kind": 0,
+      "index": 1538
+    },
+    {
+      "name": "oracle_on_call",
+      "kind": 0,
+      "index": 1539
+    },
+    {
+      "name": "storage_deposit",
+      "kind": 0,
+      "index": 1540
+    },
+    {
+      "name": "storage_withdraw",
+      "kind": 0,
+      "index": 1541
+    },
+    {
+      "name": "storage_unregister",
+      "kind": 0,
+      "index": 1542
+    },
+    {
+      "name": "storage_balance_bounds",
+      "kind": 0,
+      "index": 1543
+    },
+    {
+      "name": "storage_balance_of",
+      "kind": 0,
+      "index": 1544
+    },
+    {
+      "name": "debug_storage_balance_of",
+      "kind": 0,
+      "index": 1545
+    },
+    {
+      "name": "get_storage_balance_of_detail",
+      "kind": 0,
+      "index": 1546
+    },
+    {
+      "name": "migrate_state",
+      "kind": 0,
+      "index": 1547
+    },
+    {
+      "name": "get_version",
+      "kind": 0,
+      "index": 1548
+    },
+    {
+      "name": "sync_ref_exchange_lp_token_infos",
+      "kind": 0,
+      "index": 1549
+    },
+    {
+      "name": "get_last_lp_token_infos",
+      "kind": 0,
+      "index": 1550
+    },
+    {
+      "name": "on_cast_shadow",
+      "kind": 0,
+      "index": 1551
+    },
+    {
+      "name": "on_remove_shadow",
+      "kind": 0,
+      "index": 1552
+    },
+    {
+      "name": "callback_sync_lp_infos",
+      "kind": 0,
+      "index": 1553
+    },
+    {
+      "name": "callback_process_shadow_liquidate_result",
+      "kind": 0,
+      "index": 1554
+    },
+    {
+      "name": "callback_process_shadow_force_close_result",
+      "kind": 0,
+      "index": 1555
+    },
+    {
+      "name": "callback_dex_trade",
+      "kind": 0,
+      "index": 1556
+    },
+    {
+      "name": "get_margin_account",
+      "kind": 0,
+      "index": 1558
+    },
+    {
+      "name": "list_margin_accounts",
+      "kind": 0,
+      "index": 1559
+    },
+    {
+      "name": "get_margin_accounts_paged",
+      "kind": 0,
+      "index": 1560
+    },
+    {
+      "name": "get_num_margin_accounts",
+      "kind": 0,
+      "index": 1561
+    },
+    {
+      "name": "margin_execute",
+      "kind": 0,
+      "index": 1562
+    },
+    {
+      "name": "get_margin_config",
+      "kind": 0,
+      "index": 1564
+    },
+    {
+      "name": "get_enabled_margin_actions",
+      "kind": 0,
+      "index": 1565
+    },
+    {
+      "name": "batch_enable_margin_actions",
+      "kind": 0,
+      "index": 1566
+    },
+    {
+      "name": "batch_disable_margin_actions",
+      "kind": 0,
+      "index": 1567
+    },
+    {
+      "name": "update_max_leverage_rate",
+      "kind": 0,
+      "index": 1568
+    },
+    {
+      "name": "update_pending_debt_scale",
+      "kind": 0,
+      "index": 1569
+    },
+    {
+      "name": "update_max_slippage_rate",
+      "kind": 0,
+      "index": 1570
+    },
+    {
+      "name": "update_min_safety_buffer",
+      "kind": 0,
+      "index": 1571
+    },
+    {
+      "name": "update_margin_debt_discount_rate",
+      "kind": 0,
+      "index": 1572
+    },
+    {
+      "name": "update_open_position_fee_rate",
+      "kind": 0,
+      "index": 1573
+    },
+    {
+      "name": "register_margin_dex",
+      "kind": 0,
+      "index": 1574
+    },
+    {
+      "name": "update_margin_dex",
+      "kind": 0,
+      "index": 1575
+    },
+    {
+      "name": "unregister_margin_dex",
+      "kind": 0,
+      "index": 1576
+    },
+    {
+      "name": "register_margin_token",
+      "kind": 0,
+      "index": 1577
+    },
+    {
+      "name": "update_margin_token",
+      "kind": 0,
+      "index": 1578
+    },
+    {
+      "name": "unregister_margin_token",
+      "kind": 0,
+      "index": 1579
+    },
+    {
+      "name": "update_max_active_user_margin_position",
+      "kind": 0,
+      "index": 1580
+    },
+    {
+      "name": "update_liquidation_benefits_rates",
+      "kind": 0,
+      "index": 1581
+    },
+    {
+      "name": "update_max_position_action_wait_sec",
+      "kind": 0,
+      "index": 1582
+    },
+    {
+      "name": "margin_execute_with_pyth",
+      "kind": 0,
+      "index": 1583
+    },
+    {
+      "name": "margin_operator_close_mtposition_with_pyth",
+      "kind": 0,
+      "index": 1584
+    },
+    {
+      "name": "callback_margin_execute_with_pyth",
+      "kind": 0,
+      "index": 1585
+    },
+    {
+      "name": "set_margin_base_token_limit_gur",
+      "kind": 0,
+      "index": 1588
+    },
+    {
+      "name": "remove_margin_base_token_limit_gur",
+      "kind": 0,
+      "index": 1589
+    },
+    {
+      "name": "set_margin_base_token_limit",
+      "kind": 0,
+      "index": 1590
+    },
+    {
+      "name": "remove_margin_base_token_limit",
+      "kind": 0,
+      "index": 1591
+    },
+    {
+      "name": "list_margin_base_token_limit_gur",
+      "kind": 0,
+      "index": 1592
+    },
+    {
+      "name": "get_margin_base_token_limit_gur_paged",
+      "kind": 0,
+      "index": 1593
+    },
+    {
+      "name": "list_margin_base_token_limit",
+      "kind": 0,
+      "index": 1594
+    },
+    {
+      "name": "get_margin_base_token_limit_paged",
+      "kind": 0,
+      "index": 1595
+    },
+    {
+      "name": "get_default_margin_base_token_limit",
+      "kind": 0,
+      "index": 1596
+    },
+    {
+      "name": "set_mssf",
+      "kind": 0,
+      "index": 1597
+    },
+    {
+      "name": "get_mssf",
+      "kind": 0,
+      "index": 1598
+    },
+    {
+      "name": "set_margin_operator",
+      "kind": 0,
+      "index": 1599
+    },
+    {
+      "name": "get_margin_operator",
+      "kind": 0,
+      "index": 1600
+    },
+    {
+      "name": "execute_with_pyth",
+      "kind": 0,
+      "index": 1601
+    },
+    {
+      "name": "callback_execute_with_pyth",
+      "kind": 0,
+      "index": 1602
+    },
+    {
+      "name": "list_protocol_debts",
+      "kind": 0,
+      "index": 1603
+    },
+    {
+      "name": "get_all_protocol_debts",
+      "kind": 0,
+      "index": 1604
+    },
+    {
+      "name": "append_client_echo_sender_whitelist",
+      "kind": 0,
+      "index": 1605
+    },
+    {
+      "name": "remove_client_echo_sender_whitelist",
+      "kind": 0,
+      "index": 1606
+    },
+    {
+      "name": "get_client_echo_sender_whitelist",
+      "kind": 0,
+      "index": 1607
+    },
+    {
+      "name": "append_reliable_liquidator_whitelist",
+      "kind": 0,
+      "index": 1608
+    },
+    {
+      "name": "remove_reliable_liquidator_whitelist",
+      "kind": 0,
+      "index": 1609
+    },
+    {
+      "name": "get_reliable_liquidator_whitelist",
+      "kind": 0,
+      "index": 1610
+    },
+    {
+      "name": "append_maintenance_mode_whitelist",
+      "kind": 0,
+      "index": 1611
+    },
+    {
+      "name": "remove_maintenance_mode_whitelist",
+      "kind": 0,
+      "index": 1612
+    },
+    {
+      "name": "get_maintenance_mode_whitelist",
+      "kind": 0,
+      "index": 1613
+    },
+    {
+      "name": "append_delist_token_list",
+      "kind": 0,
+      "index": 1614
+    },
+    {
+      "name": "remove_delist_token_list",
+      "kind": 0,
+      "index": 1615
+    },
+    {
+      "name": "get_delist_token_list",
+      "kind": 0,
+      "index": 1616
+    },
+    {
+      "name": "add_booster_token_info",
+      "kind": 0,
+      "index": 1617
+    },
+    {
+      "name": "update_booster_token_info",
+      "kind": 0,
+      "index": 1618
+    },
+    {
+      "name": "remove_booster_token_info",
+      "kind": 0,
+      "index": 1619
+    },
+    {
+      "name": "get_booster_tokens",
+      "kind": 0,
+      "index": 1620
+    },
+    {
+      "name": "new",
+      "kind": 0,
+      "index": 1621
+    },
+    {
+      "name": "extend_guardians",
+      "kind": 0,
+      "index": 1622
+    },
+    {
+      "name": "remove_guardians",
+      "kind": 0,
+      "index": 1623
+    },
+    {
+      "name": "get_guardians",
+      "kind": 0,
+      "index": 1624
+    },
+    {
+      "name": "add_token_pyth_info",
+      "kind": 0,
+      "index": 1625
+    },
+    {
+      "name": "update_token_pyth_info",
+      "kind": 0,
+      "index": 1626
+    },
+    {
+      "name": "get_all_token_pyth_infos",
+      "kind": 0,
+      "index": 1627
+    },
+    {
+      "name": "get_token_pyth_info",
+      "kind": 0,
+      "index": 1628
+    },
+    {
+      "name": "extend_blacklist_of_farmers",
+      "kind": 0,
+      "index": 1629
+    },
+    {
+      "name": "remove_blacklist_of_farmers",
+      "kind": 0,
+      "index": 1630
+    },
+    {
+      "name": "get_blacklist_of_farmers",
+      "kind": 0,
+      "index": 1631
+    },
+    {
+      "name": "sync_staking_token_price",
+      "kind": 0,
+      "index": 1632
+    },
+    {
+      "name": "callback_sync_staking_token_price",
+      "kind": 0,
+      "index": 1633
+    },
+    {
+      "name": "get_last_staking_token_prices",
+      "kind": 0,
+      "index": 1634
+    },
+    {
+      "name": "get_last_prices",
+      "kind": 0,
+      "index": 1635
+    },
+    {
+      "name": "batch_views",
+      "kind": 0,
+      "index": 1636
+    },
+    {
+      "name": "__data_end",
+      "kind": 3,
+      "index": 1
+    },
+    {
+      "name": "__heap_base",
+      "kind": 3,
+      "index": 2
+    }
+  ],
+  "scope": "public final-block view_code and export section only; no instantiation or funded call"
+}

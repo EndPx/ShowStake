@@ -47,5 +47,17 @@ try {
   mode='content'; const listing=await app.inject({method:'GET',url:`/v1/events/${id}/content`,headers:{cookie:pc}}); assert.equal(listing.statusCode,200,listing.body); const objectId=x=>createHash('sha256').update(x).digest('hex'); const get=x=>app.inject({method:'GET',url:`/v1/events/${id}/content/${objectId(x)}`,headers:{cookie:pc}});
   const ok=await get('ok.txt'); assert.equal(ok.statusCode,200); assert.equal(ok.body,'private data'); assert.equal((await get('../outside.txt')).statusCode,503,'traversal'); if(symlinkAvailable) assert.equal((await get('link/outside.txt')).statusCode,503,'symlink');
   noShow=true; assert.equal((await get('ok.txt')).statusCode,403,'no-show');
+  noShow=false;
+  const upload=(cookie,payload,origin='http://app.local')=>app.inject({method:'POST',url:`/v1/events/${id}/content`,headers:{cookie,origin},payload});
+  const doc={title:'Agenda',mimeType:'text/plain',contentBase64:Buffer.from('private upload').toString('base64')};
+  assert.equal((await upload(sc,doc)).statusCode,403,'wrong organizer');
+  assert.equal((await upload(hc,doc,'http://evil.local')).statusCode,403,'origin');
+  assert.equal((await upload(hc,{...doc,contentBase64:Buffer.alloc(524289).toString('base64')})).statusCode,422,'oversize');
+  wrongOrganizer=true;assert.equal((await upload(hc,doc)).statusCode,403,'fresh on-chain organizer');wrongOrganizer=false;
+  if(symlinkAvailable){config.privateContentDir=join(inside,'link');assert.equal((await upload(hc,doc)).statusCode,503,'symlink root');config.privateContentDir=inside;}
+  const added=await upload(hc,doc);assert.equal(added.statusCode,201,added.body);const uploaded=added.json().data;assert.equal(uploaded.bytesSize,14);assert.match(uploaded.id,/^[0-9a-f]{64}$/);
+  const read=await app.inject({method:'GET',url:`/v1/events/${id}/content/${uploaded.id}`,headers:{cookie:pc}});assert.equal(read.statusCode,200);assert.equal(read.body,'private upload');
+  assert.equal((await app.inject({method:'GET',url:`/v1/events/${id}/content/${uploaded.id}`,headers:{cookie:sc}})).statusCode,403,'non-attendee read denied');
+  const event=await store.getEvent(id);event.state='PUBLISHED';assert.equal((await app.inject({method:'GET',url:`/v1/events/${id}/content/${uploaded.id}`,headers:{cookie:pc}})).statusCode,403,'unsettled read denied');event.state='SETTLED';
   console.log(`verify-private-access: PASS_LOCAL QR, final RPC, content, traversal${symlinkAvailable?', symlink':'; symlink NOT_RUN (OS denied creation)'}`);
 } finally {globalThis.fetch=originalFetch; await app.close(); await rm(tmp,{recursive:true,force:true});}

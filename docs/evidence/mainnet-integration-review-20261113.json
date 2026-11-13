@@ -1,6 +1,6 @@
 {
   "schema": "showstake.mainnet-integration-review/1",
-  "observedAt": "2026-11-13T01:46:42.436Z",
+  "observedAt": "2026-11-13T02:02:28.176Z",
   "classification": "PASS_LOCAL",
   "scope": "Reviewed build and disabled financial candidate only; NOT full-mainnet product acceptance",
   "executor": "Codex coordinator and Codex Terra workers; historical evidence with other executor names is not current runtime attribution",
@@ -112,14 +112,22 @@
     "factoryUnits": {
       "tests": 25,
       "classification": "PASS_LOCAL"
+    },
+    "postgresql": {
+      "classification": "PASS_LOCAL",
+      "apiChecks": 36,
+      "workerChecks": 89,
+      "t01Checks": 57,
+      "migrations": 7,
+      "dumpRestore": "PASS_LOCAL",
+      "apiEvidence": "docs/evidence/api-db-api-run-20261113T015058Z-12447.json",
+      "workerEvidence": "docs/evidence/worker-db-worker-run-20261113T015511Z-13478.json",
+      "t01Evidence": "docs/evidence/t01-migration-db.json",
+      "actualDistribution": "Ubuntu-24.04; isolated clusters, existing devDB preserved",
+      "stopAndCleanup": "Proven per suite; earlier EROFS failed setup dirs retained"
     }
   },
   "remainingGates": [
-    {
-      "name": "Final PostgreSQL source/migrations0006/0007 acceptance",
-      "classification": "BLOCKED_EXTERNAL",
-      "reason": "C: physical free0; Ubuntu ext4 emergency_ro and EIO before tests. Earlier 32 API/89 worker PG checks are earlier-source proof only. Retained failed setup directories not removed."
-    },
     {
       "name": "Frontend browser wallet/mobile",
       "classification": "NOT_RUN",
@@ -148,9 +156,109 @@
   ],
   "acceptance": {
     "offlineFrontendAndUnsignedAdapter": "ACCEPTED_PASS_LOCAL_ONLY",
-    "backendPgIntegration": "NOT_ACCEPTED_PENDING_FINAL_DB",
+    "backendPgIntegration": "ACCEPTED_PASS_LOCAL_ONLY",
     "mainnetFinancialLifecycle": "NOT_ACCEPTED",
     "rheaSelection": "SELECTED_FOR_HACKATHON",
     "rheaTechnicalAcceptance": "NOT_ACCEPTED"
+  },
+  "liveEmptyWorker": {
+    "classification": "PASS_LIVE",
+    "scope": "Read-only mainnet finalized empty-deployment baseline through actual worker/restricted local PG and HTTP API; no participant lifecycle or funded tx",
+    "baselineEvidence": "docs/evidence/mainnet-empty-worker-baseline-20261113.json",
+    "worker": {
+      "ok": true,
+      "network": "mainnet",
+      "contract": "showstake-mainnet-escrow-endpx-2026.near",
+      "startHeight": 224297464,
+      "endHeight": 224297466,
+      "blocksIngested": 3,
+      "heightsSkipped": [],
+      "heightsUnprovenMissing": [],
+      "officialFinalHeight": 224297493,
+      "reason": "max_blocks_reached"
+    },
+    "cursor": [
+      {
+        "consumer": "showstake-mainnet-preview",
+        "cursor_value": {
+          "block_hash": "BwU48s3pqaNh63HUVwtEcRKYWywSYUcmrU9DG79Xg7Qy",
+          "block_height": 224297466
+        }
+      }
+    ],
+    "http": [
+      {
+        "path": "/v1/mainnet/readiness",
+        "status": 200,
+        "network": "mainnet",
+        "stale": false,
+        "data": {
+          "contractId": "showstake-mainnet-escrow-endpx-2026.near",
+          "codeHash": "CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os",
+          "paused": true,
+          "principalCapAtomic": "0",
+          "eventPresent": false,
+          "providerStatus": "UNVERIFIED",
+          "signingAuthority": false
+        }
+      },
+      {
+        "path": "/v1/events",
+        "status": 200,
+        "network": "mainnet",
+        "stale": true,
+        "items": 0
+      },
+      {
+        "path": "/v1/me",
+        "status": 401,
+        "network": null,
+        "stale": false
+      },
+      {
+        "path": "/v1/rhea/microtest",
+        "status": 401,
+        "network": null,
+        "stale": false
+      }
+    ],
+    "blockchainTransactions": 0
+  },
+  "resolvedEnvironmentIncident": {
+    "prior": "C: free0/Ubuntu emergency_ro before tests",
+    "resolution": "C: physical space recovered; tests passed on isolated Ubuntu-24.04 clusters without repairing/restarting affected Ubuntu",
+    "noHostFilesystemRepairPerformed": true,
+    "affectedUbuntuCurrent": "Normal start failed Wsl/Service/CreateInstance/E_FAIL; no repair performed. Tests used Ubuntu-24.04."
+  },
+  "commits": {
+    "frontend": "5a6b3fd",
+    "factoryCandidate": "784ccc9",
+    "backend": "Scoped backend integration commit accompanies this report; see git history"
+  },
+  "liveEmptyWorkerResume": {
+    "classification": "PASS_LIVE",
+    "scope": "Process restart, durable cursor resumes next canonical height; empty paused escrow only, no financial transactions",
+    "previousEnd": 224297466,
+    "resume": {
+      "ok": true,
+      "network": "mainnet",
+      "contract": "showstake-mainnet-escrow-endpx-2026.near",
+      "startHeight": 224297467,
+      "endHeight": 224297469,
+      "blocksIngested": 3,
+      "heightsSkipped": [],
+      "heightsUnprovenMissing": [],
+      "officialFinalHeight": 224298257,
+      "reason": "max_blocks_reached"
+    }
+  },
+  "providerSourceGate": {
+    "classification": "BLOCKED_EXTERNAL",
+    "liveVersion": "0.16.2",
+    "reviewedOfficialSourceVersion": "0.15.7",
+    "simpleWithdrawLiveExport": true,
+    "deployedSourceEquivalence": "UNVERIFIED",
+    "thirdPartyMatch": "Not official deployment/source proof",
+    "financialActionsEnabled": false
   }
 }

@@ -1,0 +1,28 @@
+{
+  "status": "READ_ONLY",
+  "block_hash": "67PmZ6J1hcnR31xjztopht6vnKGfiwD8rEDuqWeSSEi1",
+  "block_height": 224298235,
+  "account": "contract.main.burrow.near",
+  "account_code_hash": "6Nek1MZ8cwJJ2xMQAUWup9V5AToYS9rkTxJfwo6BCpFa",
+  "method": "get_version",
+  "args": {},
+  "value": "0.16.2",
+  "exported_source_metadata_methods": [],
+  "documentation": "https://github.com/ref-finance/burrowland/blob/2110c7047f2d72a9189abcbaad5eafb4e4a87f9e/contracts/contract/src/upgrade.rs#L11-L15",
+  "limitation": "Version is a self-reported semver; does not prove source commit, reproducible build, or deployed ABI semantics.",
+  "source_search": {
+    "official_ref_main_commit": "2110c7047f2d72a9189abcbaad5eafb4e4a87f9e",
+    "official_ref_package_version": "0.15.7",
+    "official_ref_tags": [],
+    "official_rhea_burrowland_repository": "not found (HTTP 404)",
+    "deployed_source_equivalence": "BLOCKED",
+    "unverified_third_party_lead": {
+      "repository": "https://github.com/shawn10359/burrowland",
+      "commit": "7f48c2a391b8fccd3933ecac2fc2eba6262f8500",
+      "package_version": "0.16.2",
+      "method_path": "contracts/contract/src/actions.rs",
+      "provenance": "unverified third-party repository, no verified relationship to deployment; package version/method name is not source-bytecode evidence",
+      "source_observation": "method checks client echo sender whitelist and uses ft_transfer_call"
+    }
+  }
+}

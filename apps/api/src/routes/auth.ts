@@ -84,8 +84,8 @@ export function registerAuth(app: FastifyInstance, store: Store, config: Config,
     const session = await store.getSessionByTokenHash(tokenHash, Date.now());
     const verdict = sessionIsActive(session, Date.now());
     return reply.send(okEnvelope(
-      { userId: req.auth!.userId, sessionId: req.auth!.sessionId, active: verdict.ok },
-      meta(req, null),
+      { userId: req.auth!.userId, sessionId: req.auth!.sessionId, active: verdict.ok, accountId:req.auth!.accountId, network:req.auth!.network },
+      meta(req, req.auth!.network),
     ));
   });
 }

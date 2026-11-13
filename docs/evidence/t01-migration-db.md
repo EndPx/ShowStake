@@ -2,7 +2,7 @@
 
 Classifier: **PASS_LOCAL** — worker-authored, Codex review pending.
 
-Base commit: `bb4cc9470315db44ac24158267352074dbbdb910` · run id: `run-20261106T155958Z-13542` · mode: `full`
+Base commit: `784ccc92122da4d675541253d1a0e0c0c5f476c5` · run id: `run-20261113T015308Z-12991` · mode: `full`
 
 ## Environment
 
@@ -11,11 +11,11 @@ Base commit: `bb4cc9470315db44ac24158267352074dbbdb910` · run id: `run-20261106
 - Node: v24.18.0
 - PostgreSQL: disposable (official postgresql-18 apt extracted to owned temp dir)
 - listener: per-run Unix socket (loopback TCP disabled for the client)
-- port: `39691`
+- port: `42563`
 
 ## Totals
 
-- 52 checks, 0 failed
+- 57 checks, 0 failed
 
 ## Commands run
 
@@ -34,10 +34,10 @@ Base commit: `bb4cc9470315db44ac24158267352074dbbdb910` · run id: `run-20261106
 
 10/10 passed (PASS)
 
-- OK **D01_APPLY_AND_REAPPLY** — expected 2 migrations applied, then 0 on re-run; observed `applied=1,2 re-run=0`
+- OK **D01_APPLY_AND_REAPPLY** — expected 7 migrations applied, then 0 on re-run; observed `applied=1,2,3,4,5,6,7 re-run=0`
 - OK **D01_NO_DRIFT_OR_PENDING** — expected no drift, no pending, no stale; observed `drift=0 pending=0 stale=0`
 - OK **D01_TABLES** — expected 23 tables present; observed `all present`
-- OK **D01_REAL_POSTGRESQL** — expected real PostgreSQL server reports version; observed `PostgreSQL 18.6 (Ubuntu 18.6-0ubuntu0.26.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0, 64-bit`
+- OK **D01_REAL_POSTGRESQL** — expected real PostgreSQL server reports version; observed `PostgreSQL 18.6 (Ubuntu 18.6-1.pgdg24.04+2) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0, 64-bit`
 - OK **D01_LOOPBACK_OR_SOCKET_ONLY** — expected listener is loopback or Unix-socket only (never all-interfaces); observed `listen_addresses="127.0.0.1"`
 - OK **D01_API_NO_TEMP** — expected API role denied TEMP table creation; observed `denied=42501`
 - OK **D01_ATOMIC_ROLLBACK** — expected failed migration rolled back fully (no table, no tracking row); observed `threw=true table-absent=true no-row=true`
@@ -47,7 +47,7 @@ Base commit: `bb4cc9470315db44ac24158267352074dbbdb910` · run id: `run-20261106
 
 ### d02 — D02 FK/unique/identity/idempotency/rules
 
-10/10 passed (PASS)
+15/15 passed (PASS)
 
 - OK **D02_FK_EVENT** — expected foreign key violation 23503; observed `code=23503`
 - OK **D02_ONE_ACTIVE_REGISTRATION** — expected partial unique active-registration index 23505; observed `code=23505`
@@ -56,6 +56,11 @@ Base commit: `bb4cc9470315db44ac24158267352074dbbdb910` · run id: `run-20261106
 - OK **D02_WALLET_BINDING_CONFLICT** — expected duplicate namespace+network+account 23505; observed `code=23505`
 - OK **D02_IDEMPOTENCY_KEY** — expected duplicate (scope,key) 23505; observed `code=23505`
 - OK **D02_PARTICIPANT_EQ_BENEFICIARY** — expected participant!=beneficiary CHECK 23514; observed `code=23514`
+- OK **D02_REALIZED_YIELD_CONSERVATION** — expected 10 principal + 2 realized yield supports 12 paid; observed `2`
+- OK **D02_UNALLOCATED_YIELD_NOT_A_CLAIM** — expected realized funds may remain outside participant allocations; observed `2`
+- OK **D02_REALIZED_YIELD_MISMATCH** — expected yield conservation mismatch rejected; observed `code=23514`
+- OK **D02_ALLOCATED_YIELD_BOUNDED** — expected allocated yield cannot exceed realized yield; observed `code=23514`
+- OK **D02_PRINCIPAL_PLUS_YIELD_U128** — expected combined principal and yield must fit u128; observed `code=23514`
 - OK **D02_CAPACITY_RANGE** — expected capacity 0 CHECK 23514; observed `code=23514`
 - OK **D02_ENVIRONMENT_ENUM** — expected environment 'prod' CHECK 23514; observed `code=23514`
 - OK **D02_SESSION_EXPIRY_RULE** — expected idle > absolute CHECK 23514; observed `code=23514`

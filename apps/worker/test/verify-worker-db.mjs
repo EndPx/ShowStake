@@ -15,6 +15,7 @@
 // different-height/opposite-order attempts (higher height first => gap, then
 // lower height, then retry) plus same-height overlap exactly-once.
 import { candidateDbTest } from './candidate-db.mjs';
+import { factoryDbTest } from './factory-db.mjs';
 import { writeFile, mkdir } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -583,6 +584,7 @@ async function main() {
     check('DB_SETTLE_BATCH_RESUME', resumeFrom === 213, 'resolveStartHeight resumes from cursor+1 = 213 (same DB lifecycle)', resumeFrom);
 
     await candidateDbTest({client, pool, canonical, registerBlock, check});
+    await factoryDbTest({client, pool, check});
     const failed = results.filter((r) => !r.ok);
     const summary = {
       id: 'worker-increment-db',
@@ -592,10 +594,10 @@ async function main() {
       reviewer_pending: true,
       run_id: RUN_ID(),
       environment: { os: 'Windows + WSL2 (Linux Node over per-run Unix socket)', postgresql: 'disposable postgresql-18 cluster', database: DB(), socket: SOCKET() },
-      provider: { runtime: 'DeepSeek Harness via Orca', model: 'GATER/deepseek-v4.1-flash-1017-v2', prior_round: 'ZCode/deepseek-ai/DeepSeek-V4.1-Flash-1017-abliterated (minimum worker)' },
+      executor: process.env.SHOWSTAKE_TEST_EXECUTOR || 'unspecified',
       totals: { checks: results.length, failed: failed.length },
       checks: results,
-      commands: ['wsl -d Ubuntu -- bash scripts/postgres-disposable/run-worker-suite.sh', 'node apps/worker/test/verify-worker-fixtures.mjs (no-DB adversarial)'],
+      commands: ['bash scripts/postgres-disposable/run-worker-suite.sh', 'node apps/worker/test/verify-worker-fixtures.mjs (no-DB adversarial)'],
       note: 'LABELED local: deterministic fixture receipts; real disposable PostgreSQL; NO network. Proves R1 cursor invariants (tx advisory lock incl. first creation, exact-start incl. fail-closed missing initial block, monotonic advancement only through official canonical prev_hash/prev_height linkage across legitimate gaps, fork and pruned-height/hash/height mismatch rejection, old replay without regression, verbatim replay provenance/payload comparison, conditional expected-previous upsert, malformed-cursor fail-closed, crash rollback, two-connection different-height opposite-order and same-height exactly-once), source-vs-official header consistency, R5 in-tx deployment/allowlist bind + actual FT metadata decimals + NOINHERIT/RESET ROLE guard, API-role read of the projected event and pass, AND the v6 settlement lifecycle: provisional attendance -> frozen ATTENDED/NO_SHOW, deterministic allocation (attendees D+share CLAIMABLE, no-show Forfeited->ZERO, principal D unchanged), conservation sum(claim)==accepted==allocated_total, payout start/fail/retry/success with exactly-once accounting and no double count, plus a same-block start+callback regression (event-derived transitions + one per-block totals reconcile) and a same-DB-lifecycle batch-resume regression (resolveStartHeight returns cursor+1).',
     };
     if (ARTIFACTS()) {

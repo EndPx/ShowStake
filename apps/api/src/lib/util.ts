@@ -1,4 +1,8 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import { assertMoneyString } from '@showstake/domain';
+
+/** Bonus is the positive excess over principal; forfeiture is not negative money. */
+export function claimBonusAtomic(principal:string,claim:string):string {const p=assertMoneyString(principal,'principal'),c=assertMoneyString(claim,'claim');return (c>p?c-p:0n).toString();}
 
 /** 32-byte random challenge nonce. */
 export function randomNonce(): Uint8Array {

@@ -38,6 +38,458 @@ tags:
   - name: content
 
 paths:
+  /rhea/microtest:
+    get:
+      tags:
+        - funding
+      summary: Read approved treasury journal without signing authority
+      description: >-
+        Mainnet dedicated treasury only. Requires an operator-installed, scoped approval file and matching
+        verified session. POST requires an allowed Origin. No server signing or broadcast. Existing/unknown
+        operations must be reconciled, never blindly retried.
+      responses:
+        '200':
+          description: Journal observation or exact unsigned operation; success does not imply a completed withdrawal
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required:
+                          - approvalId
+                          - planHash
+                          - treasury
+                          - operations
+                          - signingAuthority
+                        properties:
+                          approvalId:
+                            type: string
+                            format: uuid
+                          planHash:
+                            type: string
+                          treasury:
+                            type: string
+                          provider:
+                            type: string
+                          asset:
+                            type: string
+                          maxUsdcAtomic:
+                            $ref: '#/components/schemas/Money'
+                          maxNativeYocto:
+                            $ref: '#/components/schemas/Money'
+                          gasPriceCeiling:
+                            $ref: '#/components/schemas/Money'
+                          expiresAt:
+                            type: string
+                            format: date-time
+                          nativeReservedAtomic:
+                            $ref: '#/components/schemas/Money'
+                          usdcReservedAtomic:
+                            $ref: '#/components/schemas/Money'
+                          operations:
+                            type: array
+                            items:
+                              type: object
+                              required:
+                                - operationId
+                                - step
+                                - status
+                                - receiverId
+                                - methodName
+                                - args
+                                - gas
+                                - depositYocto
+                                - beforeBlockHash
+                              properties:
+                                operationId:
+                                  type: string
+                                  format: uuid
+                                step:
+                                  type: string
+                                  enum:
+                                    - ft_storage
+                                    - provider_storage
+                                    - supply
+                                    - partial
+                                    - full
+                                status:
+                                  type: string
+                                  enum:
+                                    - RESERVED
+                                    - SUBMITTED
+                                    - CONFIRMED
+                                    - SKIPPED
+                                    - QUARANTINED
+                                hash:
+                                  type: string
+                                  nullable: true
+                                receiverId:
+                                  type: string
+                                methodName:
+                                  type: string
+                                args:
+                                  type: object
+                                  additionalProperties: true
+                                gas:
+                                  $ref: '#/components/schemas/Money'
+                                depositYocto:
+                                  $ref: '#/components/schemas/Money'
+                                maxNativeAtomic:
+                                  $ref: '#/components/schemas/Money'
+                                beforeBlockHash:
+                                  type: string
+                          signingAuthority:
+                            type: boolean
+                            enum:
+                              - false
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+  /rhea/microtest/reserve:
+    post:
+      tags:
+        - funding
+      summary: Treasury microtest reserve
+      description: >-
+        Mainnet dedicated treasury only. Requires an operator-installed, scoped approval file and matching
+        verified session. POST requires an allowed Origin. No server signing or broadcast. Existing/unknown
+        operations must be reconciled, never blindly retried.
+      responses:
+        '200':
+          description: Journal observation or exact unsigned operation; success does not imply a completed withdrawal
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          created:
+                            type: boolean
+                            description: Only true on a first reservation; false never authorizes another wallet request
+                          operation:
+                            type: object
+                            required:
+                              - operationId
+                              - step
+                              - status
+                              - receiverId
+                              - methodName
+                              - args
+                              - gas
+                              - depositYocto
+                              - beforeBlockHash
+                            properties:
+                              operationId:
+                                type: string
+                                format: uuid
+                              step:
+                                type: string
+                                enum:
+                                  - ft_storage
+                                  - provider_storage
+                                  - supply
+                                  - partial
+                                  - full
+                              status:
+                                type: string
+                                enum:
+                                  - RESERVED
+                                  - SUBMITTED
+                                  - CONFIRMED
+                                  - SKIPPED
+                                  - QUARANTINED
+                              hash:
+                                type: string
+                                nullable: true
+                              receiverId:
+                                type: string
+                              methodName:
+                                type: string
+                              args:
+                                type: object
+                                additionalProperties: true
+                              gas:
+                                $ref: '#/components/schemas/Money'
+                              depositYocto:
+                                $ref: '#/components/schemas/Money'
+                              maxNativeAtomic:
+                                $ref: '#/components/schemas/Money'
+                              beforeBlockHash:
+                                type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - step
+              properties:
+                step:
+                  type: string
+                  enum:
+                    - ft_storage
+                    - provider_storage
+                    - supply
+                    - partial
+                    - full
+  /rhea/microtest/submitted:
+    post:
+      tags:
+        - funding
+      summary: Treasury microtest submitted
+      description: >-
+        Mainnet dedicated treasury only. Requires an operator-installed, scoped approval file and matching
+        verified session. POST requires an allowed Origin. No server signing or broadcast. Existing/unknown
+        operations must be reconciled, never blindly retried.
+      responses:
+        '200':
+          description: Journal observation or exact unsigned operation; success does not imply a completed withdrawal
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          created:
+                            type: boolean
+                            description: Only true on a first reservation; false never authorizes another wallet request
+                          operation:
+                            type: object
+                            required:
+                              - operationId
+                              - step
+                              - status
+                              - receiverId
+                              - methodName
+                              - args
+                              - gas
+                              - depositYocto
+                              - beforeBlockHash
+                            properties:
+                              operationId:
+                                type: string
+                                format: uuid
+                              step:
+                                type: string
+                                enum:
+                                  - ft_storage
+                                  - provider_storage
+                                  - supply
+                                  - partial
+                                  - full
+                              status:
+                                type: string
+                                enum:
+                                  - RESERVED
+                                  - SUBMITTED
+                                  - CONFIRMED
+                                  - SKIPPED
+                                  - QUARANTINED
+                              hash:
+                                type: string
+                                nullable: true
+                              receiverId:
+                                type: string
+                              methodName:
+                                type: string
+                              args:
+                                type: object
+                                additionalProperties: true
+                              gas:
+                                $ref: '#/components/schemas/Money'
+                              depositYocto:
+                                $ref: '#/components/schemas/Money'
+                              maxNativeAtomic:
+                                $ref: '#/components/schemas/Money'
+                              beforeBlockHash:
+                                type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - operationId
+                - hash
+              properties:
+                operationId:
+                  type: string
+                  format: uuid
+                hash:
+                  type: string
+  /rhea/microtest/reconcile:
+    post:
+      tags:
+        - funding
+      summary: Treasury microtest reconcile
+      description: >-
+        Mainnet dedicated treasury only. Requires an operator-installed, scoped approval file and matching
+        verified session. POST requires an allowed Origin. No server signing or broadcast. Existing/unknown
+        operations must be reconciled, never blindly retried.
+      responses:
+        '200':
+          description: Journal observation or exact unsigned operation; success does not imply a completed withdrawal
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          created:
+                            type: boolean
+                            description: Only true on a first reservation; false never authorizes another wallet request
+                          operation:
+                            type: object
+                            required:
+                              - operationId
+                              - step
+                              - status
+                              - receiverId
+                              - methodName
+                              - args
+                              - gas
+                              - depositYocto
+                              - beforeBlockHash
+                            properties:
+                              operationId:
+                                type: string
+                                format: uuid
+                              step:
+                                type: string
+                                enum:
+                                  - ft_storage
+                                  - provider_storage
+                                  - supply
+                                  - partial
+                                  - full
+                              status:
+                                type: string
+                                enum:
+                                  - RESERVED
+                                  - SUBMITTED
+                                  - CONFIRMED
+                                  - SKIPPED
+                                  - QUARANTINED
+                              hash:
+                                type: string
+                                nullable: true
+                              receiverId:
+                                type: string
+                              methodName:
+                                type: string
+                              args:
+                                type: object
+                                additionalProperties: true
+                              gas:
+                                $ref: '#/components/schemas/Money'
+                              depositYocto:
+                                $ref: '#/components/schemas/Money'
+                              maxNativeAtomic:
+                                $ref: '#/components/schemas/Money'
+                              beforeBlockHash:
+                                type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - operationId
+                - hash
+              properties:
+                operationId:
+                  type: string
+                  format: uuid
+                hash:
+                  type: string
+  /mainnet/readiness:
+    get:
+      summary: Read finalized mainnet readiness without signing authority
+      tags:
+        - events
+      security: []
+      responses:
+        '200':
+          description: Observational paused deployment; provider remains unverified
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required:
+                          - contractId
+                          - codeHash
+                          - paused
+                          - principalCapAtomic
+                          - eventPresent
+                          - providerStatus
+                          - signingAuthority
+                        properties:
+                          contractId:
+                            type: string
+                          codeHash:
+                            type: string
+                          paused:
+                            type: boolean
+                          principalCapAtomic:
+                            $ref: '#/components/schemas/Money'
+                          eventPresent:
+                            type: boolean
+                          providerStatus:
+                            type: string
+                            enum:
+                              - UNVERIFIED
+                          signingAuthority:
+                            type: boolean
+                            enum:
+                              - false
+        '503':
+          $ref: '#/components/responses/Unavailable'
+
   /events:
     get:
       summary: List published events (public)
@@ -58,16 +510,24 @@ paths:
   /events/{eventId}:
     get:
       summary: Event detail + finalized rules/counts (public)
-      tags: [events]
+      tags:
+        - events
       security: []
       parameters:
         - $ref: '#/components/parameters/EventId'
+        - name: contractId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: When supplied, eventId is a chain event id scoped by this contract and server network.
       responses:
         '200':
           description: Event
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/EventEnvelope' }
+              schema:
+                $ref: '#/components/schemas/EventEnvelope'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -423,16 +883,24 @@ paths:
   /events/{eventId}/results:
     get:
       summary: Public results + personal claim detail (public)
-      tags: [claims]
+      tags:
+        - claims
       security: []
       parameters:
         - $ref: '#/components/parameters/EventId'
+        - name: contractId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: When supplied, eventId is a chain event id scoped by this contract and server network.
       responses:
         '200':
           description: Results
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/ResultsEnvelope' }
+              schema:
+                $ref: '#/components/schemas/ResultsEnvelope'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -451,6 +919,85 @@ paths:
           $ref: '#/components/responses/Unauthorized'
 
   /events/{eventId}/content:
+    post:
+      summary: Publish private material as finalized onchain organizer
+      description: >-
+        Host only. Verified session, matching Origin and fresh final organizer authority required; attendee reads
+        remain attendance and settlement gated.
+      tags:
+        - content
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - title
+                - mimeType
+                - contentBase64
+              properties:
+                title:
+                  type: string
+                  minLength: 1
+                  maxLength: 256
+                mimeType:
+                  type: string
+                  enum:
+                    - application/pdf
+                    - text/plain
+                    - image/png
+                    - image/jpeg
+                contentBase64:
+                  type: string
+                  maxLength: 699052
+                  description: Canonical base64; decoded payload at most 512 KiB
+      responses:
+        '201':
+          description: Published private descriptor with opaque ID
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required:
+                          - id
+                          - title
+                          - mimeType
+                          - bytesSize
+                          - publishedAt
+                        properties:
+                          id:
+                            type: string
+                            pattern: ^[a-f0-9]{64}$
+                          title:
+                            type: string
+                          mimeType:
+                            type: string
+                          bytesSize:
+                            type: integer
+                            minimum: 0
+                            maximum: 524288
+                          publishedAt:
+                            type: string
+                            format: date-time
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
     get:
       summary: List private materials for an attended and settled pass
       description: Requires fresh finalized onchain ownership and attendance. Returns opaque resource identifiers; downloads recheck authorization and never expose object storage paths or public fallback URLs.
@@ -704,6 +1251,9 @@ components:
       properties:
         id: { type: string, format: uuid }
         chainEventId: { type: string, description: 'Event identifier inside contractId; distinct from database UUID id' }
+        title: { type: string, nullable: true }
+        location: { type: string, nullable: true }
+        rulesText: { type: string, nullable: true }
         network: { type: string }
         contractId: { type: string }
         state: { $ref: '#/components/schemas/EventState' }
@@ -720,9 +1270,12 @@ components:
             finalizeDeadline: { type: string, format: date-time }
         totals:
           type: object
-          required: [acceptedAtomic, paidAtomic, pendingAtomic, liabilityAtomic]
+          required: [acceptedAtomic, paidAtomic, pendingAtomic, liabilityAtomic, realizedYieldAtomic, allocatedYieldAtomic, unallocatedYieldAtomic]
           properties:
             acceptedAtomic: { $ref: '#/components/schemas/Money' }
+            realizedYieldAtomic: { $ref: '#/components/schemas/Money' }
+            allocatedYieldAtomic: { $ref: '#/components/schemas/Money' }
+            unallocatedYieldAtomic: { allOf: [{ $ref: '#/components/schemas/Money' }], description: 'Held yield not allocated to participant claims' }
             paidAtomic: { $ref: '#/components/schemas/Money' }
             pendingAtomic: { $ref: '#/components/schemas/Money' }
             liabilityAtomic: { $ref: '#/components/schemas/Money' }
@@ -851,7 +1404,7 @@ components:
         network: { type: string, enum: [local, testnet, mainnet] }
         nearAccount: { type: string, description: 'optional proof of NEAR account control; REQUIRED before participant actions' }
 
-    MeEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, required: [userId, sessionId, active], properties: { userId: { type: string, format: uuid }, sessionId: { type: string, format: uuid }, active: { type: boolean } } } } } ] }
+    MeEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, required: [userId, sessionId, active, accountId, network], properties: { userId: { type: string, format: uuid }, sessionId: { type: string, format: uuid }, active: { type: boolean }, accountId: { type: string, nullable: true }, network: { type: string, nullable: true } } } } } ] }
     LogoutEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, required: [loggedOut, revoked], properties: { loggedOut: { type: boolean }, revoked: { type: boolean } } } } } ] }
     # ---- response envelopes -------------------------------------------------
     EventEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { $ref: '#/components/schemas/Event' } } } ] }
@@ -914,9 +1467,12 @@ components:
                     noShows: { type: integer, minimum: 0 }
                 totals:
                   type: object
-                  required: [acceptedAtomic, paidAtomic, pendingAtomic, liabilityAtomic]
+                  required: [acceptedAtomic, paidAtomic, pendingAtomic, liabilityAtomic, realizedYieldAtomic, allocatedYieldAtomic, unallocatedYieldAtomic]
                   properties:
                     acceptedAtomic: { $ref: '#/components/schemas/Money' }
+                    realizedYieldAtomic: { $ref: '#/components/schemas/Money' }
+                    allocatedYieldAtomic: { $ref: '#/components/schemas/Money' }
+                    unallocatedYieldAtomic: { allOf: [{ $ref: '#/components/schemas/Money' }], description: 'Held yield not allocated to participant claims' }
                     paidAtomic: { $ref: '#/components/schemas/Money' }
                     pendingAtomic: { $ref: '#/components/schemas/Money' }
                     liabilityAtomic: { $ref: '#/components/schemas/Money' }

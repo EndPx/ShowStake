@@ -117,7 +117,7 @@ export interface BlockSource {
   /** fetch a finalized block by height, normalized (throws when unavailable). */
   fetchBlock(height: number): Promise<NormalizedBlock>;
   /** resolve the latest finalized block height (for the scan loop). */
-  lastFinalHeight(): Promise<number>;
+  lastFinalHeight?(): Promise<number>;
 }
 
 /** Official canonical block header fields used for chain linkage. */

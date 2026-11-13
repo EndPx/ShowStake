@@ -56,8 +56,8 @@ async function runD01() {
     const migrations = await listMigrations(SCHEMA_DIR);
     const applied = await runMigrations(client, migrations); // bootstrap UNDER the lock
     const again = await applyMigrations(client, migrations); // idempotent (re-entrant lock)
-    checks.push(result('D01_APPLY_AND_REAPPLY', applied.length === 2 && again.length === 0,
-      '2 migrations applied, then 0 on re-run',
+    checks.push(result('D01_APPLY_AND_REAPPLY', applied.length === migrations.length && again.length === 0,
+      `${migrations.length} migrations applied, then 0 on re-run`,
       `applied=${applied.map((m) => m.version).join(',')} re-run=${again.length}`));
 
     const st = await status(client, migrations);
@@ -216,6 +216,41 @@ async function runD02() {
       [uuid(), FIX.event], '23514');
     checks.push(result('D02_PARTICIPANT_EQ_BENEFICIARY', account.code === '23514',
       'participant!=beneficiary CHECK 23514', `code=${account.code}`));
+
+    await client.query('BEGIN');
+    try {
+      const yielded = await client.query(
+        `UPDATE events_projection SET accepted_atomic=10, realized_yield_atomic=2, allocated_yield_atomic=2,
+         paid_atomic=12, pending_atomic=0, liability_atomic=0 WHERE id=$1
+         RETURNING realized_yield_atomic::text AS yield`, [FIX.event]);
+      checks.push(result('D02_REALIZED_YIELD_CONSERVATION', yielded.rows[0]?.yield === '2',
+        '10 principal + 2 realized yield supports 12 paid', yielded.rows[0]?.yield));
+    } finally { await client.query('ROLLBACK'); }
+    await client.query('BEGIN');
+    try {
+      const held = await client.query(
+        `UPDATE events_projection SET accepted_atomic=10, realized_yield_atomic=2,
+         allocated_yield_atomic=0, paid_atomic=0, pending_atomic=0, liability_atomic=10
+         WHERE id=$1 RETURNING (realized_yield_atomic-allocated_yield_atomic)::text AS held`, [FIX.event]);
+      checks.push(result('D02_UNALLOCATED_YIELD_NOT_A_CLAIM', held.rows[0]?.held === '2',
+        'realized funds may remain outside participant allocations', held.rows[0]?.held));
+    } finally { await client.query('ROLLBACK'); }
+    const wrongYield = await expectSqlError(client,
+      `UPDATE events_projection SET accepted_atomic=10, realized_yield_atomic=2, allocated_yield_atomic=2,
+       paid_atomic=13, pending_atomic=0, liability_atomic=0 WHERE id=$1`, [FIX.event], '23514');
+    checks.push(result('D02_REALIZED_YIELD_MISMATCH', wrongYield.code === '23514',
+      'yield conservation mismatch rejected', `code=${wrongYield.code}`));
+    const overAllocated = await expectSqlError(client,
+      `UPDATE events_projection SET accepted_atomic=10, realized_yield_atomic=2,
+       allocated_yield_atomic=3, paid_atomic=13, pending_atomic=0, liability_atomic=0 WHERE id=$1`, [FIX.event], '23514');
+    checks.push(result('D02_ALLOCATED_YIELD_BOUNDED', overAllocated.code === '23514',
+      'allocated yield cannot exceed realized yield', `code=${overAllocated.code}`));
+    const sumOverflow = await expectSqlError(client,
+      `UPDATE events_projection SET accepted_atomic=$2, realized_yield_atomic=1, allocated_yield_atomic=1,
+       paid_atomic=$2, pending_atomic=1, liability_atomic=0 WHERE id=$1`,
+      [FIX.event, '340282366920938463463374607431768211455'], '23514');
+    checks.push(result('D02_PRINCIPAL_PLUS_YIELD_U128', sumOverflow.code === '23514',
+      'combined principal and yield must fit u128', `code=${sumOverflow.code}`));
 
     const capacity = await expectSqlError(client,
       `INSERT INTO events_projection
@@ -551,7 +586,7 @@ async function runD06() {
       loserNoBootstrap = !reg.rows[0].t;
       await releaseMigrationLock(da);
       const applied = await runMigrations(db, migrations); // winner now proceeds
-      winnerApplied = applied.length === 2;
+      winnerApplied = applied.length === migrations.length;
     } finally {
       await da.end().catch(() => {});
       await db.end().catch(() => {});
