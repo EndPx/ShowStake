@@ -1,0 +1,66 @@
+{
+  "classification": "PASS_LOCAL",
+  "scope": "Permissionless organizer frontend and hosted FE preparation; no funded lifecycle acceptance",
+  "organizer": "Connected NEAR wallet; factory contract uses predecessor as immutable child organizer. No nominated organizer whitelist.",
+  "legacy": "Fixed organizer allocated escrow is opt-in review only",
+  "tests": {
+    "typescriptFiles": 25,
+    "failures": 0,
+    "legacyFrontendChecks": 100,
+    "productionMainnetBuild": "PASS_LOCAL",
+    "independentCodexReview": "PASS_LOCAL bounded frontend policy",
+    "vercelApiBoundary": "PASS_LOCAL; missing hosted API returns503, never loopback; production origin requires HTTPS"
+  },
+  "browser": {
+    "url": "http://127.0.0.1:3012/events/new",
+    "pageOpened": true,
+    "connectedWalletOrganizerCopy": true,
+    "legacyOptIn": true,
+    "technicalUploadAndNonceInAdvancedOnly": true,
+    "walletPickerOpened": true,
+    "walletSigned": false,
+    "viewportWidth": 390,
+    "documentWidth": 390,
+    "horizontalOverflow": false
+  },
+  "walletPolicy": {
+    "factoryContext": "Final-block actual factory code/config, connected organizer, child, nonce, quote and leaf hash; refreshed before submit",
+    "request": "Deep copy/freeze; policy/freshness/session boundary checked after awaited account read and immediately before wallet call",
+    "sameAccountABARegression": "PASS_LOCAL wallet call count0",
+    "recovery": "Fresh exact resolve/failed-funding contexts; unresolved attempt is not automatically resent",
+    "brandLimit": "In-process accidental-substitution marker, not an XSS or cryptographic chain-proof boundary"
+  },
+  "publicWasm": {
+    "path": "apps/web/public/contracts/showstake-event-escrow-03076c4a.wasm",
+    "bytes": 224939,
+    "sha256": "03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2"
+  },
+  "vercel": {
+    "project": "showstake",
+    "projectId": "prj_T76GlE1PMUGUSdzV2SJfSU4mqnEx",
+    "plan": "hobby",
+    "repository": "EndPx/ShowStake",
+    "rootDirectory": "apps/web",
+    "node": "24.x",
+    "build": "pnpm run build",
+    "install": "pnpm install --frozen-lockfile",
+    "outsideRootSources": true,
+    "publicNetwork": "mainnet",
+    "hostedApiConfigured": false,
+    "status": "PROJECT_LINKED_AWAITING_GIT_BUILD"
+  },
+  "financialDefaults": {
+    "approvedMicrotest": null,
+    "approvedAllocatedEvent": null,
+    "acceptedFactory": null,
+    "providerAccepted": false,
+    "blockchainTransactions": 0
+  },
+  "remaining": [
+    "Real external wallet sign-in and funded flows NOT_RUN",
+    "Public API hosting not configured; hosted login/indexed reads return503",
+    "Factory not deployed or financially enabled",
+    "Cross-device/browser-cleared factory no-resend remains unproven",
+    "Rhea deployed source/callback/redeem recovery and actual USDC return remain unaccepted"
+  ]
+}

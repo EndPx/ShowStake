@@ -1,0 +1,24 @@
+import type { SignAndSendParams, FunctionCallAction } from "./near/actions.ts";
+import type { PublicChildEmpty } from "./near/public-child.ts";
+const T30="30000000000000",T100="100000000000000",T300="300000000000000";
+function keys(x:unknown, expected:string[]):boolean{return !!x&&typeof x==="object"&&!Array.isArray(x)&&Object.keys(x).sort().join(",")===[...expected].sort().join(",");}
+function call(a:unknown,m:string,gas:string,deposit:string,args:string[]):a is FunctionCallAction {const x=a as FunctionCallAction;return !!x&&x.type==="FunctionCall"&&x.params?.methodName===m&&x.params.gas===gas&&x.params.deposit===deposit&&keys(x.params.args,args);}
+function validRules(value:unknown):value is Record<string,unknown>{if(!keys(value,["event_id","title","location","rules_text","deposit","capacity","reg_open","reg_close","checkin_open","checkin_close","finalize_deadline"]))return false;const r=value as Record<string,unknown>,enc=new TextEncoder();return typeof r.event_id==="string"&&/^[A-Za-z0-9._-]{1,128}$/.test(r.event_id)&&typeof r.title==="string"&&!!r.title&&enc.encode(r.title).length<=256&&typeof r.location==="string"&&!!r.location&&enc.encode(r.location).length<=512&&typeof r.rules_text==="string"&&!!r.rules_text&&enc.encode(r.rules_text).length<=8192&&typeof r.deposit==="string"&&/^[1-9][0-9]*$/.test(r.deposit)&&BigInt(r.deposit)<2n**128n&&Number.isInteger(r.capacity)&&Number(r.capacity)>=1&&Number(r.capacity)<=200&&[r.reg_open,r.reg_close,r.checkin_open,r.checkin_close,r.finalize_deadline].every(Number.isSafeInteger)&&Number(r.reg_open)<Number(r.reg_close)&&Number(r.reg_close)<=Number(r.checkin_open)&&Number(r.checkin_open)<Number(r.checkin_close)&&Number(r.finalize_deadline)===Number(r.checkin_close)+86400000;}
+/** Exact reviewed ABI call shapes; state and balance preflight remain separate. */
+export function validFactoryEventActions(params:SignAndSendParams,ctx:PublicChildEmpty,token:string):boolean {
+ const {actions,signerId,receiverId}=params,child=ctx.contractId,host=ctx.organizer;if(!actions.length)return false;
+ if(receiverId===child){const x=actions[0];const offset=x?.type==="Transfer"?1:0;const calls=actions.slice(offset);const isPublish=calls.some(a=>a.type==="FunctionCall"&&["configure_rhea_cap","set_rhea_paused","create_event"].includes(a.params.methodName));
+  if(isPublish){if(signerId!==host||ctx.event!==null||actions.length!==3+offset||offset===1&&(!/^[1-9][0-9]*$/.test(x!.params.deposit))||!call(calls[0],"configure_rhea_cap",T30,"0",["principal_cap"])||!call(calls[1],"set_rhea_paused",T30,"0",["paused"])||calls[1].params.args.paused!==false||!call(calls[2],"create_event",T30,"0",["rules"])||!validRules(calls[2].params.args.rules))return false;const r=calls[2].params.args.rules;return calls[0].params.args.principal_cap===(BigInt(String(r.deposit))*BigInt(Number(r.capacity))).toString();}
+  if(!ctx.event||actions.length!==1||x?.type!=="FunctionCall")return false;const m=x.params.methodName;
+  if(["close_registration","trigger_earn_supply","reconcile_earn","trigger_earn_redeem","settle"].includes(m))return call(x,m,T300,"0",[]);
+  if(m==="finalize_attendance")return signerId===host&&call(x,m,T300,"0",[]);
+  if(m==="mark_attendance")return signerId===host&&call(x,m,T300,"0",["registration_id","attended"])&&typeof x.params.args.registration_id==="string"&&!!x.params.args.registration_id&&typeof x.params.args.attended==="boolean";
+  if(m==="cancel_event"||m==="activate_timeout_refund")return (m!=="cancel_event"||signerId===host)&&call(x,m,T300,"0",["event_id"])&&!!ctx.event&&x.params.args.event_id===ctx.event.event_id;
+  if(m==="claim")return call(x,m,T300,"1",["registration_id"])&&typeof x.params.args.registration_id==="string"&&!!x.params.args.registration_id;
+  if(m==="rhea_storage_deposit")return signerId===host&&x.params.gas===T100&&/^[1-9][0-9]*$/.test(x.params.deposit)&&keys(x.params.args,["target"])&&["ft","provider"].includes(String(x.params.args.target));return false;
+ }
+ if(receiverId!==token||actions.length!==1||actions[0]?.type!=="FunctionCall")return false;const a=actions[0];
+ if(a.params.methodName==="storage_deposit")return a.params.gas===T30&&/^[1-9][0-9]*$/.test(a.params.deposit)&&(keys(a.params.args,[])||(keys(a.params.args,["account_id"])&&a.params.args.account_id===signerId));
+ if(!call(a,"ft_transfer_call",T300,"1",["receiver_id","amount","msg"])||!ctx.event||a.params.args.receiver_id!==child||a.params.args.amount!==ctx.event.deposit||typeof a.params.args.msg!=="string")return false;
+ try{const m=JSON.parse(a.params.args.msg);return keys(m,["version","event_id","commitment_id"])&&m.version===1&&m.event_id===ctx.event.event_id&&typeof m.commitment_id==="string"&&/^[A-Za-z0-9_-]{1,64}$/.test(m.commitment_id);}catch{return false;}
+}

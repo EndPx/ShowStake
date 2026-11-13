@@ -1,6 +1,6 @@
 import { finalFactoryReceipt, matchFactoryRequest, type ChildConfig, type FactoryAttempt, type FactoryIdentity, type FactoryRequest } from "./factory.ts";
 export type RecoveryStatus = "Ready" | "Pending" | "Failed" | "RefundClaimable" | "InFlight";
-export interface RecoveryView { status: RecoveryStatus; request: FactoryRequest & { refund_state: string; created_block: number }; blockHeight: number; blockHash: string; resolveEligible: boolean }
+export interface RecoveryView { status: RecoveryStatus; request: FactoryRequest & { refund_state: string; created_block: number }; blockHeight: number; blockHash: string; blockTimestampMs:number; resolveEligible: boolean }
 export async function inspectFactoryRecovery(attempt: FactoryAttempt, identity: FactoryIdentity, rpcUrl: string, fetchImpl: typeof fetch = fetch, resolutionHash: string | null = null): Promise<RecoveryView> {
   async function rpc(method: string, params: unknown): Promise<any> {
     const response = await fetchImpl(rpcUrl, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: "showstake-recovery", method, params }), cache: "no-store" });
@@ -24,12 +24,12 @@ export async function inspectFactoryRecovery(attempt: FactoryAttempt, identity: 
   if (!Number.isSafeInteger(request.created_block) || !Number.isSafeInteger(factoryConfig.pending_timeout_blocks) || factoryConfig.pending_timeout_blocks! < 0) throw Error("Invalid recovery timeout");
   const resolveEligible = request.state === "Pending" && height >= request.created_block + factoryConfig.pending_timeout_blocks!;
   const matched = matchFactoryRequest(attempt, request, identity);
-  if (matched === "failed") return { status: request.refund_state === "Claimable" ? "RefundClaimable" : request.refund_state === "InFlight" ? "InFlight" : "Failed", request, blockHeight: height, blockHash: hash, resolveEligible };
-  if (matched !== "ready" || !(attempt.hash || resolutionHash)) return { status: "Pending", request, blockHeight: height, blockHash: hash, resolveEligible };
+  if (matched === "failed") return { status: request.refund_state === "Claimable" ? "RefundClaimable" : request.refund_state === "InFlight" ? "InFlight" : "Failed", request, blockHeight: height, blockHash: hash, blockTimestampMs:time, resolveEligible };
+  if (matched !== "ready" || !(attempt.hash || resolutionHash)) return { status: "Pending", request, blockHeight: height, blockHash: hash, blockTimestampMs:time, resolveEligible };
   const [code, config, keys, tx] = await Promise.all([
     query(attempt.child, { request_type: "view_code" }), query(attempt.child, { request_type: "call_function", method_name: "get_config", args_base64: encode({}) }), query(attempt.child, { request_type: "view_access_key_list" }), rpc("tx", { tx_hash: resolutionHash || attempt.hash, sender_account_id: attempt.organizer, wait_until: "FINAL" }),
   ]);
-  if (!Array.isArray(keys.keys) || keys.keys.length !== 0 || typeof code.code_base64 !== "string" || !Array.isArray(config.result) || tx.final_execution_status !== "FINAL") return { status: "Pending", request, blockHeight: height, blockHash: hash, resolveEligible };
+  if (!Array.isArray(keys.keys) || keys.keys.length !== 0 || typeof code.code_base64 !== "string" || !Array.isArray(config.result) || tx.final_execution_status !== "FINAL") return { status: "Pending", request, blockHeight: height, blockHash: hash, blockTimestampMs:time, resolveEligible };
   const binary = atob(code.code_base64), bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
   const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)); const sha = Array.from(digest, x => x.toString(16).padStart(2, "0")).join("");
   const outcome = tx.final_execution_outcome ?? tx;
@@ -38,10 +38,10 @@ export async function inspectFactoryRecovery(attempt: FactoryAttempt, identity: 
     if (!resolutionHash) {
     const submitted = Uint8Array.from(atob(args.code), c => c.charCodeAt(0));
     const submittedDigest = new Uint8Array(await crypto.subtle.digest("SHA-256", submitted));
-    if (Array.from(submittedDigest, x => x.toString(16).padStart(2, "0")).join("") !== sha) return { status: "Pending", request, blockHeight: height, blockHash: hash, resolveEligible };
+    if (Array.from(submittedDigest, x => x.toString(16).padStart(2, "0")).join("") !== sha) return { status: "Pending", request, blockHeight: height, blockHash: hash, blockTimestampMs:time, resolveEligible };
     }
-  } catch { return { status: "Pending", request, blockHeight: height, blockHash: hash, resolveEligible }; }
+  } catch { return { status: "Pending", request, blockHeight: height, blockHash: hash, blockTimestampMs:time, resolveEligible }; }
   const child = JSON.parse(new TextDecoder().decode(Uint8Array.from(config.result))) as ChildConfig;
   const verdict = finalFactoryReceipt(tx, attempt, request, identity, child, sha, resolutionHash);
-  return { status: verdict === "confirmed" ? "Ready" : verdict === "failed" ? "Failed" : "Pending", request, blockHeight: height, blockHash: hash, resolveEligible };
+  return { status: verdict === "confirmed" ? "Ready" : verdict === "failed" ? "Failed" : "Pending", request, blockHeight: height, blockHash: hash, blockTimestampMs:time, resolveEligible };
 }

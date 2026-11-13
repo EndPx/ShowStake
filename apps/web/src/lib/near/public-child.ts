@@ -2,7 +2,9 @@ import type { AcceptedMainnetRelease } from "./mainnet-actions.ts";
 import { REVIEWED_LEAF_SHA256, REVIEWED_LEAF_BYTES } from "./factory.ts";
 import type { MainnetEvent } from "./mainnet-lifecycle.ts";
 const MAINNET_USDC = "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1";
-export interface PublicChild { contractId: string; organizer: string; event: MainnetEvent; blockHash: string; blockHeight: number; blockTimestampMs: number }
+// In-process marker prevents accidental context substitution; it is not an XSS or chain-proof boundary. Production callers use the fixed RPC_URL.
+const verifiedChildren=new WeakSet<object>();
+export interface PublicChild { factory:string; factoryCodeHash:string; factoryCodeSha256:string; canonicalFt:string; policy:string; provider:string; contractId: string; organizer: string; event: MainnetEvent; blockHash: string; blockHeight: number; blockTimestampMs: number }
 export interface PublicChildEmpty extends Omit<PublicChild,"event"> { event: MainnetEvent | null }
 export function resolvePublicChild(release: AcceptedMainnetRelease | null, contractId:string,eventId:string,rpcUrl:string,fetchImpl?:typeof fetch):Promise<PublicChild>;
 export function resolvePublicChild(release: AcceptedMainnetRelease | null, contractId:string,eventId:null,rpcUrl:string,fetchImpl?:typeof fetch):Promise<PublicChildEmpty>;
@@ -20,5 +22,8 @@ export async function resolvePublicChild(release: AcceptedMainnetRelease | null,
   if(!request||request.state!=="Ready"||request.child_id!==contractId||request.organizer!==child.organizer||request.request_nonce!==child.request_nonce||request.network!=="mainnet"||request.canonical_ft!==release.canonicalFt||request.leaf_policy_version!==release.policy||request.leaf_code_sha256!==REVIEWED_LEAF_SHA256)throw Error("Request mismatch");
   if(childCode.sha!==REVIEWED_LEAF_SHA256||childCode.len!==REVIEWED_LEAF_BYTES||!Array.isArray(keys.keys)||keys.keys.length!==0||config.organizer!==child.organizer||config.network!=="mainnet"||config.canonical_ft!==release.canonicalFt||config.policy_version!==release.policy||config.provider_account!==release.provider||config.provider_kind!==release.providerKind||(eventId!==null&&(!event||event.event_id!==eventId))||(event&&(event.organizer!==child.organizer||event.canonical_ft!==release.canonicalFt||event.policy_version!==release.policy)))throw Error("Child or event identity mismatch");
   if(Date.now()-blockTimestampMs>30000)throw Error("Final block stale");
-  return {contractId,organizer:child.organizer,event,blockHash:hash,blockHeight:height,blockTimestampMs};
+  if(event && typeof event === "object")Object.freeze(event);
+  const result=Object.freeze({factory:release.factory,factoryCodeHash:release.factoryCodeHash,factoryCodeSha256:release.factoryCodeSha256,canonicalFt:release.canonicalFt,policy:release.policy,provider:release.provider,contractId,organizer:child.organizer,event,blockHash:hash,blockHeight:height,blockTimestampMs});verifiedChildren.add(result);return result;
 }
+
+export function isVerifiedPublicChild(value:PublicChildEmpty|undefined,now=Date.now()):boolean {return !!value&&verifiedChildren.has(value)&&now-value.blockTimestampMs<=30000&&value.blockTimestampMs<=now+5000;}

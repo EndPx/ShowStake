@@ -1,0 +1,4 @@
+﻿import type { SignAndSendParams } from "./actions.ts";
+function deepFreeze(value:unknown):void {if(!value||typeof value!=="object"||Object.isFrozen(value))return;for(const v of Object.values(value))deepFreeze(v);Object.freeze(value);}
+export function snapshotWalletRequest(params:SignAndSendParams):SignAndSendParams {const copy=structuredClone(params);deepFreeze(copy);return copy;}
+export async function checkedWalletCall<T>(params:SignAndSendParams,allowed:(p:SignAndSendParams)=>boolean,getAccounts:()=>Promise<Array<{accountId:string}>>,send:(p:SignAndSendParams)=>Promise<T>):Promise<T>{const copy=snapshotWalletRequest(params);if(!allowed(copy))throw Error("Transaction is unavailable");const accounts=await getAccounts();if(accounts[0]?.accountId!==copy.signerId)throw Error("Wallet account changed");if(!allowed(copy))throw Error("Transaction approval or context expired");return send(copy);}

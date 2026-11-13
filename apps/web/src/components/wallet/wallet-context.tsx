@@ -28,6 +28,7 @@ import {
   type SignedProof,
   type WalletAccount,
 } from "@/lib/near/wallet";
+import { invalidateWalletBoundary } from "@/lib/near/wallet-boundary";
 import { NETWORK } from "@/lib/config";
 
 export type WalletStatus =
@@ -64,7 +65,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const invalidate=() => { if(statusRef.current === "connecting") return; generation.current++; const epoch=generation.current; setSessionEpoch(epoch); setProof(null); setKeyPermission(null); void readConnectedWalletAccount().then(id => { if(generation.current!==epoch)return; if(!id||id!==accountRef.current?.accountId) {setAccount(null);setStatus("idle");} }); };
     const unsubscribe=subscribeWalletChanges(invalidate);
-    const focus=()=>{if(document.visibilityState === "visible") invalidate();};
+    const focus=()=>{if(document.visibilityState === "visible") {invalidateWalletBoundary();invalidate();}};
     window.addEventListener("focus",focus);document.addEventListener("visibilitychange",focus);
     return()=>{unsubscribe();window.removeEventListener("focus",focus);document.removeEventListener("visibilitychange",focus);};
   }, []);

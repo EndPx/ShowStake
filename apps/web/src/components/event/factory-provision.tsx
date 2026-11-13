@@ -1,14 +1,15 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MAINNET_POLICY } from "@/lib/mainnet-policy";
 import { useWallet } from "@/components/wallet/wallet-context";
 import { formatUnits } from "@/lib/money";
 import { RPC_URL } from "@/lib/config";
-import { finalBlockViews } from "@/lib/near/rpc";
+import { prepareFactoryContext } from "@/lib/near/factory-context";
 import { signAndSendTransaction, walletNetworkAvailable, walletRequestAvailable } from "@/lib/near/wallet";
+import { prepareFactoryRecoveryContext } from "@/lib/near/factory-recovery-context";
 import { inspectFactoryRecovery, type RecoveryView } from "@/lib/near/factory-recovery";
 import { signParams } from "@/lib/near/actions";
-import { provisionAction, REVIEWED_LEAF_SHA256, saveFactoryAttempt, validateFactory, type FactoryAttempt, type FactoryConfig, type FactoryIdentity, type FactoryQuote } from "@/lib/near/factory";
+import { REVIEWED_LEAF_SHA256, saveFactoryAttempt, type FactoryAttempt, type FactoryIdentity, type FactoryQuote } from "@/lib/near/factory";
 import { ACCEPTED_MAINNET_RELEASE, type AcceptedMainnetRelease } from "@/lib/near/mainnet-actions";
 
 const MAINNET_SIGNING_ENABLED = MAINNET_POLICY.acceptedFactory?.approval!==undefined;
@@ -18,27 +19,31 @@ export function FactoryProvision({ release = ACCEPTED_MAINNET_RELEASE, onReady }
   const [nonce, setNonce] = useState(""); const [code, setCode] = useState<Uint8Array | null>(null);
   const [quote, setQuote] = useState<{ value: FactoryQuote; child: string; block: string } | null>(null);
   const [message, setMessage] = useState(""); const [pending, setPending] = useState(false); const [recovery, setRecovery] = useState<RecoveryView | null>(null);
+  useEffect(()=>{let active=true;setCode(null);setQuote(null);setRecovery(null);setNonce("");if(!release||!account)return;
+    try {const nonceKey=`showstake:factory-nonce:v1:${release.factory}:${account}`;let saved=localStorage.getItem(nonceKey);if(!saved){const prefix=`showstake:factory:v1:mainnet:${release.factory}:${account}:`;for(let i=0;i<localStorage.length;i++){if(localStorage.key(i)?.startsWith(prefix))throw Error("Previous factory action needs recovery before another request.");}const bytes=crypto.getRandomValues(new Uint8Array(6));let n=0;for(const byte of bytes)n=n*256+byte;saved=String(n);localStorage.setItem(nonceKey,saved);if(localStorage.getItem(nonceKey)!==saved)throw Error("Cannot persist factory request ID");}if(!/^(0|[1-9][0-9]*)$/.test(saved)||!Number.isSafeInteger(Number(saved)))throw Error("Saved factory request ID is invalid");setNonce(saved);
+    }catch(error){setMessage(String(error));return;}
+    void fetch("/contracts/showstake-event-escrow-03076c4a.wasm",{cache:"force-cache"}).then(async response=>{if(!response.ok)throw Error("Reviewed contract artifact is unavailable");const bytes=new Uint8Array(await response.arrayBuffer());if(active)setCode(bytes);}).catch(error=>{if(active)setMessage(String(error));});
+    return()=>{active=false;};
+  },[release,account]);
   function identity(): FactoryIdentity | null { return release && account ? { factory: release.factory, factoryCodeSha256: release.factoryCodeSha256, factoryCodeHash: release.factoryCodeHash, organizer: account, canonicalFt: release.canonicalFt, policy: release.policy, provider: release.provider, providerKind: release.providerKind } : null; }
   async function prepare() {
     const id = identity(), n = Number(nonce); setQuote(null);
     if (!id || !/^(0|[1-9][0-9]*)$/.test(nonce) || !Number.isSafeInteger(n)) { setMessage("A connected organizer, accepted factory and valid nonce are required."); return; }
-    const snapshot = await finalBlockViews(id.factory, ["get_config", { method: "quote_provision", args: { organizer: id.organizer } }, { method: "get_child_id", args: { organizer: id.organizer, request_nonce: n } }], RPC_URL);
-    if (currentAccount.current !== id.organizer) return;
-    if (!snapshot.ok) { setMessage("Factory views unavailable. No transaction prepared."); return; }
-    const [config, q, child] = snapshot.value.views as [FactoryConfig, FactoryQuote, unknown];
-    if (!config || !q || !validateFactory(config, q, id) || typeof child !== "string" || !child.endsWith(`.${id.factory}`)) { setMessage("Factory identity, quote or child failed verification."); return; }
-    setQuote({ value: q, child, block: snapshot.blockHash }); setMessage("Quote observed at one final block; it may change before submission. Refresh before approving.");
+    if(!code){setMessage("Select the reviewed contract Wasm to verify the factory quote.");return;}
+    const epoch=wallet.getSessionEpoch();
+    try { const context=await prepareFactoryContext(id,n,code,RPC_URL); if(currentAccount.current!==id.organizer||wallet.getSessionEpoch()!==epoch)return;setQuote({value:context.quote,child:context.child,block:context.blockHash});setMessage("Factory code, organizer and quote verified at one final block. Refresh before approving."); } catch(error) { if(currentAccount.current===id.organizer && wallet.getSessionEpoch()===epoch)setMessage(String(error)); }
   }
   async function submit() {
     const id = identity(), n = Number(nonce); if (!walletNetworkAvailable("mainnet") || !MAINNET_SIGNING_ENABLED || !id || !quote || !code || !account || pending || wallet.status !== "connected" || !wallet.proof) return;
     const epoch = wallet.getSessionEpoch(); setPending(true);
     try {
-      const action = await provisionAction(code, n, quote.value);
+      const context = await prepareFactoryContext(id,n,code,RPC_URL); const action=context.action;
+      if(context.child!==quote.child||context.quote.total!==quote.value.total||context.quote.child_funding!==quote.value.child_funding||context.quote.registry_fee!==quote.value.registry_fee||context.quote.attached_gas_tgas!==quote.value.attached_gas_tgas)throw Error("Factory quote changed. Review the new quote before continuing.");
       if (currentAccount.current !== account || wallet.getSessionEpoch() !== epoch) throw Error("Wallet account changed. Start again.");
       const attempt = { network: "mainnet" as const, factory: id.factory, organizer: id.organizer, nonce: n, child: quote.child, codeHash: REVIEWED_LEAF_SHA256, total: quote.value.total, hash: null };
-      if(!walletRequestAvailable(signParams("mainnet",account,id.factory,[action])))throw Error("Action is outside the approved wallet scope");
+      if(!walletRequestAvailable(signParams("mainnet",account,id.factory,[action]),context))throw Error("Action is outside the approved wallet scope");
       const key = saveFactoryAttempt(localStorage, attempt);
-      const result = await signAndSendTransaction(signParams("mainnet", account, id.factory, [action]));
+      const result = await signAndSendTransaction(signParams("mainnet", account, id.factory, [action]),context);
       if (result.ok) localStorage.setItem(key, JSON.stringify({ ...attempt, hash: result.value.transactionHash }));
       if (wallet.getSessionEpoch() !== epoch) return;
       if (!result.ok) { setMessage(`Outcome unresolved: ${result.detail}. Reconcile this nonce before any retry.`); return; }
@@ -65,22 +70,22 @@ export function FactoryProvision({ release = ACCEPTED_MAINNET_RELEASE, onReady }
       setRecovery(result); if (result.status === "Ready") onReady?.(attempt, id, resolution?.hash ?? null); setMessage(`Request ${result.status}, observed at final block ${result.blockHeight}. No automatic retry.`);
     } catch (error) { if (currentAccount.current === id.organizer) setMessage(`Recovery unavailable: ${String(error)}. Do not retry while the outcome is unknown.`); }
   }
+  function startAnother(){if(!release||!account||recovery?.status!=="Ready"||pending)return;try{const bytes=crypto.getRandomValues(new Uint8Array(6));let value=0;for(const byte of bytes)value=value*256+byte;const next=String(value),nonceKey=`showstake:factory-nonce:v1:${release.factory}:${account}`,attemptKey=`showstake:factory:v1:mainnet:${release.factory}:${account}:${next}`;if(localStorage.getItem(attemptKey))throw Error("Request ID collision. Try again.");localStorage.setItem(nonceKey,next);if(localStorage.getItem(nonceKey)!==next)throw Error("Cannot persist factory request ID");setNonce(next);setQuote(null);setRecovery(null);setMessage("New event request prepared. The previous contract remains available.");}catch(error){setMessage(String(error));}}
   async function recoverAction(method: "resolve_request" | "claim_failed_funding") {
     const id = identity(), n = Number(nonce);
     if (!walletNetworkAvailable("mainnet") || !MAINNET_SIGNING_ENABLED || !id || !wallet.proof || wallet.status !== "connected" || pending || !recovery) return;
     const epoch = wallet.getSessionEpoch(); setPending(true);
     try {
-      const attempt = readAttempt(id, n); const fresh = await inspectFactoryRecovery(attempt, id, RPC_URL);
+      const attempt = readAttempt(id, n); const context = await prepareFactoryRecoveryContext(attempt,id,method,RPC_URL);
       if (currentAccount.current !== id.organizer || wallet.getSessionEpoch() !== epoch) throw Error("Wallet account changed");
-      if (method === "resolve_request" ? (fresh.status !== "Pending" || !fresh.resolveEligible) : fresh.status !== "RefundClaimable") throw Error("Request state changed; refresh recovery");
       const key = `showstake:factory-recovery:v1:mainnet:${id.factory}:${id.organizer}:${n}:${method}`;
       if (localStorage.getItem(key)) throw Error("Recovery attempt already recorded; reconcile it before retrying");
       const args = method === "resolve_request" ? { organizer: id.organizer, request_nonce: n } : { request_nonce: n };
       const walletParams=signParams("mainnet", id.organizer, id.factory, [{ type: "FunctionCall", params: { methodName: method, args, gas: "300000000000000", deposit: "0" } }]);
-      if(!walletRequestAvailable(walletParams))throw Error("Action is outside the approved wallet scope");
+      if(!walletRequestAvailable(walletParams,undefined,undefined,context))throw Error("Action is outside the approved wallet scope");
       const value = JSON.stringify({ factory: id.factory, organizer: id.organizer, nonce: n, method, hash: null });
       localStorage.setItem(key, value); if (localStorage.getItem(key) !== value) throw Error("Could not persist recovery attempt");
-      const result = await signAndSendTransaction(walletParams);
+      const result = await signAndSendTransaction(walletParams,undefined,undefined,context);
       if (result.ok) localStorage.setItem(key, JSON.stringify({ factory: id.factory, organizer: id.organizer, nonce: n, method, hash: result.value.transactionHash }));
       if (wallet.getSessionEpoch() !== epoch) return;
       if (!result.ok) { setMessage(`Recovery outcome unresolved: ${result.detail}. Do not resend.`); return; }
@@ -88,5 +93,5 @@ export function FactoryProvision({ release = ACCEPTED_MAINNET_RELEASE, onReady }
       setRecovery(null); setMessage("Recovery submitted. Reconcile its final receipt and request state before retrying.");
     } catch (error) { setMessage(String(error)); } finally { setPending(false); }
   }
-  return <section className="lifecycle-card"><h2>Provision an event contract</h2><p>The organizer funds contract storage and gas. Participant deposits are not used for provisioning.</p>{!release && <p>Factory release is awaiting deployment and review. Provisioning is locked.</p>}<label>Request nonce<input value={nonce} onChange={e => { setNonce(e.target.value); setQuote(null); setRecovery(null); }} inputMode="numeric" /></label><label>Reviewed contract Wasm<input type="file" accept=".wasm" onChange={e => { const f = e.target.files?.[0]; setCode(null); if (f) void f.arrayBuffer().then(b => setCode(new Uint8Array(b))); }} /></label><button className="button" disabled={!release || !account || pending} onClick={() => void prepare()}>Check funding quote</button>{quote && <><p>Child: {quote.child}</p><p>Contract funding: {formatUnits(quote.value.child_funding,24,"NEAR")} · Registry: {formatUnits(quote.value.registry_fee,24,"NEAR")} · Total: {formatUnits(quote.value.total,24,"NEAR")}</p><p>Gas: {quote.value.attached_gas_tgas} Tgas; final block {quote.block}. Wallet fees are additional.</p><button className="button" disabled={!MAINNET_SIGNING_ENABLED || !release || !code || pending || wallet.status !== "connected" || !wallet.proof} onClick={() => void submit()}>Prepare wallet approval</button></>}<button className="button button--secondary" disabled={!release || !account || pending} onClick={() => void recover()}>Inspect saved request</button>{recovery?.status === "Pending" && recovery.resolveEligible && <button className="button button--secondary" disabled={!MAINNET_SIGNING_ENABLED || pending || !wallet.proof} onClick={() => void recoverAction("resolve_request")}>Resolve pending request</button>}{recovery?.status === "RefundClaimable" && <button className="button button--secondary" disabled={!MAINNET_SIGNING_ENABLED || pending || !wallet.proof} onClick={() => void recoverAction("claim_failed_funding")}>Claim failed funding</button>}{message && <p role="status">{message}</p>}</section>;
+  return <section className="lifecycle-card"><h2>Provision an event contract</h2><p>The organizer funds contract storage and gas. Participant deposits are not used for provisioning.</p>{!release && <p>Factory release is awaiting deployment and review. Provisioning is locked.</p>}<details><summary>Advanced request details</summary><p>Request ID: {nonce||"Unavailable"}</p><label>Reviewed contract Wasm override<input type="file" accept=".wasm" onChange={e => { const f = e.target.files?.[0]; setCode(null); setQuote(null); if (f) void f.arrayBuffer().then(b => setCode(new Uint8Array(b))); }} /></label></details><button className="button" disabled={!release || !account || !code || pending} onClick={() => void prepare()}>Check funding quote</button>{quote && <><p>Child: {quote.child}</p><p>Contract funding: {formatUnits(quote.value.child_funding,24,"NEAR")} · Registry: {formatUnits(quote.value.registry_fee,24,"NEAR")} · Total: {formatUnits(quote.value.total,24,"NEAR")}</p><p>Gas: {quote.value.attached_gas_tgas} Tgas; final block {quote.block}. Wallet fees are additional.</p><button className="button" disabled={!MAINNET_SIGNING_ENABLED || !release || !code || pending || wallet.status !== "connected" || !wallet.proof} onClick={() => void submit()}>Prepare wallet approval</button></>}<button className="button button--secondary" disabled={!release || !account || pending} onClick={() => void recover()}>Inspect saved request</button>{recovery?.status === "Ready" && <button className="button button--secondary" disabled={pending} onClick={startAnother}>Create another event contract</button>}{recovery?.status === "Pending" && recovery.resolveEligible && <button className="button button--secondary" disabled={!MAINNET_SIGNING_ENABLED || pending || !wallet.proof} onClick={() => void recoverAction("resolve_request")}>Resolve pending request</button>}{recovery?.status === "RefundClaimable" && <button className="button button--secondary" disabled={!MAINNET_SIGNING_ENABLED || pending || !wallet.proof} onClick={() => void recoverAction("claim_failed_funding")}>Claim failed funding</button>}{message && <p role="status">{message}</p>}</section>;
 }

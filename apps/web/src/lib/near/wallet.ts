@@ -11,6 +11,11 @@
 //     prompt. This module never signs/broadcasts on its own, never reimplements
 //     crypto, and never retries an unknown submission automatically.
 
+import { walletBoundary, invalidateWalletBoundary } from "./wallet-boundary";
+import { checkedWalletCall, snapshotWalletRequest } from "./wallet-request";
+import type { FactoryRecoveryContext } from "./factory-recovery-context";
+import type { PublicChildEmpty } from "./public-child";
+import type { VerifiedFactoryContext } from "./factory-context";
 import { MAINNET_POLICY, mainnetRequestAllowed } from "../mainnet-policy";
 import { NETWORK, RPC_URL } from "../config";
 import { viewAccessKeyView } from "./rpc";
@@ -76,13 +81,14 @@ async function getConnector(): Promise<ConnectorShape> {
       NearConnector: new (options: unknown) => ConnectorShape;
     };
     connector = new NearConnector({ network: NETWORK, features: { testnet: NETWORK === "testnet" } });
-    for (const event of ["wallet:signIn", "wallet:signOut", "wallet:signInAndSignMessage"]) connector.on(event, () => { for (const listener of connectorListeners) listener(); });
+    for (const event of ["wallet:signIn", "wallet:signOut", "wallet:signInAndSignMessage"]) connector.on(event, () => { invalidateWalletBoundary(); for (const listener of connectorListeners) listener(); });
   }
   return connector;
 }
 
 /** Open the wallet picker and read the selected account (read-only, off-chain). */
 export async function connectWallet(): Promise<WalletResult<WalletAccount>> {
+  invalidateWalletBoundary();
   try {
     const c = await getConnector();
     await c.connect();
@@ -99,6 +105,7 @@ export async function connectWallet(): Promise<WalletResult<WalletAccount>> {
 }
 
 export async function disconnectWallet(): Promise<WalletResult<null>> {
+  invalidateWalletBoundary();
   try {
     if (connector) await connector.disconnect();
     return { ok: true, code: "DISCONNECTED", value: null };
@@ -177,11 +184,14 @@ export async function readKeyPresence(accountId: string, publicKey?: string): Pr
  * user-clicked, separately-approved `SignAndSendParams`; the wallet shows its
  * own confirmation. Returns the transaction hash + status, never fabricated.
  */
-export function walletNetworkAvailable(network: "mainnet" | "testnet"): boolean { return network === NETWORK && (network === "testnet" || (MAINNET_POLICY.approvedMicrotest !== null || (MAINNET_POLICY.providerAccepted && MAINNET_POLICY.approvedAllocatedEvent !== null) || MAINNET_POLICY.acceptedFactory?.approval !== undefined)); }
-export function walletRequestAvailable(params: SignAndSendParams): boolean { return walletNetworkAvailable(params.network) && (params.network === "testnet" || mainnetRequestAllowed(params)); }
+export function walletNetworkAvailable(network: "mainnet" | "testnet"): boolean { return network === NETWORK && (network === "testnet" || (MAINNET_POLICY.approvedMicrotest !== null || (MAINNET_POLICY.providerAccepted && MAINNET_POLICY.approvedAllocatedEvent !== null) || MAINNET_POLICY.acceptedFactory?.approval !== undefined || (MAINNET_POLICY.providerAccepted && MAINNET_POLICY.acceptedFactory?.eventApproval !== undefined))); }
+export function walletRequestAvailable(params: SignAndSendParams, factoryContext?: VerifiedFactoryContext, eventContext?: PublicChildEmpty,recoveryContext?:FactoryRecoveryContext): boolean { return walletNetworkAvailable(params.network) && (params.network === "testnet" || mainnetRequestAllowed(params, MAINNET_POLICY, Date.now(), factoryContext,eventContext,recoveryContext)); }
 
-export async function signAndSendTransaction(params: SignAndSendParams): Promise<WalletResult<TxResult>> {
-  if (!walletRequestAvailable(params)) return { ok: false, code: "NETWORK_UNAVAILABLE", detail: "Transactions are unavailable for this network configuration." };
+export async function signAndSendTransaction(params: SignAndSendParams, factoryContext?: VerifiedFactoryContext,eventContext?:PublicChildEmpty,recoveryContext?:FactoryRecoveryContext): Promise<WalletResult<TxResult>> {
+  const boundary=walletBoundary();
+  let request: SignAndSendParams;
+  try { request=snapshotWalletRequest(params); } catch { return { ok:false,code:"INVALID_REQUEST",detail:"Transaction request could not be safely copied." }; }
+  if (!walletRequestAvailable(request,factoryContext,eventContext,recoveryContext)) return { ok: false, code: "NETWORK_UNAVAILABLE", detail: "Transactions are unavailable for this network configuration." };
   const c = await getConnector();
   let wallet: { getAccounts: () => Promise<Array<{ accountId: string }>>; signAndSendTransaction?: (p: SignAndSendParams) => Promise<MaybeOutcome> };
   try {
@@ -193,11 +203,7 @@ export async function signAndSendTransaction(params: SignAndSendParams): Promise
     return { ok: false, code: "TX_SIGNING_UNSUPPORTED", detail: "The selected wallet does not expose signAndSendTransaction." };
   }
   try {
-    const accounts = await wallet.getAccounts();
-    if (accounts[0]?.accountId !== params.signerId) {
-      return { ok: false, code: "ACCOUNT_MISMATCH", detail: "The wallet account changed. Reconnect before signing." };
-    }
-    const outcome = await wallet.signAndSendTransaction(params);
+    const outcome = await checkedWalletCall(request, p => walletBoundary()===boundary && walletRequestAvailable(p,factoryContext,eventContext,recoveryContext), () => wallet.getAccounts(), p => wallet.signAndSendTransaction!(p));
     return {
       ok: true,
       code: "TRANSACTION_PROPOSED",
