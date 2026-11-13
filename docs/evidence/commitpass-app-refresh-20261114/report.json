@@ -1,0 +1,268 @@
+{
+  "timestamp_utc": "2026-11-13T20:46:24.590338+00:00",
+  "source_commits": [
+    "6761fa8",
+    "3b378e9"
+  ],
+  "site": "https://showstake.vercel.app",
+  "reference": {
+    "checkout": "CommitPass Monad",
+    "commit": "542273df306a7e5887f1dfcabf1383e78930f579",
+    "read_only": true
+  },
+  "implementation": [
+    "CommitPass cover/editor composition, source typography, palette and app washes",
+    "NEAR wallet/session and existing checked CREATE transaction adapter retained",
+    "Event detail and My Events adapted to original event/card hierarchy",
+    "ShowStake project wordmark and compact mark used in header/footer/favicon"
+  ],
+  "review": {
+    "reviewer": "Codex with independent Codex Terra read-only review",
+    "findings_fixed": [
+      "Pending receipt recovery remains visible when event reads fail",
+      "Stale storage quotes cannot enable Publish for edited rules or another account",
+      "CREATE-only shared route does not mount check-in or content-upload writes"
+    ]
+  },
+  "local": {
+    "status": "PASS_LOCAL",
+    "build": "NEXT_PUBLIC_SHOWSTAKE_NETWORK=mainnet SHOWSTAKE_NEXT_DIST_DIR=.next-commitpass-review SHOWSTAKE_API_UPSTREAM_URL=https://srv1330754.hstgr.cloud pnpm --filter @showstake/web build",
+    "test_files": [
+      {
+        "file": "apps/web/src\\lib\\vercel-config.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\rhea-microtest.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\rhea-journal.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\personal-dashboard.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\lifecycle.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\funding-server.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\checkin-session.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\mainnet-policy.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\mainnet-event-preview.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\money-input.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\factory-event-policy.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\api-event-binding.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\near\\wallet-request.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\near\\storage-approval.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\near\\shared-event.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\near\\reviewed-leaf-release.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\near\\receipt-graph.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\near\\public-child.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\near\\participant-deposit.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\near\\native-storage-budget.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\near\\multi-event.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\near\\multi-create.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\near\\manual-target.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\near\\mainnet-lifecycle.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\near\\mainnet-actions.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\near\\linked-withdraw.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\near\\linked-profile.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\near\\linked-actual-graph.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\near\\final-block.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\near\\factory.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\near\\factory-recovery.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\near\\factory-context.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      },
+      {
+        "file": "apps/web/src\\lib\\near\\claim-failure.test.ts",
+        "exitCode": 0,
+        "passed": 1
+      }
+    ],
+    "frontend_slice": {
+      "command": "node --experimental-strip-types scripts/verify-frontend-slice.mjs",
+      "passed": 100,
+      "failed": 0
+    },
+    "legacy_reuse_checks": {
+      "command": "node scripts/verify-t08-frontend.mjs",
+      "passed": 68,
+      "failed": 0,
+      "change": "Replaced obsolete no-next/font rule with explicit scoped CommitPass typography check; provider/EVM guards retained"
+    }
+  },
+  "browser": {
+    "status": "PASS_LIVE",
+    "scope": "Public production UI smoke only; no transaction signing or financial E2E",
+    "deployment_source": "3b378e9",
+    "vercel_status": "success",
+    "routes": [
+      "/events/new",
+      "/events",
+      "/discover",
+      "/"
+    ],
+    "widths": [
+      390,
+      481,
+      1280
+    ],
+    "horizontal_overflow": false,
+    "checks": [
+      "ShowStake raster and vector mark loaded; favicon points to ShowStake SVG",
+      "Device typography is DM Sans on app routes",
+      "Four datetime fields and exact 2 USDC / capacity 5 rules preview; no transaction sent",
+      "Publish disabled without connected verified wallet",
+      "NEAR Select wallet opened; HOT/Meteor/Intear/MyNearWallet and other actual SDK choices visible",
+      "My Events displays disconnected state; live Discover has no invented events",
+      "Browser console returned no entries on CREATE smoke"
+    ],
+    "screenshots": [
+      "desktop-create.png",
+      "mobile-create.png"
+    ]
+  },
+  "contract": {
+    "status": "PASS_LIVE",
+    "scope": "Read-only identity/config verification",
+    "account": "showstake-mainnet-escrow-endpx-2026.near",
+    "network": "mainnet",
+    "block_height": 224414411,
+    "code_hash": "EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY",
+    "wasm_sha256": "c81cf3d7293c111fc29c930ac19f94d3c88cdcf4d7dcf70a73f73911c87999e7",
+    "source_or_wasm_changed": false,
+    "policy": "showstake-native-usdc-multievent/1",
+    "provider_enabled": false,
+    "canonical_usdc": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+    "decimals": 6
+  },
+  "limits": {
+    "mainnet_financial_cycle": "NOT_RUN: frozen release supports CREATE only; registration/Earn gate remains closed",
+    "wallet_signed_create": "NOT_RUN by agent during this UI task; user must review quote and sign own CREATE",
+    "live_published_event_detail": "NOT_RUN: current shared catalogue was empty",
+    "local_preview": "BLOCKED_EXTERNAL: automatic approval review rejected local server startup; browser reviewed authorized Vercel deployment instead"
+  },
+  "no_new_mainnet_transactions": true,
+  "user_steps": [
+    "Open https://showstake.vercel.app/events/new",
+    "Connect NEAR mainnet wallet; sign in for account verification",
+    "Enter event details and four ordered local times; review event rules",
+    "Review exact native NEAR storage reservation and CREATE-only notice before approving any CREATE",
+    "After submission verify final receipt before opening event; USDC and Earn are not enabled"
+  ]
+}
