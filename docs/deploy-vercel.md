@@ -14,7 +14,9 @@ The organizer comes from the connected wallet and the contract's predecessor che
 
 The VPS API is deployed at `https://srv1330754.hstgr.cloud`. Vercel's server-only
 `SHOWSTAKE_API_UPSTREAM_URL` is configured to that HTTPS origin and requires a
-fresh Git-backed deployment to take effect. It never points to a developer's
+fresh Git-backed deployment to take effect. Deployment `dpl_32NE4Uy6cUJXKxk4PcnuQG5DHS7W`
+from commit `b725b7c` reached READY with this origin; actual HTTPS login and session
+restart/revoke acceptance passed through `/api/v1/*`. It never points to a developer's
 loopback address. If this variable is absent in a deployment, `/api/v1/*` returns
 explicit `503 BACKEND_UNAVAILABLE`, `data:null`, `meta.stale:true`; no session or
 event is invented. Backend hosting is separate from financial mainnet acceptance.

@@ -15,6 +15,9 @@
 *.py      text eol=lf
 *.rs      text eol=lf
 *.sh      text eol=lf
+deploy/vps/*.service text eol=lf
+deploy/vps/*.timer text eol=lf
+deploy/vps/*.env.example text eol=lf
 *.toml    text eol=lf
 
 # PowerShell scripts keep native CRLF on Windows.

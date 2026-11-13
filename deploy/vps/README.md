@@ -5,6 +5,10 @@ API origin: `https://srv1330754.hstgr.cloud`; frontend: `https://showstake.verce
 Runtime source release: `aa18ce818275ccb32c2aa7af5a42bafd03b7d6da`. API/worker
 are independent keyless systemd services, with seven applied migrations and
 PostgreSQL 18.6. Financial, Rhea and factory acceptance remain separate gates.
+Actual HTTPS NEP-413 auth/session/replay/foreign-origin/restart/logout passed
+through Vercel; see `docs/evidence/vps-auth-through-vercel-20261113.json`.
+The worker is running and resuming its cursor, but catching up under public
+provider limits; no fresh-indexing or financial acceptance is implied.
 
 ## Isolation
 Use a new isolated PostgreSQL 18 container, Unix identities and service ports; do

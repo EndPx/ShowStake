@@ -1,0 +1,205 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "VPS backend hosting, actual Vercel HTTPS session/auth and read-only mainnet indexing runtime; not a funded product/earn acceptance",
+  "observedAt": "2026-11-13T04:41:59.046Z",
+  "frontend": "https://showstake.vercel.app",
+  "api": "https://srv1330754.hstgr.cloud",
+  "backendSourceCommit": "aa18ce818275ccb32c2aa7af5a42bafd03b7d6da",
+  "opsCommit": "b725b7c64e2f2ac85a36a05ec0787dc6f28568f8",
+  "vercelDeployment": "dpl_32NE4Uy6cUJXKxk4PcnuQG5DHS7W",
+  "archiveSha256": "3da8bd63ece886b7e9f3cfb895b4d8160689229ae9293d50af9e5267904d1e44",
+  "runtime": {
+    "node": "24.18.0",
+    "pnpm": "10.21.0",
+    "globalNodeUnchanged": "24.14.0",
+    "globalPnpmUnchanged": "9.15.9",
+    "api": "showstake-api.service active/enabled",
+    "worker": "showstake-worker.service active/enabled",
+    "apiBind": "127.0.0.1:3912",
+    "postgresBind": "127.0.0.1:55441",
+    "postgresImage": "postgres:18.6-alpine@sha256:9ba53c7d41ea093baf5c1ba635ba5434c4f979880527d49bb7d9237d3193085b",
+    "postgresVolume": "/var/lib/showstake/postgres",
+    "privateContent": "/var/lib/showstake/private",
+    "unixUsers": [
+      "showstake-api",
+      "showstake-worker"
+    ],
+    "leastPrivilege": true,
+    "sql": {
+      "classification": "PASS_LIVE",
+      "scope": "VPS PostgreSQL and runtime identity; empty mainnet baseline only, no financial lifecycle",
+      "observedAt": "2026-11-13T04:38:02.915Z",
+      "apiRole": {
+        "current_user": "showstake_api",
+        "session_user": "showstake_api_login"
+      },
+      "workerRole": {
+        "current_user": "showstake_worker",
+        "session_user": "showstake_worker_login"
+      },
+      "leastPrivilege": true,
+      "migrations": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "baseline": {
+        "classification": "PASS_LIVE",
+        "scope": "Read-only empty paused mainnet baseline; operator deployment metadata only, no fabricated event/receipt/cursor",
+        "observedAt": "2026-11-13T04:01:45.648Z",
+        "block": {
+          "hash": "FvVhsHSc8oQmraW7kCxVbNMyJeC14rS4KEvPY3Wa1o2W",
+          "height": 224310604
+        },
+        "contract": "showstake-mainnet-escrow-endpx-2026.near",
+        "codeHash": "CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os",
+        "canonicalFt": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "tokenCodeHash": "DVJx7F3dHEHJYwpYPwXHu8K9Uo7h4kXFcALucY5oNX8q",
+        "decimals": 6,
+        "escrowAtomic": "0",
+        "event": null,
+        "paused": true,
+        "principalCapAtomic": "0",
+        "deploymentId": "01944101-5322-4dc5-b199-05bee57bfd4d",
+        "startHeight": 224310604,
+        "historicalScope": "Verified empty baseline; earlier deployment receipts remain separate evidence",
+        "blockchainTransactions": 0
+      },
+      "cursors": [
+        {
+          "consumer": "showstake-prod-mainnet",
+          "cursor_value": {
+            "block_hash": "AnrYZ9RomPLCosDRTKNkm6r3KQrRnR5AKnemwWsP3SFU",
+            "block_height": 224310935
+          },
+          "updated_at": "2026-11-13T04:37:07.876Z"
+        }
+      ],
+      "projectedEvents": 0,
+      "sessionRows": 1,
+      "financialTransactions": 0
+    }
+  },
+  "transport": {
+    "https": true,
+    "ipv4AndIpv6": true,
+    "certificateExpires": "2027-02-11",
+    "renewalConfigured": true,
+    "cacheControl": "no-store",
+    "authCookie": {
+      "secure": true,
+      "httpOnly": true,
+      "sameSite": "lax",
+      "hostOnly": true
+    },
+    "nep413Recipient": "showstake.app",
+    "allowedBrowserOrigin": "https://showstake.vercel.app"
+  },
+  "auth": {
+    "evidence": "docs/evidence/vps-auth-through-vercel-20261113.json",
+    "checks": [
+      {
+        "name": "real_mainnet_NEP413_through_Vercel",
+        "status": 200,
+        "cookie": {
+          "secure": true,
+          "httpOnly": true,
+          "sameSite": "lax",
+          "hostOnly": true
+        }
+      },
+      {
+        "name": "verified_session",
+        "status": 200
+      },
+      {
+        "name": "nonce_replay_denied",
+        "status": 401
+      },
+      {
+        "name": "foreign_origin_denied",
+        "status": 403
+      },
+      {
+        "name": "wallet_binding_mismatch_denied",
+        "status": 401
+      },
+      {
+        "name": "session_survives_API_restart",
+        "status": 200
+      },
+      {
+        "name": "logout_and_revocation",
+        "logout": 200,
+        "revoked": 401
+      }
+    ],
+    "signatureRecorded": false,
+    "cookieRecorded": false,
+    "privateKeyExported": false,
+    "walletKeysOnVps": false
+  },
+  "rpc": {
+    "api": "https://free.rpc.fastnear.com",
+    "worker": "https://rpc.intea.rs",
+    "source": "https://mainnet.neardata.xyz",
+    "providerReference": "https://docs.near.org/api/rpc/providers",
+    "officialBaselineCheckpointMatchedByBoth": true,
+    "nearOrgAndLegacyArchivalObserved429": true,
+    "publicNumericLimits": "NOT_PUBLISHED",
+    "noLoadTest": true,
+    "credentialInUrls": false
+  },
+  "worker": {
+    "state": "CATCHING_UP",
+    "cursorSample": [
+      {
+        "consumer": "showstake-prod-mainnet",
+        "cursor_value": {
+          "block_hash": "AnrYZ9RomPLCosDRTKNkm6r3KQrRnR5AKnemwWsP3SFU",
+          "block_height": 224310935
+        },
+        "updated_at": "2026-11-13T04:37:07.876Z"
+      }
+    ],
+    "verifiedResumeBeforeHeight": 224310633,
+    "verifiedResumeAfterHeight": 224310935,
+    "originalStartHeight": 224310604,
+    "cursorReset": false,
+    "headJump": false,
+    "freshProjectionsAccepted": false
+  },
+  "backup": {
+    "timer": "showstake-backup.timer enabled/active",
+    "localDumpAndPrivateContentCreated": true,
+    "archiveReadabilityVerified": true,
+    "restoreOnVps": "NOT_RUN",
+    "offsiteDisasterRecovery": "NOT_RUN",
+    "credentialsAndQrRecovery": "SEPARATE_OPERATOR_ENCRYPTED_RECOVERY_REQUIRED",
+    "minimumFreeGiB": 2,
+    "automaticDeletion": false
+  },
+  "existingServicesObservedActiveAfter": [
+    "commitpass-api",
+    "commitpass-indexer",
+    "nabungfi-api",
+    "nabungfi-keeper",
+    "layoutlab",
+    "proofbill-worker"
+  ],
+  "financial": {
+    "blockchainTransactions": 0,
+    "mainnetFundsSpent": "0",
+    "providerAccepted": false,
+    "factoryTrustEnabled": false,
+    "rheaApprovalConfigured": false,
+    "escrowStillPaused": true,
+    "principalCapAtomic": "0",
+    "eventPresent": false
+  },
+  "secretsInEvidence": false
+}

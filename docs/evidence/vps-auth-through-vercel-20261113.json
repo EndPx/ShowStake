@@ -1,0 +1,52 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "Actual mainnet NEP413 offchain sign and HTTPS Vercel-to-VPS auth/session/replay/restart/revoke; no chain transaction, no browser-wallet signature claim",
+  "observedAt": "2026-11-13T04:34:46.642Z",
+  "frontend": "https://showstake.vercel.app",
+  "api": "https://srv1330754.hstgr.cloud",
+  "accountId": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5",
+  "network": "mainnet",
+  "messageHash": "68d945b79bb9099286f9dc9be7956f39e1bec30e005c6ece1ef4864ec5c5744c",
+  "checks": [
+    {
+      "name": "real_mainnet_NEP413_through_Vercel",
+      "status": 200,
+      "cookie": {
+        "secure": true,
+        "httpOnly": true,
+        "sameSite": "lax",
+        "hostOnly": true
+      }
+    },
+    {
+      "name": "verified_session",
+      "status": 200
+    },
+    {
+      "name": "nonce_replay_denied",
+      "status": 401
+    },
+    {
+      "name": "foreign_origin_denied",
+      "status": 403
+    },
+    {
+      "name": "wallet_binding_mismatch_denied",
+      "status": 401
+    },
+    {
+      "name": "session_survives_API_restart",
+      "status": 200
+    },
+    {
+      "name": "logout_and_revocation",
+      "logout": 200,
+      "revoked": 401
+    }
+  ],
+  "signatureRecorded": false,
+  "cookieRecorded": false,
+  "privateKeyExported": false,
+  "walletMaterialOnVps": false,
+  "blockchainTransactions": 0
+}

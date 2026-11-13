@@ -1,5 +1,25 @@
 # ShowStake status
 
+## VPS backend checkpoint — 2026-11-13
+
+API and PostgreSQL are live at `https://srv1330754.hstgr.cloud`, connected through
+the GitHub-built `https://showstake.vercel.app`. Actual NEP-413 offchain login,
+Secure/HttpOnly/host-only cookie, replay denial, foreign-Origin denial, account
+binding denial, session persistence across API restart and logout revocation
+passed through the Vercel HTTPS rewrite. Seven migrations and real restricted API
+and worker logins passed runtime guards on the isolated PostgreSQL18.6 container.
+API/worker have distinct Unix users and auto-starting systemd services. Global
+Node24.14/pnpm9.15 and existing applications remain intact. No wallet material was
+copied to the VPS and no financial chain transaction occurred.
+
+The worker resumes its original durable cursor without resetting or jumping to
+head, but is still CATCHING_UP; process health is not fresh indexing acceptance.
+Public RPC quotas remain a reliability gate. Rhea/factory financial acceptance
+and a human browser wallet transaction remain open. Local backup archive creation
+and parsing passed; full restoration/offsite credential recovery are NOT_RUN.
+Evidence: `docs/evidence/vps-backend-deployment-20261113.json` and
+`docs/evidence/vps-auth-through-vercel-20261113.json`.
+
 ## Current checkpoint — 2026-11-13
 
 Authoritative latest checkpoint: `docs/evidence/mainnet-integration-review-20261113.json` and `docs/mainnet-user-test.md`. Older entries below are historical and may be superseded. Codex/Terra implementation and review produced a passing isolated mainnet frontend build, 21 frontend test files, 100 frontend regression checks, API43, worker90, adapter19 and relayer10 PASS_LOCAL checks. All financial frontend approvals remain null/false. The stage-1 mainnet deployment remains accepted only as empty/paused/cap0; no further mainnet financial transaction occurred.
