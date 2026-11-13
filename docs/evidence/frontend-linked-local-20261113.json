@@ -1,0 +1,85 @@
+{
+  "classification": "PASS_LOCAL",
+  "reviewer": "Codex",
+  "observedAt": "2026-11-13T07:36:18.262Z",
+  "scope": "Reviewed frontend code and build, real Sandbox receipt graph fixtures; no browser wallet funding or mainnet liquidity claim",
+  "tests": {
+    "webTestFiles": 30,
+    "frontendRegressionChecks": 100,
+    "typecheck": "PASS_LOCAL",
+    "isolatedMainnetProductionBuild": "PASS_LOCAL",
+    "actualSandboxFailureAndSuccessGraph": "PASS_LOCAL"
+  },
+  "testFiles": [
+    "apps/web/src\\lib\\vercel-config.test.ts",
+    "apps/web/src\\lib\\mainnet-event-preview.test.ts",
+    "apps/web/src\\lib\\rhea-microtest.test.ts",
+    "apps/web/src\\lib\\lifecycle.test.ts",
+    "apps/web/src\\lib\\rhea-journal.test.ts",
+    "apps/web/src\\lib\\funding-server.test.ts",
+    "apps/web/src\\lib\\personal-dashboard.test.ts",
+    "apps/web/src\\lib\\factory-event-policy.test.ts",
+    "apps/web/src\\lib\\checkin-session.test.ts",
+    "apps/web/src\\lib\\api-event-binding.test.ts",
+    "apps/web/src\\lib\\mainnet-policy.test.ts",
+    "apps/web/src\\lib\\money-input.test.ts",
+    "apps/web/src\\lib\\near\\wallet-request.test.ts",
+    "apps/web/src\\lib\\near\\storage-approval.test.ts",
+    "apps/web/src\\lib\\near\\reviewed-leaf-release.test.ts",
+    "apps/web/src\\lib\\near\\receipt-graph.test.ts",
+    "apps/web/src\\lib\\near\\public-child.test.ts",
+    "apps/web/src\\lib\\near\\participant-deposit.test.ts",
+    "apps/web/src\\lib\\near\\native-storage-budget.test.ts",
+    "apps/web/src\\lib\\near\\manual-target.test.ts",
+    "apps/web/src\\lib\\near\\mainnet-lifecycle.test.ts",
+    "apps/web/src\\lib\\near\\mainnet-actions.test.ts",
+    "apps/web/src\\lib\\near\\linked-withdraw.test.ts",
+    "apps/web/src\\lib\\near\\linked-profile.test.ts",
+    "apps/web/src\\lib\\near\\linked-actual-graph.test.ts",
+    "apps/web/src\\lib\\near\\final-block.test.ts",
+    "apps/web/src\\lib\\near\\factory.test.ts",
+    "apps/web/src\\lib\\near\\factory-recovery.test.ts",
+    "apps/web/src\\lib\\near\\factory-context.test.ts",
+    "apps/web/src\\lib\\near\\claim-failure.test.ts"
+  ],
+  "commands": [
+    "pnpm --filter @showstake/web typecheck",
+    "node --no-warnings --experimental-strip-types <each apps/web/src/**/*.test.ts, 30 files>",
+    "node --experimental-strip-types scripts/verify-frontend-slice.mjs",
+    "NEXT_PUBLIC_SHOWSTAKE_NETWORK=mainnet SHOWSTAKE_NEXT_DIST_DIR=.next-linked-review SHOWSTAKE_API_UPSTREAM_URL=http://127.0.0.1:3002 pnpm --filter @showstake/web build"
+  ],
+  "buildId": "Lgsu2GFyGtej6Yybq8nU1",
+  "artifact": {
+    "path": "apps/web/public/contracts/showstake-event-escrow-49a591ba.wasm",
+    "sha256": "49a591ba26a4a23d05c01cc343779f1c66aa5da0384e3a663a37f4e5edb59b70",
+    "bytes": 235060
+  },
+  "features": [
+    "Wallet-bound personal events/passes/claims with pinned onchain identity checks",
+    "Actual linked withdrawal failure graph restores retry eligibility only after canonical callback/state proof",
+    "Public refund retry/recovery requires pinned block cooldown and matching attempt",
+    "Exact legacy and new leaf/factory profiles, storage reserve and 300 Tgas quote",
+    "Durable factory recovery and new request after proven terminal completion"
+  ],
+  "defaults": {
+    "acceptedFactory": null,
+    "approvedMicrotest": null,
+    "approvedAllocatedEvent": null,
+    "providerAccepted": false
+  },
+  "backend": {
+    "apiCommit": "f21e699",
+    "runtimeRelease": "cb584b7",
+    "health": "ok",
+    "workerCursorAtRestart": 224311437,
+    "workerHeadJump": false,
+    "factoryTrustEnabled": false
+  },
+  "limits": [
+    "New public factory deployment requires scoped approval and funding",
+    "Provider deployment/source/audit relationship and actual mainnet liquidity not accepted",
+    "Real wallet source-chain funding/event deposit/check-in/claim not exercised in this milestone",
+    "Hosted browser review follows GitHub-triggered Vercel deployment"
+  ],
+  "blockchainFinancialTransactions": 0
+}

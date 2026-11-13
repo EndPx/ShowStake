@@ -25,7 +25,7 @@ export function EventList() {
         description={
           tab === "past"
             ? "Your finished events will appear here."
-            : "Wallet and social sign-in is not wired in this slice. Your hosted and reserved events will appear here once you can sign in."
+            : "Connect your wallet and sign in to view your events."
         }
         href="/discover"
         action="Discover events"

@@ -77,7 +77,7 @@ export async function loadCatalog(fetchImpl: typeof fetch = fetch): Promise<Cata
     }
     return {
       kind: "error",
-      message: "Could not reach the ShowStake API through the same-origin proxy (/api/v1). Check the backend (default http://127.0.0.1:3001) and SHOWSTAKE_API_UPSTREAM_URL (see apps/web/README.md).",
+      message: "Events are temporarily unavailable. Please try again.",
       retryable: true,
     };
   }

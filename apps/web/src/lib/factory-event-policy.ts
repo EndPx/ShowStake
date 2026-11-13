@@ -1,3 +1,4 @@
+import { actionAllowed } from "./near/mainnet-lifecycle.ts";
 import type { SignAndSendParams, FunctionCallAction } from "./near/actions.ts";
 import type { PublicChildEmpty } from "./near/public-child.ts";
 const T30="30000000000000",T100="100000000000000",T300="300000000000000";
@@ -10,7 +11,13 @@ export function validFactoryEventActions(params:SignAndSendParams,ctx:PublicChil
  if(receiverId===child){const x=actions[0];const offset=x?.type==="Transfer"?1:0;const calls=actions.slice(offset);const isPublish=calls.some(a=>a.type==="FunctionCall"&&["configure_rhea_cap","set_rhea_paused","create_event"].includes(a.params.methodName));
   if(isPublish){if(signerId!==host||ctx.event!==null||actions.length!==3+offset||offset===1&&(!/^[1-9][0-9]*$/.test(x!.params.deposit))||!call(calls[0],"configure_rhea_cap",T30,"0",["principal_cap"])||!call(calls[1],"set_rhea_paused",T30,"0",["paused"])||calls[1].params.args.paused!==false||!call(calls[2],"create_event",T30,"0",["rules"])||!validRules(calls[2].params.args.rules))return false;const r=calls[2].params.args.rules;return calls[0].params.args.principal_cap===(BigInt(String(r.deposit))*BigInt(Number(r.capacity))).toString();}
   if(!ctx.event||actions.length!==1||x?.type!=="FunctionCall")return false;const m=x.params.methodName;
-  if(["close_registration","trigger_earn_supply","reconcile_earn","trigger_earn_redeem","settle"].includes(m))return call(x,m,T300,"0",[]);
+  if(ctx.event.policy_version==="showstake-native-usdc-rhea-linked-withdraw-review/2"&&["trigger_earn_supply","reconcile_earn","trigger_earn_redeem","trigger_rhea_redeem_partial","retry_rhea_redeem_partial_preflight","recover_rhea_ambiguous"].includes(m)&&!actionAllowed(m,ctx.event,ctx.blockTimestampMs,signerId===host,undefined,signerId,ctx.control,typeof x.params.args.amount==="string"?x.params.args.amount:undefined,ctx.blockHeight))return false;
+  if(["close_registration","trigger_earn_supply","settle"].includes(m))return call(x,m,T300,"0",[]);
+  const linked=ctx.event.policy_version==="showstake-native-usdc-rhea-linked-withdraw-review/2",refund=["Cancelled","RefundOnly"].includes(ctx.event.phase),cooldown=Number.isSafeInteger(ctx.control?.retry_after_block)&&ctx.blockHeight>=Number(ctx.control?.retry_after_block);
+  if(m==="reconcile_earn")return call(x,m,T300,"0",[])&&(!linked||(["SupplyPending","RedeemPending"].includes(ctx.event.earn_state)&&(["TerminalUsed","TerminalRefund"].includes(ctx.control?.stage??"")||(ctx.control?.stage==="Preparing"&&(signerId===host||refund&&cooldown)))));
+  if(m==="trigger_earn_redeem")return (!linked||signerId===host||refund)&&call(x,m,T300,"0",[]);
+  if(m==="recover_rhea_ambiguous")return (signerId===host||refund&&cooldown)&&ctx.event.policy_version==="showstake-native-usdc-rhea-linked-withdraw-review/2"&&ctx.control?.stage==="Ambiguous"&&ctx.event.earn_state==="RedeemPending"&&call(x,m,T300,"0",[]);
+  if(m==="trigger_rhea_redeem_partial"||m==="retry_rhea_redeem_partial_preflight")return signerId===host&&ctx.event.policy_version==="showstake-native-usdc-rhea-linked-withdraw-review/2"&&call(x,m,T300,"0",["amount"])&&typeof x.params.args.amount==="string"&&/^[1-9][0-9]*$/.test(x.params.args.amount)&&BigInt(x.params.args.amount)<2n**128n&&(m==="trigger_rhea_redeem_partial"?ctx.control?.stage==="Idle"&&ctx.event.earn_state==="Supplied":ctx.control?.stage==="Preparing"&&ctx.event.earn_state==="RedeemPending");
   if(m==="finalize_attendance")return signerId===host&&call(x,m,T300,"0",[]);
   if(m==="mark_attendance")return signerId===host&&call(x,m,T300,"0",["registration_id","attended"])&&typeof x.params.args.registration_id==="string"&&!!x.params.args.registration_id&&typeof x.params.args.attended==="boolean";
   if(m==="cancel_event"||m==="activate_timeout_refund")return (m!=="cancel_event"||signerId===host)&&call(x,m,T300,"0",["event_id"])&&!!ctx.event&&x.params.args.event_id===ctx.event.event_id;

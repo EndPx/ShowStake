@@ -1,10 +1,6 @@
 "use client";
 
-// Native NEAR wallet button + account display in the platform shell. Honest:
-// connect (wallet picker), sign (off-chain NEP-413 proof), account display and
-// a "testnet" badge. The signed proof is labelled as NOT a verified session and
-// NOT a deposit; server verification (/auth/verify) is out of scope for this
-// slice.
+// Native NEAR wallet connection and server-verified sign-in.
 
 import { LogOut, PenLine, Wallet } from "lucide-react";
 import { useWallet } from "./wallet-context";
@@ -16,7 +12,7 @@ function short(value: string, head = 10, tail = 6): string {
 
 export function WalletMenu() {
   const wallet = useWallet();
-  const connected = wallet.status === "connected" || wallet.status === "connecting";
+  const connected = !!wallet.account;
 
   return (
     <div className="wallet-menu">
@@ -30,7 +26,7 @@ export function WalletMenu() {
             <div className="account-wallet">
               <div className="account-wallet-details">
                 <span className="account-wallet-label">
-                  {wallet.keyPermission === "FullAccess" ? "Connected (testnet)" : "Connected (testnet)"}
+                  Connected ({wallet.network})
                 </span>
                 <code>{wallet.account.accountId}</code>
                 {wallet.account.publicKey && (
@@ -46,9 +42,9 @@ export function WalletMenu() {
             </p>
             {wallet.proof && (
               <div className="wallet-proof">
-                <strong>Signed proof of control</strong>
+                <strong>Signed in</strong>
                 <span className="wallet-proof-note">
-                  Signed off-chain (NEP-413). Not a verified session and not a deposit.
+                  Wallet control was verified by the server. Private pages check the session again; signing is not a deposit.
                 </span>
                 <code className="wallet-proof-field">nonce {short(wallet.proof.nonceHex, 14, 8)}</code>
                 <code className="wallet-proof-field">sig {short(wallet.proof.signature, 16, 10)}</code>
@@ -57,8 +53,9 @@ export function WalletMenu() {
             )}
             <button type="button" onClick={() => void wallet.sign()} disabled={wallet.status === "signing"}>
               <PenLine size={15} />
-              {wallet.status === "signing" ? "Signing…" : wallet.proof ? "Sign again" : "Sign proof"}
+              {wallet.status === "signing" ? "Signing…" : wallet.proof ? "Sign in again" : "Sign in"}
             </button>
+            <a href="/events">My events, passes and claims</a>
             <button type="button" onClick={() => void wallet.disconnect()}>
               <LogOut size={15} />
               Disconnect

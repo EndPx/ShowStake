@@ -4,8 +4,9 @@ import { useWallet } from "@/components/wallet/wallet-context";
 import { resolveApiEventId } from "@/lib/api-event-binding";
 import { matchingCheckinSession, checkinProposal } from "@/lib/checkin-session";
 import { NETWORK } from "@/lib/config";
-export function CheckinSession({ organizer, contractId, chainEventId }: { organizer: boolean; contractId?:string; chainEventId?:string }) {
- const wallet=useWallet(),[eventId,setEventId]=useState(""),[passId,setPassId]=useState(""),[token,setToken]=useState(""),[notice,setNotice]=useState(""),[expires,setExpires]=useState(""),[busy,setBusy]=useState(false),generation=useRef(0);
+export function CheckinSession({ organizer, contractId, chainEventId, initialPassId="" }: { organizer: boolean; contractId?:string; chainEventId?:string; initialPassId?:string }) {
+ const wallet=useWallet(),[eventId,setEventId]=useState(""),[passId,setPassId]=useState(initialPassId),[token,setToken]=useState(""),[notice,setNotice]=useState(""),[expires,setExpires]=useState(""),[busy,setBusy]=useState(false),generation=useRef(0);
+ useEffect(()=>{setPassId(initialPassId);setToken("");setExpires("");},[initialPassId,contractId,chainEventId]);
  useEffect(()=>{generation.current++;setToken("");setExpires("");setNotice("");setBusy(false);return()=>{generation.current++;};},[wallet.account?.accountId,wallet.proof]);
  useEffect(()=>{if(!expires)return;const delay=Date.parse(expires)-Date.now();if(!Number.isFinite(delay))return;const timer=setTimeout(()=>{setToken("");setExpires("");setNotice("Check-in token expired. Create another token.");},Math.max(0,delay));return()=>clearTimeout(timer);},[expires]);
  async function session(){if(!wallet.account||!wallet.proof)throw Error("Connect and sign in first");const res=await fetch("/api/v1/me",{cache:"no-store"});const body=await res.json();if(!res.ok||!matchingCheckinSession(body,wallet.account.accountId,NETWORK))throw Error("Server session expired or belongs to another account or network. Sign in again.");}

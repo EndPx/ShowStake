@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { ACCEPTED_MAINNET_RELEASE, acceptedBinding, lifecycleAction, publishBatch, storageAction } from "./mainnet-actions.ts";
 import { REVIEWED_LEAF_SHA256 } from "./factory.ts";
-const release = { factory: "factory.near", factoryCodeSha256: "a".repeat(64), factoryCodeHash:"hash", canonicalFt: "usdc.near", policy: "policy/1", provider: "provider.near", providerKind: "RHEA_MAINNET" as const, codeSha256: REVIEWED_LEAF_SHA256 } as const;
+const release = { factory: "factory.near", factoryCodeSha256: "a".repeat(64), factoryCodeHash:"hash", canonicalFt: "usdc.near", policy: "showstake-native-usdc-rhea-review/1", provider: "provider.near", providerKind: "RHEA_MAINNET" as const, codeSha256: REVIEWED_LEAF_SHA256 } as const;
 const binding = { network: "mainnet" as const, organizer: "alice.near", child: "child.factory.near", canonicalFt: release.canonicalFt, policy: release.policy, provider: release.provider, providerKind: release.providerKind, codeSha256: REVIEWED_LEAF_SHA256 } as const;
 assert.equal(acceptedBinding(binding, ACCEPTED_MAINNET_RELEASE), false);
 assert.equal(acceptedBinding(binding, release), true);
