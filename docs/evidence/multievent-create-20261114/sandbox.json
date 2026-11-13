@@ -1,0 +1,474 @@
+{
+  "accounting": {
+    "accepted_principal": "0",
+    "allocated_yield": "0",
+    "global_operation": null,
+    "liability": "0",
+    "paid": "0",
+    "pending": "0",
+    "realized_yield": "0",
+    "reserved_cash": "0"
+  },
+  "after_migration": {
+    "amount": "2296376397137724200000000",
+    "code_hash": "EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY",
+    "global_contract_account_id": null,
+    "global_contract_hash": null,
+    "locked": "0",
+    "storage_usage": 226193,
+    "version": "V2"
+  },
+  "before_migration": {
+    "amount": "2298192864234345600000000",
+    "code_hash": "CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os",
+    "global_contract_account_id": null,
+    "global_contract_hash": null,
+    "locked": "0",
+    "storage_usage": 225453,
+    "version": "V2"
+  },
+  "config": {
+    "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+    "network": "mainnet",
+    "policy_version": "showstake-native-usdc-multievent/1",
+    "provider_account": "contract.main.burrow.near",
+    "provider_enabled": false,
+    "provider_kind": "RHEA_MAINNET",
+    "provider_unavailable_reason": "RHEA_SHARE_ABI_NOT_VERIFIED",
+    "token_decimals": 6,
+    "token_name": "USD Coin",
+    "token_symbol": "USDC"
+  },
+  "creations": [
+    {
+      "create": {
+        "gas_burnt": 2266089150685,
+        "receipts": [
+          {
+            "children": [
+              "Ef4jhyxW1sUEvJhXw1fPrGi6bu8mRprD3ZyEYtYAMCTh"
+            ],
+            "executor": "alice.near",
+            "failure": false,
+            "id": "7af9H5Ec9n9qXiS366du3RqRpcKRERNt331fitzRkJ3N",
+            "logs": [],
+            "success": true
+          },
+          {
+            "children": [
+              "D6bAuhtzbCEVw5rQi1seXDji3i6X2vuJ72fsRHXGT8gs"
+            ],
+            "executor": "showstake-mainnet-escrow-endpx-2026.near",
+            "failure": false,
+            "id": "Ef4jhyxW1sUEvJhXw1fPrGi6bu8mRprD3ZyEYtYAMCTh",
+            "logs": [
+              "EVENT_JSON:{\"standard\":\"showstake\",\"version\":\"1.0.0\",\"event\":\"EventCreated\",\"data\":{\"event_id\":\"mainnet-create-a\",\"organizer\":\"alice.near\"}}"
+            ],
+            "success": true
+          },
+          {
+            "children": [],
+            "executor": "alice.near",
+            "failure": false,
+            "id": "D6bAuhtzbCEVw5rQi1seXDji3i6X2vuJ72fsRHXGT8gs",
+            "logs": [],
+            "success": true
+          }
+        ],
+        "success": true
+      },
+      "duplicate": {
+        "gas_burnt": 2159843915733,
+        "receipts": [
+          {
+            "children": [
+              "3refQpWhyD4iBrj25i9Z7iEe9UPz9b1Zwuwr2ZLESK4g"
+            ],
+            "executor": "alice.near",
+            "failure": false,
+            "id": "8wXNdwbhdjaBWVUjpAyiz5QCLgaP5qnU6zjhYMNeWEoK",
+            "logs": [],
+            "success": true
+          },
+          {
+            "children": [
+              "GPedHU7VcqEqKWFWg8YkSVsHLhhyv3BJio8DRNvotvVc",
+              "EcJAWRyhsSkkxk4NHBpg1rviKNVk9EV6i4oYHnoMSaWS"
+            ],
+            "executor": "showstake-mainnet-escrow-endpx-2026.near",
+            "failure": true,
+            "id": "3refQpWhyD4iBrj25i9Z7iEe9UPz9b1Zwuwr2ZLESK4g",
+            "logs": [],
+            "success": false
+          },
+          {
+            "children": [],
+            "executor": "alice.near",
+            "failure": false,
+            "id": "GPedHU7VcqEqKWFWg8YkSVsHLhhyv3BJio8DRNvotvVc",
+            "logs": [],
+            "success": true
+          },
+          {
+            "children": [],
+            "executor": "alice.near",
+            "failure": false,
+            "id": "EcJAWRyhsSkkxk4NHBpg1rviKNVk9EV6i4oYHnoMSaWS",
+            "logs": [],
+            "success": true
+          }
+        ],
+        "success": false
+      },
+      "event": {
+        "accepted_principal": "0",
+        "active_registrations": 0,
+        "cancel_cutoff": 1794595169112,
+        "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "capacity": 5,
+        "checkin_close": 1794598169112,
+        "checkin_open": 1794595469112,
+        "created_at": 1794594569493,
+        "deposit": "2000000",
+        "earn_action_completed": false,
+        "earn_attempt": 0,
+        "earn_state": "NotStarted",
+        "event_id": "mainnet-create-a",
+        "finalize_deadline": 1794684569112,
+        "location": "Online",
+        "organizer": "alice.near",
+        "phase": "RegistrationOpen",
+        "policy_version": "showstake-native-usdc-multievent/1",
+        "realized_yield": "0",
+        "redeemed_amount": "0",
+        "reg_close": 1794595169112,
+        "reg_open": 1794594569112,
+        "rules_hash": "",
+        "rules_text": "Deposit 2 USDC. Attendees share the pool. Funding remains unavailable until Earn is accepted.",
+        "title": "ShowStake mainnet event",
+        "total_registrations": 0,
+        "withdrawn_registrations": 0,
+        "yield_distributed": "0"
+      },
+      "organizer": "alice.near",
+      "quote_atomic": "228040000000000000000000",
+      "wallet_after": {
+        "amount": "771584361462108200000000",
+        "code_hash": "11111111111111111111111111111111",
+        "global_contract_account_id": null,
+        "global_contract_hash": null,
+        "locked": "0",
+        "storage_usage": 182,
+        "version": "V2"
+      },
+      "wallet_before": {
+        "amount": "1000000000000000000000000",
+        "code_hash": "11111111111111111111111111111111",
+        "global_contract_account_id": null,
+        "global_contract_hash": null,
+        "locked": "0",
+        "storage_usage": 182,
+        "version": "V2"
+      }
+    },
+    {
+      "create": {
+        "gas_burnt": 2288008918375,
+        "receipts": [
+          {
+            "children": [
+              "HJdmu2vYqaky9ZeEWr5U3HrgaCoUUh5fdpCowN43Q6Mb"
+            ],
+            "executor": "bob.near",
+            "failure": false,
+            "id": "3CS4hwCqUzDmFLCWEGVcoLwnCUAUvbwQ4p1Pdyi6qTGj",
+            "logs": [],
+            "success": true
+          },
+          {
+            "children": [
+              "GUJ44JD6BdFM3o8Z6LsMDL9nDsX4ocH6cHHzxPZPQ8Es"
+            ],
+            "executor": "showstake-mainnet-escrow-endpx-2026.near",
+            "failure": false,
+            "id": "HJdmu2vYqaky9ZeEWr5U3HrgaCoUUh5fdpCowN43Q6Mb",
+            "logs": [
+              "EVENT_JSON:{\"standard\":\"showstake\",\"version\":\"1.0.0\",\"event\":\"EventCreated\",\"data\":{\"event_id\":\"mainnet-create-b\",\"organizer\":\"bob.near\"}}"
+            ],
+            "success": true
+          },
+          {
+            "children": [],
+            "executor": "bob.near",
+            "failure": false,
+            "id": "GUJ44JD6BdFM3o8Z6LsMDL9nDsX4ocH6cHHzxPZPQ8Es",
+            "logs": [],
+            "success": true
+          }
+        ],
+        "success": true
+      },
+      "duplicate": {
+        "gas_burnt": 2159602154645,
+        "receipts": [
+          {
+            "children": [
+              "GVd9EAZcpRR2sjJwHmPrHX6LVEUUfHFZCeXkfuiw4ym"
+            ],
+            "executor": "bob.near",
+            "failure": false,
+            "id": "ChuSARFnXFwXFBqYmtLLbTwH3Q3FaVetWQVSqmaV1jZk",
+            "logs": [],
+            "success": true
+          },
+          {
+            "children": [
+              "2aTYNZioWnc8zyCfHzNsASdtKi7RiF1oNbbtZF1e6kuP",
+              "HepzvTbmqhDYjXC2127eedwGA4pSkCN8XRYDSJvTvDii"
+            ],
+            "executor": "showstake-mainnet-escrow-endpx-2026.near",
+            "failure": true,
+            "id": "GVd9EAZcpRR2sjJwHmPrHX6LVEUUfHFZCeXkfuiw4ym",
+            "logs": [],
+            "success": false
+          },
+          {
+            "children": [],
+            "executor": "bob.near",
+            "failure": false,
+            "id": "2aTYNZioWnc8zyCfHzNsASdtKi7RiF1oNbbtZF1e6kuP",
+            "logs": [],
+            "success": true
+          },
+          {
+            "children": [],
+            "executor": "bob.near",
+            "failure": false,
+            "id": "HepzvTbmqhDYjXC2127eedwGA4pSkCN8XRYDSJvTvDii",
+            "logs": [],
+            "success": true
+          }
+        ],
+        "success": false
+      },
+      "event": {
+        "accepted_principal": "0",
+        "active_registrations": 0,
+        "cancel_cutoff": 1794595169112,
+        "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "capacity": 5,
+        "checkin_close": 1794598169112,
+        "checkin_open": 1794595469112,
+        "created_at": 1794594571025,
+        "deposit": "2000000",
+        "earn_action_completed": false,
+        "earn_attempt": 0,
+        "earn_state": "NotStarted",
+        "event_id": "mainnet-create-b",
+        "finalize_deadline": 1794684569112,
+        "location": "Online",
+        "organizer": "bob.near",
+        "phase": "RegistrationOpen",
+        "policy_version": "showstake-native-usdc-multievent/1",
+        "realized_yield": "0",
+        "redeemed_amount": "0",
+        "reg_close": 1794595169112,
+        "reg_open": 1794594569112,
+        "rules_hash": "",
+        "rules_text": "Deposit 2 USDC. Attendees share the pool. Funding remains unavailable until Earn is accepted.",
+        "title": "ShowStake mainnet event",
+        "total_registrations": 0,
+        "withdrawn_registrations": 0,
+        "yield_distributed": "0"
+      },
+      "organizer": "bob.near",
+      "quote_atomic": "228020000000000000000000",
+      "wallet_after": {
+        "amount": "771602193661448000000000",
+        "code_hash": "11111111111111111111111111111111",
+        "global_contract_account_id": null,
+        "global_contract_hash": null,
+        "locked": "0",
+        "storage_usage": 182,
+        "version": "V2"
+      },
+      "wallet_before": {
+        "amount": "1000000000000000000000000",
+        "code_hash": "11111111111111111111111111111111",
+        "global_contract_account_id": null,
+        "global_contract_hash": null,
+        "locked": "0",
+        "storage_usage": 182,
+        "version": "V2"
+      }
+    }
+  ],
+  "events": [
+    {
+      "accepted_principal": "0",
+      "active_registrations": 0,
+      "cancel_cutoff": 1794595169112,
+      "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "capacity": 5,
+      "checkin_close": 1794598169112,
+      "checkin_open": 1794595469112,
+      "created_at": 1794594569493,
+      "deposit": "2000000",
+      "earn_action_completed": false,
+      "earn_attempt": 0,
+      "earn_state": "NotStarted",
+      "event_id": "mainnet-create-a",
+      "finalize_deadline": 1794684569112,
+      "location": "Online",
+      "organizer": "alice.near",
+      "phase": "RegistrationOpen",
+      "policy_version": "showstake-native-usdc-multievent/1",
+      "realized_yield": "0",
+      "redeemed_amount": "0",
+      "reg_close": 1794595169112,
+      "reg_open": 1794594569112,
+      "rules_hash": "",
+      "rules_text": "Deposit 2 USDC. Attendees share the pool. Funding remains unavailable until Earn is accepted.",
+      "title": "ShowStake mainnet event",
+      "total_registrations": 0,
+      "withdrawn_registrations": 0,
+      "yield_distributed": "0"
+    },
+    {
+      "accepted_principal": "0",
+      "active_registrations": 0,
+      "cancel_cutoff": 1794595169112,
+      "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "capacity": 5,
+      "checkin_close": 1794598169112,
+      "checkin_open": 1794595469112,
+      "created_at": 1794594571025,
+      "deposit": "2000000",
+      "earn_action_completed": false,
+      "earn_attempt": 0,
+      "earn_state": "NotStarted",
+      "event_id": "mainnet-create-b",
+      "finalize_deadline": 1794684569112,
+      "location": "Online",
+      "organizer": "bob.near",
+      "phase": "RegistrationOpen",
+      "policy_version": "showstake-native-usdc-multievent/1",
+      "realized_yield": "0",
+      "redeemed_amount": "0",
+      "reg_close": 1794595169112,
+      "reg_open": 1794594569112,
+      "rules_hash": "",
+      "rules_text": "Deposit 2 USDC. Attendees share the pool. Funding remains unavailable until Earn is accepted.",
+      "title": "ShowStake mainnet event",
+      "total_registrations": 0,
+      "withdrawn_registrations": 0,
+      "yield_distributed": "0"
+    }
+  ],
+  "foreign_cancel": {
+    "gas_burnt": 1881819305163,
+    "receipts": [
+      {
+        "children": [
+          "FKUjA3h5ycz9uPurRxgdUVoZFUJoURnM19g83Qo1a9Ku"
+        ],
+        "executor": "bob.near",
+        "failure": false,
+        "id": "GyMjkCuN6ry2W4Bdmwh9eJPLgJD7zzW8YjD5FLiHn9b2",
+        "logs": [],
+        "success": true
+      },
+      {
+        "children": [
+          "7ZuDoThZ1TeNZWSXDXKuVjW7rQofDP8mTCeUDNTGkLAS"
+        ],
+        "executor": "showstake-mainnet-escrow-endpx-2026.near",
+        "failure": true,
+        "id": "FKUjA3h5ycz9uPurRxgdUVoZFUJoURnM19g83Qo1a9Ku",
+        "logs": [],
+        "success": false
+      },
+      {
+        "children": [],
+        "executor": "bob.near",
+        "failure": false,
+        "id": "7ZuDoThZ1TeNZWSXDXKuVjW7rQofDP8mTCeUDNTGkLAS",
+        "logs": [],
+        "success": true
+      }
+    ],
+    "success": false
+  },
+  "migration": {
+    "gas_burnt": 18387853528714,
+    "receipts": [
+      {
+        "children": [
+          "3wiEGetwmaZA8GBdZ1a4C134An5UqRmVBsPjhfxUPZJQ"
+        ],
+        "executor": "showstake-mainnet-escrow-endpx-2026.near",
+        "failure": false,
+        "id": "5AAJSnqck1waSDKjuU1oNYrZ3nBeKbMpxAXGHewuUBNy",
+        "logs": [],
+        "success": true
+      },
+      {
+        "children": [
+          "DBk1HE5R1B9j7GzEKqwa4nGRkY29YBAqwUdrxn3NnYkz"
+        ],
+        "executor": "showstake-mainnet-escrow-endpx-2026.near",
+        "failure": false,
+        "id": "3wiEGetwmaZA8GBdZ1a4C134An5UqRmVBsPjhfxUPZJQ",
+        "logs": [],
+        "success": true
+      },
+      {
+        "children": [],
+        "executor": "showstake-mainnet-escrow-endpx-2026.near",
+        "failure": false,
+        "id": "DBk1HE5R1B9j7GzEKqwa4nGRkY29YBAqwUdrxn3NnYkz",
+        "logs": [],
+        "success": true
+      }
+    ],
+    "success": true
+  },
+  "provider_calls": 0,
+  "public_network_transactions": 0,
+  "reset_denied": {
+    "gas_burnt": 2645945889823,
+    "receipts": [
+      {
+        "children": [
+          "JEDwdctq5sj8tdDG5fhpxZsFk4T1wSvS1tw2LDRq48N4"
+        ],
+        "executor": "showstake-mainnet-escrow-endpx-2026.near",
+        "failure": false,
+        "id": "9j7sBYDHEfJSbKMKMEhxNU8MokjfXAJXdb8xu25CVYaY",
+        "logs": [],
+        "success": true
+      },
+      {
+        "children": [
+          "6y23agqquyc8XSAhcX9mwVaYCefwF2smfGYG6Wxu5dL8"
+        ],
+        "executor": "showstake-mainnet-escrow-endpx-2026.near",
+        "failure": true,
+        "id": "JEDwdctq5sj8tdDG5fhpxZsFk4T1wSvS1tw2LDRq48N4",
+        "logs": [],
+        "success": false
+      },
+      {
+        "children": [],
+        "executor": "showstake-mainnet-escrow-endpx-2026.near",
+        "failure": false,
+        "id": "6y23agqquyc8XSAhcX9mwVaYCefwF2smfGYG6Wxu5dL8",
+        "logs": [],
+        "success": true
+      }
+    ],
+    "success": false
+  },
+  "scope": "Actual legacy03076 Wasm migration and two native organizer creates in local Sandbox only",
+  "status": "PASS_LOCAL"
+}

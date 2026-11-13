@@ -1,0 +1,11 @@
+    Finished `test` profile [unoptimized] target(s) in 0.14s
+     Running unittests lib.rs (/cache/target/debug/deps/showstake_event_escrow_candidate-65ddb3fe24075de9)
+
+running 5 tests
+test legacy::tests::failed_and_ambiguous_actions_do_not_duplicate_transfers ... ok
+test legacy::tests::failed_redemption_reconciles_before_retry ... ok
+test legacy::tests::five_two_atomic_and_two_nonconsecutive_attendees_pay_five_each ... ok
+test legacy::tests::mock_supply_and_redeem_require_receipt_and_reconciled_balances ... ok
+test legacy::tests::nonconsecutive_attendees_receive_deterministic_remainder ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.46s

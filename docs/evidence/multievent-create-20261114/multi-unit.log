@@ -1,0 +1,75 @@
+   Compiling showstake-event-escrow-candidate v0.1.0 (/work/contracts/showstake/event-escrow-candidate)
+warning: use of deprecated function `near_sdk::test_utils::testing_env_with_promise_results`: Use `testing_env!` macro to initialize with promise results
+   --> multi_event.rs:824:50
+    |
+824 |     use near_sdk::test_utils::{VMContextBuilder, testing_env_with_promise_results};
+    |                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated function `near_sdk::test_utils::testing_env_with_promise_results`: Use `testing_env!` macro to initialize with promise results
+   --> multi_event.rs:900:9
+    |
+900 |         testing_env_with_promise_results(b.build(), PromiseResult::Failed);
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated function `near_sdk::test_utils::testing_env_with_promise_results`: Use `testing_env!` macro to initialize with promise results
+   --> multi_event.rs:920:9
+    |
+920 |         testing_env_with_promise_results(b.build(), PromiseResult::Successful(vec![]));
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused `near_sdk::Promise` that must be used
+   --> multi_event.rs:892:9
+    |
+892 |         c.claim("reg-0".into());
+    |         ^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: return or detach explicitly via `.detach()`
+    = note: `#[warn(unused_must_use)]` (part of `#[warn(unused)]`) on by default
+help: use `let _ = ...` to ignore the resulting value
+    |
+892 |         let _ = c.claim("reg-0".into());
+    |         +++++++
+
+warning: unused `near_sdk::Promise` that must be used
+   --> multi_event.rs:904:9
+    |
+904 |         c.claim("reg-0".into());
+    |         ^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: return or detach explicitly via `.detach()`
+help: use `let _ = ...` to ignore the resulting value
+    |
+904 |         let _ = c.claim("reg-0".into());
+    |         +++++++
+
+warning: unused `near_sdk::Promise` that must be used
+   --> multi_event.rs:916:9
+    |
+916 |         c.claim("reg-0".into());
+    |         ^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: return or detach explicitly via `.detach()`
+help: use `let _ = ...` to ignore the resulting value
+    |
+916 |         let _ = c.claim("reg-0".into());
+    |         +++++++
+
+warning: `showstake-event-escrow-candidate` (lib test) generated 6 warnings
+    Finished `test` profile [unoptimized] target(s) in 1.55s
+     Running unittests lib.rs (/cache/target/debug/deps/showstake_event_escrow_candidate-74c01cb9cadce586)
+
+running 10 tests
+test multi_event::tests::any_organizer_creates_independent_flat_views_and_pages ... ok
+test multi_event::tests::create_rejects_underfunded_storage - should panic ... ok
+test multi_event::tests::duplicate_event_rejected - should panic ... ok
+test multi_event::tests::empty_legacy_migrates_preserving_config ... ok
+test multi_event::tests::funded_legacy_is_rejected - should panic ... ok
+test multi_event::tests::mainnet_provider_gate_returns_deposit_even_if_event_unpaused ... ok
+test multi_event::tests::overlapping_events_refund_isolation_and_failed_retry ... ok
+test multi_event::tests::rejects_catalog_unsafe_event_id - should panic ... ok
+test multi_event::tests::rejects_time_above_year_9999 - should panic ... ok
+test multi_event::tests::wrong_event_callback_does_not_change_pending ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.86s

@@ -1,0 +1,73 @@
+{
+  "classification": "PASS_LOCAL",
+  "scope": "Frozen multi-event CREATE code, actual legacy Wasm migration and two organizers; no mainnet USDC/Earn acceptance",
+  "reviewer": "Codex",
+  "observedAt": "2026-11-13T18:42:00.742Z",
+  "policy": "showstake-native-usdc-multievent/1",
+  "artifact": {
+    "path": "test-support/contract-integration/wasm/showstake-multievent-create-v2.wasm",
+    "bytes": 225667,
+    "sha256": "c81cf3d7293c111fc29c930ac19f94d3c88cdcf4d7dcf70a73f73911c87999e7",
+    "codeHash": "EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY"
+  },
+  "sourceSnapshotSha256": {
+    "contracts/showstake/event-escrow-candidate/Cargo.toml": "20967ef80c823c3dcc709cea02a7b9470c732c2c740a335bfda6386f0b3a1ecb",
+    "contracts/showstake/event-escrow-candidate/Cargo.lock": "9aa5cdba4e42ee87c4e9d36d0a1c02a0bb217e9581198cbe3e888a5a599a3298",
+    "contracts/showstake/event-escrow-candidate/lib.rs": "269049a3662bf928cfcb088239d7c455477abcd47a589fdea536f94bed26a19d",
+    "contracts/showstake/event-escrow-candidate/src.rs": "15f260cccbd8b4093af52ce0033f15828e3602ecbd689d0cda4fde593d183b72",
+    "contracts/showstake/event-escrow-candidate/rhea_adapter.rs": "79c1069c5aba04afb245b7ddd4866253e623c4469278a75bd87e2a5af0af8805",
+    "contracts/showstake/event-escrow-candidate/multi_event.rs": "3f2987fbeb7f9ccd430ea38f0ce7335e1e7528670c3c264e06cbb430c31976da",
+    "test-support/contract-integration/runner/src/bin/multi_create_smoke.rs": "0ec2482c6012cc3909d15724b4014b0b7bd1864f18fae34e75b256f4adce462d"
+  },
+  "tests": {
+    "multiUnit": 10,
+    "linkedUnit": 26,
+    "defaultUnit": 5,
+    "actualLegacyWasmMigration": true,
+    "twoDifferentOrganizers": true,
+    "duplicateEventDenied": true,
+    "foreignCancelDenied": true,
+    "nonemptyResetDenied": true
+  },
+  "storage": {
+    "postMigrationBytes": 226193,
+    "storagePriceAtomicPerByte": "10000000000000000000",
+    "reserveAtomic": "2261930000000000000000000",
+    "sampleCapacity": 5,
+    "sampleCreateQuotesAtomic": [
+      "228040000000000000000000",
+      "228020000000000000000000"
+    ],
+    "quoteMeaning": "conservative metadata + fixed overhead +4096 bytes per future registration; not measured exact storage expense"
+  },
+  "mainnetApproval": {
+    "userApproved": true,
+    "maxFeeAtomic": "10000000000000000000000",
+    "additionalFunding": "0",
+    "assetTransfersAuthorized": false,
+    "method": "atomic deploy + private migrate_empty_legacy",
+    "scopeFile": "docs/mainnet-multievent-create-plan.md"
+  },
+  "provider": {
+    "enabled": false,
+    "concurrentEarnRequired": true,
+    "singleActiveFallbackAccepted": false,
+    "mainnetFTRegistration": "returns all unused while provider unavailable"
+  },
+  "limitations": [
+    "Provider actions not implemented/accepted in this release; no mainnet USDC deposits accepted",
+    "Custom account-bound pass; no NEP-171 claim",
+    "Future contract changes frozen by user for this release; deploy exact hash only"
+  ],
+  "commands": [
+    "cargo +1.99.1 test --locked --offline --lib --features multi-event",
+    "cargo +1.99.1 test --locked --offline --lib --features rhea-linked-withdraw-review",
+    "cargo +1.99.1 test --locked --offline --lib",
+    "cargo +1.99.1 build --locked --offline --lib --target wasm32-unknown-unknown --release --features multi-event",
+    "wasm-opt <build> -Oz -o <artifact>",
+    "cargo +1.99.1 build --locked --offline --bin multi_create_smoke",
+    "LEGACY_WASM=<frozen03076> MULTI_WASM=<c81cf3d7> multi_create_smoke"
+  ],
+  "environment": "Isolated resource-limited Docker Rust1.99.1/Binaryen120 and Ubuntu24 Sandbox2.14; no wallet material mounted",
+  "sourceEncoding": "Hashes cover archived working-tree bytes; Git normalizes text line endings"
+}
