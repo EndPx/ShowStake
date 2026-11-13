@@ -23,6 +23,7 @@ export interface DeploymentAllowlist {
   startHeight: number;
   /** Explicit mock provider identity for the reviewed candidate adapter. */
   candidateProviderAccount?: string;
+  adapter?: 'multievent-v1';
   /** Set only by the final-chain factory discovery path, never from an environment variable. */
   verifiedFactoryId?: string;
 }
@@ -73,9 +74,12 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): WorkerConfig {
   if (!ftContractId) throw new Error('WORKER_FT_CONTRACT_ID is required (canonical FT)');
   if (!codeHash) throw new Error('WORKER_CODE_HASH is required (base58 contract code hash)');
   if (!wasmSha256) throw new Error('WORKER_WASM_SHA256 is required (hex wasm sha256)');
-  if (!organizer) throw new Error('WORKER_ORGANIZER is required (immutable event organizer)');
+  if (!organizer && policyVersion !== 'showstake-native-usdc-multievent/1') throw new Error('WORKER_ORGANIZER is required (immutable event organizer)');
   if (!policyVersion) throw new Error('WORKER_POLICY_VERSION is required (immutable policy version)');
 
+  if (policyVersion === 'showstake-native-usdc-multievent/1' && (env.WORKER_ADAPTER !== 'multievent-v1' || !candidateProviderAccount)) throw new Error('multi-event adapter and provider must be explicitly configured');
+  if (env.WORKER_ADAPTER && env.WORKER_ADAPTER !== 'multievent-v1') throw new Error('unknown worker adapter');
+  if (env.WORKER_ADAPTER === 'multievent-v1' && policyVersion !== 'showstake-native-usdc-multievent/1') throw new Error('multi-event policy mismatch');
   const ftDecimalsRaw = env.WORKER_FT_DECIMALS ?? '';
   if (!/^[0-9]+$/.test(ftDecimalsRaw)) throw new Error('WORKER_FT_DECIMALS is required (0..38)');
   const ftDecimals = Number(ftDecimalsRaw);
@@ -89,7 +93,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): WorkerConfig {
     throw new Error(`WORKER_START_HEIGHT must be a non-negative safe integer; got ${startHeightRaw}`);
   }
 
-  if (network === 'mainnet' && (contractId !== 'showstake-mainnet-escrow-endpx-2026.near' || ftContractId !== '17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1' || ftDecimals !== 6 || codeHash !== 'CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os' || wasmSha256 !== '03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2' || policyVersion !== 'showstake-native-usdc-rhea-review/1' || candidateProviderAccount !== 'contract.main.burrow.near')) throw new Error('unreviewed mainnet deployment');
+  if (network === 'mainnet' && env.WORKER_ADAPTER !== 'multievent-v1' && (contractId !== 'showstake-mainnet-escrow-endpx-2026.near' || ftContractId !== '17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1' || ftDecimals !== 6 || codeHash !== 'CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os' || wasmSha256 !== '03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2' || policyVersion !== 'showstake-native-usdc-rhea-review/1' || candidateProviderAccount !== 'contract.main.burrow.near')) throw new Error('unreviewed mainnet deployment');
   return {
     nebula: network,
     rpcUrl: env.WORKER_RPC_URL || `https://rpc.${network}.near.org`,
@@ -108,6 +112,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): WorkerConfig {
       policyVersion,
       startHeight,
       candidateProviderAccount: candidateProviderAccount || undefined,
+      adapter: env.WORKER_ADAPTER === 'multievent-v1' ? 'multievent-v1' : undefined,
     },
     databaseUrl: env.DATABASE_URL ?? null,
   };

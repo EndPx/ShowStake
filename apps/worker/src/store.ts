@@ -26,7 +26,8 @@
 // consumer. Canonical hash + official-finality proof happen in the production
 // ingest path itself, not only in tests.
 import { randomUUID } from 'node:crypto';
-import { isCandidate, isMainnetCandidate, isLinkedCandidate, LINKED_POLICY, parseCandidateEvent, parseCandidateRegistration, validateCandidatePass, validateCandidateConfig, validateCandidateCoverage, validateLinkedCoverage } from './candidate.js';
+import { isMulti, isCandidate, isMainnetCandidate, isLinkedCandidate, LINKED_POLICY, parseCandidateEvent, parseCandidateRegistration, validateCandidatePass, validateCandidateConfig, validateCandidateCoverage, validateLinkedCoverage } from './candidate.js';
+import { parseMultiLogs, readMultiSnapshot } from './multievent.js';
 import { Pool, type Client, type PoolConfig } from 'pg';
 import { WORKER_DB_ROLE, type DeploymentAllowlist } from './config.js';
 import { assertAllowlistIdentity } from './identity.js';
@@ -273,7 +274,7 @@ export class WorkerStore {
     }
     const view = await this.live.viewSource.callView('get_config', { accountId: this.allowlist.contractId, args: {} }, 'final');
     const cfg = view.result as Record<string, unknown>;
-    if (cfg['organizer'] !== this.allowlist.organizer) throw new Error(`live organizer ${String(cfg['organizer'])} mismatch`);
+    if (!isMulti(this.allowlist) && cfg['organizer'] !== this.allowlist.organizer) throw new Error(`live organizer ${String(cfg['organizer'])} mismatch`);
     if (cfg['canonical_ft'] !== this.allowlist.ftContractId) throw new Error('live canonical_ft mismatch');
     if (cfg['network'] !== this.allowlist.network) throw new Error(`live network ${String(cfg['network'])} mismatch`);
     if (cfg['policy_version'] !== this.allowlist.policyVersion) throw new Error('live policy_version mismatch');
@@ -337,18 +338,33 @@ export class WorkerStore {
     }
 
     if (['showstake-native-usdc-event/1','showstake-native-usdc-rhea-review/1',LINKED_POLICY].includes(this.allowlist.policyVersion) && !isCandidate(this.allowlist)) throw new Error('candidate code hash is not reviewed');
-    const candidate = isCandidate(this.allowlist);
+    const multi = isMulti(this.allowlist);
+    const candidate = isCandidate(this.allowlist) || multi;
     const kept = block.receipts.filter((r) => r.executorId === this.allowlist.contractId && r.success);
     const units: { classified: ReturnType<typeof classifyEvent>; chainEvent: ChainEventInsert }[] = [];
     for (const receipt of kept) {
-      for (const ev of parseShowStakeLogs(receipt.logs)) {
-        const classified = classifyEvent(ev);
+      for (const ev of (multi ? parseMultiLogs(receipt.logs) : parseShowStakeLogs(receipt.logs))) {
+        const classified: ReturnType<typeof classifyEvent> = multi ? { kind: 'PROVENANCE', log: ev } : classifyEvent(ev);
         units.push({ classified, chainEvent: buildChainEvent(classified, receipt.receiptId, block) });
       }
     }
 
-    let snapshot: { event: NonNullable<ReturnType<typeof parseCandidateEvent>>; registrations: ReturnType<typeof parseCandidateRegistration>[] } | null = null;
-    if (candidate && (kept.length || refreshCandidate)) {
+    let singleSnapshot: { event: NonNullable<ReturnType<typeof parseCandidateEvent>>; registrations: ReturnType<typeof parseCandidateRegistration>[] } | null = null;
+    let multiSnapshots: Awaited<ReturnType<typeof readMultiSnapshot>> = [];
+    if (multi && (kept.length || refreshCandidate)) {
+      const read = async (method:string,args:unknown,accountId=this.allowlist.contractId):Promise<unknown> => { const result=await this.live.viewSource.callView(method,{accountId,args},block.hash); this.assertPinned(result.blockHeight,result.blockHash,block,method); return result.result; };
+      multiSnapshots=await readMultiSnapshot(this.allowlist,read);
+      for (const unit of units) {
+        const p=unit.chainEvent.payload, snap=multiSnapshots.find(x=>x.event.rules.eventId===p.event_id);
+        if(!snap) throw new Error('receipt event missing from pinned snapshot');
+        if(unit.chainEvent.eventName==='EventCreated' && p.organizer!==snap.event.rules.organizer) throw new Error('receipt organizer mismatch');
+        if(typeof p.registration_id==='string') {
+          const r=snap.registrations.find(x=>x.registrationId===p.registration_id);
+          if(!r || (p.pass_id!==undefined && p.pass_id!==r.passId) || (p.participant!==undefined && p.participant!==r.participant) || (p.beneficiary!==undefined && p.beneficiary!==r.beneficiary) || (p.commitment_id!==undefined && p.commitment_id!==r.commitmentId) || (p.event_sequence!==undefined && p.event_sequence!==r.eventSequence) || (p.amount!==undefined && p.amount!==(unit.chainEvent.eventName==='RegistrationCommitted'?r.amount:r.claimAmount))) throw new Error('receipt registration identity mismatch');
+        }
+      }
+    }
+    if (candidate && !multi && (kept.length || refreshCandidate)) {
       const read = async (method: string, args: unknown, accountId = this.allowlist.contractId): Promise<unknown> => {
         const result = await this.live.viewSource.callView(method, { accountId, args }, block.hash);
         this.assertPinned(result.blockHeight, result.blockHash, block, method);
@@ -382,7 +398,7 @@ export class WorkerStore {
           const position = await read('get_position', { account_id: this.allowlist.contractId }, provider);
           validateCandidateCoverage(event, registrations, balance, position);
         }
-        snapshot = { event, registrations };
+        singleSnapshot = { event, registrations };
       }
     }
 
@@ -525,7 +541,7 @@ export class WorkerStore {
         }
       }
 
-      if (snapshot && (current === null || block.height > current.block_height)) {
+      for (const snapshot of (current === null || block.height > current.block_height ? (multi ? multiSnapshots : singleSnapshot ? [singleSnapshot] : []) : [])) {
         await this.insertEventProjection(client, deploymentId, snapshot.event.rules, block.timestampMs);
         for (const registration of snapshot.registrations) await this.applyCommit(client, deploymentId, registration, block.timestampMs);
         const row = await client.query<{ accepted_atomic: string; deposit_atomic: string; capacity: number; organizer_account: string; asset_contract: string; policy_version: string }>(`SELECT accepted_atomic::text, deposit_atomic::text, capacity, organizer_account, asset_contract, policy_version FROM events_projection WHERE deployment_id = $1 AND chain_event_id = $2`, [deploymentId, snapshot.event.rules.eventId]);
@@ -538,7 +554,7 @@ export class WorkerStore {
         let paid = 0n, pending = 0n;
         for (const r of snapshot.registrations) {
           const settled = snapshot.event.phase === 'Settled';
-          const refundReady = refund && ['NotStarted','Redeemed'].includes(snapshot.event.earnState);
+          const refundReady = !multi && refund && ['NotStarted','Redeemed'].includes(snapshot.event.earnState);
           const payout = !settled && !refundReady ? 'NOT_CLAIMABLE' : settled && r.claimAmount === '0' ? 'ZERO' : r.claim === 'Paid' ? 'PAID' : r.claim === 'Pending' ? 'PENDING' : 'CLAIMABLE';
           if (r.claim === 'Paid') paid += BigInt(r.claimAmount);
           if (r.claim === 'Pending') pending += BigInt(r.claimAmount);

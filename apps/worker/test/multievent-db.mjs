@@ -1,0 +1,30 @@
+import assert from 'node:assert/strict';
+import { WorkerStore } from '../dist/store.js';
+import { COMMITTED_DEPLOYMENT } from './fixtures.mjs';
+export async function multiDbTest({client,pool,canonical,registerBlock,check}) {
+const d={environment:'testnet',codeHash:COMMITTED_DEPLOYMENT.codeHash,wasmSha256:'fc49fb85cc6e718086ddf81e9a936362a8c36ef9384a8444eadafa6ec0cdcd8e',organizer:'',startHeight:1100,adapter:'multievent-v1',policyVersion:'showstake-native-usdc-multievent/1',network:'testnet',contractId:'contract.testnet',ftContractId:'ft.testnet',ftDecimals:6,candidateProviderAccount:'provider.testnet'};
+const make=(event_id,organizer,n)=>({event_id,organizer,title:'title',location:'location',rules_text:'rules',phase:'RegistrationOpen',earn_state:'NotStarted',earn_attempt:0,earn_action_completed:false,canonical_ft:d.ftContractId,policy_version:d.policyVersion,deposit:'10',capacity:5,reg_open:1,reg_close:2,checkin_open:3,checkin_close:4,cancel_cutoff:2,finalize_deadline:86400004,active_registrations:1,total_registrations:1,withdrawn_registrations:0,rules_hash:'',created_at:1,accepted_principal:'10',redeemed_amount:'0',realized_yield:'0',yield_distributed:'0'});
+const events=[make('a','alice.testnet'),make('b','bob.testnet')];
+const regs=Object.fromEntries(events.map((e,i)=>[e.event_id,{registration_id:`r${i}`,pass_id:`p${i}`,participant:`user${i}.testnet`,beneficiary:`user${i}.testnet`,commitment_id:`c${i}`,amount:'10',sequence:0,attendance:'Unmarked',registration_status:'Active',attendance_status:'Unmarked',claim:'None',claim_amount:'0',claim_attempt:0}]));
+let balance='20', corrupt=false, other=false;
+const read=async(m,a)=>{switch(m){case 'get_config':return {canonical_ft:d.ftContractId,provider_account:d.candidateProviderAccount,provider_kind:'MOCK_TESTNET',network:d.network,policy_version:d.policyVersion,token_symbol:'USDC',token_name:'USD Coin',token_decimals:6};case 'list_events':return a.from_index===0?events:[];case 'get_event':return events.find(e=>e.event_id===a.event_id);case 'list_event_registrations':return [regs[a.event_id]];case 'get_registration':return Object.values(regs).find(r=>r.registration_id===a.registration_id);case 'get_pass':{const e=events.find(e=>regs[e.event_id].pass_id===a.pass_id),r=regs[e.event_id];return {pass_id:r.pass_id,event_id:corrupt?'a':e.event_id,registration_id:r.registration_id,owner:r.participant,registration_status:'Active',attendance_status:'Unmarked',policy_version:d.policyVersion};}case 'get_event_totals':return {event_id:a.event_id,accepted_principal:'10',realized_yield:'0',allocated_yield:'0',paid:'0',pending:'0',liability:'10',reserved_cash:'10'};case 'get_accounting':return {accepted_principal:'20',realized_yield:'0',allocated_yield:'0',paid:'0',pending:'0',liability:'20',reserved_cash:'20',global_operation:other?'unexpected':null};case 'ft_balance_of':return balance;default:throw Error(m);}};
+
+const id='88000000-0000-4000-8000-000000000001';
+await client.query('INSERT INTO deployments (id,environment,network,contract_id,ft_contract_id,ft_decimals,start_block,code_hash) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)',[id,d.environment,d.network,d.contractId,d.ftContractId,6,d.startHeight,d.codeHash]);
+const live={accountCodeHash:async()=>d.codeHash,viewSource:{callView:async(method,req,ref)=>({result:await read(method,req.args),blockHeight:Number(ref.slice(1)),blockHash:ref})}};
+const store=new WorkerStore(pool,d,'multi-db',live,canonical);
+const log=(event,data)=>`EVENT_JSON:${JSON.stringify({standard:'showstake',version:'1.0.0',event,data})}`;
+const block={height:1100,hash:'M1100',prevHeight:1099,prevHash:'M1099',timestampMs:1700000001100,receipts:[{receiptId:'multi-receipt',executorId:d.contractId,success:true,logs:events.map(e=>log('EventCreated',{event_id:e.event_id,organizer:e.organizer}))}]};
+registerBlock(canonical,block); await store.ingestBlock(id,block);
+let rows=(await client.query(`SELECT e.id,e.chain_event_id,e.organizer_account,r.chain_registration_id,p.pass_id,p.event_id FROM events_projection e JOIN registrations_projection r ON r.event_id=e.id JOIN passes_projection p ON p.registration_id=r.id WHERE e.deployment_id=$1 ORDER BY e.chain_event_id`,[id])).rows;
+assert.equal(rows.length,2);assert.deepEqual(rows.map(r=>[r.chain_event_id,r.organizer_account,r.chain_registration_id,r.pass_id]),[['a','alice.testnet','r0','p0'],['b','bob.testnet','r1','p1']]);assert(rows.every(r=>r.id===r.event_id));
+const before=rows.map(r=>r.id);
+const resumed=new WorkerStore(pool,d,'multi-db',live,canonical);assert.equal(await resumed.resolveStartHeight(id,1100),1101);await resumed.ingestBlock(id,block);
+const otherId='88000000-0000-4000-8000-000000000002', otherDep={...d,contractId:'other.contract.testnet'};
+await client.query('INSERT INTO deployments (id,environment,network,contract_id,ft_contract_id,ft_decimals,start_block,code_hash) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)',[otherId,otherDep.environment,otherDep.network,otherDep.contractId,otherDep.ftContractId,6,1100,otherDep.codeHash]);
+const otherBlock={...block,receipts:[{...block.receipts[0],executorId:otherDep.contractId}]};await new WorkerStore(pool,otherDep,'multi-db',live,canonical).ingestBlock(otherId,otherBlock);
+const otherRows=(await client.query('SELECT id,chain_event_id FROM events_projection WHERE deployment_id=$1 ORDER BY chain_event_id',[otherId])).rows;assert.deepEqual(otherRows.map(r=>r.chain_event_id),['a','b']);assert(otherRows.every(r=>!before.includes(r.id)));
+await store.ingestBlock(id,block);rows=(await client.query('SELECT id FROM events_projection WHERE deployment_id=$1 ORDER BY chain_event_id',[id])).rows;assert.deepEqual(rows.map(r=>r.id),before);assert.equal(await store.readCursorHeight(id),1100);
+const next={...block,height:1101,hash:'M1101',prevHash:'M1100',prevHeight:1100,receipts:[{...block.receipts[0],receiptId:'multi-bad'}]};registerBlock(canonical,next);balance='19';await assert.rejects(()=>store.ingestBlock(id,next),/aggregate reserved/);assert.equal(await store.readCursorHeight(id),1100);
+check('MULTI_EVENT_DB_REPLAY_COVERAGE',true,'two same-contract events, UUID/pass isolation, replay and rollback','PASS');
+}

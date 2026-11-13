@@ -14,6 +14,7 @@
 // upsert, malformed-cursor fail-closed, crash rollback, and two-connection
 // different-height/opposite-order attempts (higher height first => gap, then
 // lower height, then retry) plus same-height overlap exactly-once.
+import { multiDbTest } from './multievent-db.mjs';
 import { candidateDbTest } from './candidate-db.mjs';
 import { factoryDbTest } from './factory-db.mjs';
 import { linkedDbTest } from './linked-db.mjs';
@@ -598,6 +599,7 @@ async function main() {
     check('DB_SETTLE_BATCH_RESUME', resumeFrom === 213, 'resolveStartHeight resumes from cursor+1 = 213 (same DB lifecycle)', resumeFrom);
 
     await candidateDbTest({client, pool, canonical, registerBlock, check});
+    await multiDbTest({client, pool, canonical, registerBlock, check});
     await factoryDbTest({client, pool, check});
     await linkedDbTest({client, pool, canonical, registerBlock, check});
     const failed = results.filter((r) => !r.ok);

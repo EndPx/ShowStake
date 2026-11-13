@@ -1,0 +1,686 @@
+{
+  "id": "worker-increment-db",
+  "task": "apps/worker receipt projection + v6 settlement lifecycle (disposable PostgreSQL acceptance)",
+  "classifier": "PASS_LOCAL",
+  "ok": true,
+  "reviewer_pending": false,
+  "run_id": "multi-worker-create-v2",
+  "environment": {
+    "os": "Linux VPS; isolated network-none PostgreSQL18.6 container, no production DB",
+    "postgresql": "disposable postgresql-18 cluster",
+    "database": "showstake_disposable",
+    "socket": "/opt/showstake/backend-test/multi-worker-socket-v2"
+  },
+  "executor": "Codex-Terra",
+  "totals": {
+    "checks": 94,
+    "failed": 0
+  },
+  "checks": [
+    {
+      "id": "DB_MIGRATIONS_APPLIED",
+      "ok": true,
+      "expected": ">=2 migrations applied",
+      "observed": "applied=8",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_WORKER_RESTRICTED_LOGIN",
+      "ok": true,
+      "expected": "service LOGIN + SET ROLE showstake_worker validated",
+      "observed": "showstake_worker_service",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_WORKER_RESET_ROLE_GUARDED",
+      "ok": true,
+      "expected": "RESET ROLE cannot restore projection/cursor write authority",
+      "observed": "denied 42501",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CREATEDB_LOGIN_REJECTED",
+      "ok": true,
+      "expected": "rejects (unprivileged NOINHERIT LOGIN)",
+      "observed": "worker requires a dedicated unprivileged NOINHERIT LOGIN; operator/superuser credentials are forbidden",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CREATEROLE_LOGIN_REJECTED",
+      "ok": true,
+      "expected": "rejects (unprivileged NOINHERIT LOGIN)",
+      "observed": "worker requires a dedicated unprivileged NOINHERIT LOGIN; operator/superuser credentials are forbidden",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_REPLICATION_LOGIN_REJECTED",
+      "ok": true,
+      "expected": "rejects (unprivileged NOINHERIT LOGIN)",
+      "observed": "worker requires a dedicated unprivileged NOINHERIT LOGIN; operator/superuser credentials are forbidden",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_BYPASSRLS_LOGIN_REJECTED",
+      "ok": true,
+      "expected": "rejects (unprivileged NOINHERIT LOGIN)",
+      "observed": "worker requires a dedicated unprivileged NOINHERIT LOGIN; operator/superuser credentials are forbidden",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_INHERIT_LOGIN_REJECTED",
+      "ok": true,
+      "expected": "rejects (unprivileged NOINHERIT LOGIN)",
+      "observed": "worker requires a dedicated unprivileged NOINHERIT LOGIN; operator/superuser credentials are forbidden",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_INHERITING_MEMBERSHIP_REJECTED",
+      "ok": true,
+      "expected": "rejects (unprivileged NOINHERIT LOGIN)",
+      "observed": "worker requires a dedicated unprivileged NOINHERIT LOGIN; operator/superuser credentials are forbidden",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_OPERATOR_LOGIN_REJECTED",
+      "ok": true,
+      "expected": "rejects (unprivileged NOINHERIT LOGIN)",
+      "observed": "worker requires a dedicated unprivileged NOINHERIT LOGIN; operator/superuser credentials are forbidden",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_API_NO_PROJECTION_WRITE",
+      "ok": true,
+      "expected": "showstake_api UPDATE projection denied 42501",
+      "observed": "denied=true",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_WRONG_CODE_HASH_DENIED",
+      "ok": true,
+      "expected": "rejects (live code hash)",
+      "observed": "live code hash AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA != allowlist HyqAt2yJGvV3CHKNYLA9oqzt1aWrmagwSbtogdXhA8wo",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_WRONG_FT_DECIMALS_DENIED",
+      "ok": true,
+      "expected": "rejects (ft_metadata.decimals)",
+      "observed": "ft_metadata.decimals 8 != allowlist 6",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_WRONG_DEPLOYMENT_DENIED",
+      "ok": true,
+      "expected": "rejects (no deployment row)",
+      "observed": "no deployment row for testnet/showstake-absent-endpx.testnet",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_DEPLOYMENT_RESOLVED",
+      "ok": true,
+      "expected": "deployment resolved at fixture start_block 100",
+      "observed": "00000000-0000-4000-8000-0000000000c1/100",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_EXACT_START_GATE",
+      "ok": true,
+      "expected": "rejects (exact-start gate)",
+      "observed": "exact-start gate: configured start height 101 != deployment start_block 100 and no resume cursor; refusing to omit required history",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_FRESH_START_IS_DEPLOYMENT_START",
+      "ok": true,
+      "expected": "fresh start == deployment start_block",
+      "observed": 100,
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_INITIAL_START_MISSING_FAIL_CLOSED",
+      "ok": true,
+      "expected": "rejects (first cursor must be created exactly)",
+      "observed": "first cursor must be created exactly at deployment start_block 100; got block 101 (missing initial block must fail closed)",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_SOURCE_HEADER_MISMATCH_DENIED",
+      "ok": true,
+      "expected": "rejects (source/official header mismatch)",
+      "observed": "source/official header mismatch at 104: source prev 103/H-OTHER != official 103/H103",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_SOURCE_HEADER_CURSOR",
+      "ok": true,
+      "expected": "no cursor after source/official header mismatch",
+      "observed": null,
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_PUBLISH_INGESTED",
+      "ok": true,
+      "expected": "one publish projected, cursor created at 100",
+      "observed": "{\"published\":1,\"cursor\":100}",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_EVENT_ROW",
+      "ok": true,
+      "expected": "event projection row PUBLISHED",
+      "observed": 1,
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_EVENT_MONEY",
+      "ok": true,
+      "expected": "money canonical numeric",
+      "observed": "5000000",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CHAIN_EVENT_PUBLISH",
+      "ok": true,
+      "expected": "one chain_events row",
+      "observed": 1,
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_DEPOSIT_INGESTED",
+      "ok": true,
+      "expected": "one commit projected, cursor 101",
+      "observed": "{\"committed\":1,\"cursor\":101}",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_REGISTRATION_ROW",
+      "ok": true,
+      "expected": "registration COMMITTED",
+      "observed": 1,
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_PASS_ROW",
+      "ok": true,
+      "expected": "pass owner = participant",
+      "observed": 1,
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_EVENT_TOTALS_AFTER_COMMIT",
+      "ok": true,
+      "expected": "accepted=liability=5000000",
+      "observed": "{\"a\":\"5000000\",\"l\":\"5000000\"}",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_PASS_COLLISION_DENIED",
+      "ok": true,
+      "expected": "rejects (passes_projection_deployment_id_pass_id_key)",
+      "observed": "duplicate key value violates unique constraint \"passes_projection_deployment_id_pass_id_key\"",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_PASS_COLLISION_ATOMIC",
+      "ok": true,
+      "expected": "registration/receipt/totals/cursor all unchanged",
+      "observed": "{\"registrations\":0,\"accepted\":\"5000000\"}",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_API_CAN_READ_EVENT",
+      "ok": true,
+      "expected": "API EVENT_SELECT returns projected event",
+      "observed": "5000000",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_API_CAN_READ_PASS",
+      "ok": true,
+      "expected": "API role reads the projected pass",
+      "observed": "pass-local-0",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_OLD_REPLAY_NO_REGRESSION",
+      "ok": true,
+      "expected": "old replay is idempotent and cursor stays 101",
+      "observed": "101/0",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_OLD_REPLAY_UNKNOWN_EVENT_DENIED",
+      "ok": true,
+      "expected": "rejects (unknown chain event)",
+      "observed": "old replay at 100 introduces an unknown chain event (unknown-old-receipt/0); refusing to regress/inject",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_OLD_REPLAY_UNKNOWN_CURSOR",
+      "ok": true,
+      "expected": "cursor still 101 after refused old replay",
+      "observed": 101,
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_FORK_DENIED",
+      "ok": true,
+      "expected": "rejects (fork)",
+      "observed": "fork: block 101 hash H101F != cursor hash H101",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_FORK_CURSOR",
+      "ok": true,
+      "expected": "cursor still 101 after fork",
+      "observed": 101,
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_PRUNED_HEIGHT_NOT_SKIPPED",
+      "ok": true,
+      "expected": "rejects (chain linkage)",
+      "observed": "chain linkage: canonical block 103 has prev 102/H102, expected cursor 101/H101; a source 404 or RPC UNKNOWN_BLOCK alone is not a skip proof",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_PRUNED_GAP_CURSOR",
+      "ok": true,
+      "expected": "cursor still 101 after pruned-height attempt",
+      "observed": 101,
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_LINKAGE_PREVHASH_MISMATCH",
+      "ok": true,
+      "expected": "rejects (chain linkage)",
+      "observed": "chain linkage: canonical block 103 has prev 101/H999, expected cursor 101/H101; a source 404 or RPC UNKNOWN_BLOCK alone is not a skip proof",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_LINKAGE_PREVHEIGHT_MISMATCH",
+      "ok": true,
+      "expected": "rejects (chain linkage)",
+      "observed": "chain linkage: canonical block 103 has prev 100/H101, expected cursor 101/H101; a source 404 or RPC UNKNOWN_BLOCK alone is not a skip proof",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_SKIP_LINKAGE_ACCEPTED",
+      "ok": true,
+      "expected": "canonical prev-hash linkage advances across a legitimate gap to 103",
+      "observed": "cursor=103",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_RESUME_AFTER_SKIP",
+      "ok": true,
+      "expected": "resume gate returns cursor+1 = 104",
+      "observed": 104,
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_FAILED_RECEIPT_DENIED",
+      "ok": true,
+      "expected": "failed receipt logs never project",
+      "observed": 0,
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CURSOR_AFTER_FAILED",
+      "ok": true,
+      "expected": "cursor 104 after failed-receipt block",
+      "observed": 104,
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CRASH_ROLLBACK",
+      "ok": true,
+      "expected": "rejects (not projected yet)",
+      "observed": "event evt-never-published not projected yet (out-of-order commit denied)",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CRASH_ROLLBACK_PROVEN",
+      "ok": true,
+      "expected": "chain_event insert + projections + cursor all rolled back",
+      "observed": "chain=2 event=0",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_MALFORMED_THREW",
+      "ok": true,
+      "expected": "rejects (canonical u128)",
+      "observed": "field amount is not a canonical u128 string: 05000000",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_UNSUPPORTED_THREW",
+      "ok": true,
+      "expected": "rejects (unsupported showstake event)",
+      "observed": "unsupported showstake event at log 0: SomeFutureEvent",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CURSOR_AFTER_MALFORMED",
+      "ok": true,
+      "expected": "cursor still 104",
+      "observed": 104,
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_PROVENANCE_ADVANCES",
+      "ok": true,
+      "expected": "StorageDeposited captured as provenance, cursor 105",
+      "observed": "{\"provenance\":1,\"cursor\":105}",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_REPLAY_PAYLOAD_MISMATCH_DENIED",
+      "ok": true,
+      "expected": "rejects (replay provenance mismatch)",
+      "observed": "replay provenance mismatch for local-receipt-storage/0: existing 105/H105P/StorageDeposited/1.0.0 (time=true, payload=false) != incoming 105/H105P/StorageDeposited/1.0.0",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_REPLAY_PAYLOAD_UNCHANGED",
+      "ok": true,
+      "expected": "existing chain_event payload unchanged and cursor 105 after altered replay",
+      "observed": "{\"amount\": \"1250000000000000000000\", \"account_id\": \"bob.testnet\"}",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_FOREIGN_DEPLOYMENT_ID_DENIED",
+      "ok": true,
+      "expected": "rejects (deployment contract_id mismatch)",
+      "observed": "deployment contract_id mismatch",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_FOREIGN_ID_CURSOR",
+      "ok": true,
+      "expected": "cursor still 105 after foreign-id ingest",
+      "observed": 105,
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CANONICAL_MISMATCH_DENIED",
+      "ok": true,
+      "expected": "rejects (canonical check)",
+      "observed": "canonical check: canonical block at height 106 has hash OTHER, expected H106BAD",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_NOT_FINAL_DENIED",
+      "ok": true,
+      "expected": "rejects (is not final)",
+      "observed": "block 101 is not final (official final height 100)",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CANONICAL_CURSOR",
+      "ok": true,
+      "expected": "cursor still 105 after canonical/finality refusal",
+      "observed": 105,
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_PINNED_VIEW_MISMATCH_DENIED",
+      "ok": true,
+      "expected": "rejects (pinned to block 999)",
+      "observed": "get_event pinned to block 999, ingesting 106",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CONCURRENT_LOCK_WAITER",
+      "ok": true,
+      "expected": "higher-height ingest waits on the transaction advisory lock",
+      "observed": "waiters=1",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CONCURRENT_HIGHER_FIRST_GAP_DENIED",
+      "ok": true,
+      "expected": "higher block first is rejected by canonical prev-hash linkage",
+      "observed": "chain linkage: canonical block 107 has prev 106/H106, expected cursor 105/H105P; a source 404 or RPC UNKNOWN_BLOCK alone is not a skip proof",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CONCURRENT_GAP_CURSOR",
+      "ok": true,
+      "expected": "cursor still 105 after higher-first gap",
+      "observed": 105,
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CONCURRENT_LOWER_APPLIED",
+      "ok": true,
+      "expected": "lower block applies after the higher rejection",
+      "observed": 106,
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CONCURRENT_RETRY_ADVANCES",
+      "ok": true,
+      "expected": "retried higher block advances to 107",
+      "observed": 107,
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CONCURRENT_EXACTLY_ONCE",
+      "ok": true,
+      "expected": "both concurrent commits applied exactly once, totals 15000000",
+      "observed": "{\"regs\":[{\"chain_registration_id\":\"reg-local-1\",\"n\":1},{\"chain_registration_id\":\"reg-local-2\",\"n\":1}],\"passes\":2,\"totals\":{\"a\":\"15000000\",\"l\":\"15000000\"}}",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_OVERLAP_SAME_HEIGHT_EXACTLY_ONCE",
+      "ok": true,
+      "expected": "overlapping same-height ingest applies exactly once",
+      "observed": "1/1/20000000",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CURSOR_FINAL",
+      "ok": true,
+      "expected": "cursor 108",
+      "observed": 108,
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CURSOR_EXPECTED_PREVIOUS_GUARD",
+      "ok": true,
+      "expected": "rejects (expected-previous-state)",
+      "observed": "cursor update failed expected-previous-state check (expected 108/H108)",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CURSOR_AFTER_STALE_WRITE",
+      "ok": true,
+      "expected": "stale conditional write rolled back; cursor 108",
+      "observed": 108,
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CURSOR_CREATION_RACE_GUARD",
+      "ok": true,
+      "expected": "rejects (creation raced)",
+      "observed": "cursor creation raced: a cursor row exists despite the advisory lock",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_MALFORMED_CURSOR_READ",
+      "ok": true,
+      "expected": "rejects (not an object)",
+      "observed": "worker_cursors.cursor_value is not an object",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_MALFORMED_CURSOR_INGEST",
+      "ok": true,
+      "expected": "rejects (not an object)",
+      "observed": "worker_cursors.cursor_value is not an object",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_MALFORMED_CURSOR_UNCHANGED",
+      "ok": true,
+      "expected": "malformed cursor state is not repaired/overwritten",
+      "observed": "null",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CURSOR_RESTORED",
+      "ok": true,
+      "expected": "cursor restored after malformed-state proof",
+      "observed": "H108",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_PROJECTION_CONSISTENCY",
+      "ok": true,
+      "expected": "4 committed chain events -> 4 registrations/passes; storage provenance captured",
+      "observed": "{\"chain\":[{\"event_name\":\"EventPublished\",\"n\":1},{\"event_name\":\"RegistrationCommitted\",\"n\":4},{\"event_name\":\"StorageDeposited\",\"n\":1}],\"regs\":4,\"passes\":4}",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_SETTLE_DEPLOYMENT_RESOLVED",
+      "ok": true,
+      "expected": "settle deployment resolved at start 200",
+      "observed": "00000000-0000-4000-8000-0000000000d1/200",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_SETTLE_FINALIZED",
+      "ok": true,
+      "expected": "event ATTENDANCE_FINALIZED after finalize",
+      "observed": "ATTENDANCE_FINALIZED",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_SETTLE_ATTENDANCE_FROZEN",
+      "ok": true,
+      "expected": "attendance frozen: 2 ATTENDED, 1 NO_SHOW",
+      "observed": "[[\"reg-s-0\",\"ATTENDED\"],[\"reg-s-1\",\"ATTENDED\"],[\"reg-s-2\",\"NO_SHOW\"]]",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_SETTLE_SETTLED",
+      "ok": true,
+      "expected": "event SETTLED with accepted=liability=15000000",
+      "observed": "{\"id\":\"99fe478b-d337-4198-a63b-3c8613799a5a\",\"state\":\"SETTLED\",\"a\":\"15000000\",\"p\":\"0\",\"pen\":\"0\",\"l\":\"15000000\"}",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_SETTLE_ALLOCATION",
+      "ok": true,
+      "expected": "attendees 7500000 CLAIMABLE; no-show 0 ZERO (Forfeited->ZERO)",
+      "observed": "[[\"reg-s-0\",\"7500000\",\"CLAIMABLE\"],[\"reg-s-1\",\"7500000\",\"CLAIMABLE\"],[\"reg-s-2\",\"0\",\"ZERO\"]]",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_SETTLE_PRINCIPAL_UNCHANGED",
+      "ok": true,
+      "expected": "principal stays D=5000000 (claim is reward+principal)",
+      "observed": "[\"5000000\",\"5000000\",\"5000000\"]",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_SETTLE_CONSERVATION",
+      "ok": true,
+      "expected": "sum(claim_atomic) == accepted == allocated_total",
+      "observed": "15000000",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_SETTLE_PAYOUT_PENDING",
+      "ok": true,
+      "expected": "PayoutStarted -> pending 7500000, liability 7500000",
+      "observed": "{\"p\":\"0\",\"pen\":\"7500000\",\"l\":\"7500000\"}",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_SETTLE_PAYOUT_FAIL_RESTORES",
+      "ok": true,
+      "expected": "PayoutFailed restores claimable + liability; no double count",
+      "observed": "{\"t\":{\"pen\":\"0\",\"l\":\"15000000\"},\"st\":\"CLAIMABLE\"}",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_SETTLE_RETRY_PAID_ONCE",
+      "ok": true,
+      "expected": "retry paid once: paid 7500000, liability 7500000, registration PAID",
+      "observed": "{\"t\":{\"p\":\"7500000\",\"pen\":\"0\",\"l\":\"7500000\"},\"st\":\"PAID\"}",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_SETTLE_NO_DOUBLE_COUNT",
+      "ok": true,
+      "expected": "two payout rows: FAILED + SUCCEEDED, exactly once",
+      "observed": "[{\"payout_id\":\"pay-reg-s-0-1\",\"state\":\"FAILED\",\"a\":\"7500000\"},{\"payout_id\":\"pay-reg-s-0-2\",\"state\":\"SUCCEEDED\",\"a\":\"7500000\"}]",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_SETTLE_SAME_BLOCK_CALLBACK",
+      "ok": true,
+      "expected": "same-block start+callback: reg-s-1 PAID, totals paid=15000000, payout SUCCEEDED once",
+      "observed": "{\"t\":{\"p\":\"15000000\",\"pen\":\"0\",\"l\":\"0\"},\"st\":\"PAID\",\"po\":[{\"payout_id\":\"pay-reg-s-1-1\",\"state\":\"SUCCEEDED\",\"a\":\"7500000\"}]}",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_SETTLE_BATCH_RESUME",
+      "ok": true,
+      "expected": "resolveStartHeight resumes from cursor+1 = 213 (same DB lifecycle)",
+      "observed": 213,
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "CANDIDATE_SETTLED_PENDING_PAID_REPLAY",
+      "ok": true,
+      "expected": "5 registrations, exact payout, UUID stability and fail-closed balance",
+      "observed": "PASS",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "MAINNET_CANDIDATE_EMPTY_YIELD_RETRY",
+      "ok": true,
+      "expected": "no event, yield, pending/failure/retry snapshots; no provider call",
+      "observed": "PASS",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "MULTI_EVENT_DB_REPLAY_COVERAGE",
+      "ok": true,
+      "expected": "two same-contract events, UUID/pass isolation, replay and rollback",
+      "observed": "PASS",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "FACTORY_CHILD_PROOF_ADOPTION",
+      "ok": true,
+      "expected": "verified final keyless child, immutable earliest start and idempotent restricted function",
+      "observed": "PASS",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "FACTORY_GLOBAL_TWO_ORGANIZERS_REPLAY",
+      "ok": true,
+      "expected": "two verified organizers adopted idempotently at exact creation height",
+      "observed": "PASS",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "LINKED_PARTIAL_FAILURE_SETTLED_COVERAGE",
+      "ok": true,
+      "expected": "partial/dust/pending/failure remain unclaimable, settled pays, insufficient coverage rolls back",
+      "observed": "PASS",
+      "classifier": "PASS_LOCAL"
+    }
+  ],
+  "commands": [
+    "bash scripts/postgres-disposable/run-worker-suite.sh",
+    "node apps/worker/test/verify-worker-fixtures.mjs (no-DB adversarial)"
+  ],
+  "note": "LABELED local: deterministic fixture receipts; real disposable PostgreSQL; NO network. Proves R1 cursor invariants (tx advisory lock incl. first creation, exact-start incl. fail-closed missing initial block, monotonic advancement only through official canonical prev_hash/prev_height linkage across legitimate gaps, fork and pruned-height/hash/height mismatch rejection, old replay without regression, verbatim replay provenance/payload comparison, conditional expected-previous upsert, malformed-cursor fail-closed, crash rollback, two-connection different-height opposite-order and same-height exactly-once), source-vs-official header consistency, R5 in-tx deployment/allowlist bind + actual FT metadata decimals + NOINHERIT/RESET ROLE guard, API-role read of the projected event and pass, AND the v6 settlement lifecycle: provisional attendance -> frozen ATTENDED/NO_SHOW, deterministic allocation (attendees D+share CLAIMABLE, no-show Forfeited->ZERO, principal D unchanged), conservation sum(claim)==accepted==allocated_total, payout start/fail/retry/success with exactly-once accounting and no double count, plus a same-block start+callback regression (event-derived transitions + one per-block totals reconcile) and a same-DB-lifecycle batch-resume regression (resolveStartHeight returns cursor+1).",
+  "reviewedBy": "Codex",
+  "scope": "LOCAL fixtures: two events in one deployment, cross-deployment ID isolation, replay/restart and aggregate coverage rollback; not live event/payout proof"
+}

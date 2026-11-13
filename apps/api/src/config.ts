@@ -62,9 +62,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
 
   return {
     accessContractAllowlist: (env.ACCESS_CONTRACT_ALLOWLIST ?? '').split(',').map(x=>x.trim()).filter(Boolean),
-    accessContractAbis: Object.fromEntries((env.ACCESS_CONTRACT_ABIS ?? '').split(',').map(x=>x.trim()).filter(Boolean).map(x=>{ const parts=x.split('='); if(parts.length!==2 || !parts[0] || !['candidate-v1','legacy-v6'].includes(parts[1]!)) throw new Error('invalid ACCESS_CONTRACT_ABIS'); return [parts[0]!,parts[1]!]; })),
-    accessContractCodeHashes: Object.fromEntries((env.ACCESS_CONTRACT_CODE_HASHES ?? '').split(',').map(x=>x.trim()).filter(Boolean).map(x=>{const parts=x.split('='); if(parts.length!==2 || !/^mainnet:[a-z0-9._-]+$/.test(parts[0]!) || !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(parts[1]!)) throw new Error('invalid ACCESS_CONTRACT_CODE_HASHES'); return [parts[0]!,parts[1]!];})),
-    accessFactoryCodeHashes: Object.fromEntries((env.ACCESS_FACTORY_CODE_HASHES ?? '').split(',').map(x=>x.trim()).filter(Boolean).map(x=>{const parts=x.split('=');if(parts.length!==2 || !/^mainnet:[a-z0-9._-]+$/.test(parts[0]!) || !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(parts[1]!)) throw new Error('invalid ACCESS_FACTORY_CODE_HASHES');return [parts[0]!,parts[1]!];})),
+    accessContractAbis: Object.fromEntries((env.ACCESS_CONTRACT_ABIS ?? '').split(',').map(x=>x.trim()).filter(Boolean).map(x=>{ const parts=x.split('='); if(parts.length!==2 || !parts[0] || !['candidate-v1','legacy-v6','multievent-v1'].includes(parts[1]!)) throw new Error('invalid ACCESS_CONTRACT_ABIS'); return [parts[0]!,parts[1]!]; })),
+    accessContractCodeHashes: Object.fromEntries((env.ACCESS_CONTRACT_CODE_HASHES ?? '').split(',').map(x=>x.trim()).filter(Boolean).map(x=>{const parts=x.split('='); if(parts.length!==2 || !/^(?:mainnet|testnet):[a-z0-9._-]+$/.test(parts[0]!) || !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(parts[1]!)) throw new Error('invalid ACCESS_CONTRACT_CODE_HASHES'); return [parts[0]!,parts[1]!];})),
+    accessFactoryCodeHashes: Object.fromEntries((env.ACCESS_FACTORY_CODE_HASHES ?? '').split(',').map(x=>x.trim()).filter(Boolean).map(x=>{const parts=x.split('=');if(parts.length!==2 || !/^(?:mainnet|testnet):[a-z0-9._-]+$/.test(parts[0]!) || !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(parts[1]!)) throw new Error('invalid ACCESS_FACTORY_CODE_HASHES');return [parts[0]!,parts[1]!];})),
     qrHmacKey: env.QR_HMAC_KEY,
     privateContentDir: env.PRIVATE_CONTENT_DIR,
     rheaMicrotestApprovalFile: env.RHEA_MICROTEST_APPROVAL_FILE,

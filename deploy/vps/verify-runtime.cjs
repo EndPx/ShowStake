@@ -18,7 +18,7 @@ function env(file) { return Object.fromEntries(fs.readFileSync(file,'utf8').spli
     const cursors=(await workerPool.query('SELECT consumer,cursor_value,updated_at FROM worker_cursors WHERE deployment_id=$1',[baseline.deploymentId])).rows;
     const events=(await apiPool.query('SELECT count(*)::integer AS n FROM events_projection')).rows[0].n;
     const sessions=(await apiPool.query('SELECT count(*)::integer AS n FROM sessions')).rows[0].n;
-    if(events!==0)throw Error('Unexpected event projection');
+    if(events!==0 && baseline.policyVersion!=='showstake-native-usdc-multievent/1')throw Error('Unexpected legacy event projection');
     const result={classification:'PASS_LIVE',scope:'VPS PostgreSQL and runtime identity; empty mainnet baseline only, no financial lifecycle',observedAt:new Date().toISOString(),apiRole:a,workerRole:w,leastPrivilege:true,migrations:versions,baseline,cursors,projectedEvents:events,sessionRows:sessions,financialTransactions:0};
     fs.writeFileSync('/var/lib/showstake/runtime-proof.json',JSON.stringify(result,null,2)+'\n',{mode:0o644});
     console.log(JSON.stringify({leastPrivilege:true,migrations:versions.length,events,cursor:cursors[0]?.cursor_value??null}));
