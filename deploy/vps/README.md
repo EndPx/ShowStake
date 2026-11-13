@@ -2,7 +2,7 @@
 
 The reviewed templates were executed on the existing VPS on 2026-11-13. Public
 API origin: `https://srv1330754.hstgr.cloud`; frontend: `https://showstake.vercel.app`.
-Runtime source release: `f21e699` (API private identity DTO update; no schema changes). API/worker
+Runtime source release: `9289b68` (relational integrity migration8 and matching pass writer). API/worker
 are independent keyless systemd services, with seven applied migrations and
 PostgreSQL 18.6. Financial, Rhea and factory acceptance remain separate gates.
 Actual HTTPS NEP-413 auth/session/replay/foreign-origin/restart/logout passed

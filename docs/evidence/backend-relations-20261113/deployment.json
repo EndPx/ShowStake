@@ -1,0 +1,58 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "Production backend migration and database constraints only; no blockchain deployment or financial transaction",
+  "observedAt": "2026-11-13T10:07:53.333Z",
+  "sourceCommit": "9289b68d0b46db233f4dc678b81dcd2f31ec8074",
+  "archiveSha256": "8c1ed86270a28b37fae102c31292e5e1800d21cb4dd0dc2c169dae09b87291ce",
+  "release": "/opt/showstake/releases/9289b68",
+  "schema": {
+    "versions": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "primaryKeyTables": 25,
+    "foreignKeys": 40,
+    "unvalidatedForeignKeys": 0,
+    "passEventIdNotNull": true,
+    "migration8Sha256": "9c96883c817170569234dbba5c94c53903ff86ca4f62036151e69b9dfee915a2"
+  },
+  "backup": {
+    "directory": "20261113T100552Z-HmaJSe",
+    "databaseBytes": 76289,
+    "archiveListVerified": true,
+    "privateContentIncluded": true,
+    "productionRestore": "NOT_RUN"
+  },
+  "runtime": {
+    "leastPrivilege": true,
+    "projectedEvents": 0,
+    "workerCursors": [
+      {
+        "consumer": "showstake-prod-mainnet",
+        "cursor_value": {
+          "block_hash": "HrTVzXerAvSqCWbumGBjGR5qb4iLtxTBYg5G5FfsjYCw",
+          "block_height": 224311876
+        },
+        "updated_at": "2026-11-13T10:06:08.314Z"
+      }
+    ],
+    "workerFreshness": "CATCHING_UP; no cursor jump or reset",
+    "apiHealth": "ok",
+    "db": "up"
+  },
+  "deployment": {
+    "oldWorkerPausedBeforeMigration": true,
+    "newWorkerWritesPassEventId": true,
+    "apiAndWorkerRestarted": true,
+    "existingDataDeleted": false,
+    "credentialsOrWalletKeysRecorded": false,
+    "blockchainTransactions": 0
+  },
+  "rollback": "Schema8 and worker must be coordinated; old worker alone is incompatible with required event_id. Verified pre-migration backup retained."
+}
