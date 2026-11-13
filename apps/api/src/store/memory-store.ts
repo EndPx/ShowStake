@@ -182,16 +182,14 @@ export class MemoryStore implements Store {
     return [...this.bindings.values()].find((b) => b.id === id) ?? null;
   }
   async listPasses(accountId: string, network: string): Promise<PassRead[]> {
-    const eventIds = new Set(this.events.filter((e) => e.network === network).map((e) => e.id));
-    return this.passes.filter((p) => p.ownerAccount === accountId && eventIds.has(p.eventId));
+    return this.passes.flatMap(p=>{const e=this.events.find(e=>e.id===p.eventId&&e.network===network);return p.ownerAccount===accountId&&e?[{...p,network:e.network,contractId:e.contractId,chainEventId:e.chainEventId,chainRegistrationId:p.chainRegistrationId??null,chainPassId:p.chainPassId??null}]:[];});
   }
   async listClaims(accountId: string, network: string): Promise<ClaimRead[]> {
-    const eventIds = new Set(this.events.filter((e) => e.network === network).map((e) => e.id));
-    return this.claims.filter((c) => c.beneficiaryAccount === accountId && eventIds.has(c.eventId)).map(c=>({...c,bonusAtomic:claimBonusAtomic(c.principalAtomic,c.claimAtomic)}));
+    return this.claims.flatMap(c=>{const e=this.events.find(e=>e.id===c.eventId&&e.network===network);return c.beneficiaryAccount===accountId&&e?[{...c,network:e.network,contractId:e.contractId,chainEventId:e.chainEventId,chainRegistrationId:c.chainRegistrationId??null,chainPassId:c.chainPassId??null,bonusAtomic:claimBonusAtomic(c.principalAtomic,c.claimAtomic)}]:[];});
   }
   async getAttendance(eventId: string, organizerAccount: string, network: string): Promise<AttendanceRead[] | null> {
     const event = this.events.find((e) => e.id === eventId);
-    return event && event.network === network && event.organizerAccount === organizerAccount ? (this.attendance.get(eventId) ?? []) : null;
+    return event && event.network === network && event.organizerAccount === organizerAccount ? (this.attendance.get(eventId) ?? []).map(r=>({...r,network:event.network,contractId:event.contractId,chainEventId:event.chainEventId,chainRegistrationId:r.chainRegistrationId??null,chainPassId:r.chainPassId??null})) : null;
   }
   async getContentAccess(eventId: string, accountId: string, network: string): Promise<ContentResourceRead[] | null> {
     const event = this.events.find((e) => e.id === eventId);

@@ -1284,16 +1284,44 @@ components:
 
     Pass:
       type: object
-      required: [id, eventId, ownerAccount]
+      required:
+        - id
+        - eventId
+        - ownerAccount
+        - network
+        - contractId
+        - chainEventId
+        - chainRegistrationId
+        - chainPassId
       properties:
-        id: { type: string }
-        eventId: { type: string, format: uuid }
-        ownerAccount: { type: string }
-        registrationStatus: { $ref: '#/components/schemas/RegistrationState' }
-        attendanceStatus: { type: boolean }
-        financialStatus: { $ref: '#/components/schemas/PayoutState' }
-        finalized: { type: boolean, description: true when this row came from a finalized chain receipt; false/absent must disable money actions. }
-
+        id:
+          type: string
+        eventId:
+          type: string
+          format: uuid
+        ownerAccount:
+          type: string
+        registrationStatus:
+          $ref: '#/components/schemas/RegistrationState'
+        attendanceStatus:
+          type: boolean
+        financialStatus:
+          $ref: '#/components/schemas/PayoutState'
+        finalized:
+          type: boolean
+          description: true when this row came from a finalized chain receipt; false/absent must disable money actions.
+        network:
+          type: string
+        contractId:
+          type: string
+        chainEventId:
+          type: string
+        chainRegistrationId:
+          type: string
+          nullable: true
+        chainPassId:
+          type: string
+          nullable: true
     FundingAttempt:
       type: object
       required: [id, state, participantAccount, expectedAtomic]
@@ -1443,7 +1471,59 @@ components:
     FundingAttemptEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { $ref: '#/components/schemas/FundingAttempt' } } } ] }
     QuoteEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, required: [provider, expiresAt, expectedOutputAtomic, minimumOutputAtomic], properties: { provider: { type: string }, expiresAt: { type: string, format: date-time }, expectedOutputAtomic: { $ref: '#/components/schemas/Money' }, minimumOutputAtomic: { $ref: '#/components/schemas/Money' } } } } } ] }
     CheckinRequestEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, properties: { id: { type: string, format: uuid }, state: { type: string, enum: [PROPOSED, SUBMITTED, CONFIRMED, FAILED, EXPIRED] } } } } } ] }
-    RosterEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, properties: { items: { type: array, items: { type: object, properties: { participantAccount: { type: string }, attendanceStatus: { type: boolean }, payoutState: { $ref: '#/components/schemas/PayoutState' }, finalized: { type: boolean } } } } } } } } ] }
+    RosterEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/BaseEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      participantAccount:
+                        type: string
+                      attendanceStatus:
+                        type: boolean
+                      payoutState:
+                        $ref: '#/components/schemas/PayoutState'
+                      finalized:
+                        type: boolean
+                      network:
+                        type: string
+                      contractId:
+                        type: string
+                      chainEventId:
+                        type: string
+                      chainRegistrationId:
+                        type: string
+                        nullable: true
+                      chainPassId:
+                        type: string
+                        nullable: true
+                      registrationId:
+                        type: string
+                        format: uuid
+                      registrationStatus:
+                        type: string
+                      observedAt:
+                        type: string
+                        format: date-time
+                    required:
+                      - registrationId
+                      - participantAccount
+                      - attendanceStatus
+                      - payoutState
+                      - observedAt
+                      - finalized
+                      - network
+                      - contractId
+                      - chainEventId
+                      - chainRegistrationId
+                      - chainPassId
     ResultsEnvelope:
       allOf:
         - $ref: '#/components/schemas/BaseEnvelope'
@@ -1498,7 +1578,67 @@ components:
                     status: { type: string, enum: [UNAVAILABLE] }
                     reason: { type: string, enum: [ABI_NOT_FROZEN] }
                 observedAt: { type: string, format: date-time }
-    ClaimListEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, properties: { items: { type: array, items: { type: object, properties: { principalAtomic: { $ref: '#/components/schemas/Money' }, bonusAtomic: { $ref: '#/components/schemas/Money' }, payoutState: { $ref: '#/components/schemas/PayoutState' }, finalized: { type: boolean } } } } } } } } ] }
+    ClaimListEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/BaseEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      principalAtomic:
+                        $ref: '#/components/schemas/Money'
+                      bonusAtomic:
+                        $ref: '#/components/schemas/Money'
+                      payoutState:
+                        $ref: '#/components/schemas/PayoutState'
+                      finalized:
+                        type: boolean
+                      network:
+                        type: string
+                      contractId:
+                        type: string
+                      chainEventId:
+                        type: string
+                      chainRegistrationId:
+                        type: string
+                        nullable: true
+                      chainPassId:
+                        type: string
+                        nullable: true
+                      id:
+                        type: string
+                        format: uuid
+                      eventId:
+                        type: string
+                        format: uuid
+                      beneficiaryAccount:
+                        type: string
+                      claimAtomic:
+                        $ref: '#/components/schemas/Money'
+                      observedAt:
+                        type: string
+                        format: date-time
+                    required:
+                      - id
+                      - eventId
+                      - beneficiaryAccount
+                      - principalAtomic
+                      - bonusAtomic
+                      - claimAtomic
+                      - payoutState
+                      - finalized
+                      - observedAt
+                      - network
+                      - contractId
+                      - chainEventId
+                      - chainRegistrationId
+                      - chainPassId
     ContentEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, properties: { items: { type: array, items: { type: object, required: [id, title], properties: { id: { type: string, pattern: '^[a-f0-9]{64}$' }, title: { type: string }, mimeType: { type: string }, publishedAt: { type: string, format: date-time, nullable: true } } } } } } } } ] }
     DraftEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, required: [id, revision], properties: { id: { type: string, format: uuid }, revision: { type: integer } } } } } ] }
     PublishIntentEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, required: [intentId, targetContract, method, argsHash, expiresAt], properties: { intentId: { type: string, format: uuid }, targetContract: { type: string }, method: { type: string, enum: [create_event] }, argsHash: { type: string }, expiresAt: { type: string, format: date-time } } } } } ] }

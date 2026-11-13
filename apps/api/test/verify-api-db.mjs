@@ -162,6 +162,8 @@ async function run() {
     await client.query('RESET ROLE');
     const found=await store.findPass(EVENT_ID,passId,kp.accountId);
     check('DB_QR_PASS_LOOKUP',found?.chainPassId==='chain-pass' && found.registrationId===registrationId,'projection lookup maps to chain pass',String(found?.chainPassId));
+    const [projectedPass,projectedClaim,projectedAttendance]=await Promise.all([store.listPasses(kp.accountId,'testnet'),store.listClaims(kp.accountId,'testnet'),store.getAttendance(EVENT_ID,'bob.testnet','testnet')]);
+    check('DB_PRIVATE_CHAIN_IDENTITY',projectedPass[0]?.chainPassId==='chain-pass'&&projectedPass[0]?.chainRegistrationId==='chain-reg'&&projectedPass[0]?.contractId==='escrow.showstake.testnet'&&projectedClaim[0]?.chainEventId==='evt-api-1'&&projectedClaim[0]?.chainPassId==='chain-pass'&&projectedClaim[0]?.bonusAtomic==='0'&&projectedAttendance?.[0]?.chainRegistrationId==='chain-reg'&&projectedAttendance?.[0]?.network==='testnet','restricted role reads exact chain tuple and unsigned pre-settlement bonus',JSON.stringify({passes:projectedPass.length,claims:projectedClaim.length}));
     const qrId=newUuid(), nonceHash=sha256Hex('fixture-nonce'), issued=Date.now();
     await store.createQr({id:qrId,registrationId,nonceHash,owner:kp.accountId,issuedAt:issued,expiresAt:issued+60000});
     const base={id:qrId,eventId:EVENT_ID,nonceHash,owner:kp.accountId,organizer:'bob.testnet'};

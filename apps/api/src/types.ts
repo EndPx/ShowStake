@@ -112,6 +112,11 @@ export interface WalletBindingRow {
 export interface PassRead {
   id: string;
   eventId: string;
+  network: string;
+  contractId: string;
+  chainEventId: string;
+  chainRegistrationId: string | null;
+  chainPassId: string | null;
   ownerAccount: string;
   registrationStatus: string;
   attendanceStatus: boolean;
@@ -123,6 +128,11 @@ export interface PassRead {
 export interface ClaimRead {
   id: string;
   eventId: string;
+  network: string;
+  contractId: string;
+  chainEventId: string;
+  chainRegistrationId: string | null;
+  chainPassId: string | null;
   beneficiaryAccount: string;
   principalAtomic: string;
   bonusAtomic: string;
@@ -134,6 +144,11 @@ export interface ClaimRead {
 
 export interface AttendanceRead {
   registrationId: string;
+  network: string;
+  contractId: string;
+  chainEventId: string;
+  chainRegistrationId: string | null;
+  chainPassId: string | null;
   participantAccount: string;
   attendanceStatus: boolean;
   registrationStatus: string;
