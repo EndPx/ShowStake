@@ -1,5 +1,7 @@
 # GitHub-connected frontend deployment
 
+Public URL: **https://showstake.vercel.app**. GitHub-triggered production deployment `dpl_8ga4MjW5vCHyXtU8uhJJxcATZfmc` reached READY from commit `bceca11ae6748ae9db8a2e37920bf2b8e4e4ef6a`. Public HTTP checks passed on home/create/earn/funding and the pinned Wasm; API-unconfigured responses correctly return503. The actual HTTPS browser opened the wallet picker without console errors. This is public FE acceptance, not financial mainnet acceptance.
+
 Vercel project: `showstake`, account/team `muhammad-meidy-noor-al-barrys-projects`, Hobby plan. Git source is `EndPx/ShowStake`, production branch `main`. Deployments must build that Git source, not an upload of the dirty local workspace.
 
 Project settings: Next.js; root `apps/web`; Node `24.x`; install `pnpm install --frozen-lockfile`; build `pnpm run build`; source files outside root enabled for workspace imports. `NEXT_PUBLIC_SHOWSTAKE_NETWORK=mainnet` is plain public configuration for production/preview. No signing credential, database credential, wallet seed or session secret belongs in the frontend environment.

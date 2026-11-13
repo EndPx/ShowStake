@@ -21,7 +21,15 @@
     "walletSigned": false,
     "viewportWidth": 390,
     "documentWidth": 390,
-    "horizontalOverflow": false
+    "horizontalOverflow": false,
+    "hostedUrl": "https://showstake.vercel.app/events/new",
+    "hostedWalletPickerOpened": true,
+    "hostedConsoleErrors": [],
+    "hostedMobile": {
+      "width": 390,
+      "documentWidth": 390,
+      "horizontalOverflow": false
+    }
   },
   "walletPolicy": {
     "factoryContext": "Final-block actual factory code/config, connected organizer, child, nonce, quote and leaf hash; refreshed before submit",
@@ -47,7 +55,12 @@
     "outsideRootSources": true,
     "publicNetwork": "mainnet",
     "hostedApiConfigured": false,
-    "status": "PROJECT_LINKED_AWAITING_GIT_BUILD"
+    "status": "READY",
+    "url": "https://showstake.vercel.app",
+    "deploymentId": "dpl_8ga4MjW5vCHyXtU8uhJJxcATZfmc",
+    "sourceCommit": "bceca11ae6748ae9db8a2e37920bf2b8e4e4ef6a",
+    "gitTriggered": true,
+    "httpEvidence": "docs/evidence/vercel-frontend-public-20261113.json"
   },
   "financialDefaults": {
     "approvedMicrotest": null,

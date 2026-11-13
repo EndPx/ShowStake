@@ -1,0 +1,59 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "Public GitHub-built frontend HTTP only; no wallet signature or funded lifecycle",
+  "observedAt": "2026-11-13T03:31:35.447Z",
+  "url": "https://showstake.vercel.app",
+  "sourceCommit": "bceca11ae6748ae9db8a2e37920bf2b8e4e4ef6a",
+  "deploymentId": "dpl_8ga4MjW5vCHyXtU8uhJJxcATZfmc",
+  "gitRepository": "EndPx/ShowStake",
+  "network": "mainnet",
+  "checks": [
+    {
+      "path": "/",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "path": "/events/new",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "path": "/earn",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "path": "/funding",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "path": "/api/v1/events",
+      "status": 503,
+      "ok": true,
+      "error": "BACKEND_UNAVAILABLE",
+      "stale": true
+    },
+    {
+      "path": "/contracts/showstake-event-escrow-03076c4a.wasm",
+      "status": 200,
+      "bytes": 224939,
+      "sha256": "03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2",
+      "ok": true
+    }
+  ],
+  "hostedApiConfigured": false,
+  "blockchainTransactions": 0,
+  "browser": {
+    "url": "https://showstake.vercel.app/events/new",
+    "walletPickerOpened": true,
+    "signature": false,
+    "consoleErrors": [],
+    "mobile": {
+      "width": 390,
+      "documentWidth": 390,
+      "horizontalOverflow": false
+    }
+  }
+}
