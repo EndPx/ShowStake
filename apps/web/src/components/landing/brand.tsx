@@ -1,6 +1,6 @@
-// Adapted from CommitPass `components/landing/brand.tsx` (baseline
-// 542273df306a7e5887f1dfcabf1383e78930f579). The PNG logo mark is NOT imported
-// (no asset/logo rights); ShowStake uses a native text wordmark instead.
+import Image from "next/image";
+
+// Shared CommitPass brand-link structure with ShowStake's own existing artwork.
 
 export function Brand({
   compact = false,
@@ -15,9 +15,8 @@ export function Brand({
       href={href}
       aria-label="ShowStake home"
     >
-      <span>
-        ShowStake<span className="brand-period">.</span>
-      </span>
+      <Image className="brand-wordmark" src="/brand/showstake-logo-v1.png" width={2172} height={724} alt="ShowStake" sizes={compact ? "140px" : "170px"} priority={!compact} />
+      <img className="brand-symbol" src="/brand/showstake-mark.svg" width={36} height={36} alt="" aria-hidden="true" />
     </a>
   );
 }

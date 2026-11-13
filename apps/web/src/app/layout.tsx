@@ -7,6 +7,10 @@ const title = "ShowStake — Stake your spot. Show up.";
 
 export const metadata: Metadata = {
   title,
+  icons: {
+    icon: { url: "/brand/showstake-mark.svg", type: "image/svg+xml" },
+    shortcut: "/brand/showstake-mark.svg",
+  },
   description:
     "ShowStake is a NEAR-centered event commitment product: fund a NEAR account, commit a fixed deposit, get an account-bound pass, then check in, settle and claim.",
   openGraph: {

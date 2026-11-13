@@ -158,6 +158,14 @@ svg {
   object-fit: contain;
   margin-inline: -5px -3px;
 }
+.brand > .brand-wordmark { display: block; width: 170px; height: auto; }
+.brand > .brand-symbol { display: none; }
+.brand.brand--compact > .brand-wordmark { width: 140px; }
+@media (max-width: 480px) {
+  .workspace-header .brand > .brand-wordmark { display: none; }
+  .workspace-header .brand > .brand-symbol { display: block; }
+  .site-header .brand > .brand-wordmark { width: 145px; }
+}
 .brand-period {
   color: var(--accent);
 }

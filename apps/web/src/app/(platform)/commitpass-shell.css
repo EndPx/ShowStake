@@ -68,6 +68,9 @@
   .platform--commitpass .workspace-header nav a { font-size: 13px; }
   .platform--commitpass .workspace-header nav svg { display: none; }
   .platform--commitpass .workspace-header-actions { gap: 14px; }
+  .platform--commitpass .workspace-header .brand > .brand-wordmark { width: 145px; }
+  .platform--commitpass .workspace-header-actions .wallet-connect-label { display: none; }
+  .platform--commitpass .workspace-header-actions .wallet-connect-area .button { padding: 0; width: 40px; min-height: 40px; }
   .platform--commitpass .workspace-create-link > span { display: none; }
   .platform--commitpass .workspace-create-link { width: 36px; justify-content: center; }
   .platform--commitpass .workspace-header > .brand > span { font-size: 23px; }

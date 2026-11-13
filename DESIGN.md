@@ -17,6 +17,8 @@ The source minimal theme adds three broad radial washes (sky at the top,
 accent at bottom-left, mist at right), using `page-theme.tsx`'s 16%, 14%,
 and 6% color mixtures with the canvas. These are app surfaces, not new artwork.
 Typography follows the source DM Sans / DM Serif Display with system fallbacks.
+Brand links use the existing transparent ShowStake wordmark; the same ticket
+and check identity is provided as a compact vector mark for mobile and favicon.
 Reuse the original CSS measurements and shared controls instead of creating a
 second theme. The document owns scrolling; the header is sticky; the create
 editor has a cover aside and a shrinking main column, stacked on mobile.

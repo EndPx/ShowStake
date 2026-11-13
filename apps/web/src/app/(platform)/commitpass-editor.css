@@ -8,7 +8,7 @@
 .commitpass-create .event-name-input::placeholder { color: #aaa9a1; }
 .commitpass-create .event-cover { border-radius: 14px; overflow: hidden; }
 .commitpass-create .cover-note { color: var(--muted); font-size: 12px; line-height: 1.5; }
-.commitpass-create .create-schedule { padding: 16px; border: 1px solid var(--line); border-radius: 12px; }
+.commitpass-create .create-schedule { display: block; padding: 16px; border: 1px solid var(--line); border-radius: 12px; }
 .commitpass-create .create-date-rows { display: grid; gap: 12px; }
 .commitpass-create .create-date-row { display: grid; grid-template-columns: 10px minmax(135px, 1fr) minmax(0, 1.3fr); gap: 10px; align-items: center; font-size: 13px; }
 .commitpass-create .schedule-dot { width: 9px; height: 9px; border: 2px solid var(--accent); border-radius: 50%; }

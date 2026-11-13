@@ -11,8 +11,8 @@
   },
   "license": "No tracked root LICENSE/COPYING/NOTICE at the baseline. Human expressly authorizes reuse for ShowStake (D022); this is not a blanket third-party permissive grant and no MIT/Apache term is invented. Dependency licenses apply separately (see DESIGN.md dependency/license inventory).",
   "assets": {
-    "imported": "none (no logo, font, generated image or remote media binaries/URLs)",
-    "logo": "text wordmark (ShowStake), no CommitPass/Keyfolio art",
+    "imported": "ShowStake-owned logo enabled; CommitPass logo/media not imported",
+    "logo": "Existing ShowStake transparent wordmark showstake-logo-v1.png (previously generated project asset); vector ticket/check mark follows the same ShowStake identity for mobile and favicon. No CommitPass logo.",
     "media": "native CSS poster artwork + event-cover-art; Cloudinary manifest brand-media.json and lib/media.ts NOT copied",
     "fonts": "CommitPass DM Sans and DM Serif Display via next/font/google, build-time bundled and scoped to app layout; landing unchanged"
   },
@@ -268,6 +268,17 @@
       "USDC registration, pass issuance, attendance, settlement, claim and Earn not enabled by the frozen mainnet release",
       "Cover is local presentation artwork, not persisted by the frozen event ABI",
       "No mainnet transaction was signed for this UI adaptation"
-    ]
+    ],
+    "logo": {
+      "wordmark": "apps/web/public/brand/showstake-logo-v1.png",
+      "sha256": "9f82f2104b85241237a5f1bd0b8cb0dce7f02211e85d3283dc30c9121edde106",
+      "mark": "apps/web/public/brand/showstake-mark.svg",
+      "uses": [
+        "header",
+        "footer",
+        "landing brand links",
+        "favicon"
+      ]
+    }
   }
 }
