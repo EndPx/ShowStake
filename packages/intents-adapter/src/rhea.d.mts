@@ -1,0 +1,15 @@
+export const RHEA_MAINNET: Readonly<{network:'mainnet';provider:string;codeHash:string;tokenCodeHash:string;usdc:string;decimals:6;extraDecimals:12}>;
+export type Position = {shares:string;internalBalance:string;tokenAtomicsFloor:string;internalRemainder:string};
+export type Asset = {extraDecimals:12;canDeposit:boolean;canWithdraw:boolean;suppliedShares:string;suppliedBalance:string;borrowedBalance:string};
+export type RheaSnapshot = {status:'BLOCKED'|'READY_FOR_REVIEW';acceptance:'TECH_NOT_ACCEPTED';blockHash:string;blockHeight:number;blockTimestampMs:number;historical:boolean;isolatedPositionsStatus:'ABSENT_ACCOUNT'|'EMPTY'|'NONEMPTY'|'UNSUPPORTED_SHAPE';treasury:string;providerCodeHash:string;tokenCodeHash:string;treasuryCodeHash:string;metadata:unknown;asset:Asset;position:Position|null;providerStorage:unknown;ftStorage:unknown;storageBounds:unknown;ftStorageBounds:unknown;providerConfig:unknown;nativeBalance:string;usdcBalance:string;gates:string[]};
+export type RheaReceiptProof = {readonly transaction:any;readonly txHash:string;readonly treasury:string;readonly blockHeights:readonly number[];readonly finalBlockHash:string;readonly finalBlockHeight:number};
+export type ReadRpc = (method:string,params:Record<string,unknown>)=>Promise<any>;
+export type UnsignedCall = {signerId:string;receiverId:string;methodName:string;args:Record<string,unknown>;depositYocto:'1';unsigned:true};
+export function parseAsset(value:unknown): Asset;
+export function parseAccountPosition(value:unknown,treasury:string): Position;
+export function inspectRhea(readRpc:ReadRpc,treasury:string,options?:{atBlockHash?:string}):Promise<RheaSnapshot>;
+export function inspectFinalReceipt(readRpc:ReadRpc,txHash:string,treasury:string):Promise<RheaReceiptProof>;
+export function supplyPlan(treasury:string,amount:string):UnsignedCall;
+export function withdrawPlan(treasury:string,amount?:string|null):UnsignedCall;
+export function verifySupplyReceipt(input:{transaction:unknown;receiptProof:RheaReceiptProof;before:RheaSnapshot;after:RheaSnapshot;treasury:string;amount:string;expectedTxHash:string}):{status:'RECEIPT_MATCH_CANDIDATE';amount:string};
+export function verifyWithdrawReceipt(input:{transaction:unknown;receiptProof:RheaReceiptProof;before:RheaSnapshot;after:RheaSnapshot;treasury:string;expectedTxHash:string}):{status:'RECEIPT_MATCH_CANDIDATE';amount:string};

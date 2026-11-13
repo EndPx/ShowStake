@@ -37,7 +37,7 @@ export interface FtTransferCall {
 }
 
 export function buildCommitMessage(eventId: string, commitmentId: string): CommitMessage {
-  if (!isSafeEventId(eventId)) throw new Error("event_id must be 1..=64 safe ASCII characters");
+  if (!isSafeEventId(eventId)) throw new Error("event_id must be 1..=128 safe ASCII characters");
   if (!COMMITMENT_ID_RE.test(commitmentId)) {
     throw new Error("commitment_id must be 1..=64 of [A-Za-z0-9_-]");
   }
@@ -83,7 +83,7 @@ export function buildFtTransferCall(params: {
 }
 
 function isSafeEventId(value: string): boolean {
-  return typeof value === "string" && /^[A-Za-z0-9._-]{1,64}$/.test(value);
+  return typeof value === "string" && /^[A-Za-z0-9._-]{1,128}$/.test(value);
 }
 
 /**

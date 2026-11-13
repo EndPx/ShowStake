@@ -54,4 +54,9 @@ export function splitAtomic(units: string, decimals?: number): { whole: string; 
   const whole = padded.slice(0, padded.length - decimals) || "0";
   const fraction = padded.slice(padded.length - decimals);
   return { whole, fraction };
+}/** Parse a human decimal into exact canonical atomic units, or null if invalid. */
+export function parseUnits(value:string,decimals:number):string|null {
+  if(!Number.isInteger(decimals)||decimals<0||decimals>77||! /^(0|[1-9][0-9]*)(\.[0-9]+)?$/.test(value))return null;
+  const [whole,fraction=""]=value.split(".");if(fraction.length>decimals)return null;
+  const atomic=(whole!+fraction.padEnd(decimals,"0")).replace(/^0+(?=\d)/,"");return isAtomicString(atomic)?atomic:null;
 }

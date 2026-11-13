@@ -1,0 +1,99 @@
+{
+  "documents": [
+    {
+      "accepted_principal": "400000000",
+      "after_create": {
+        "amount": "34998193165248696600000000",
+        "code_hash": "CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os",
+        "global_contract_account_id": null,
+        "global_contract_hash": null,
+        "locked": "0",
+        "storage_usage": 234680,
+        "version": "V2"
+      },
+      "initial_account": {
+        "amount": "29998193165248696600000000",
+        "code_hash": "CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os",
+        "global_contract_account_id": null,
+        "global_contract_hash": null,
+        "locked": "0",
+        "storage_usage": 225396,
+        "version": "V2"
+      },
+      "samples": [
+        {
+          "accepted_principal": "2000000",
+          "count": 1,
+          "gas": 8426795469908,
+          "storage_bytes": 236948
+        },
+        {
+          "accepted_principal": "10000000",
+          "count": 5,
+          "gas": 8499758760932,
+          "storage_bytes": 246020
+        },
+        {
+          "accepted_principal": "400000000",
+          "count": 200,
+          "gas": 8539168583450,
+          "storage_bytes": 690890
+        }
+      ]
+    },
+    {
+      "after_create": {
+        "amount": "34998193165248696600000000",
+        "code_hash": "CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os",
+        "global_contract_account_id": null,
+        "global_contract_hash": null,
+        "locked": "0",
+        "storage_usage": 234680,
+        "version": "V2"
+      },
+      "finalize_gas": 135160925007347,
+      "initial_account": {
+        "amount": "29998193165248696600000000",
+        "code_hash": "CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os",
+        "global_contract_account_id": null,
+        "global_contract_hash": null,
+        "locked": "0",
+        "storage_usage": 225396,
+        "version": "V2"
+      },
+      "metadata_bytes": {
+        "account_id": 64,
+        "commitment_id": 128,
+        "event_id": 128,
+        "location": 512,
+        "rules_text": 8192,
+        "title": 256
+      },
+      "redeem_gas": 19164989728802,
+      "samples": [
+        {
+          "accepted_principal": "2000000",
+          "count": 1,
+          "gas": 8426795469908,
+          "storage_bytes": 236948
+        },
+        {
+          "accepted_principal": "10000000",
+          "count": 5,
+          "gas": 8499758760932,
+          "storage_bytes": 246020
+        },
+        {
+          "accepted_principal": "400000000",
+          "count": 200,
+          "gas": 8539168583450,
+          "storage_bytes": 690890
+        }
+      ],
+      "scope": "sandbox; patched account bootstrap only, no financial state patch; MockEarn zero yield",
+      "settle_gas": 112893114938299,
+      "settle_success": true,
+      "status": "PASS_LOCAL"
+    }
+  ]
+}

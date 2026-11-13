@@ -1,0 +1,3 @@
+﻿import assert from "node:assert/strict";
+import {parseUnits,formatUnits} from "./money.ts";
+assert.equal(parseUnits("2",6),"2000000");assert.equal(parseUnits("0.00125",24),"1250000000000000000000");assert.equal(parseUnits("1",6),"1000000");assert.equal(parseUnits("0.000001",6),"1");assert.equal(parseUnits("0.0000001",6),null);assert.equal(parseUnits("1e3",6),null);assert.equal(parseUnits("-1",6),null);assert.equal(parseUnits("01",6),null);assert.equal(parseUnits("340282366920938463463374607431768211456",0),null);assert.equal(parseUnits("340282366920938463463374607431768211455",0),"340282366920938463463374607431768211455");assert.equal(formatUnits("1250000000000000000000",24,"NEAR"),"0.00125 NEAR");console.log("PASS_LOCAL exact human money input");

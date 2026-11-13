@@ -1,0 +1,34 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "Local HTTP API plus real PostgreSQL, actual NEP-413 offchain keychain signature and official mainnet access-key verification. No blockchain transaction, no native/FT spend, no browser-wallet claim.",
+  "accountId": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5",
+  "network": "mainnet",
+  "publicKey": "ed25519:FqJWmaZmxLJVyGFfS8uEFP1foxCeZQkE1Rgk1FSMCiDa",
+  "messageHash": "cd108e29e2201fab953dd09353432cf58b771c0608ef9b5f72bef664150a8f77",
+  "checks": [
+    {
+      "name": "real_signature_and_rpc_key",
+      "status": 200
+    },
+    {
+      "name": "verified_mainnet_session",
+      "status": 200
+    },
+    {
+      "name": "replayed_nonce_denied",
+      "status": 401
+    },
+    {
+      "name": "wallet_binding_mismatch_denied",
+      "status": 401
+    },
+    {
+      "name": "logout_and_revocation",
+      "logout": 200,
+      "revoked": 401
+    }
+  ],
+  "signatureRecorded": false,
+  "cookieRecorded": false,
+  "browserWallet": "NOT_RUN"
+}

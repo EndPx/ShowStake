@@ -1,12 +1,21 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ACTIONS, RelayerError, RelayerPlanner, STATES } from '../index.mjs';
+import { ACTIONS, RelayerError, RelayerPlanner, STATES, planCandidateAction } from '../index.mjs';
 
 const provider = {
   providerName: 'Rhea local mock', verified: true, network: 'near-testnet', usdcAccount: 'usdc.mock',
   lendingAccount: 'rhea.mock', codeHash: 'sha256:local-only', abiRevision: 'local-mock-v1', receiptAsset: 'receipt.mock',
   methods: { supply: 'mock_supply', redeem: 'mock_redeem' }
 };
+test('candidate planner is a pinned, no-broadcast proposal with pause and lifecycle gates', () => {
+ const s={contractId:'showstake-mainnet-escrow-endpx-2026.near',codeHash:'CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os',policyVersion:'showstake-native-usdc-rhea-review/1',finalized:true,stale:false,control:{paused:true,principal_cap:'100'},event:{event_id:'e',phase:'RegistrationClosed',earn_state:'NotStarted',accepted_principal:'100',reg_close:10,checkin_close:30,finalize_deadline:40}};
+ assert.equal(planCandidateAction(s,20),null);
+ assert.deepEqual(planCandidateAction({...s,control:{...s.control,paused:false}},20),{target:s.contractId,method:'trigger_earn_supply',args:{},dryRun:true,broadcasted:false,providerStatus:'UNVERIFIED'});
+ assert.equal(planCandidateAction(s,40).method,'activate_timeout_refund');
+ assert.equal(planCandidateAction({...s,event:{...s.event,phase:'RefundOnly',earn_state:'Supplied'}},40).method,'trigger_earn_redeem');
+ assert.throws(()=>planCandidateAction({...s,stale:true},20),/fresh finalized/);
+ assert.throws(()=>planCandidateAction({...s,control:{paused:false,principal_cap:'01'}},20),/canonical/);
+});
 function planner(options = {}) { return new RelayerPlanner({ provider, baseBackoffMs: 10, maxBackoffMs: 100, ...options }); }
 function event(p, id = 'event-a', extra = {}) { return p.registerEvent({ eventId: id, contractId: `escrow.${id}`, registrationCloseMs: 10, startTimeMs: 20, endTimeMs: 30, principalAtomic: '1000', ...extra }); }
 function receipt(proposal, status = 'success', extra = {}) { return { eventId: proposal.eventId, action: proposal.action, attempt: proposal.attempt, idempotencyKey: proposal.idempotencyKey, status, observedAtMs: 0, ...(proposal.action === ACTIONS.START_YIELD ? { amountAtomic: '1000' } : {}), ...(proposal.action === ACTIONS.FINISH_REDEEM ? { amountAtomic: '1000' } : {}), ...extra }; }

@@ -1,0 +1,19 @@
+﻿import { resolveEventTarget } from "./event-target.ts";
+import { MANUAL_TARGET } from "./manual-target.ts";
+import type { AcceptedMainnetRelease } from "./mainnet-actions.ts";
+const atom=(v:unknown):v is string=>typeof v==="string"&&/^(0|[1-9][0-9]*)$/.test(v)&&BigInt(v)<2n**128n;
+export async function participantDepositPreflight(release: AcceptedMainnetRelease | null, child:string,eventId:string,account:string,rpcUrl:string,fetchImpl:typeof fetch=fetch) {
+ const resolved=await resolveEventTarget(release,child,eventId,rpcUrl,fetchImpl);const token=child===MANUAL_TARGET.contract?MANUAL_TARGET.canonicalFt:release?.canonicalFt;if(!token)throw Error("Release unavailable");const block=resolved.blockHash;
+ async function rpc(method:string,params:unknown){const response=await fetchImpl(rpcUrl,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:"deposit-preflight",method,params}),cache:"no-store"});if(!response.ok)throw Error("RPC unavailable");const body=await response.json();if(body.error||!body.result)throw Error("RPC unavailable");return body.result;}
+ async function view(target:string,method:string,args:unknown){const result=await rpc("query",{request_type:"call_function",block_id:block,account_id:target,method_name:method,args_base64:btoa(JSON.stringify(args))});if(result.block_hash!==block||!Array.isArray(result.result))throw Error("Stale contract view");return JSON.parse(new TextDecoder().decode(Uint8Array.from(result.result)));}
+ const [time,balance,participantStorage,escrowStorage,bounds,native,metadata,protocol]=await Promise.all([view(child,"get_block_timestamp_ms",{}),view(token,"ft_balance_of",{account_id:account}),view(token,"storage_balance_of",{account_id:account}),view(token,"storage_balance_of",{account_id:child}),view(token,"storage_balance_bounds",{}),view(child,"get_storage_state",{}),view(token,"ft_metadata",{}),rpc("EXPERIMENTAL_protocol_config",{block_id:block})]);
+ const event=resolved.event;const price=protocol.runtime_config?.storage_amount_per_byte;
+ if(!Number.isSafeInteger(time)||Date.now()-time>120000||time>Date.now()+30000||event.phase!=="RegistrationOpen"||typeof event.reg_open!=="number"||time<event.reg_open||time>=event.reg_close||!Number.isInteger(event.capacity)||!Number.isInteger(event.total_registrations)||Number(event.total_registrations)>=Number(event.capacity)||!atom(event.deposit)||event.deposit==="0"||!atom(balance)||!bounds||!atom(bounds.min)||(bounds.max!==null&&!atom(bounds.max))||!native||!atom(native.account_balance_yocto)||!atom(native.storage_cost_yocto)||!atom(price)||metadata?.decimals!==6)throw Error("Event, time, balances, metadata or storage data unavailable");
+ if(escrowStorage===null||!atom(escrowStorage.total)||BigInt(escrowStorage.total)<BigInt(bounds.min))throw Error("Escrow token storage is not registered");
+ const needed=2304n*BigInt(price),available=BigInt(native.account_balance_yocto)-BigInt(native.storage_cost_yocto);if(available<needed)throw Error("Organizer must fund escrow storage before registration");
+ const count=Number(event.total_registrations);for(let from=0;from<count;from+=50){const rows=await view(child,"list_event_registrations",{event_id:eventId,from,limit:50});if(!Array.isArray(rows)||rows.length!==Math.min(50,count-from))throw Error("Registration list incomplete");if(rows.some((r:any)=>r?.participant===account))throw Error("This wallet is already registered");}
+ if(!atom(balance)||BigInt(balance)<BigInt(event.deposit))throw Error("Insufficient USDC balance");
+ if(participantStorage!==null&&(!atom(participantStorage.total)||BigInt(participantStorage.total)<BigInt(bounds.min)))throw Error("Invalid participant token storage");
+ if(Date.now()-resolved.blockTimestampMs>30000)throw Error("Final block stale");
+ return {resolved,deposit:event.deposit,participantStorageRequired:participantStorage===null?bounds.min:"0",blockHash:block};
+}

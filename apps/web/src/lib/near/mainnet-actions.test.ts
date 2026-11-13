@@ -1,0 +1,15 @@
+import assert from "node:assert/strict";
+import { ACCEPTED_MAINNET_RELEASE, acceptedBinding, lifecycleAction, publishBatch, storageAction } from "./mainnet-actions.ts";
+import { REVIEWED_LEAF_SHA256 } from "./factory.ts";
+const release = { factory: "factory.near", factoryCodeSha256: "a".repeat(64), factoryCodeHash:"hash", canonicalFt: "usdc.near", policy: "policy/1", provider: "provider.near", providerKind: "RHEA_MAINNET" as const, codeSha256: REVIEWED_LEAF_SHA256 } as const;
+const binding = { network: "mainnet" as const, organizer: "alice.near", child: "child.factory.near", canonicalFt: release.canonicalFt, policy: release.policy, provider: release.provider, providerKind: release.providerKind, codeSha256: REVIEWED_LEAF_SHA256 } as const;
+assert.equal(acceptedBinding(binding, ACCEPTED_MAINNET_RELEASE), false);
+assert.equal(acceptedBinding(binding, release), true);
+assert.equal(acceptedBinding({ ...binding, child: "elsewhere.near" }, release), false);
+const batch = publishBatch("20", { deposit: "10", capacity: 2 });
+assert.deepEqual(batch.map(x => x.type === "FunctionCall" ? x.params.methodName : "Transfer"), ["configure_rhea_cap", "set_rhea_paused", "create_event"]);
+assert.throws(() => publishBatch("19", { deposit: "10", capacity: 2 }));
+assert.deepEqual(lifecycleAction("mark_attendance", "reg", false).params.args, { registration_id: "reg", attended: false });
+assert.equal(lifecycleAction("claim", "reg").params.deposit, "1");
+assert.throws(() => storageAction("ft", "0"));
+console.log("PASS_LOCAL gated action preparation");

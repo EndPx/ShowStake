@@ -52,6 +52,7 @@ export function PlatformShell({ children }: { children: ReactNode }) {
         <Brand compact />
         <div className="workspace-footer-meta">
           <span>ShowStake · NEAR-centered event commitments</span>
+          <nav aria-label="More pages"><Link href="/funding">Funding</Link>{" / "}<Link href="/earn">Earn</Link></nav>
         </div>
       </footer>
     </div>

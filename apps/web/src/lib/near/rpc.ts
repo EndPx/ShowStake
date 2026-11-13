@@ -210,4 +210,18 @@ export async function transactionStatus(
   } catch (error) {
     return { ok: false, code: "RPC_UNAVAILABLE", message: String((error as Error)?.message ?? error) };
   }
+}export async function finalBlockViews(contractId: string, methods: Array<string | { method: string; args: unknown }>, rpcUrl: string, fetchImpl: typeof fetch = fetch, pinned?: { blockHash: string; blockHeight: number; blockTimestampMs: number }): Promise<RpcResult<{ account: ViewAccount; views: unknown[] }>> {
+  try {
+    let hash: string | undefined = pinned?.blockHash, height: number | undefined = pinned?.blockHeight;
+    if (pinned) { if (!hash || !Number.isSafeInteger(height) || !Number.isSafeInteger(pinned.blockTimestampMs) || Date.now() - pinned.blockTimestampMs > 30000 || pinned.blockTimestampMs > Date.now() + 5000) throw Error("Pinned final block is stale"); }
+    else { const block = await post(rpcUrl, "block", { finality: "final" }, fetchImpl) as { result?: { header?: { hash?: string; height?: number } }; error?: unknown }; hash = block.result?.header?.hash; height = block.result?.header?.height; if (block.error || !hash || !Number.isSafeInteger(height)) throw Error("Final block unavailable"); }
+    const calls = await Promise.all([
+      post(rpcUrl, "query", { request_type: "view_account", block_id: hash, account_id: contractId }, fetchImpl),
+      ...methods.map(entry => post(rpcUrl, "query", { request_type: "call_function", block_id: hash, account_id: contractId, method_name: typeof entry === "string" ? entry : entry.method, args_base64: encodeUtf8Base64(typeof entry === "string" ? {} : entry.args) }, fetchImpl)),
+    ]) as Array<{ result?: { block_hash?: string; result?: number[] } & Partial<ViewAccount>; error?: unknown }>;
+    if (pinned && Date.now() - pinned.blockTimestampMs > 30000) throw Error("Pinned final block is stale");
+    if (calls.some(x => x.error || !x.result || x.result.block_hash !== hash) || !calls[0]?.result?.code_hash) throw Error("Inconsistent final-block views");
+    const views = calls.slice(1).map(x => { if (!Array.isArray(x.result?.result)) throw Error("Invalid contract view"); return JSON.parse(new TextDecoder().decode(Uint8Array.from(x.result.result))); });
+    return { ok: true, value: { account: calls[0]!.result as ViewAccount, views }, blockHash: hash, blockHeight: height!, observedAt: new Date().toISOString() };
+  } catch (error) { return { ok: false, code: "RPC_UNAVAILABLE", message: String((error as Error)?.message ?? error) }; }
 }

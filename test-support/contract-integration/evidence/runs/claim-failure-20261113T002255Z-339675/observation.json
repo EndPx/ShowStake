@@ -1,0 +1,332 @@
+{
+  "documents": [
+    {
+      "after_failure": {
+        "amount": "2000000",
+        "attendance": "Attended",
+        "attendance_status": "Attended",
+        "beneficiary": "user1.testnet",
+        "claim": "Claimable",
+        "claim_amount": "5000000",
+        "claim_attempt": 1,
+        "commitment_id": "c1",
+        "participant": "user1.testnet",
+        "pass_id": "five-pass-1",
+        "registration_id": "five-reg-1",
+        "registration_status": "Active",
+        "sequence": 1
+      },
+      "attendee_1": "5000000",
+      "attendee_3": "5000000",
+      "cancel_before_supply": {
+        "receipts": [
+          {
+            "executor": "cancel.testnet",
+            "failure": false,
+            "logs": [],
+            "receipt": "FjNQmisQaBmsDf39m9h6sRyzW8smYn1MUu76CkbtFkF2",
+            "success": true
+          },
+          {
+            "executor": "usdc.testnet",
+            "failure": false,
+            "logs": [
+              "EVENT_JSON:{\"standard\":\"nep141\",\"version\":\"1.0.0\",\"event\":\"ft_transfer\",\"data\":[{\"old_owner_id\":\"cancel.testnet\",\"new_owner_id\":\"user0.testnet\",\"amount\":\"2000000\",\"memo\":\"cancel-reg-0:1\"}]}"
+            ],
+            "receipt": "HABPYED1d69fMdf7CMbDRD5UFZSmbpBVX2FSHCVfWLKQ",
+            "success": true
+          },
+          {
+            "executor": "user0.testnet",
+            "failure": false,
+            "logs": [],
+            "receipt": "5RL8hewUndoTwDK5Ey2g2HUtRzfymFAPLzQX6bEkXTq1",
+            "success": true
+          },
+          {
+            "executor": "cancel.testnet",
+            "failure": false,
+            "logs": [],
+            "receipt": "A2Lxdp6CADckLE4kBVpfJAiHQc4unWxTJzASXn3T4zQU",
+            "success": true
+          },
+          {
+            "executor": "user0.testnet",
+            "failure": false,
+            "logs": [],
+            "receipt": "CcRLF9bDEsvwn679kR8GmNrPeeLAuDL3kptatZCXWn3d",
+            "success": true
+          },
+          {
+            "executor": "user0.testnet",
+            "failure": false,
+            "logs": [],
+            "receipt": "FXCYvLpAWrLDNkYirdZUkLdTPYyHknL98GRJBoEmUj5K",
+            "success": true
+          }
+        ],
+        "returned_atomics": "2000000",
+        "status": "PASS_LOCAL"
+      },
+      "claims_before": [
+        {
+          "amount": "2000000",
+          "attendance": "NoShow",
+          "attendance_status": "NoShow",
+          "beneficiary": "user0.testnet",
+          "claim": "Claimable",
+          "claim_amount": "0",
+          "claim_attempt": 0,
+          "commitment_id": "c0",
+          "participant": "user0.testnet",
+          "pass_id": "five-pass-0",
+          "registration_id": "five-reg-0",
+          "registration_status": "Active",
+          "sequence": 0
+        },
+        {
+          "amount": "2000000",
+          "attendance": "Attended",
+          "attendance_status": "Attended",
+          "beneficiary": "user1.testnet",
+          "claim": "Claimable",
+          "claim_amount": "5000000",
+          "claim_attempt": 0,
+          "commitment_id": "c1",
+          "participant": "user1.testnet",
+          "pass_id": "five-pass-1",
+          "registration_id": "five-reg-1",
+          "registration_status": "Active",
+          "sequence": 1
+        },
+        {
+          "amount": "2000000",
+          "attendance": "NoShow",
+          "attendance_status": "NoShow",
+          "beneficiary": "user2.testnet",
+          "claim": "Claimable",
+          "claim_amount": "0",
+          "claim_attempt": 0,
+          "commitment_id": "c2",
+          "participant": "user2.testnet",
+          "pass_id": "five-pass-2",
+          "registration_id": "five-reg-2",
+          "registration_status": "Active",
+          "sequence": 2
+        },
+        {
+          "amount": "2000000",
+          "attendance": "Attended",
+          "attendance_status": "Attended",
+          "beneficiary": "user3.testnet",
+          "claim": "Claimable",
+          "claim_amount": "5000000",
+          "claim_attempt": 0,
+          "commitment_id": "c3",
+          "participant": "user3.testnet",
+          "pass_id": "five-pass-3",
+          "registration_id": "five-reg-3",
+          "registration_status": "Active",
+          "sequence": 3
+        },
+        {
+          "amount": "2000000",
+          "attendance": "NoShow",
+          "attendance_status": "NoShow",
+          "beneficiary": "user4.testnet",
+          "claim": "Claimable",
+          "claim_amount": "0",
+          "claim_attempt": 0,
+          "commitment_id": "c4",
+          "participant": "user4.testnet",
+          "pass_id": "five-pass-4",
+          "registration_id": "five-reg-4",
+          "registration_status": "Active",
+          "sequence": 4
+        }
+      ],
+      "duplicate_denied": true,
+      "escrow_balance": "0",
+      "failed_receipts": [
+        {
+          "executor": "escrow.testnet",
+          "failure": false,
+          "logs": [],
+          "receipt": "6SeUufqiryt2utYMi4koR6iZQm9f2dwPpbqZx8gEqKoP",
+          "success": true
+        },
+        {
+          "executor": "usdc.testnet",
+          "failure": true,
+          "logs": [],
+          "receipt": "De5ZV37umrFbYBpVN1gJTdWqqTrbXDLsdeC2RZqxyxJG",
+          "success": false
+        },
+        {
+          "executor": "escrow.testnet",
+          "failure": false,
+          "logs": [],
+          "receipt": "GG4RzibRb5H9K7BCkModZjxhofHy5o5RKApk8paUbmTu",
+          "success": true
+        },
+        {
+          "executor": "user1.testnet",
+          "failure": false,
+          "logs": [],
+          "receipt": "2WxFaWYuuJzhPVzXGTyfD6ma5PWpR1dyccVDKG7QcVnT",
+          "success": true
+        },
+        {
+          "executor": "escrow.testnet",
+          "failure": false,
+          "logs": [],
+          "receipt": "5mR25YASxqCkt4QNchMLFNUsiTB4Pxq33VJyk4D4zQLZ",
+          "success": true
+        },
+        {
+          "executor": "user1.testnet",
+          "failure": false,
+          "logs": [],
+          "receipt": "E9By25cNW41fP3TSHRWj3sANAq9FLFVQgRYwi29kTecz",
+          "success": true
+        },
+        {
+          "executor": "user1.testnet",
+          "failure": false,
+          "logs": [],
+          "receipt": "FSPjuSDjQuey4MZB1Ns7axwVEZrEZf9t4jv7wTHGSAjS",
+          "success": true
+        }
+      ],
+      "failed_top_success": true,
+      "final_event": {
+        "accepted_principal": "10000000",
+        "active_registrations": 5,
+        "cancel_cutoff": 1794529451936,
+        "canonical_ft": "usdc.testnet",
+        "capacity": 5,
+        "checkin_close": 1794529751936,
+        "checkin_open": 1794529451936,
+        "created_at": 1794529392310,
+        "deposit": "2000000",
+        "earn_action_completed": false,
+        "earn_attempt": 2,
+        "earn_state": "Redeemed",
+        "event_id": "five",
+        "finalize_deadline": 1794529811936,
+        "location": "Local",
+        "organizer": "organizer.testnet",
+        "phase": "Settled",
+        "policy_version": "showstake-native-usdc-event/1",
+        "realized_yield": "0",
+        "redeemed_amount": "10000000",
+        "reg_close": 1794529451936,
+        "reg_open": 1794529391936,
+        "rules_hash": "",
+        "rules_text": "five participants",
+        "title": "Five",
+        "total_registrations": 5,
+        "withdrawn_registrations": 0,
+        "yield_distributed": "0"
+      },
+      "foreign_callback_denied": true,
+      "noshow_denied": true,
+      "other_receipts": [
+        {
+          "executor": "escrow.testnet",
+          "failure": false,
+          "logs": [],
+          "receipt": "12nERoMYS42C51vz4D8zyDUAVmwpQ7Kh6aWnEtRxHSLi",
+          "success": true
+        },
+        {
+          "executor": "usdc.testnet",
+          "failure": false,
+          "logs": [
+            "EVENT_JSON:{\"standard\":\"nep141\",\"version\":\"1.0.0\",\"event\":\"ft_transfer\",\"data\":[{\"old_owner_id\":\"escrow.testnet\",\"new_owner_id\":\"user3.testnet\",\"amount\":\"5000000\",\"memo\":\"five-reg-3:1\"}]}"
+          ],
+          "receipt": "Eo7HEcnBMudWftVaY6NfXpUEU2z49wPdogsxKk7W1FBA",
+          "success": true
+        },
+        {
+          "executor": "user3.testnet",
+          "failure": false,
+          "logs": [],
+          "receipt": "6YTNgXWLd3Ltyzs9VpcqSYGPdYRH2XexmWJm83bsw1iF",
+          "success": true
+        },
+        {
+          "executor": "escrow.testnet",
+          "failure": false,
+          "logs": [],
+          "receipt": "DnviEyry2QLLvPdapUUPnEC5o2qKaafodDLnaMpx16ii",
+          "success": true
+        },
+        {
+          "executor": "user3.testnet",
+          "failure": false,
+          "logs": [],
+          "receipt": "C95LTU48m7JAMGvHTNop6SzSGN91e3No53CmDxawpH2W",
+          "success": true
+        },
+        {
+          "executor": "user3.testnet",
+          "failure": false,
+          "logs": [],
+          "receipt": "HRukWDgsfsgj8RNYH5up2nU79SMBA56Jx3iSa4FedynA",
+          "success": true
+        }
+      ],
+      "provider_position": "0",
+      "retry_receipts": [
+        {
+          "executor": "escrow.testnet",
+          "failure": false,
+          "logs": [],
+          "receipt": "rddFAK9tBVcDYXLi6MB5uw2JRS1p8Cd5sa9wgZE8AUK",
+          "success": true
+        },
+        {
+          "executor": "usdc.testnet",
+          "failure": false,
+          "logs": [
+            "EVENT_JSON:{\"standard\":\"nep141\",\"version\":\"1.0.0\",\"event\":\"ft_transfer\",\"data\":[{\"old_owner_id\":\"escrow.testnet\",\"new_owner_id\":\"user1.testnet\",\"amount\":\"5000000\",\"memo\":\"five-reg-1:2\"}]}"
+          ],
+          "receipt": "4kD7yyQiviS7RiNsWMsrqbgGMQGe7qgNtyTRvrfrrCR6",
+          "success": true
+        },
+        {
+          "executor": "user1.testnet",
+          "failure": false,
+          "logs": [],
+          "receipt": "A1FJvdsZ3ryBLL89AhBg46jv5aSGgHVBbaGXnFbPmqoY",
+          "success": true
+        },
+        {
+          "executor": "escrow.testnet",
+          "failure": false,
+          "logs": [],
+          "receipt": "47JBfHMaUb1tveSPeyNtx4uzrg2YPXhmgPTS3bnhPbCZ",
+          "success": true
+        },
+        {
+          "executor": "user1.testnet",
+          "failure": false,
+          "logs": [],
+          "receipt": "CixsJTLK9bakrvWg6pWpKBudyBVq9j6pFQq88i8Te22a",
+          "success": true
+        },
+        {
+          "executor": "user1.testnet",
+          "failure": false,
+          "logs": [],
+          "receipt": "9yxZutT9rMoDAov1wzTc3TTJ6cxznsXxqNfEQzMhKUpE",
+          "success": true
+        }
+      ],
+      "scope": "five local participants, MockEarn zero yield, no financial state patch",
+      "status": "PASS_LOCAL",
+      "timeout": "NOT_RUN"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+import assert from "node:assert/strict";
+import { actionAllowed, claimReconciliation, mainnetReceipt, publishMatches } from "./mainnet-lifecycle.ts";
+import { publishBatch } from "./mainnet-actions.ts";
+const rules={event_id:"event",deposit:"10",capacity:2}; const actions=publishBatch("20",rules);
+const attempt={account:"alice.near",child:"child.factory.near",eventId:"event",actions,hash:"hash"};
+const tx={final_execution_status:"FINAL",status:{SuccessValue:""},transaction:{hash:"hash",signer_id:attempt.account,receiver_id:attempt.child,actions:actions.map(a=>a.type==="FunctionCall"?({FunctionCall:{method_name:a.params.methodName,args:btoa(JSON.stringify(a.params.args)),gas:a.params.gas,deposit:a.params.deposit}}):({Transfer:{deposit:a.params.deposit}}))},receipts_outcome:[{outcome:{executor_id:attempt.child,status:{SuccessValue:""}}}]};
+const linked={...tx,transaction_outcome:{id:"hash",outcome:{executor_id:attempt.account,status:{SuccessReceiptId:"r1"},receipt_ids:["r1"]}},receipts:[{receipt_id:"r1",predecessor_id:attempt.account,receiver_id:attempt.child,receipt:{Action:{actions:tx.transaction.actions}}}],receipts_outcome:[{id:"r1",outcome:{executor_id:attempt.child,status:{SuccessValue:""},receipt_ids:[]}}]};
+assert.equal(mainnetReceipt(linked,attempt),"success"); assert.equal(mainnetReceipt({...linked,final_execution_status:"EXECUTED"},attempt),"pending"); assert.equal(mainnetReceipt(linked,{...attempt,account:"other.near"}),"pending"); assert.equal(mainnetReceipt({...linked,receipts_outcome:[{outcome:{executor_id:attempt.child,status:{Failure:{}}}}]},attempt),"pending");
+const event={...rules,organizer:attempt.account,canonical_ft:"usdc.near",policy_version:"policy",phase:"RegistrationClosed",earn_state:"Supplied",accepted_principal:"20",reg_close:100,checkin_open:100,checkin_close:200,finalize_deadline:300};
+assert.equal(publishMatches(event,rules,attempt.account,"usdc.near","policy"),true); assert.equal(publishMatches({...event,deposit:"11"},rules,attempt.account,"usdc.near","policy"),false);
+assert.equal(actionAllowed("mark_attendance",event,150,true),true);assert.equal(actionAllowed("mark_attendance",event,200,true),false);assert.equal(actionAllowed("finalize_attendance",event,200,true),true);assert.equal(actionAllowed("finalize_attendance",event,200,false),false);
+console.log("PASS_LOCAL mainnet lifecycle identity and receipt");
+
+assert.equal(claimReconciliation("failed","alice.near",{beneficiary:"alice.near",claim:"Claimable"}),"retry");
+assert.equal(claimReconciliation("failed","alice.near",{beneficiary:"other.near",claim:"Claimable"}),"pending");
+assert.equal(claimReconciliation("success","alice.near",{beneficiary:"alice.near",claim:"Paid"}),"paid");
+assert.equal(claimReconciliation("pending","alice.near",{beneficiary:"alice.near",claim:"Paid"}),"pending");
+const withTopup=publishBatch("20",rules,"1000");assert.equal(withTopup[0]?.type,"Transfer");
+const topupAttempt={...attempt,actions:withTopup};const topupActions=withTopup.map(a=>a.type==="FunctionCall"?({FunctionCall:{method_name:a.params.methodName,args:btoa(JSON.stringify(a.params.args)),gas:a.params.gas,deposit:a.params.deposit}}):({Transfer:{deposit:a.params.deposit}}));
+const topupTx={...linked,transaction:{...linked.transaction,actions:topupActions},receipts:[{...linked.receipts[0]!,receipt:{Action:{actions:topupActions}}}]};
+assert.equal(mainnetReceipt(topupTx,topupAttempt),"success");assert.equal(mainnetReceipt({...topupTx,receipts:[{...topupTx.receipts[0]!,predecessor_id:"other"}]},topupAttempt),"pending");
+const cancelled={...event,phase:"Cancelled",earn_state:"NotStarted"};const refundReg={beneficiary:"alice.near",claim:"None",claim_amount:"0",amount:"10"};assert.equal(actionAllowed("claim",cancelled,300,false,refundReg,"alice.near"),true);assert.equal(actionAllowed("claim",{...cancelled,earn_state:"Supplied"},300,false,refundReg,"alice.near"),false);assert.equal(actionAllowed("activate_timeout_refund",{...event,phase:"RegistrationClosed"},300,false),true);assert.equal(actionAllowed("cancel_event",event,150,false),false);assert.equal(actionAllowed("cancel_event",event,150,true),true);

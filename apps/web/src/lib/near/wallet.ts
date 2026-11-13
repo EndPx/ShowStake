@@ -11,6 +11,7 @@
 //     prompt. This module never signs/broadcasts on its own, never reimplements
 //     crypto, and never retries an unknown submission automatically.
 
+import { MAINNET_POLICY, mainnetRequestAllowed } from "../mainnet-policy";
 import { NETWORK, RPC_URL } from "../config";
 import { viewAccessKeyView } from "./rpc";
 import { APP_DOMAIN, canonicalProofMessage } from "./proof";
@@ -44,6 +45,7 @@ export type WalletResult<T = WalletAccount> =
 // The connector is created lazily so the CJS SDK is never evaluated during SSR
 // or static page generation (only inside a browser event handler/effect).
 type ConnectorShape = {
+  on: (event: string, callback: () => void) => void;
   connect: () => Promise<unknown>;
   disconnect: () => Promise<void>;
   wallet: (id?: string | null) => Promise<{
@@ -59,6 +61,10 @@ interface MaybeOutcome {
 }
 
 let connector: ConnectorShape | null = null;
+const connectorListeners = new Set<() => void>();
+export function subscribeWalletChanges(listener:()=>void):()=>void { connectorListeners.add(listener); return () => { connectorListeners.delete(listener); }; }
+export async function readConnectedWalletAccount():Promise<string|null> { try { if(!connector)return null; const wallet=await connector.wallet();return (await wallet.getAccounts())[0]?.accountId??null; } catch {return null;} }
+
 
 function hex(bytes: Uint8Array): string {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
@@ -70,6 +76,7 @@ async function getConnector(): Promise<ConnectorShape> {
       NearConnector: new (options: unknown) => ConnectorShape;
     };
     connector = new NearConnector({ network: NETWORK, features: { testnet: NETWORK === "testnet" } });
+    for (const event of ["wallet:signIn", "wallet:signOut", "wallet:signInAndSignMessage"]) connector.on(event, () => { for (const listener of connectorListeners) listener(); });
   }
   return connector;
 }
@@ -170,8 +177,11 @@ export async function readKeyPresence(accountId: string, publicKey?: string): Pr
  * user-clicked, separately-approved `SignAndSendParams`; the wallet shows its
  * own confirmation. Returns the transaction hash + status, never fabricated.
  */
+export function walletNetworkAvailable(network: "mainnet" | "testnet"): boolean { return network === NETWORK && (network === "testnet" || (MAINNET_POLICY.approvedMicrotest !== null || (MAINNET_POLICY.providerAccepted && MAINNET_POLICY.approvedAllocatedEvent !== null) || MAINNET_POLICY.acceptedFactory?.approval !== undefined)); }
+export function walletRequestAvailable(params: SignAndSendParams): boolean { return walletNetworkAvailable(params.network) && (params.network === "testnet" || mainnetRequestAllowed(params)); }
+
 export async function signAndSendTransaction(params: SignAndSendParams): Promise<WalletResult<TxResult>> {
-  if (NETWORK !== "testnet" || params.network !== NETWORK) return { ok: false, code: "NETWORK_UNAVAILABLE", detail: "Transactions are unavailable for this network configuration." };
+  if (!walletRequestAvailable(params)) return { ok: false, code: "NETWORK_UNAVAILABLE", detail: "Transactions are unavailable for this network configuration." };
   const c = await getConnector();
   let wallet: { getAccounts: () => Promise<Array<{ accountId: string }>>; signAndSendTransaction?: (p: SignAndSendParams) => Promise<MaybeOutcome> };
   try {

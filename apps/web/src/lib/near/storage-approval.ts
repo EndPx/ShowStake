@@ -1,0 +1,7 @@
+﻿export async function storageApprovalQuote(rpcUrl: string, target: string, child: string, expectedBlock: string, fetchImpl: typeof fetch = fetch): Promise<string> {
+  const query = async (method: string, args: unknown) => { const response=await fetchImpl(rpcUrl,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:"storage-quote",method:"query",params:{request_type:"call_function",block_id:expectedBlock,account_id:target,method_name:method,args_base64:btoa(JSON.stringify(args))}})});if(!response.ok)throw Error("Storage view unavailable");const body=await response.json();if(body.error||body.result?.block_hash!==expectedBlock||!Array.isArray(body.result.result))throw Error("Storage view unavailable or stale");return JSON.parse(new TextDecoder().decode(Uint8Array.from(body.result.result))); };
+  const [bounds,balance]=await Promise.all([query("storage_balance_bounds",{}),query("storage_balance_of",{account_id:child})]);
+  const atomic=(v:unknown):v is string=>typeof v==="string"&&/^(0|[1-9][0-9]*)$/.test(v)&&BigInt(v)<2n**128n;
+  if(!bounds||!atomic(bounds.min)||(bounds.max!==null&&!atomic(bounds.max))||(bounds.max!==null&&BigInt(bounds.max)<BigInt(bounds.min))||(balance!==null&&(!atomic(balance.total)||!atomic(balance.available)||BigInt(balance.available)>BigInt(balance.total))))throw Error("Invalid storage bounds");
+  const have=balance===null?0n:BigInt(balance.total), min=BigInt(bounds.min);return (have>=min?0n:min-have).toString();
+}

@@ -1,0 +1,70 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "PUBLIC_READ_ONLY_MAINNET provider identity/admin/storage/held-token observation, no transactions or liquidity withdrawal proof",
+  "block": {
+    "height": 224291656,
+    "hash": "2uaJNxNcfAFvDKH6gub4skKaTY1cjgbUWW5uJPvmMeJZ"
+  },
+  "provider": {
+    "account": "contract.main.burrow.near",
+    "codeHash": "6Nek1MZ8cwJJ2xMQAUWup9V5AToYS9rkTxJfwo6BCpFa",
+    "accessKeys": [],
+    "config": {
+      "oracle_account_id": "priceoracle.near",
+      "pyth_oracle_account_id": "aggregate-oracle.near",
+      "ref_exchange_id": "v2.ref-finance.near",
+      "owner_id": "burrow.sputnik-dao.near",
+      "booster_token_id": "token.burrow.near",
+      "booster_decimals": 18,
+      "max_num_assets": 20,
+      "maximum_recency_duration_sec": 90,
+      "maximum_staleness_duration_sec": 90,
+      "lp_tokens_info_valid_duration_sec": 600,
+      "pyth_price_valid_duration_sec": 60,
+      "minimum_staking_duration_sec": 2592000,
+      "maximum_staking_duration_sec": 7776000,
+      "x_booster_multiplier_at_maximum_staking_duration": 30000,
+      "force_closing_enabled": true,
+      "enable_price_oracle": false,
+      "enable_pyth_oracle": true,
+      "contract_mode": "Running",
+      "boost_suppress_factor": 1000,
+      "dcl_id": "dclv2.ref-labs.near",
+      "pause_operator_id": null
+    }
+  },
+  "token": {
+    "account": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+    "codeHash": "DVJx7F3dHEHJYwpYPwXHu8K9Uo7h4kXFcALucY5oNX8q",
+    "decimals": 6,
+    "symbol": "USDC",
+    "accessKeys": [
+      {
+        "access_key": {
+          "nonce": 79039276000031,
+          "permission": "FullAccess"
+        },
+        "public_key": "ed25519:2ZH9CzFkmTVSKM9rQ14b8D4myiuFZv17jvdfZmYjTcak"
+      }
+    ]
+  },
+  "heldUnderlyingAtomic": "1917207719882",
+  "liquidityClassification": "OBSERVED_TOKEN_BALANCE_ONLY_NOT_WITHDRAWAL_PROOF",
+  "storage": {
+    "provider": {
+      "min": "100000000000000000000000",
+      "max": null
+    },
+    "ft": {
+      "min": "1250000000000000000000",
+      "max": "1250000000000000000000"
+    }
+  },
+  "selection": "SELECTED_FOR_HACKATHON",
+  "technicalAcceptance": "NOT_ACCEPTED",
+  "open": [
+    "Actual USDC supply/partial/full redemption and retry proof",
+    "Audit/current deployment source match not verified",
+    "EventEscrow integration and public pilot not accepted"
+  ]
+}

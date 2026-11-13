@@ -1,0 +1,156 @@
+{
+  "schema": "showstake.mainnet-integration-review/1",
+  "observedAt": "2026-11-13T01:46:42.436Z",
+  "classification": "PASS_LOCAL",
+  "scope": "Reviewed build and disabled financial candidate only; NOT full-mainnet product acceptance",
+  "executor": "Codex coordinator and Codex Terra workers; historical evidence with other executor names is not current runtime attribution",
+  "fundedMainnetActionsThisMilestone": 0,
+  "liveContract": {
+    "account": "showstake-mainnet-escrow-endpx-2026.near",
+    "lastAcceptedState": "empty paused, cap0",
+    "stage1Commit": "33b872b",
+    "newPublicStateQueryThisReport": false
+  },
+  "localEvidence": [
+    {
+      "run": "factory-smoke-20261112T231835Z-243524",
+      "classification": "PASS_LOCAL",
+      "observation": "test-support/contract-integration/evidence/runs/factory-smoke-20261112T231835Z-243524/observation.json",
+      "teardown": "test-support/contract-integration/evidence/runs/factory-smoke-20261112T231835Z-243524/teardown.json",
+      "scope": "Local provisioning and native failed-funding claim; no provider money"
+    },
+    {
+      "run": "capacity-storage-20261112T231630Z-213263",
+      "classification": "PASS_LOCAL",
+      "observation": "test-support/contract-integration/evidence/runs/capacity-storage-20261112T231630Z-213263/observation.json",
+      "teardown": "test-support/contract-integration/evidence/runs/capacity-storage-20261112T231630Z-213263/teardown.json",
+      "scope": "200 Mock-USDC participants, max metadata, all-no-show refund branch"
+    },
+    {
+      "run": "claim-failure-20261113T002255Z-339675",
+      "classification": "PASS_LOCAL",
+      "observation": "test-support/contract-integration/evidence/runs/claim-failure-20261113T002255Z-339675/observation.json",
+      "teardown": "test-support/contract-integration/evidence/runs/claim-failure-20261113T002255Z-339675/teardown.json",
+      "scope": "Five normal Mock-USDC deposits, two attendees, 5 USDC each; failed canonical FT payout restored then retry, cancellation refund"
+    }
+  ],
+  "sourceAndArtifactHashes": [
+    {
+      "path": "contracts/showstake/event-escrow-candidate/src.rs",
+      "sha256": "40de13466e8ed6bf2d3e676d83de9594b30f1a6ce4c26fa94939430cdeacdae7"
+    },
+    {
+      "path": "contracts/showstake/event-escrow-candidate/rhea_adapter.rs",
+      "sha256": "71e0f0d22149f512e35ef544ea4e3e3211f0975459066d6c1a9d100427f55a0f"
+    },
+    {
+      "path": "test-support/contract-integration/wasm/showstake-mainnet-review.wasm",
+      "sha256": "03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2"
+    },
+    {
+      "path": "packages/intents-adapter/src/rhea.mjs",
+      "sha256": "dcd0f5f69339dbed0e1f771e0f1135e7d0ad924f80a5678f38b3f40f15367342"
+    },
+    {
+      "path": "apps/web/src/lib/mainnet-policy.ts",
+      "sha256": "2b84df2ce796c021f57217fd45548bead4fa53589ff1bcdb8e3c732e0a2324a8"
+    }
+  ],
+  "tests": {
+    "web": {
+      "files": 21,
+      "failed": 0,
+      "typecheck": "PASS_LOCAL",
+      "legacyChecks": 100,
+      "productionMainnetBuild": "PASS_LOCAL",
+      "browserWallet": "NOT_RUN"
+    },
+    "api": {
+      "checks": 43,
+      "classification": "PASS_LOCAL",
+      "build": "PASS_LOCAL",
+      "focused": [
+        "claim-bonus",
+        "public-network",
+        "mainnet-readiness",
+        "mainnet-child-access",
+        "private-access",
+        "rhea-journal"
+      ]
+    },
+    "worker": {
+      "fixtureChecks": 90,
+      "classification": "PASS_LOCAL",
+      "build": "PASS_LOCAL",
+      "focused": [
+        "prefetch",
+        "candidate",
+        "factory"
+      ]
+    },
+    "rheaAndEarnAdapter": {
+      "checks": 19,
+      "classification": "PASS_LOCAL",
+      "fundedWithdrawal": "NOT_RUN"
+    },
+    "relayer": {
+      "checks": 10,
+      "classification": "PASS_LOCAL",
+      "broadcast": false
+    },
+    "openapi": {
+      "routes": 30,
+      "classification": "PASS_LOCAL"
+    },
+    "leafStorageBound": {
+      "tests": 1,
+      "classification": "PASS_LOCAL",
+      "maxRegistrationBytes": 2304,
+      "formula": "179 + organizer UTF8 bytes + UTF8 bytes of event_id/title/location/rules_text",
+      "scope": "pinned leaf, maximum bounded inputs; no source/Wasm change"
+    },
+    "factoryUnits": {
+      "tests": 25,
+      "classification": "PASS_LOCAL"
+    }
+  },
+  "remainingGates": [
+    {
+      "name": "Final PostgreSQL source/migrations0006/0007 acceptance",
+      "classification": "BLOCKED_EXTERNAL",
+      "reason": "C: physical free0; Ubuntu ext4 emergency_ro and EIO before tests. Earlier 32 API/89 worker PG checks are earlier-source proof only. Retained failed setup directories not removed."
+    },
+    {
+      "name": "Frontend browser wallet/mobile",
+      "classification": "NOT_RUN",
+      "reason": "Agent frontend startup rejected by automatic approval (blocked by policy), user asked to run loopback launcher; native mainnet public wallet account not confirmed."
+    },
+    {
+      "name": "Rhea treasury actual partial/full withdrawal",
+      "classification": "NOT_RUN",
+      "reason": "No dedicated treasury/scoped spend approval; all approval defaults null/false."
+    },
+    {
+      "name": "Rhea primary event financial adapter",
+      "classification": "FAILED",
+      "reason": "Review blocker: detached FT failure/ambiguous callback and post-dispatch donor provenance not bound to exact attempt. Treasury proof alone cannot accept deployed leaf."
+    },
+    {
+      "name": "Factory live provisioning",
+      "classification": "NOT_RUN",
+      "reason": "No deployed factory, selected browser large payload unproven; immutable children inherit financial leaf gate."
+    },
+    {
+      "name": "Source-chain funded route",
+      "classification": "NOT_RUN",
+      "reason": "DRY quotes only; actual source send/final recipient funding proof absent."
+    }
+  ],
+  "acceptance": {
+    "offlineFrontendAndUnsignedAdapter": "ACCEPTED_PASS_LOCAL_ONLY",
+    "backendPgIntegration": "NOT_ACCEPTED_PENDING_FINAL_DB",
+    "mainnetFinancialLifecycle": "NOT_ACCEPTED",
+    "rheaSelection": "SELECTED_FOR_HACKATHON",
+    "rheaTechnicalAcceptance": "NOT_ACCEPTED"
+  }
+}

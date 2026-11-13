@@ -1,4 +1,13 @@
 # ShowStake status
+
+## Current checkpoint — 2026-11-13
+
+Authoritative latest checkpoint: `docs/evidence/mainnet-integration-review-20261113.json` and `docs/mainnet-user-test.md`. Older entries below are historical and may be superseded. Codex/Terra implementation and review produced a passing isolated mainnet frontend build, 21 frontend test files, 100 frontend regression checks, API43, worker90, adapter19 and relayer10 PASS_LOCAL checks. All financial frontend approvals remain null/false. The stage-1 mainnet deployment remains accepted only as empty/paused/cap0; no further mainnet financial transaction occurred.
+
+Current-leaf Sandbox evidence proves five deposits of 2 Mock USDC, two attendees each paid 5, failure restoration/retry, principal cancellation refund, and measured capacity-200 no-show gas/storage. These are LOCAL, not Rhea or mainnet wallet proofs. Mainnet NEP-413 HTTP/session/replay/revoke was verified without a blockchain transaction. Factory provisioning and native failed-funding claim passed LOCAL; public factory and chosen-wallet code-payload support remain NOT_RUN.
+
+Release blockers: current leaf Rhea detached-withdrawal result/provenance and ambiguous recovery need a contract/provider-semantic fix; a successful treasury withdrawal alone cannot accept event principal use. Treasury supply/partial/full withdrawal and browser wallet flows are NOT_RUN. Final PostgreSQL migration0006/0007 tests were blocked before test execution: C: free0 and Ubuntu emergency_ro/EIO. Retained setup directories were not deleted; no remount/restart/repair attempted. Frontend startup also received automatic approval rejection (`blocked by policy`); a reviewed manual loopback launcher is provided. No production hosting or worker supervision acceptance is claimed.
+
 Updated: 2026-11-06 WIB. Target: 2026-11-14 23:59 WIB.
 
 T00 PASS_LOCAL: B01 target inventory and preserved baseline; B02 actual DeepSeek dispatch/result independently reviewed by Codex (docs/evidence/t00-codex-review.json); B03 shared Keyfolio capacity risk acknowledged, allocation still unknown. No reference code copied. Executor proof is complete; no live product integration implied.

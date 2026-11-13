@@ -42,7 +42,7 @@ export function EventListCard({
     : event.times.checkinOpen;
   const className = layout ? `agenda-event agenda-event--${layout}` : "plan-card";
   // Only link to a detail route whose CHAIN id is resolved; never a bare API UUID.
-  const href = event.chainEventId ? `/events/${event.chainEventId}` : null;
+  const href = event.chainEventId ? `/events/${encodeURIComponent(event.chainEventId)}${event.network === "mainnet" && event.contractId ? `?contract=${encodeURIComponent(event.contractId)}` : ""}` : null;
 
   const body = (
     <>

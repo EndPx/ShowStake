@@ -6,7 +6,9 @@
 // (`list_events`) so a discovery row can only route to an accepted event.
 
 import { fetchEventList, mapApiEvent, ApiRequestError } from "./api";
-import { apiBaseUrl, acceptedContract, isAcceptedEvent, RPC_URL } from "./config";
+import { apiBaseUrl, acceptedContract, isAcceptedEvent, RPC_URL, NETWORK } from "./config";
+import { MANUAL_TARGET } from "./near/manual-target";
+import { ACCEPTED_MAINNET_RELEASE } from "./near/mainnet-actions";
 import { listEvents } from "./near/views";
 import type { EventPage, EventSummary } from "./types";
 
@@ -36,6 +38,10 @@ async function annotateDetailKeys(items: EventSummary[]): Promise<EventSummary[]
   const seen = new Map<string, Promise<string | null>>();
   return Promise.all(
     items.map(async (item) => {
+      if (NETWORK === "mainnet") {
+        const contract=item.contractId; const accepted=contract===MANUAL_TARGET.contract || (!!ACCEPTED_MAINNET_RELEASE && !!contract && contract.endsWith(`.${(ACCEPTED_MAINNET_RELEASE as {factory:string}).factory}`));
+        return item.network==="mainnet" && accepted && item.chainEventId ? {...item,id:item.chainEventId} : {...item,chainEventId:undefined};
+      }
       if (item.chainEventId && isAcceptedEvent(item.chainEventId)) {
         return { ...item, id: item.chainEventId };
       }

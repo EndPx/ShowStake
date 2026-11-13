@@ -13,12 +13,15 @@ import {
   useCallback,
   useContext,
   useMemo,
+  useEffect,
   useRef,
   useState,
   type ReactNode,
 } from "react";
 import {
   connectWallet,
+  subscribeWalletChanges,
+  readConnectedWalletAccount,
   disconnectWallet,
   readKeyPresence,
   signProof,
@@ -36,6 +39,8 @@ export type WalletStatus =
 
 interface WalletContextValue {
   network: typeof NETWORK;
+  sessionEpoch: number;
+  getSessionEpoch: () => number;
   status: WalletStatus;
   account: WalletAccount | null;
   proof: SignedProof | null;
@@ -49,16 +54,27 @@ interface WalletContextValue {
 const WalletContext = createContext<WalletContextValue | null>(null);
 
 export function WalletProvider({ children }: { children: ReactNode }) {
+  const [sessionEpoch, setSessionEpoch] = useState(0);
   const [status, setStatus] = useState<WalletStatus>("idle");
   const [account, setAccount] = useState<WalletAccount | null>(null);
   const [proof, setProof] = useState<SignedProof | null>(null);
   const [keyPermission, setKeyPermission] = useState<"FullAccess" | "FunctionCall" | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const generation = useRef(0);
+  const generation = useRef(0); const statusRef = useRef(status); statusRef.current=status; const accountRef=useRef(account); accountRef.current=account;
+  useEffect(() => {
+    const invalidate=() => { if(statusRef.current === "connecting") return; generation.current++; const epoch=generation.current; setSessionEpoch(epoch); setProof(null); setKeyPermission(null); void readConnectedWalletAccount().then(id => { if(generation.current!==epoch)return; if(!id||id!==accountRef.current?.accountId) {setAccount(null);setStatus("idle");} }); };
+    const unsubscribe=subscribeWalletChanges(invalidate);
+    const focus=()=>{if(document.visibilityState === "visible") invalidate();};
+    window.addEventListener("focus",focus);document.addEventListener("visibilitychange",focus);
+    return()=>{unsubscribe();window.removeEventListener("focus",focus);document.removeEventListener("visibilitychange",focus);};
+  }, []);
+
+  const getSessionEpoch = useCallback(() => generation.current, []);
 
   const connect = useCallback(async () => {
     const gen = generation.current + 1;
     generation.current = gen;
+    setSessionEpoch(gen);
     setStatus("connecting");
     setError(null);
     setProof(null);
@@ -81,6 +97,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const disconnect = useCallback(async () => {
     generation.current += 1;
+    setSessionEpoch(generation.current);
     setStatus("idle");
     setAccount(null);
     setProof(null);
@@ -116,8 +133,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   }, [account]);
 
   const value = useMemo<WalletContextValue>(
-    () => ({ network: NETWORK, status, account, proof, keyPermission, error, connect, disconnect, sign }),
-    [status, account, proof, keyPermission, error, connect, disconnect, sign],
+    () => ({ network: NETWORK, sessionEpoch, getSessionEpoch, status, account, proof, keyPermission, error, connect, disconnect, sign }),
+    [sessionEpoch, getSessionEpoch, status, account, proof, keyPermission, error, connect, disconnect, sign],
   );
 
   return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;

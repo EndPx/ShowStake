@@ -3370,3 +3370,7 @@
 .lifecycle-table-wrap { overflow-x: auto; }
 .lifecycle-results-table { width: 100%; border-collapse: collapse; text-align: left; }
 .lifecycle-results-table th, .lifecycle-results-table td { padding: 12px; border-bottom: 1px solid var(--border, #dcdcd5); white-space: nowrap; }
+
+.workspace-footer-meta nav { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.workspace-footer-meta nav a { display: inline-flex; align-items: center; min-height: 44px; color: var(--muted); }
+.workspace-footer-meta nav a:hover { color: var(--ink); }

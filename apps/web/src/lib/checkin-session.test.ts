@@ -1,0 +1,3 @@
+﻿import assert from "node:assert/strict";import {matchingCheckinSession,checkinProposal} from "./checkin-session.ts";
+const session={data:{active:true,accountId:"alice.near",network:"mainnet"},meta:{network:"mainnet"}};
+assert.equal(matchingCheckinSession(session,"alice.near","mainnet"),true);assert.equal(matchingCheckinSession(session,"bob.near","mainnet"),false);assert.equal(matchingCheckinSession(session,"alice.near","testnet"),false);assert.equal(checkinProposal({data:{state:"PROPOSED",requestId:"id"}}),"id");assert.equal(checkinProposal({data:{state:"ATTENDED",requestId:"id"}}),null);console.log("PASS_LOCAL check-in identity and proposal");

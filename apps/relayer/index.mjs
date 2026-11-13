@@ -6,6 +6,30 @@ const ACTIONS = Object.freeze({
   FINALIZE_SETTLE: 'finalize_settle'
 });
 
+// Pure proposal only. Candidate actions call escrow, never the provider directly.
+export function planCandidateAction(snapshot, nowMs) {
+  time(nowMs, 'nowMs');
+  const contractId = 'showstake-mainnet-escrow-endpx-2026.near';
+  if (snapshot?.contractId !== contractId || snapshot.codeHash !== 'CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os' || snapshot.policyVersion !== 'showstake-native-usdc-rhea-review/1' || snapshot.finalized !== true || snapshot.stale !== false) throw new RelayerError('UNTRUSTED_SNAPSHOT', 'fresh finalized pinned candidate snapshot required');
+  const e = snapshot.event;
+  if (e == null) return null;
+  const control = snapshot.control;
+  if (!control || typeof control.paused !== 'boolean') throw new RelayerError('INVALID_CONFIG', 'candidate pause state required');
+  const cap = BigInt(atomic(control.principal_cap, 'principal_cap'));
+  const principal = BigInt(atomic(e.accepted_principal, 'accepted_principal'));
+  for (const key of ['reg_close','checkin_close','finalize_deadline']) time(e[key], key);
+  let method = null;
+  if (e.phase === 'RegistrationOpen' && nowMs >= e.finalize_deadline) method = 'activate_timeout_refund';
+  else if (e.phase === 'RegistrationOpen' && nowMs >= e.reg_close) method = 'close_registration';
+  else if (e.phase === 'RegistrationClosed' && nowMs >= e.finalize_deadline) method = 'activate_timeout_refund';
+  else if (e.phase === 'RegistrationClosed' && e.earn_state === 'NotStarted' && !control.paused && principal > 0n && principal <= cap) method = 'trigger_earn_supply';
+  else if (['Cancelled','RefundOnly','AttendanceFinalized'].includes(e.phase) && e.earn_state === 'Supplied' && (e.phase !== 'AttendanceFinalized' || nowMs >= e.checkin_close)) method = 'trigger_earn_redeem';
+  else if (e.phase === 'AttendanceFinalized' && e.earn_state === 'Redeemed') method = 'settle';
+  if (!method) return null;
+  const args = method === 'activate_timeout_refund' ? { event_id: required(e.event_id, 'event_id') } : {};
+  return Object.freeze({ target: contractId, method, args, dryRun: true, broadcasted: false, providerStatus: 'UNVERIFIED' });
+}
+
 const ORDER = Object.values(ACTIONS);
 const STATES = Object.freeze({
   REGISTRATION_OPEN: 'REGISTRATION_OPEN',

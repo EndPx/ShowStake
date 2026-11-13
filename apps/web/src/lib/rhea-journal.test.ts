@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {parseJournal,reserveDecision,dispatchCreated,validateOperation,journalFetch} from './rhea-journal.ts';
+import {RHEA_MAINNET as C} from '../../../../packages/intents-adapter/src/rhea.mjs';
+import type {ApprovedMicrotestPlan} from './rhea-microtest.ts';
+const p:ApprovedMicrotestPlan={approvalId:'00000000-0000-4000-8000-000000000001',planHash:'a'.repeat(64),treasury:'alice.near',provider:C.provider,asset:C.usdc,maxUsdcAtomic:'1000000',maxNativeYocto:'220000000000000000000000',gasPriceCeiling:'1',signerPublicKey:'ed25519:ABCDEFG',startAccessKeyNonce:40,expiresAtMs:2000000000000,steps:[{step:'supply',nonce:41,nativeCapYocto:'1'},{step:'partial',nonce:42,nativeCapYocto:'1'},{step:'full',nonce:43,nativeCapYocto:'1'}],storageFtCapYocto:'0',storageProviderCapYocto:'0',reservedWorstYocto:'900000000000003'};
+const op={operationId:'00000000-0000-4000-8000-000000000002',step:'supply',status:'RESERVED',hash:null,beforeBlockHash:'block',receiverId:C.usdc,methodName:'ft_transfer_call',args:{receiver_id:C.provider,amount:'1000000',msg:''},gas:'300000000000000',depositYocto:'1',maxNativeAtomic:'300000000000001'};
+const j={approvalId:p.approvalId,planHash:p.planHash,provider:p.provider,asset:p.asset,maxUsdcAtomic:p.maxUsdcAtomic,maxNativeYocto:p.maxNativeYocto,gasPriceCeiling:p.gasPriceCeiling,treasury:p.treasury,expiresAt:new Date(p.expiresAtMs).toISOString(),nativeReservedAtomic:'300000000000001',usdcReservedAtomic:'1000000',operations:[op],signingAuthority:false};
+assert.equal(parseJournal(j,p,p.treasury).operations[0]?.operationId,op.operationId);
+for(const bad of [{...j,treasury:'bob.near'},{...j,approvalId:'wrong'},{...j,planHash:'b'.repeat(64)},{...j,asset:'evil.near'},{...j,signingAuthority:true}])assert.throws(()=>parseJournal(bad,p,p.treasury));
+let calls=0;const prior=reserveDecision({created:false,operation:op});assert.equal(await dispatchCreated(prior,async()=>++calls),null);assert.equal(calls,0);
+const created=reserveDecision({created:true,operation:op});assert.equal(await dispatchCreated(created,async()=>++calls),1);assert.equal(calls,1);
+validateOperation(created.operation,'supply',op,p);assert.throws(()=>validateOperation({...op,receiverId:'evil.near'} as typeof op & any,'supply',op,p));assert.throws(()=>validateOperation({...op,args:{...op.args,amount:'2000000'}} as typeof op & any,'supply',op,p));assert.throws(()=>reserveDecision({created:true,operation:{...op,status:'CONFIRMED'}}));
+const expiredPlan={...p,expiresAtMs:Date.now()-1000};assert.equal(parseJournal({...j,expiresAt:new Date(expiredPlan.expiresAtMs).toISOString()},expiredPlan,p.treasury).operations[0]?.status,'RESERVED');
+const recovered=await journalFetch('',undefined,async()=>new Response(JSON.stringify({data:j}),{status:200}));assert.equal(parseJournal(recovered,p,p.treasury).operations.length,1);
+assert.throws(()=>parseJournal({...j,operations:[{...op,hash:'bad!'}]},p,p.treasury));
+console.log('PASS_LOCAL journal identity, recovery, action and no-duplicate dispatch');

@@ -1,0 +1,10 @@
+﻿import assert from "node:assert/strict";
+import { eventRulesPreview } from "./mainnet-event-preview.ts";
+const draft = { event_id: "meeting", title: "Meeting", location: "Jakarta", rules_text: "Attend", deposit: "1000000", capacity: "20", reg_open: "2026-12-01T00:00:00Z", reg_close: "2026-12-02T00:00:00Z", checkin_open: "2026-12-02T00:00:00Z", checkin_close: "2026-12-03T00:00:00Z" };
+const result = eventRulesPreview(draft);
+assert.ok(result);
+assert.equal(result.args.rules.deposit, "1000000");
+assert.equal(result.args.rules.finalize_deadline, Date.parse(draft.checkin_close) + 86400000);
+for (const change of [{ deposit: "01" }, { capacity: "201" }, { capacity: "1e1" }, { checkin_open: draft.reg_open }, { deposit: (2n ** 128n).toString() }, { title: "é".repeat(129) }]) assert.equal(eventRulesPreview({ ...draft, ...change }), null);
+console.log("PASS_LOCAL mainnet event rule preview");
+assert.equal(eventRulesPreview({...draft,event_id:"x".repeat(128)})?.args.rules.event_id.length,128);assert.equal(eventRulesPreview({...draft,event_id:"x".repeat(129)}),null);assert.equal(eventRulesPreview({...draft,event_id:"bad event"}),null);

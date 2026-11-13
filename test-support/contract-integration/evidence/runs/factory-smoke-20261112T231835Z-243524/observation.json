@@ -1,0 +1,279 @@
+{
+  "documents": [
+    {
+      "child_account": {
+        "amount": "2262500000000000000000000",
+        "code_hash": "CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os",
+        "global_contract_account_id": null,
+        "global_contract_hash": null,
+        "locked": "0",
+        "storage_usage": 225374,
+        "version": "V2"
+      },
+      "child_keys": [],
+      "collision": {
+        "gas_burnt": 74094643542096,
+        "receipts": "[ExecutionOutcome { transaction_hash: GiW9xDFganbY3yyZkKqmr5FMG6ZrE8jH7ro8efbnoiaF, block_hash: 8guPGi3faQ3ajeqnx6Pgyy8dnV2jWT88jDaL5Vcxjukq, logs: [\"EVENT_JSON:{\\\"standard\\\":\\\"showstake_factory\\\",\\\"version\\\":\\\"1.0.0\\\",\\\"event\\\":\\\"ProvisionRequested\\\",\\\"data\\\":[{\\\"organizer\\\":\\\"organizer.sandbox\\\",\\\"request_nonce\\\":2,\\\"child_id\\\":\\\"9a23600d9b0dd009.factory.sandbox\\\",\\\"child_funding\\\":\\\"2262500000000000000000000\\\",\\\"registry_fee\\\":\\\"5010000000000000000000\\\",\\\"attached\\\":\\\"2267510000000000000000000\\\",\\\"excess_refunded\\\":\\\"0\\\",\\\"leaf_code_sha256\\\":\\\"03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2\\\",\\\"canonical_ft\\\":\\\"17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1\\\",\\\"network\\\":\\\"mainnet\\\",\\\"leaf_policy_version\\\":\\\"showstake-native-usdc-rhea-review/1\\\"}]}\"], receipt_ids: [3oWZhywLH9HX8s8594MxdrMh8peNrf7Zsjo5MSdejtwc, 9MEwx6uT4q8vc147aaChCgaUBAFbM93sUfCVSg74ZPxh, Demwjeei3EdknMaQF7zy4cXQG5e7bpXC2nACzDp8Yktk], gas_burnt: NearGas { inner: 49174087027086 }, tokens_burnt: NearToken { inner: 4917408702708600000000 }, executor_id: AccountId(\"factory.sandbox\"), status: SuccessReceiptId(CryptoHash([124, 12, 225, 201, 179, 176, 157, 31, 126, 232, 189, 62, 5, 97, 26, 192, 31, 141, 80, 187, 234, 209, 140, 44, 95, 87, 244, 129, 218, 186, 255, 230])) }, ExecutionOutcome { transaction_hash: 3oWZhywLH9HX8s8594MxdrMh8peNrf7Zsjo5MSdejtwc, block_hash: 6mKYEAbdwaPo44UcDQfAFNkh9BSufBMKL5vLjktLaeW4, logs: [], receipt_ids: [6CTzsUXcbQLYjvnCrdQpUuym8VYP2J1jdnU6xHToRUqr, 5eVPsQ1xkRtbpUmHnnrBkqtp5y8G63mJMg5Ybi5mSWp1], gas_burnt: NearGas { inner: 7308059500000 }, tokens_burnt: NearToken { inner: 730805950000000000000 }, executor_id: AccountId(\"9a23600d9b0dd009.factory.sandbox\"), status: Failure(ActionError(ActionError { index: Some(0), kind: AccountAlreadyExists { account_id: AccountId(\"9a23600d9b0dd009.factory.sandbox\") } })) }, ExecutionOutcome { transaction_hash: 6CTzsUXcbQLYjvnCrdQpUuym8VYP2J1jdnU6xHToRUqr, block_hash: 2KWnQqmAwWiHu48xrE8uiSy4zS5GSm4vBkyEtj42qkBJ, logs: [], receipt_ids: [], gas_burnt: NearGas { inner: 223182562500 }, tokens_burnt: NearToken { inner: 0 }, executor_id: AccountId(\"factory.sandbox\"), status: SuccessValue(\"\") }, ExecutionOutcome { transaction_hash: 5eVPsQ1xkRtbpUmHnnrBkqtp5y8G63mJMg5Ybi5mSWp1, block_hash: 2KWnQqmAwWiHu48xrE8uiSy4zS5GSm4vBkyEtj42qkBJ, logs: [], receipt_ids: [], gas_burnt: NearGas { inner: 223182562500 }, tokens_burnt: NearToken { inner: 0 }, executor_id: AccountId(\"organizer.sandbox\"), status: SuccessValue(\"\") }, ExecutionOutcome { transaction_hash: 9MEwx6uT4q8vc147aaChCgaUBAFbM93sUfCVSg74ZPxh, block_hash: 2KWnQqmAwWiHu48xrE8uiSy4zS5GSm4vBkyEtj42qkBJ, logs: [\"EVENT_JSON:{\\\"standard\\\":\\\"showstake_factory\\\",\\\"version\\\":\\\"1.0.0\\\",\\\"event\\\":\\\"ProvisionFailed\\\",\\\"data\\\":[{\\\"organizer\\\":\\\"organizer.sandbox\\\",\\\"request_nonce\\\":2,\\\"child_id\\\":\\\"9a23600d9b0dd009.factory.sandbox\\\",\\\"child_funding_claimable\\\":\\\"2262500000000000000000000\\\"}]}\"], receipt_ids: [8BC21jsTNLY1xz88JGbNTwaYoYsfXYBhSzTC25NRBcw6], gas_burnt: NearGas { inner: 2108595481040 }, tokens_burnt: NearToken { inner: 210859548104000000000 }, executor_id: AccountId(\"factory.sandbox\"), status: SuccessValue(\"eyJvcmdhbml6ZXIiOiJvcmdhbml6ZXIuc2FuZGJveCIsInJlcXVlc3Rfbm9uY2UiOjIsImNoaWxkX2lkIjoiOWEyMzYwMGQ5YjBkZDAwOS5mYWN0b3J5LnNhbmRib3giLCJzdGF0ZSI6IkZhaWxlZCIsImF0dGVtcHQiOjEsImNyZWF0ZWRfYmxvY2siOjYyLCJjcmVhdGVkX2F0X21zIjoxNzk0NTI1NTI0NzA5LCJyZWFkeV9hdF9tcyI6MCwiY2hpbGRfZnVuZGluZyI6IjIyNjI1MDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJyZWdpc3RyeV9mZWUiOiI1MDEwMDAwMDAwMDAwMDAwMDAwMDAwIiwiYXR0YWNoZWQiOiIyMjY3NTEwMDAwMDAwMDAwMDAwMDAwMDAwIiwiZXhjZXNzX3JlZnVuZGVkIjoiMCIsInJlZnVuZF9zdGF0ZSI6IkNsYWltYWJsZSIsInJlZnVuZF9hdHRlbXB0IjowLCJsZWFmX2NvZGVfc2hhMjU2IjoiMDMwNzZjNGE5NDk2ZThhZTFlNmFmNjhjNzkxNzUyZDRhNzIyMDU5Nzk0MmVmZmQwYzNhMTgzOWEyNTJiZTlkMiIsImNhbm9uaWNhbF9mdCI6IjE3MjA4NjI4Zjg0ZjVkNmFkMzNmMGRhM2JiYmViMjdmZmNiMzk4ZWFjNTAxYTMxYmQ2YWQyMDExZTM2MTMzYTEiLCJuZXR3b3JrIjoibWFpbm5ldCIsImxlYWZfcG9saWN5X3ZlcnNpb24iOiJzaG93c3Rha2UtbmF0aXZlLXVzZGMtcmhlYS1yZXZpZXcvMSJ9\") }, ExecutionOutcome { transaction_hash: 8BC21jsTNLY1xz88JGbNTwaYoYsfXYBhSzTC25NRBcw6, block_hash: 83tnDJgK1efeyXQJ9CKcgXY4gDUmiXTeH8R2QTTtuGzw, logs: [], receipt_ids: [], gas_burnt: NearGas { inner: 223182562500 }, tokens_burnt: NearToken { inner: 0 }, executor_id: AccountId(\"organizer.sandbox\"), status: SuccessValue(\"\") }, ExecutionOutcome { transaction_hash: Demwjeei3EdknMaQF7zy4cXQG5e7bpXC2nACzDp8Yktk, block_hash: 6mKYEAbdwaPo44UcDQfAFNkh9BSufBMKL5vLjktLaeW4, logs: [], receipt_ids: [], gas_burnt: NearGas { inner: 223182562500 }, tokens_burnt: NearToken { inner: 0 }, executor_id: AccountId(\"organizer.sandbox\"), status: SuccessValue(\"\") }]",
+        "result": {
+          "attached": "2267510000000000000000000",
+          "attempt": 1,
+          "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+          "child_funding": "2262500000000000000000000",
+          "child_id": "9a23600d9b0dd009.factory.sandbox",
+          "created_at_ms": 1794525524709,
+          "created_block": 62,
+          "excess_refunded": "0",
+          "leaf_code_sha256": "03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2",
+          "leaf_policy_version": "showstake-native-usdc-rhea-review/1",
+          "network": "mainnet",
+          "organizer": "organizer.sandbox",
+          "ready_at_ms": 0,
+          "refund_attempt": 0,
+          "refund_state": "Claimable",
+          "registry_fee": "5010000000000000000000",
+          "request_nonce": 2,
+          "state": "Failed"
+        },
+        "success": true
+      },
+      "collision_request": {
+        "attached": "2267510000000000000000000",
+        "attempt": 1,
+        "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "child_funding": "2262500000000000000000000",
+        "child_id": "9a23600d9b0dd009.factory.sandbox",
+        "created_at_ms": 1794525524709,
+        "created_block": 62,
+        "excess_refunded": "0",
+        "leaf_code_sha256": "03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2",
+        "leaf_policy_version": "showstake-native-usdc-rhea-review/1",
+        "network": "mainnet",
+        "organizer": "organizer.sandbox",
+        "ready_at_ms": 0,
+        "refund_attempt": 0,
+        "refund_state": "Claimable",
+        "registry_fee": "5010000000000000000000",
+        "request_nonce": 2,
+        "state": "Failed"
+      },
+      "config": {
+        "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "network": "mainnet",
+        "organizer": "organizer.sandbox",
+        "policy_version": "showstake-native-usdc-rhea-review/1",
+        "provider_account": "contract.main.burrow.near",
+        "provider_kind": "RHEA_MAINNET"
+      },
+      "control": {
+        "baseline_ft": "0",
+        "expected_return": "0",
+        "last_internal_balance": "0",
+        "paused": true,
+        "principal_cap": "0",
+        "shares": "0",
+        "stage": "Idle"
+      },
+      "duplicate_refund": {
+        "gas_burnt": 1836837579186,
+        "receipts": "[ExecutionOutcome { transaction_hash: 2rMZrVzVUWoTxDHqdgm51tJ7zb6S6gMpYqvb7Y5xwpgX, block_hash: 3xPC86ci9SC7kjnfpqSWfQ7HkGQ9uNw6YpZXKxzJo6Nt, logs: [], receipt_ids: [HY8MTHxJBmPzgFAcr2zocMHadjfiUwFsZAqJ82DnyVmz], gas_burnt: NearGas { inner: 1303735851801 }, tokens_burnt: NearToken { inner: 130373585180100000000 }, executor_id: AccountId(\"factory.sandbox\"), status: Failure(ActionError(ActionError { index: Some(0), kind: FunctionCallError(ExecutionError(\"WebAssembly trap: An `unreachable` opcode was executed.\")) })) }, ExecutionOutcome { transaction_hash: HY8MTHxJBmPzgFAcr2zocMHadjfiUwFsZAqJ82DnyVmz, block_hash: vEkNxoPzh3qGhJvPzGGdzJmLntd8iBksJYFLfeZuSLY, logs: [], receipt_ids: [], gas_burnt: NearGas { inner: 223182562500 }, tokens_burnt: NearToken { inner: 0 }, executor_id: AccountId(\"organizer.sandbox\"), status: SuccessValue(\"\") }]",
+        "result": null,
+        "success": false
+      },
+      "event": null,
+      "factory_after": {
+        "amount": "30004115574134550600000000",
+        "code_hash": "67MqXzfkASW9HWFaviupHuRjbgQJ2JYeZhXViMuGM4oV",
+        "global_contract_account_id": null,
+        "global_contract_hash": null,
+        "locked": "0",
+        "storage_usage": 198156,
+        "version": "V2"
+      },
+      "factory_before": {
+        "amount": "29998395574134550600000000",
+        "code_hash": "67MqXzfkASW9HWFaviupHuRjbgQJ2JYeZhXViMuGM4oV",
+        "global_contract_account_id": null,
+        "global_contract_hash": null,
+        "locked": "0",
+        "storage_usage": 197584,
+        "version": "V2"
+      },
+      "factory_registry_growth_bytes": 572,
+      "negative_unauthorized": {
+        "gas_burnt": 1791632921586,
+        "receipts": "[ExecutionOutcome { transaction_hash: AqbJxYQgrDJrafMs5RSePXnaAc6AyoamKsEPTSC1AAtM, block_hash: DdP7ccu74qdJfKUTBLYMEpwTzsXnbEqLwkNnnqcdxV8h, logs: [], receipt_ids: [7eV1wb4t3TcfZAGTGshEZhn8bHgMvyu2VxhmEdXm714E], gas_burnt: NearGas { inner: 1258531194201 }, tokens_burnt: NearToken { inner: 125853119420100000000 }, executor_id: AccountId(\"5b7c4b11a6421bfb.factory.sandbox\"), status: Failure(ActionError(ActionError { index: Some(0), kind: FunctionCallError(ExecutionError(\"WebAssembly trap: An `unreachable` opcode was executed.\")) })) }, ExecutionOutcome { transaction_hash: 7eV1wb4t3TcfZAGTGshEZhn8bHgMvyu2VxhmEdXm714E, block_hash: 8VwzMaPMZh7u2fKPtKdfrmNTBEna918hq7kx71yYQ7h6, logs: [], receipt_ids: [], gas_burnt: NearGas { inner: 223182562500 }, tokens_burnt: NearToken { inner: 0 }, executor_id: AccountId(\"attacker.sandbox\"), status: SuccessValue(\"\") }]",
+        "result": null,
+        "success": false
+      },
+      "negative_underpayment": {
+        "gas_burnt": 50051285192793,
+        "receipts": "[ExecutionOutcome { transaction_hash: BBb59jpyXErSejZVVfiKM8H6ED6ReXmjkhKRF96VJqoo, block_hash: 3MEBnj8LxWqzJWm3vcpaUWoHHjbg5NgZNB5UnhnfJc2C, logs: [], receipt_ids: [37TPEz137kkqUaisahgnScpjWkSGHMDPGMF9gxZyS6zY, 6Cv7961wgwktcmTjNxfaLEWcwXKsuW8oPm7zd2zHf4Wh], gas_burnt: NearGas { inner: 34993748783823 }, tokens_burnt: NearToken { inner: 3499374878382300000000 }, executor_id: AccountId(\"factory.sandbox\"), status: Failure(ActionError(ActionError { index: Some(0), kind: FunctionCallError(ExecutionError(\"WebAssembly trap: An `unreachable` opcode was executed.\")) })) }, ExecutionOutcome { transaction_hash: 37TPEz137kkqUaisahgnScpjWkSGHMDPGMF9gxZyS6zY, block_hash: 5zeRn31rQXKYqpowXjA9zBeJ5DWFkjkJvNm53GKs4PG5, logs: [], receipt_ids: [], gas_burnt: NearGas { inner: 223182562500 }, tokens_burnt: NearToken { inner: 0 }, executor_id: AccountId(\"organizer.sandbox\"), status: SuccessValue(\"\") }, ExecutionOutcome { transaction_hash: 6Cv7961wgwktcmTjNxfaLEWcwXKsuW8oPm7zd2zHf4Wh, block_hash: 5zeRn31rQXKYqpowXjA9zBeJ5DWFkjkJvNm53GKs4PG5, logs: [], receipt_ids: [], gas_burnt: NearGas { inner: 223182562500 }, tokens_burnt: NearToken { inner: 0 }, executor_id: AccountId(\"organizer.sandbox\"), status: SuccessValue(\"\") }]",
+        "result": null,
+        "success": false
+      },
+      "negative_wrong_code": {
+        "gas_burnt": 2044617694180,
+        "receipts": "[ExecutionOutcome { transaction_hash: kgRhnENqWozsQtJVUvberVbFKfHPtQ7xUo391ZGuqvW, block_hash: BtZZ71C1xc59DcDDsKFtZhjib18dCZwJ1zSgN3g9Fyf9, logs: [], receipt_ids: [EaRvgJLQ88NLbnWsSoZ5Mg8zhvTshdzeUHfXCW95m4cY, ECfXkMnPEz42knPU7sYx3C8tuQrB2HckHq9jNbjp45ip], gas_burnt: NearGas { inner: 1288190353150 }, tokens_burnt: NearToken { inner: 128819035315000000000 }, executor_id: AccountId(\"factory.sandbox\"), status: Failure(ActionError(ActionError { index: Some(0), kind: FunctionCallError(ExecutionError(\"WebAssembly trap: An `unreachable` opcode was executed.\")) })) }, ExecutionOutcome { transaction_hash: EaRvgJLQ88NLbnWsSoZ5Mg8zhvTshdzeUHfXCW95m4cY, block_hash: DFEYT3ksxZhZqCnqN4GsDVYYMX4MZryQ5RpzMMg7o8iz, logs: [], receipt_ids: [], gas_burnt: NearGas { inner: 223182562500 }, tokens_burnt: NearToken { inner: 0 }, executor_id: AccountId(\"organizer.sandbox\"), status: SuccessValue(\"\") }, ExecutionOutcome { transaction_hash: ECfXkMnPEz42knPU7sYx3C8tuQrB2HckHq9jNbjp45ip, block_hash: DFEYT3ksxZhZqCnqN4GsDVYYMX4MZryQ5RpzMMg7o8iz, logs: [], receipt_ids: [], gas_burnt: NearGas { inner: 223182562500 }, tokens_burnt: NearToken { inner: 0 }, executor_id: AccountId(\"organizer.sandbox\"), status: SuccessValue(\"\") }]",
+        "result": null,
+        "success": false
+      },
+      "provision": {
+        "gas_burnt": 89899188504103,
+        "receipts": "[ExecutionOutcome { transaction_hash: 2vD27uiWXUE3sy5emQmeuNHvnMBBxRcWrBwhft8c2tyy, block_hash: 9QNVXUG7Y1bvHVKTZbh1X3C24qqX9dH9vg3kxnbVj7Qb, logs: [\"EVENT_JSON:{\\\"standard\\\":\\\"showstake_factory\\\",\\\"version\\\":\\\"1.0.0\\\",\\\"event\\\":\\\"ProvisionRequested\\\",\\\"data\\\":[{\\\"organizer\\\":\\\"organizer.sandbox\\\",\\\"request_nonce\\\":1,\\\"child_id\\\":\\\"5b7c4b11a6421bfb.factory.sandbox\\\",\\\"child_funding\\\":\\\"2262500000000000000000000\\\",\\\"registry_fee\\\":\\\"5720000000000000000000\\\",\\\"attached\\\":\\\"2268220000000000000000000\\\",\\\"excess_refunded\\\":\\\"0\\\",\\\"leaf_code_sha256\\\":\\\"03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2\\\",\\\"canonical_ft\\\":\\\"17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1\\\",\\\"network\\\":\\\"mainnet\\\",\\\"leaf_policy_version\\\":\\\"showstake-native-usdc-rhea-review/1\\\"}]}\"], receipt_ids: [6fDYTFot1mPDpJxTjfpgsf69bN3qhsuorkYwJoAuSpaK, AxJByncPseV4Z6T1yWfKHtLgS8t2p9n53XsP9a3vnpCK, 4Gusg4wtbwkZR9RVJYN7ybVPrnHp5KYuhBVJ47xWYAMc], gas_burnt: NearGas { inner: 49101557622692 }, tokens_burnt: NearToken { inner: 4910155762269200000000 }, executor_id: AccountId(\"factory.sandbox\"), status: SuccessReceiptId(CryptoHash([147, 227, 144, 21, 218, 80, 75, 8, 9, 146, 175, 50, 114, 21, 67, 104, 8, 91, 179, 173, 25, 196, 169, 184, 245, 141, 215, 69, 218, 79, 249, 4])) }, ExecutionOutcome { transaction_hash: 6fDYTFot1mPDpJxTjfpgsf69bN3qhsuorkYwJoAuSpaK, block_hash: CJgGJ3dQg9uMUr9wohqNDifpKc5gVb63ADKXLeN6qfwQ, logs: [], receipt_ids: [DU8gXb98oa9B2iSANKVkQc1YUPgeL6tTQ5QouupdMLqM], gas_burnt: NearGas { inner: 23362910193375 }, tokens_burnt: NearToken { inner: 8616291019337500000000 }, executor_id: AccountId(\"5b7c4b11a6421bfb.factory.sandbox\"), status: SuccessValue(\"\") }, ExecutionOutcome { transaction_hash: DU8gXb98oa9B2iSANKVkQc1YUPgeL6tTQ5QouupdMLqM, block_hash: 8nnQszxDNVJyXJxoMvM12nNakHACgcQwvTyBT9LEQnxu, logs: [], receipt_ids: [], gas_burnt: NearGas { inner: 223182562500 }, tokens_burnt: NearToken { inner: 0 }, executor_id: AccountId(\"organizer.sandbox\"), status: SuccessValue(\"\") }, ExecutionOutcome { transaction_hash: AxJByncPseV4Z6T1yWfKHtLgS8t2p9n53XsP9a3vnpCK, block_hash: 8nnQszxDNVJyXJxoMvM12nNakHACgcQwvTyBT9LEQnxu, logs: [\"EVENT_JSON:{\\\"standard\\\":\\\"showstake_factory\\\",\\\"version\\\":\\\"1.0.0\\\",\\\"event\\\":\\\"RegistryReady\\\",\\\"data\\\":[{\\\"organizer\\\":\\\"organizer.sandbox\\\",\\\"request_nonce\\\":1,\\\"child_id\\\":\\\"5b7c4b11a6421bfb.factory.sandbox\\\",\\\"child_funding\\\":\\\"2262500000000000000000000\\\",\\\"registry_fee\\\":\\\"5720000000000000000000\\\",\\\"leaf_code_sha256\\\":\\\"03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2\\\",\\\"canonical_ft\\\":\\\"17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1\\\",\\\"network\\\":\\\"mainnet\\\",\\\"leaf_policy_version\\\":\\\"showstake-native-usdc-rhea-review/1\\\",\\\"recovered\\\":false}]}\"], receipt_ids: [J8sK4Wdx8S3NDxVgzPYoHiGpsqAjgSH73hVrZmNVH48m], gas_burnt: NearGas { inner: 2154001716566 }, tokens_burnt: NearToken { inner: 215400171656600000000 }, executor_id: AccountId(\"factory.sandbox\"), status: SuccessValue(\"eyJvcmdhbml6ZXIiOiJvcmdhbml6ZXIuc2FuZGJveCIsInJlcXVlc3Rfbm9uY2UiOjEsImNoaWxkX2lkIjoiNWI3YzRiMTFhNjQyMWJmYi5mYWN0b3J5LnNhbmRib3giLCJzdGF0ZSI6IlJlYWR5IiwiYXR0ZW1wdCI6MSwiY3JlYXRlZF9ibG9jayI6MzcsImNyZWF0ZWRfYXRfbXMiOjE3OTQ1MjU1MjE1NTMsInJlYWR5X2F0X21zIjoxNzk0NTI1NTIxODA5LCJjaGlsZF9mdW5kaW5nIjoiMjI2MjUwMDAwMDAwMDAwMDAwMDAwMDAwMCIsInJlZ2lzdHJ5X2ZlZSI6IjU3MjAwMDAwMDAwMDAwMDAwMDAwMDAiLCJhdHRhY2hlZCI6IjIyNjgyMjAwMDAwMDAwMDAwMDAwMDAwMDAiLCJleGNlc3NfcmVmdW5kZWQiOiIwIiwicmVmdW5kX3N0YXRlIjoiTm9uZSIsInJlZnVuZF9hdHRlbXB0IjowLCJsZWFmX2NvZGVfc2hhMjU2IjoiMDMwNzZjNGE5NDk2ZThhZTFlNmFmNjhjNzkxNzUyZDRhNzIyMDU5Nzk0MmVmZmQwYzNhMTgzOWEyNTJiZTlkMiIsImNhbm9uaWNhbF9mdCI6IjE3MjA4NjI4Zjg0ZjVkNmFkMzNmMGRhM2JiYmViMjdmZmNiMzk4ZWFjNTAxYTMxYmQ2YWQyMDExZTM2MTMzYTEiLCJuZXR3b3JrIjoibWFpbm5ldCIsImxlYWZfcG9saWN5X3ZlcnNpb24iOiJzaG93c3Rha2UtbmF0aXZlLXVzZGMtcmhlYS1yZXZpZXcvMSJ9\") }, ExecutionOutcome { transaction_hash: J8sK4Wdx8S3NDxVgzPYoHiGpsqAjgSH73hVrZmNVH48m, block_hash: 7S2WrLQs9N2aLmKzEc5eCxESpsswLa3ACjEKbCD9Uyju, logs: [], receipt_ids: [], gas_burnt: NearGas { inner: 223182562500 }, tokens_burnt: NearToken { inner: 0 }, executor_id: AccountId(\"organizer.sandbox\"), status: SuccessValue(\"\") }, ExecutionOutcome { transaction_hash: 4Gusg4wtbwkZR9RVJYN7ybVPrnHp5KYuhBVJ47xWYAMc, block_hash: CJgGJ3dQg9uMUr9wohqNDifpKc5gVb63ADKXLeN6qfwQ, logs: [], receipt_ids: [], gas_burnt: NearGas { inner: 223182562500 }, tokens_burnt: NearToken { inner: 0 }, executor_id: AccountId(\"organizer.sandbox\"), status: SuccessValue(\"\") }]",
+        "result": {
+          "attached": "2268220000000000000000000",
+          "attempt": 1,
+          "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+          "child_funding": "2262500000000000000000000",
+          "child_id": "5b7c4b11a6421bfb.factory.sandbox",
+          "created_at_ms": 1794525521553,
+          "created_block": 37,
+          "excess_refunded": "0",
+          "leaf_code_sha256": "03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2",
+          "leaf_policy_version": "showstake-native-usdc-rhea-review/1",
+          "network": "mainnet",
+          "organizer": "organizer.sandbox",
+          "ready_at_ms": 1794525521809,
+          "refund_attempt": 0,
+          "refund_state": "None",
+          "registry_fee": "5720000000000000000000",
+          "request_nonce": 1,
+          "state": "Ready"
+        },
+        "success": true
+      },
+      "quote": {
+        "attached_gas_tgas": 120,
+        "child_funding": "2262500000000000000000000",
+        "organizer": "organizer.sandbox",
+        "pending_timeout_blocks": 100,
+        "registry_fee": "5720000000000000000000",
+        "total": "2268220000000000000000000"
+      },
+      "refund": {
+        "gas_burnt": 4996214829456,
+        "receipts": "[ExecutionOutcome { transaction_hash: ANahr9hKnSJx8aKjLTYwtHRrctbg1NmKzd7Y2KCRxYga, block_hash: A9QGncfcCixE16qqaXh12W2x7uzMEL64mqfvnKALvcTZ, logs: [], receipt_ids: [2PbRZS7UsgMwznWGbLRthf51qE7CYcCFMXvGBHr4hA1h, FcTC3vTkYN9XqBZjXzgP34iSxbc2uAxx4Kb9CRCt1t3x, FXMvfhyCZBm1tQHQWGLPu9ffs4jpymwFzCE3ma5PuNFF], gas_burnt: NearGas { inner: 2219596308831 }, tokens_burnt: NearToken { inner: 221959630883100000000 }, executor_id: AccountId(\"factory.sandbox\"), status: SuccessReceiptId(CryptoHash([217, 24, 143, 27, 6, 122, 221, 170, 66, 61, 124, 14, 67, 26, 110, 136, 12, 218, 52, 123, 87, 26, 71, 169, 227, 4, 163, 48, 155, 38, 156, 103])) }, ExecutionOutcome { transaction_hash: 2PbRZS7UsgMwznWGbLRthf51qE7CYcCFMXvGBHr4hA1h, block_hash: 7dXrdhk13AgsQcCJG7hSetcoKdwo96ZPSjD4LTboWgy5, logs: [], receipt_ids: [5XYDyXwoJhXMjQ1qxsPHqDNAby4oq5eadFXWBn5VdqFX], gas_burnt: NearGas { inner: 223182562500 }, tokens_burnt: NearToken { inner: 22318256250000000000 }, executor_id: AccountId(\"organizer.sandbox\"), status: SuccessValue(\"\") }, ExecutionOutcome { transaction_hash: 5XYDyXwoJhXMjQ1qxsPHqDNAby4oq5eadFXWBn5VdqFX, block_hash: 5wHxABwM17cPzF4iQB361ZBVjyUKhoTqjHdCaAGce2xB, logs: [], receipt_ids: [], gas_burnt: NearGas { inner: 223182562500 }, tokens_burnt: NearToken { inner: 0 }, executor_id: AccountId(\"organizer.sandbox\"), status: SuccessValue(\"\") }, ExecutionOutcome { transaction_hash: FcTC3vTkYN9XqBZjXzgP34iSxbc2uAxx4Kb9CRCt1t3x, block_hash: 5wHxABwM17cPzF4iQB361ZBVjyUKhoTqjHdCaAGce2xB, logs: [], receipt_ids: [524n9aLz8JpJihGngBstFBP9wZpm7Ne8mfbUeKm82Wio], gas_burnt: NearGas { inner: 1573969105740 }, tokens_burnt: NearToken { inner: 157396910574000000000 }, executor_id: AccountId(\"factory.sandbox\"), status: SuccessValue(\"dHJ1ZQ==\") }, ExecutionOutcome { transaction_hash: 524n9aLz8JpJihGngBstFBP9wZpm7Ne8mfbUeKm82Wio, block_hash: HVLwrcegCZsRgCaYMdVCTfaAf31dvxe4EEzZMr27bvJr, logs: [], receipt_ids: [], gas_burnt: NearGas { inner: 223182562500 }, tokens_burnt: NearToken { inner: 0 }, executor_id: AccountId(\"organizer.sandbox\"), status: SuccessValue(\"\") }, ExecutionOutcome { transaction_hash: FXMvfhyCZBm1tQHQWGLPu9ffs4jpymwFzCE3ma5PuNFF, block_hash: 7dXrdhk13AgsQcCJG7hSetcoKdwo96ZPSjD4LTboWgy5, logs: [], receipt_ids: [], gas_burnt: NearGas { inner: 223182562500 }, tokens_burnt: NearToken { inner: 0 }, executor_id: AccountId(\"organizer.sandbox\"), status: SuccessValue(\"\") }]",
+        "result": true,
+        "success": true
+      },
+      "refund_after": {
+        "amount": "27695444609314381400000000",
+        "code_hash": "11111111111111111111111111111111",
+        "global_contract_account_id": null,
+        "global_contract_hash": null,
+        "locked": "0",
+        "storage_usage": 182,
+        "version": "V2"
+      },
+      "refund_before": {
+        "amount": "25433377276028577000000000",
+        "code_hash": "11111111111111111111111111111111",
+        "global_contract_account_id": null,
+        "global_contract_hash": null,
+        "locked": "0",
+        "storage_usage": 182,
+        "version": "V2"
+      },
+      "replay": {
+        "gas_burnt": 32715695531058,
+        "receipts": "[ExecutionOutcome { transaction_hash: GM2RMzJv6XrL9v8UVsxvxhChhhb3Loauky6jB7Z7xuQ4, block_hash: 2LktKrBVfKJnKxH66W9MExAFw2vW8xBthY7bwb8rXE9Y, logs: [\"EVENT_JSON:{\\\"standard\\\":\\\"showstake_factory\\\",\\\"version\\\":\\\"1.0.0\\\",\\\"event\\\":\\\"ProvisionReplay\\\",\\\"data\\\":[{\\\"organizer\\\":\\\"organizer.sandbox\\\",\\\"request_nonce\\\":1,\\\"child_id\\\":\\\"5b7c4b11a6421bfb.factory.sandbox\\\",\\\"state\\\":\\\"Ready\\\",\\\"attached_refunded\\\":\\\"0\\\"}]}\"], receipt_ids: [3ZvzUR8JyvMajDDrkzdHpBZwQw4HhSb5ofeoUzJ4kRcq], gas_burnt: NearGas { inner: 17881341684588 }, tokens_burnt: NearToken { inner: 1788134168458800000000 }, executor_id: AccountId(\"factory.sandbox\"), status: SuccessValue(\"eyJvcmdhbml6ZXIiOiJvcmdhbml6ZXIuc2FuZGJveCIsInJlcXVlc3Rfbm9uY2UiOjEsImNoaWxkX2lkIjoiNWI3YzRiMTFhNjQyMWJmYi5mYWN0b3J5LnNhbmRib3giLCJzdGF0ZSI6IlJlYWR5IiwiYXR0ZW1wdCI6MSwiY3JlYXRlZF9ibG9jayI6MzcsImNyZWF0ZWRfYXRfbXMiOjE3OTQ1MjU1MjE1NTMsInJlYWR5X2F0X21zIjoxNzk0NTI1NTIxODA5LCJjaGlsZF9mdW5kaW5nIjoiMjI2MjUwMDAwMDAwMDAwMDAwMDAwMDAwMCIsInJlZ2lzdHJ5X2ZlZSI6IjU3MjAwMDAwMDAwMDAwMDAwMDAwMDAiLCJhdHRhY2hlZCI6IjIyNjgyMjAwMDAwMDAwMDAwMDAwMDAwMDAiLCJleGNlc3NfcmVmdW5kZWQiOiIwIiwicmVmdW5kX3N0YXRlIjoiTm9uZSIsInJlZnVuZF9hdHRlbXB0IjowLCJsZWFmX2NvZGVfc2hhMjU2IjoiMDMwNzZjNGE5NDk2ZThhZTFlNmFmNjhjNzkxNzUyZDRhNzIyMDU5Nzk0MmVmZmQwYzNhMTgzOWEyNTJiZTlkMiIsImNhbm9uaWNhbF9mdCI6IjE3MjA4NjI4Zjg0ZjVkNmFkMzNmMGRhM2JiYmViMjdmZmNiMzk4ZWFjNTAxYTMxYmQ2YWQyMDExZTM2MTMzYTEiLCJuZXR3b3JrIjoibWFpbm5ldCIsImxlYWZfcG9saWN5X3ZlcnNpb24iOiJzaG93c3Rha2UtbmF0aXZlLXVzZGMtcmhlYS1yZXZpZXcvMSJ9\") }, ExecutionOutcome { transaction_hash: 3ZvzUR8JyvMajDDrkzdHpBZwQw4HhSb5ofeoUzJ4kRcq, block_hash: DHXUFit96FNCbwfW5iEgQP45w3sdFyDjYS4PgaRPAZ6j, logs: [], receipt_ids: [], gas_burnt: NearGas { inner: 223182562500 }, tokens_burnt: NearToken { inner: 0 }, executor_id: AccountId(\"organizer.sandbox\"), status: SuccessValue(\"\") }]",
+        "result": {
+          "attached": "2268220000000000000000000",
+          "attempt": 1,
+          "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+          "child_funding": "2262500000000000000000000",
+          "child_id": "5b7c4b11a6421bfb.factory.sandbox",
+          "created_at_ms": 1794525521553,
+          "created_block": 37,
+          "excess_refunded": "0",
+          "leaf_code_sha256": "03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2",
+          "leaf_policy_version": "showstake-native-usdc-rhea-review/1",
+          "network": "mainnet",
+          "organizer": "organizer.sandbox",
+          "ready_at_ms": 1794525521809,
+          "refund_attempt": 0,
+          "refund_state": "None",
+          "registry_fee": "5720000000000000000000",
+          "request_nonce": 1,
+          "state": "Ready"
+        },
+        "success": true
+      },
+      "request": {
+        "attached": "2268220000000000000000000",
+        "attempt": 1,
+        "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "child_funding": "2262500000000000000000000",
+        "child_id": "5b7c4b11a6421bfb.factory.sandbox",
+        "created_at_ms": 1794525521553,
+        "created_block": 37,
+        "excess_refunded": "0",
+        "leaf_code_sha256": "03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2",
+        "leaf_policy_version": "showstake-native-usdc-rhea-review/1",
+        "network": "mainnet",
+        "organizer": "organizer.sandbox",
+        "ready_at_ms": 1794525521809,
+        "refund_attempt": 0,
+        "refund_state": "None",
+        "registry_fee": "5720000000000000000000",
+        "request_nonce": 1,
+        "state": "Ready"
+      },
+      "scope": "sandbox only; no external provider calls",
+      "status": "PASS_LOCAL",
+      "testnet_config": {
+        "canonical_ft": "mockusdc.testnet",
+        "network": "testnet",
+        "organizer": "organizer.sandbox",
+        "policy_version": "showstake-native-usdc-event/1",
+        "provider_account": "provider.testnet",
+        "provider_kind": "MOCK_TESTNET"
+      },
+      "testnet_provision": {
+        "gas_burnt": 89887864246255,
+        "receipts": "[ExecutionOutcome { transaction_hash: GoiKULgyQyivRWB67bfXo9zp6dacnBMuQkH563fry2Zb, block_hash: HKhq9J3ynofq2Eid3vBfzLR5EJWMsequGgWiN6w4De2L, logs: [\"EVENT_JSON:{\\\"standard\\\":\\\"showstake_factory\\\",\\\"version\\\":\\\"1.0.0\\\",\\\"event\\\":\\\"ProvisionRequested\\\",\\\"data\\\":[{\\\"organizer\\\":\\\"organizer.sandbox\\\",\\\"request_nonce\\\":1,\\\"child_id\\\":\\\"e17b5b2630b1190a.factory.testnet\\\",\\\"child_funding\\\":\\\"2261930000000000000000000\\\",\\\"registry_fee\\\":\\\"5720000000000000000000\\\",\\\"attached\\\":\\\"2267650000000000000000000\\\",\\\"excess_refunded\\\":\\\"0\\\",\\\"leaf_code_sha256\\\":\\\"03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2\\\",\\\"canonical_ft\\\":\\\"mockusdc.testnet\\\",\\\"network\\\":\\\"testnet\\\",\\\"leaf_policy_version\\\":\\\"showstake-native-usdc-event/1\\\"}]}\"], receipt_ids: [75QaV5Z2qzaxtsGbjFjHFPsywRbKA2jm6qPbhCzqcXvH, CUFfWeGVQsVJhpeujUJbFyAYmDNSP8AksjCNoaUPGHD9, 6tDBFZAkcwMs3ndaSTjcK9ELbYSZYfqE57vSPPRSrZpX], gas_burnt: NearGas { inner: 49103991513143 }, tokens_burnt: NearToken { inner: 4910399151314300000000 }, executor_id: AccountId(\"factory.testnet\"), status: SuccessReceiptId(CryptoHash([170, 107, 209, 147, 88, 234, 127, 202, 65, 180, 123, 60, 248, 162, 243, 141, 67, 84, 63, 149, 74, 138, 24, 143, 91, 44, 115, 5, 63, 87, 208, 216])) }, ExecutionOutcome { transaction_hash: 75QaV5Z2qzaxtsGbjFjHFPsywRbKA2jm6qPbhCzqcXvH, block_hash: GAdJeyzZinM2YkP4y7L3U9g6cz4qw4dDc9fr4dXg16DE, logs: [], receipt_ids: [7SVrn81AaXuFSdpL6aC4xJaZFTtTzrHirF58sYxGAoup], gas_burnt: NearGas { inner: 23358995061543 }, tokens_burnt: NearToken { inner: 8615899506154300000000 }, executor_id: AccountId(\"e17b5b2630b1190a.factory.testnet\"), status: SuccessValue(\"\") }, ExecutionOutcome { transaction_hash: 7SVrn81AaXuFSdpL6aC4xJaZFTtTzrHirF58sYxGAoup, block_hash: 5jrX7mcYwZKxWy4tv76nJVFWKosqsWpBPSkBtBz1V52J, logs: [], receipt_ids: [], gas_burnt: NearGas { inner: 223182562500 }, tokens_burnt: NearToken { inner: 0 }, executor_id: AccountId(\"organizer.sandbox\"), status: SuccessValue(\"\") }, ExecutionOutcome { transaction_hash: CUFfWeGVQsVJhpeujUJbFyAYmDNSP8AksjCNoaUPGHD9, block_hash: 5jrX7mcYwZKxWy4tv76nJVFWKosqsWpBPSkBtBz1V52J, logs: [\"EVENT_JSON:{\\\"standard\\\":\\\"showstake_factory\\\",\\\"version\\\":\\\"1.0.0\\\",\\\"event\\\":\\\"RegistryReady\\\",\\\"data\\\":[{\\\"organizer\\\":\\\"organizer.sandbox\\\",\\\"request_nonce\\\":1,\\\"child_id\\\":\\\"e17b5b2630b1190a.factory.testnet\\\",\\\"child_funding\\\":\\\"2261930000000000000000000\\\",\\\"registry_fee\\\":\\\"5720000000000000000000\\\",\\\"leaf_code_sha256\\\":\\\"03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2\\\",\\\"canonical_ft\\\":\\\"mockusdc.testnet\\\",\\\"network\\\":\\\"testnet\\\",\\\"leaf_policy_version\\\":\\\"showstake-native-usdc-event/1\\\",\\\"recovered\\\":false}]}\"], receipt_ids: [9n8kUA7ph665sMzRwxxshaiK2DTgTR5HLCxN9WQEWfZB], gas_burnt: NearGas { inner: 2144158700099 }, tokens_burnt: NearToken { inner: 214415870009900000000 }, executor_id: AccountId(\"factory.testnet\"), status: SuccessValue(\"eyJvcmdhbml6ZXIiOiJvcmdhbml6ZXIuc2FuZGJveCIsInJlcXVlc3Rfbm9uY2UiOjEsImNoaWxkX2lkIjoiZTE3YjViMjYzMGIxMTkwYS5mYWN0b3J5LnRlc3RuZXQiLCJzdGF0ZSI6IlJlYWR5IiwiYXR0ZW1wdCI6MSwiY3JlYXRlZF9ibG9jayI6ODksImNyZWF0ZWRfYXRfbXMiOjE3OTQ1MjU1MjgwNzksInJlYWR5X2F0X21zIjoxNzk0NTI1NTI4MzMyLCJjaGlsZF9mdW5kaW5nIjoiMjI2MTkzMDAwMDAwMDAwMDAwMDAwMDAwMCIsInJlZ2lzdHJ5X2ZlZSI6IjU3MjAwMDAwMDAwMDAwMDAwMDAwMDAiLCJhdHRhY2hlZCI6IjIyNjc2NTAwMDAwMDAwMDAwMDAwMDAwMDAiLCJleGNlc3NfcmVmdW5kZWQiOiIwIiwicmVmdW5kX3N0YXRlIjoiTm9uZSIsInJlZnVuZF9hdHRlbXB0IjowLCJsZWFmX2NvZGVfc2hhMjU2IjoiMDMwNzZjNGE5NDk2ZThhZTFlNmFmNjhjNzkxNzUyZDRhNzIyMDU5Nzk0MmVmZmQwYzNhMTgzOWEyNTJiZTlkMiIsImNhbm9uaWNhbF9mdCI6Im1vY2t1c2RjLnRlc3RuZXQiLCJuZXR3b3JrIjoidGVzdG5ldCIsImxlYWZfcG9saWN5X3ZlcnNpb24iOiJzaG93c3Rha2UtbmF0aXZlLXVzZGMtZXZlbnQvMSJ9\") }, ExecutionOutcome { transaction_hash: 9n8kUA7ph665sMzRwxxshaiK2DTgTR5HLCxN9WQEWfZB, block_hash: 9tcwNYbGdjPsstbawNKaHPjPnhgVitmTZYgJCqzUS268, logs: [], receipt_ids: [], gas_burnt: NearGas { inner: 223182562500 }, tokens_burnt: NearToken { inner: 0 }, executor_id: AccountId(\"organizer.sandbox\"), status: SuccessValue(\"\") }, ExecutionOutcome { transaction_hash: 6tDBFZAkcwMs3ndaSTjcK9ELbYSZYfqE57vSPPRSrZpX, block_hash: GAdJeyzZinM2YkP4y7L3U9g6cz4qw4dDc9fr4dXg16DE, logs: [], receipt_ids: [], gas_burnt: NearGas { inner: 223182562500 }, tokens_burnt: NearToken { inner: 0 }, executor_id: AccountId(\"organizer.sandbox\"), status: SuccessValue(\"\") }]",
+        "result": {
+          "attached": "2267650000000000000000000",
+          "attempt": 1,
+          "canonical_ft": "mockusdc.testnet",
+          "child_funding": "2261930000000000000000000",
+          "child_id": "e17b5b2630b1190a.factory.testnet",
+          "created_at_ms": 1794525528079,
+          "created_block": 89,
+          "excess_refunded": "0",
+          "leaf_code_sha256": "03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2",
+          "leaf_policy_version": "showstake-native-usdc-event/1",
+          "network": "testnet",
+          "organizer": "organizer.sandbox",
+          "ready_at_ms": 1794525528332,
+          "refund_attempt": 0,
+          "refund_state": "None",
+          "registry_fee": "5720000000000000000000",
+          "request_nonce": 1,
+          "state": "Ready"
+        },
+        "success": true
+      },
+      "testnet_request": {
+        "attached": "2267650000000000000000000",
+        "attempt": 1,
+        "canonical_ft": "mockusdc.testnet",
+        "child_funding": "2261930000000000000000000",
+        "child_id": "e17b5b2630b1190a.factory.testnet",
+        "created_at_ms": 1794525528079,
+        "created_block": 89,
+        "excess_refunded": "0",
+        "leaf_code_sha256": "03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2",
+        "leaf_policy_version": "showstake-native-usdc-event/1",
+        "network": "testnet",
+        "organizer": "organizer.sandbox",
+        "ready_at_ms": 1794525528332,
+        "refund_attempt": 0,
+        "refund_state": "None",
+        "registry_fee": "5720000000000000000000",
+        "request_nonce": 1,
+        "state": "Ready"
+      }
+    }
+  ]
+}

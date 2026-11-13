@@ -1,5 +1,7 @@
 # ShowStake
 
+Current mainnet review handoff (2026-11-13): [browser steps and scoped treasury plan](docs/mainnet-user-test.md), [review evidence and remaining gates](docs/evidence/mainnet-integration-review-20261113.json). The production mainnet frontend build passes locally, but funded event/Rhea acceptance is still blocked: actual withdrawal, contract recovery/provenance, real browser wallet and final PostgreSQL migration tests remain open. The deployed escrow stays empty and paused. Do not interpret the mainnet build as permission to deposit.
+
 ShowStake is an event attendance commitment platform built around NEAR escrow. Participants lock a fixed attendance deposit that cannot be voluntarily withdrawn after registration; an account-bound, non-transferable pass represents registration. Organizers finalize attendance onchain before settlement and claims. The product addresses registrations that do not translate into attendance.
 
 Accepted increments include the database foundation, independent settlement oracle, wallet/signing diagnostic harness, and Rust escrow/pass, attendance, settlement and claim contract. The core contract financial lifecycle is exercised on NEAR testnet; full browser/backend integration remains incomplete. Hackathon tracks: `open` and `nfts`; the custom pass does not claim NEP-171 or NEP-393 compliance.

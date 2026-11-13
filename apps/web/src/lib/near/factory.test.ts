@@ -1,0 +1,27 @@
+﻿import assert from "node:assert/strict";
+import { validateFactory, matchFactoryRequest, saveFactoryAttempt, REVIEWED_LEAF_SHA256 } from "./factory.ts";
+const identity = { factory: "factory.near", factoryCodeSha256:"a".repeat(64), factoryCodeHash:"hash", organizer: "alice.near", canonicalFt: "usdc.near", policy: "policy/1", provider: "provider.near", providerKind: "RHEA_MAINNET" };
+const config = { factory_account: identity.factory, canonical_ft: identity.canonicalFt, network: "mainnet", provider_account: identity.provider, provider_kind: identity.providerKind, leaf_code_len: 224939, leaf_policy_version: identity.policy, leaf_code_sha256: REVIEWED_LEAF_SHA256 };
+const quote = { organizer: identity.organizer, child_funding: "230", registry_fee: "5", total: "235", attached_gas_tgas: 120 };
+assert.equal(validateFactory(config, quote, identity), true);
+assert.equal(validateFactory(config, { ...quote, total: "234" }, identity), false);
+assert.equal(validateFactory({ ...config, network: "testnet" }, quote, identity), false);
+const attempt = { network: "mainnet" as const, factory: identity.factory, organizer: identity.organizer, nonce: 7, child: "child.factory.near", codeHash: REVIEWED_LEAF_SHA256, total: "235", hash: null };
+const request = { organizer: identity.organizer, request_nonce: 7, child_id: attempt.child, state: "Ready", leaf_code_sha256: REVIEWED_LEAF_SHA256, canonical_ft: identity.canonicalFt, network: "mainnet", leaf_policy_version: identity.policy };
+assert.equal(matchFactoryRequest(attempt, request, identity), "ready");
+assert.equal(matchFactoryRequest(attempt, { ...request, child_id: "wrong.near" }, identity), "pending");
+assert.equal(matchFactoryRequest(attempt, { ...request, state: "Pending" }, identity), "pending");
+const map = new Map<string,string>(); const storage = { getItem: (k:string) => map.get(k) ?? null, setItem: (k:string,v:string) => map.set(k,v) };
+saveFactoryAttempt(storage, attempt); assert.throws(() => saveFactoryAttempt(storage, attempt));
+console.log("PASS_LOCAL factory identity, quote and pending recovery guards");
+
+import { finalFactoryReceipt } from "./factory.ts";
+const recorded = { ...attempt, hash: "tx-hash" };
+const child = { organizer: identity.organizer, canonical_ft: identity.canonicalFt, network: "mainnet", policy_version: identity.policy, provider_account: identity.provider, provider_kind: identity.providerKind };
+const event = { standard: "showstake_factory", version: "1.0.0", event: "RegistryReady", data: [{ organizer: identity.organizer, request_nonce: 7, child_id: attempt.child, leaf_code_sha256: REVIEWED_LEAF_SHA256, canonical_ft: identity.canonicalFt, network: "mainnet", leaf_policy_version: identity.policy }] };
+const outcome = { status: { SuccessValue: "" }, transaction: { hash: "tx-hash", signer_id: identity.organizer, receiver_id: identity.factory, actions: [{ FunctionCall: { method_name: "provision", deposit: "235", args: btoa(JSON.stringify({ request_nonce: 7, code: "code" })) } }] }, receipts_outcome: [{ outcome: { executor_id: identity.factory, status: { SuccessValue: "" }, logs: [`EVENT_JSON:${JSON.stringify(event)}`] } }] };
+const linked={...outcome,final_execution_status:"FINAL",transaction_outcome:{id:"tx-hash",outcome:{executor_id:identity.organizer,status:{SuccessReceiptId:"r1"},receipt_ids:["r1"]}},receipts:[{receipt_id:"r1",predecessor_id:identity.organizer,receiver_id:identity.factory,receipt:{Action:{actions:outcome.transaction.actions}}}],receipts_outcome:[{id:"r1",outcome:{...outcome.receipts_outcome[0]!.outcome,receipt_ids:[]}}]};
+assert.equal(finalFactoryReceipt(linked,recorded,request,identity,child,REVIEWED_LEAF_SHA256),"confirmed");
+assert.equal(finalFactoryReceipt({...linked,final_execution_status:"EXECUTED"},recorded,request,identity,child,REVIEWED_LEAF_SHA256),"pending");
+assert.equal(finalFactoryReceipt({...linked,receipts:[{...linked.receipts[0]!,predecessor_id:"other.near"}]},recorded,request,identity,child,REVIEWED_LEAF_SHA256),"pending");
+assert.equal(finalFactoryReceipt({...linked,receipts_outcome:[]},recorded,request,identity,child,REVIEWED_LEAF_SHA256),"pending");

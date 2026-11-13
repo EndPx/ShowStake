@@ -1,2 +1,4 @@
+import { NETWORK } from "@/lib/config";
+import { MainnetEventRoute } from "@/components/event/mainnet-event-route";
 import { ResultsPanel } from "@/components/event/lifecycle-panels";
-export default async function ResultsPage({ params }: { params: Promise<{ eventId: string }> }) { return <ResultsPanel eventId={(await params).eventId} />; }
+export default async function Page({params,searchParams}:{params:Promise<{eventId:string}>;searchParams:Promise<{contract?:string}>}){const {eventId}=await params;const {contract}=await searchParams;return NETWORK==="mainnet"?<MainnetEventRoute mode="results" eventId={eventId} contractId={contract??""}/>:<ResultsPanel eventId={eventId}/>;}

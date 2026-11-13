@@ -1,0 +1,7 @@
+﻿export interface EventDraft { event_id: string; title: string; location: string; rules_text: string; deposit: string; capacity: string; reg_open: string; reg_close: string; checkin_open: string; checkin_close: string }
+export function eventRulesPreview(fields: EventDraft) {
+  const times = [fields.reg_open, fields.reg_close, fields.checkin_open, fields.checkin_close].map(x => x ? new Date(x).getTime() : NaN);
+  const capacity = Number(fields.capacity); const enc = new TextEncoder();
+  if (![fields.event_id, fields.title, fields.location, fields.rules_text].every(Boolean) || !/^[A-Za-z0-9._-]{1,128}$/.test(fields.event_id) || enc.encode(fields.title).length > 256 || enc.encode(fields.location).length > 512 || enc.encode(fields.rules_text).length > 8192 || !/^[1-9][0-9]*$/.test(fields.deposit) || BigInt(fields.deposit) >= 2n ** 128n || !/^[1-9][0-9]*$/.test(fields.capacity) || !Number.isInteger(capacity) || capacity > 200 || times.some(x => !Number.isSafeInteger(x) || x < 0) || !(times[0]! < times[1]! && times[1]! <= times[2]! && times[2]! < times[3]!) || !Number.isSafeInteger(times[3]! + 86400000) || BigInt(fields.deposit) * BigInt(capacity) >= 2n ** 128n) return null;
+  return { method: "create_event", args: { rules: { event_id: fields.event_id, title: fields.title, location: fields.location, rules_text: fields.rules_text, deposit: fields.deposit, capacity, reg_open: times[0], reg_close: times[1], checkin_open: times[2], checkin_close: times[3], finalize_deadline: times[3]! + 86400000 } } };
+}

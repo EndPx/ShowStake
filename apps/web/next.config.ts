@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  distDir: process.env.SHOWSTAKE_NEXT_DIST_DIR || ".next",
   // Same-origin public API proxy: the browser fetches `/api/v1/*` only (no
   // cross-origin, no CORS) and Next rewrites that fixed prefix to the backend.
   // This is a strict, closed rewrite — it cannot reach arbitrary hosts, only
