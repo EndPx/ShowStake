@@ -1,33 +1,81 @@
-# Mainnet user test handoff
+# Mainnet CREATE user test
 
-Latest update: the hosted frontend is `https://showstake.vercel.app`, with HTTPS API on `https://srv1330754.hstgr.cloud`. The reviewed API identity release f21e699 is live. The new linked-withdraw leaf and public global factory now pass real local Sandbox tests using the public Rhea binary, including controlled failure and retry, but are not publicly deployed. See `mainnet-factory-v2-plan.md` for the exact pending deployment budget and `evidence/mainnet-feature-unlock-20261113/acceptance.json` for artifact identities and test scope. The earlier detached-withdrawal source limitation below describes the preserved old manual escrow, not the new linked candidate. Mainnet liquidity and complete browser-wallet financial acceptance remain NOT_RUN; new controls stay gated until their corresponding deployment, provider acceptance and scoped authorization exist.
+Updated 2026-11-14 Asia/Jakarta. Website: https://showstake.vercel.app/events/new.
+Backend: https://srv1330754.hstgr.cloud. This release enables **event creation only**.
+It does not accept mainnet USDC registrations or execute Rhea Earn.
 
-Updated 2026-11-13. This is a staged review build, not acceptance of funded event Earn. The mainnet account `showstake-mainnet-escrow-endpx-2026.near` is deployed with code hash `CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os`, paused, cap zero and no event at the stage-1 verification. No participant USDC or provider calls were authorized or executed in stage 1.
+## Frozen contract
 
-## Local website review
+- Account: `showstake-mainnet-escrow-endpx-2026.near`.
+- Policy: `showstake-native-usdc-multievent/1`.
+- Wasm SHA-256: `c81cf3d7293c111fc29c930ac19f94d3c88cdcf4d7dcf70a73f73911c87999e7`.
+- Code hash: `EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY`.
+- Size: 225667 bytes.
+- Upgrade receipt: [Cpb4sh2B2ASAfLEQouz3sPq9DqN3JYsfJoiXxogqr3BJ](https://nearblocks.io/txns/Cpb4sh2B2ASAfLEQouz3sPq9DqN3JYsfJoiXxogqr3BJ).
+- Actual upgrade fee: 0.0018191977271696 NEAR, below the approved 0.01-NEAR ceiling.
+- No new account or factory was created. Existing native capital was reused.
+- The user froze this release; no code edit or redeploy was performed afterward.
+  The FullAccess deployment key remains in the local OS keychain; this is a release
+  freeze, not a claim that upgrade authority was irreversibly removed.
 
-From the repository, run `pnpm install --frozen-lockfile`, then `powershell -ExecutionPolicy Bypass -File scripts/start-mainnet-preview.ps1 -Build`. This foreground preview uses mainnet read-only configuration on `http://127.0.0.1:3012`, with the API expected on `http://127.0.0.1:3002`. The launcher never reads keys, signs or broadcasts. The final mainnet build passed locally. After the user explicitly authorized startup again, Codex started the frontend and verified the local browser and wallet picker; the earlier automatic startup rejection no longer blocks this preview. The final database tests subsequently passed on new isolated Ubuntu-24.04 clusters after physical disk space recovered. The affected Ubuntu distribution still fails to start and was not repaired.
+## Do X, see Y
 
-The local API currently runs on port 3002. To reproduce its setup when it is not running: use `wsl -d Ubuntu-24.04 -- bash scripts/dev-database.sh`, apply `node migrations/cli.mjs up` with the local operator DATABASE_URL `postgresql://showstake@127.0.0.1:55440/showstake_dev`, then clear that variable and rerun the database helper to create restricted service logins. Run `powershell -ExecutionPolicy Bypass -File scripts/start-mainnet-api-preview.ps1 -Build` in its own terminal. Do not launch a second copy on an occupied port. Both launchers bind loopback only. Production database credentials, TLS and hosting are separate deployment configuration; do not expose this trusted-local development database.
+1. Open the website above and choose **Connect wallet**. Use a native NEAR mainnet
+   wallet that supports the sign-in message and transaction approval.
+2. Choose **Sign in** when requested. This is an offchain NEP-413 login message,
+   not an asset transfer. The organizer is your connected account; no nominated
+   organizer or account whitelist is required.
+3. Enter title, location, rules, deposit amount in USDC, capacity, registration
+   times and check-in times. Capacity defaults to5. Times use your browser's local
+   timezone; finalization deadline is24h after check-in closes.
+4. Press **Preview event rules**. See the atomic deposit and exact rules that will
+   be sent. The USDC amount here is an event rule; no USDC moves during creation.
+5. Press **Get storage quote**. See the live NEAR reservation for the exact rules
+   and organizer, read with contract identity at one fresh final block.
+6. Press **Publish event** and inspect the wallet's transaction. It calls
+   `create_event` on the frozen shared contract, with the displayed NEAR quote.
+   Approve it yourself. Contract code is not deployed again for each event.
+7. Press **Verify receipt** when submission returns a hash. A hash or timer is not
+   success: the page verifies the exact final transaction and matching onchain
+   event rules/organizer before confirming.
+8. Open **View the event**. It reads the event from the shared contract.
+   Discover and Hosting in My Events also use verified contract reads so a stale
+   indexer does not invent or hide creation authority.
 
-1. Open `/events/new`: the normal product path creates a new factory child for the connected wallet. Every connected organizer may use that path once the public factory/provider release is accepted; no organizer account is nominated or whitelisted in advance. The organizer pays the displayed native funding and gas.
-2. Connect a native NEAR mainnet wallet. The factory derives the child organizer from the signed transaction predecessor. The old allocated escrow has a fixed organizer and is available only through explicit Legacy review; that one account is not the general product's organizer. A near.com internal EVM identity is not automatically a native NEAR signer. Do not share private keys or seed phrases.
-3. Inspect `/earn`: Rhea identity, USDC asset, storage, position and balances are read-only. Transaction controls remain locked because no scoped approval is installed. A displayed position or successful supply is not withdrawal acceptance.
-4. Inspect `/funding`: quotes are DRY; only supported catalog assets are offered, recipient is the participant's NEAR account, and swap completion never creates an escrow registration. No live source-chain transfer is accepted yet.
-5. Event URLs preserve `?contract=<escrow-account>` so identical event IDs on different contracts cannot cross-bind API/pass/claim actions. Actual event registration, pass, host check-in, results and protected-content pages require a created, finalized event; the empty paused account has none.
+The organizer's connected wallet needs native NEAR for the quoted reservation
+and prepaid gas. The shared contract's existing balance does not pay a user's
+create reservation automatically. A sample five-seat quote was approximately
+0.228–0.229NEAR; it varies with metadata/account lengths. It is a conservative
+reservation for event data and future participant records, not all gas or an
+exact measurement of immediately consumed storage. This release does not provide
+automatic withdrawal of unused native storage reservations.
 
-The API requires a restricted PostgreSQL role and a server-side NEP-413 configuration. Never put operator DB credentials, signing keys, cookies or signatures in a browser/public environment. The preview launcher is not a production hosting deployment. Production HTTPS, a durable database, worker supervision and a chosen browser wallet acceptance remain release gates.
+## Rejected or interrupted wallet requests
 
-## Separate treasury test to review before signing
+The app saves the exact attempt before opening the wallet. A known hash is
+restored after reload; an unknown hash remains recovery-only. Copy a hash from
+your wallet if necessary, then verify that receipt. Do not blindly submit another
+payment. Wrong signer, target, rules, code hash, quote, network or stale context
+is rejected. If quote/rules change, obtain and review a new quote first.
 
-The reviewable Rhea sequence is 1 USDC supply, partial withdrawal up to 0.5 USDC, then full withdrawal of the remaining position. See `evidence/rhea-microtest-plan-20261113.md` for exact provider/token identities and arguments. The application budget is 0.22 NEAR for storage and prepaid gas at the approved ceiling. This is not an authorization, funding request, guaranteed fee or protocol-enforced spending limit. A dedicated treasury account, expiry, approval ID, plan hash and exact operations must match in the API approval file, frontend plan and wallet scope. All defaults remain disabled. The user signs each transaction; no private key or seed phrase is requested in chat.
+No private key or seed phrase is needed in chat or in the website.
 
-The server journal durably reserves a step before the wallet opens. An existing reservation or unknown outcome is recovery-only. A hash may be attached once, and completion requires canonical final receipt graph plus historical/current balance and position reconciliation. Browser storage is only a hash hint. Clearing it does not grant another supply or withdrawal. A failed/ambiguous withdrawal does not justify blind retry.
+## Evidence and limits
 
-## Remaining contract gate
+[Mainnet upgrade and balance evidence](evidence/multievent-mainnet-upgrade-20261114/result.json)
+is PASS_LIVE. [Frontend live preflight](evidence/multievent-mainnet-upgrade-20261114/frontend-readonly-ready.json)
+is read-only; it submitted no create transaction.
+[Actual legacy-Wasm migration and two-organizer CREATE](evidence/multievent-create-20261114/sandbox.json)
+is PASS_LOCAL, not a public-chain create receipt.
 
-The current Rhea event candidate cannot be accepted solely from a successful treasury round trip. Rhea `execute` may return before detached FT transfer completion; the current leaf cannot bind return provenance for a particular redeem attempt and has unresolved ambiguous/callback-loss recovery. See `src.rs` around `reconcile_earn`, `on_rhea_reconcile` and `on_rhea_action`. A possible direct promise method, `simple_withdraw`, is exported by the verified live Wasm, but the available official Ref source reports version 0.15.7 while live `get_version` reports 0.16.2. Export presence and similar third-party source do not prove callback semantics or source equivalence. Exact-amount withdrawal also needs reviewed rounding/residual handling. Source review requires a provider-semantic fix and failure proof before any event principal is enabled. Do not unpause the deployed account to bypass this gate. No upgraded source, mainnet upgrade or participant funding is authorized by this handoff.
+Native wallet picker and browser form preview were checked publicly. A human
+wallet-signed mainnet CREATE remains the user test above; no agent-created event
+was authorized in the upgrade scope. Mainnet registration, pass issuance from
+USDC, Rhea supply/redemption, settlement and claim are not accepted for this
+frozen artifact. Their controls are visibly disabled. Concurrent Earn remains
+required, with no single-active-event substitute.
 
-## Evidence labels
-
-Stage-1 account creation/deploy/init: PASS_LIVE, empty/paused only (`evidence/mainnet-deploy-20261112T221125Z/`). Offchain mainnet challenge/session/replay/revoke: PASS_LIVE (`evidence/mainnet-auth-live-20261113.json`), no blockchain spending. Five users × 2 Mock USDC, two attendees receiving 5 each, failed payout/restoration/retry and cancellation refund: PASS_LOCAL current-leaf Sandbox (`../test-support/contract-integration/evidence/runs/claim-failure-20261113T002255Z-339675/`). Prior public testnet lifecycle evidence remains separate. Mainnet worker empty baseline and restart scan are read-only live evidence. Final PostgreSQL acceptance is PASS_LOCAL: API36, worker89 and T01-57 through all seven migrations and dump/restore. Rhea actual supply/USDC return and funded browser lifecycle remain NOT_RUN.
+Backend uses schema8 (25 PK tables,40 validated FKs). New code revision starts
+at the verified upgrade block224402760 with a distinct consumer; the old cursor
+is retained. Indexing is catch-up work, not financial authority. API/session
+restart/replay/logout proof is separate from onchain settlement.

@@ -1,0 +1,117 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "Hosted CREATE UI/picker/form and actual read-only preflight + approved mainnet code upgrade; user CREATE signature not exercised",
+  "observedAt": "2026-11-13T19:41:45.306Z",
+  "frontend": "https://showstake.vercel.app",
+  "frontendSourceCommit": "c5174f0",
+  "verifiedGitDeploymentCommit": "10b2602",
+  "vercelDashboardUrl": "https://vercel.com/muhammad-meidy-noor-al-barrys-projects/showstake/33Tb1RUKQKrib2pVm4ogHRtSL8mb",
+  "backendRelease": "/opt/showstake/releases/10b2602",
+  "backendArchiveSha256": "a66f586c68c59f063a4749a31abcd25c4d4c907f8a31bc03f5c93fec6a195eb7",
+  "readiness": {
+    "status": 200,
+    "data": {
+      "contractId": "showstake-mainnet-escrow-endpx-2026.near",
+      "codeHash": "EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY",
+      "contractMode": "MULTI_EVENT_CREATE",
+      "createReady": true,
+      "registrationEnabled": false,
+      "paused": true,
+      "principalCapAtomic": "0",
+      "eventPresent": false,
+      "providerStatus": "UNVERIFIED",
+      "signingAuthority": false
+    },
+    "stale": false
+  },
+  "contract": {
+    "sha256": "c81cf3d7293c111fc29c930ac19f94d3c88cdcf4d7dcf70a73f73911c87999e7",
+    "bytes": 225667,
+    "codeHash": "EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY",
+    "account": "showstake-mainnet-escrow-endpx-2026.near",
+    "transaction": "Cpb4sh2B2ASAfLEQouz3sPq9DqN3JYsfJoiXxogqr3BJ",
+    "frozen": true,
+    "changesAfterUpgrade": 0
+  },
+  "browser": {
+    "surface": "Orca embedded Chromium",
+    "pageId": "9e974362-3c42-4ed4-a128-99a91a849336",
+    "walletPickerOpened": true,
+    "walletSelected": false,
+    "walletSignature": false,
+    "formPreviewPassed": true,
+    "form": {
+      "title": "ShowStake mainnet review",
+      "location": "Online",
+      "deposit": "2 USDC metadata rule",
+      "capacity": 5,
+      "orderedLocalDateInputs": true
+    },
+    "discover": {
+      "chainReadSucceeded": true,
+      "eventsObserved": 0,
+      "noError": true
+    },
+    "mobile": [
+      {
+        "route": "/events/new",
+        "width": 390,
+        "documentWidth": 390
+      },
+      {
+        "route": "/discover",
+        "width": 390,
+        "documentWidth": 390
+      }
+    ],
+    "consoleErrors": [],
+    "userCreateTransaction": "NOT_RUN; user signs through website",
+    "agentCreateTransactions": 0
+  },
+  "backend": {
+    "migrations": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "leastPrivilege": true,
+    "events": 0,
+    "newConsumer": {
+      "consumer": "showstake-multievent-create-v1",
+      "cursor_value": {
+        "block_hash": "EKD3RZnymw9QwNj4aokQ8P7SRNjdJqXep7CtzwkysWit",
+        "block_height": 224402788
+      },
+      "updated_at": "2026-11-13T19:22:13.303Z"
+    },
+    "oldConsumersRetained": [
+      {
+        "consumer": "showstake-prod-mainnet",
+        "cursor_value": {
+          "block_hash": "EApw9vLP9SwcZp4NFQuwFhbhZhesmxTPMtFmpAzkJKfB",
+          "block_height": 224313356
+        },
+        "updated_at": "2026-11-13T18:44:08.040Z"
+      }
+    ],
+    "workerState": "CATCHING_UP",
+    "headJump": false,
+    "newRevisionStart": 224402760
+  },
+  "authEvidence": "docs/evidence/vps-auth-through-vercel-20261113.json",
+  "financial": {
+    "agentUpgradeTransactions": 1,
+    "upgradeFeeAtomic": "1819197727169600000000",
+    "upgradeCeilingAtomic": "10000000000000000000000",
+    "USDCTransfers": 0,
+    "RheaCalls": 0,
+    "registrationEnabled": false,
+    "concurrentEarnAccepted": false
+  },
+  "handoff": "docs/mainnet-user-test.md"
+}

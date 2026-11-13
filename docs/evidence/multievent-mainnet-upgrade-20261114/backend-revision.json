@@ -1,0 +1,37 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "Operator metadata activation for verified CREATE revision; no chain transaction",
+  "observedAt": "2026-11-13T19:14:54.856Z",
+  "transactionHash": "Cpb4sh2B2ASAfLEQouz3sPq9DqN3JYsfJoiXxogqr3BJ",
+  "oldDeployment": {
+    "id": "01944101-5322-4dc5-b199-05bee57bfd4d",
+    "environment": "mainnet",
+    "network": "mainnet",
+    "contract_id": "showstake-mainnet-escrow-endpx-2026.near",
+    "ft_contract_id": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+    "ft_decimals": 6,
+    "start_block": "224310604",
+    "code_hash": "CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os"
+  },
+  "oldCursors": [
+    {
+      "consumer": "showstake-prod-mainnet",
+      "cursor_value": {
+        "block_hash": "EApw9vLP9SwcZp4NFQuwFhbhZhesmxTPMtFmpAzkJKfB",
+        "block_height": 224313356
+      },
+      "updated_at": "2026-11-13T18:44:08.040Z"
+    }
+  ],
+  "newRevision": {
+    "codeHash": "EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY",
+    "wasmSha256": "c81cf3d7293c111fc29c930ac19f94d3c88cdcf4d7dcf70a73f73911c87999e7",
+    "policy": "showstake-native-usdc-multievent/1",
+    "startBlock": 224402760,
+    "blockHash": "EgDLaFEjAdotQT6RLm5yffUVoM2EjrWkfwpWrRdrmPp7",
+    "consumer": "showstake-multievent-create-v1"
+  },
+  "reason": "Verified empty legacy revision retired; old cursor rows retained; new consumer starts at actual upgrade block",
+  "oldCursorDeleted": false,
+  "oldCursorReset": false
+}

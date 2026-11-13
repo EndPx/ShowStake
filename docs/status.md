@@ -1,5 +1,13 @@
 # ShowStake status
 
+## Frozen multi-event mainnet CREATE — 2026-11-14
+
+PASS_LIVE atomic upgrade: `Cpb4sh2B2ASAfLEQouz3sPq9DqN3JYsfJoiXxogqr3BJ`, block224402760. Existing account `showstake-mainnet-escrow-endpx-2026.near` now runs policy `showstake-native-usdc-multievent/1`, frozen225667-byte Wasm SHA-256 `c81cf3d7293c111fc29c930ac19f94d3c88cdcf4d7dcf70a73f73911c87999e7` / code hash `EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY`. Actual fee0.0018191977271696NEAR, within explicit0.01NEAR scope; no top-up/account/USDC/provider transaction. FullAccess authority was preserved, not removed. No contract edit or redeploy occurred after this release was frozen by the user.
+
+Public CREATE is enabled at https://showstake.vercel.app/events/new for any connected/signed-in organizer. It uses fresh same-block identity/quote, durable pre-wallet attempts, wallet-native approval and matching final receipt/event readback. Unit/source checks33webfiles/100regressions and production build pass. Actual legacy-Wasm migration plus two organizers was proven LOCAL; the mainnet frontend read-only preflight passes. Human wallet-signed mainnet CREATE remains the user test; do not claim an agent-created event or full browser financial lifecycle.
+
+Backend release10b2602 uses the new pinned ABI and CREATE readiness. A distinct consumer starts at the actual upgrade block; old empty-revision cursor/evidence is retained and operator activation audited. Worker is catching up without a historical cursor reset. API/session/replay/restart/logout was reverified through Vercel. Mainnet USDC registrations and provider actions are disabled by the frozen contract, visible before storage payment. Concurrent Earn remains required but unimplemented/unaccepted for this release. See `docs/mainnet-user-test.md` and `docs/evidence/multievent-mainnet-upgrade-20261114/`.
+
 ## Multi-event backend relational model — 2026-11-13
 
 D051 selects a single-contract multi-event target and puts the new factory funding proposal on hold. `docs/backend-erd.md` now describes the actual physical database model, including PK/FK/unique tuples and explicit onchain authority boundaries. Additive migration0008 adds12 foreign keys, backfills pass event identity, and retains all prior migrations. Real isolated PostgreSQL catalog verification found25 tables with PKs and40 validated FKs. Relations23, API37 and worker93 checks passed; the seven T01 phases passed57 checks with actual dump/restore. Source/backend acceptance does not mean the current onchain single-event contract has become multi-event. Production rollout evidence is recorded separately after backup and compatibility checks.

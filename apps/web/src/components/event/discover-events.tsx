@@ -189,7 +189,7 @@ export function DiscoverEvents({ load = loadCatalog }: { load?: CatalogLoader })
               description={
                 period === "past"
                   ? "Finished events will appear here once the catalog is connected."
-                  : "New events will appear here once the ShowStake API is connected."
+                  : "Published events appear here after their transactions finalize."
               }
               href="/discover"
               action="Refresh"

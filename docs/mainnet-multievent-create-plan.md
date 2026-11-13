@@ -1,6 +1,6 @@
 # Mainnet shared-contract CREATE upgrade
 
-Status: ready for scoped authorization after Codex review and local actual-Wasm migration proof. No transaction in this plan has been signed or broadcast.
+Status: EXECUTED_PASS_LIVE after explicit user approval. Transaction `Cpb4sh2B2ASAfLEQouz3sPq9DqN3JYsfJoiXxogqr3BJ` finalized at block224402760. Actual fee0.0018191977271696NEAR; no top-up, new account, USDC transfer or Rhea call. Receipt and before/after evidence: `evidence/multievent-mainnet-upgrade-20261114/`. The user froze this contract release afterward. Do not resend or alter the approved artifact.
 
 Reuse `showstake-mainnet-escrow-endpx-2026.near`; create no new account or factory. Preserve its native balance and existing OS-keychain FullAccess key. Replace the empty single-event implementation with the reviewed multi-event CREATE implementation in one atomic deploy + private `migrate_empty_legacy` call.
 

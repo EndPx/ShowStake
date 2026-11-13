@@ -1,24 +1,22 @@
 # ShowStake
 
-Backend data model: [ERD with primary/foreign keys and multi-event boundaries](docs/backend-erd.md). Additive migration `0008` binds wallet ownership, event/deployment/token identity, pass ownership, payout beneficiaries and QR/check-in registrations. One database deployment can hold many events; the single-contract onchain implementation remains a separate pending change.
+Backend data model: [ERD with primary/foreign keys and multi-event boundaries](docs/backend-erd.md). Additive migration `0008` binds wallet ownership, event/deployment/token identity, pass ownership, payout beneficiaries and QR/check-in registrations. One contract deployment holds many events. Multi-event CREATE is live; pooled Earn and the full mainnet financial lifecycle remain unaccepted.
 
-Public frontend: **https://showstake.vercel.app** — built from this GitHub repository on Vercel. VPS API: **https://srv1330754.hstgr.cloud**. Connected wallets are organizers for new factory events; the old allocated escrow is Legacy review only. Factory and Earn financial gates remain disabled. See [deployment setup](docs/deploy-vercel.md), [VPS setup](deploy/vps/README.md) and the environment-scoped evidence under `docs/evidence`.
+Public frontend: **https://showstake.vercel.app/events/new**. VPS API: **https://srv1330754.hstgr.cloud**. Any connected organizer can create an event directly on the shared mainnet contract after sign-in, an exact storage quote and wallet approval. There is no factory step. USDC registration and Rhea Earn are disabled in this frozen CREATE-only release.
 
-Current mainnet review handoff (2026-11-13): [browser steps and scoped treasury plan](docs/mainnet-user-test.md), [new linked-withdraw source/build/Sandbox acceptance](docs/evidence/mainnet-feature-unlock-20261113/acceptance.json), and [exact public factory deployment plan](docs/mainnet-factory-v2-plan.md). The new leaf passes an actual-Rhea-Wasm local cycle with controlled withdrawal failure, retry and two5USDC payouts from five2USDC deposits. API private identity37 and worker91 real PostgreSQL checks pass locally, and HTTPS wallet-session authentication is live. Public factory deployment, actual mainnet USDC return and funded browser-wallet lifecycle remain gated; the old deployed escrow stays empty and paused.
+Current handoff: [do-X/see-Y website steps](docs/mainnet-user-test.md), [final mainnet upgrade receipt and actual fee](docs/evidence/multievent-mainnet-upgrade-20261114/result.json), and [local migration/two-organizer proof](docs/evidence/multievent-create-20261114/acceptance.json). Frozen Wasm SHA-256 c81cf3d7...87999e7 was deployed under the approved 0.01-NEAR ceiling; actual fee 0.0018191977271696 NEAR, no top-up or new account.
 
 ShowStake is an event attendance commitment platform built around NEAR escrow. Participants lock a fixed attendance deposit that cannot be voluntarily withdrawn after registration; an account-bound, non-transferable pass represents registration. Organizers finalize attendance onchain before settlement and claims. The product addresses registrations that do not translate into attendance.
 
 Accepted increments include the database foundation, independent settlement oracle, wallet/signing diagnostic harness, and Rust escrow/pass, attendance, settlement and claim contract. The core contract financial lifecycle is exercised on NEAR testnet; full browser/backend integration remains incomplete. Hackathon tracks: `open` and `nfts`; the custom pass does not claim NEP-171 or NEP-393 compliance.
 
-## Inspect the paused mainnet deployment
+## Inspect the mainnet CREATE deployment
 
-Contract: [`showstake-mainnet-escrow-endpx-2026.near`](https://nearblocks.io/address/showstake-mainnet-escrow-endpx-2026.near). This is **PASS_LIVE for empty, paused deployment only**. There is no mainnet event or participant deposit; Rhea funded withdrawal and mainnet browser lifecycle are not accepted.
+Contract: [showstake-mainnet-escrow-endpx-2026.near](https://nearblocks.io/address/showstake-mainnet-escrow-endpx-2026.near). [Upgrade transaction](https://nearblocks.io/txns/Cpb4sh2B2ASAfLEQouz3sPq9DqN3JYsfJoiXxogqr3BJ) is final. Code hash EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY matches the 225667-byte frozen artifact.
 
-1. Inspect [account creation](https://nearblocks.io/txns/J8fBgZFDPnvoViz9UQPUeKaYs1qQoaRt81QWqMWL9tZQ) and [atomic deploy + initialization](https://nearblocks.io/txns/HoBrYk5ye1n4SXThHULFTg3avu8dyo8ERy5XL3SDEjwc).
-2. Run `near contract call-function as-read-only showstake-mainnet-escrow-endpx-2026.near get_rhea_control json-args '{}' network-config mainnet now`. See paused=true and principal_cap=0. Run `get_event` the same way and see null.
-3. Inspect [receipt/code/balance evidence](docs/evidence/mainnet-deploy-20261112T221125Z/result.json). Onchain code matches SHA-256 `03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2`; deployed code matching is not a claim of independent audit or reproducible source verification.
+Open the website, connect/sign in, preview event rules, request the storage quote, approve create_event in your wallet, then verify the final receipt and event readback. [Detailed steps and recovery](docs/mainnet-user-test.md). Mainnet wallet-signed CREATE is a user test; no agent-created mainnet event is claimed. Provider capability is false, so this contract returns mainnet registration deposits unused.
 
-Fees totaled0.0092553459773227NEAR. The2.30NEAR contract funding is mostly retained as balance/storage reserve. FullAccess upgrade authority is retained in the local OS keychain. No public deposit pilot is enabled.
+[Historical stage1 evidence](docs/evidence/mainnet-deploy-20261112T221125Z/result.json) preserves the old paused single-event deployment and its fees. Its former get_event/get_rhea_control commands are not the latest shared ABI. FullAccess upgrade authority remains in the local OS keychain; this release is frozen by user instruction.
 
 ## Inspect the five-person settlement on testnet
 
