@@ -1,0 +1,72 @@
+{
+  "phase": "d01",
+  "title": "D01 apply + checksum + idempotency + drift + atomic rollback + stale + TEMP",
+  "run_id": "erd-t01-20261113-v2",
+  "ok": true,
+  "passed": 10,
+  "failed": 0,
+  "checks": [
+    {
+      "id": "D01_APPLY_AND_REAPPLY",
+      "ok": true,
+      "expected": "8 migrations applied, then 0 on re-run",
+      "observed": "applied=1,2,3,4,5,6,7,8 re-run=0"
+    },
+    {
+      "id": "D01_NO_DRIFT_OR_PENDING",
+      "ok": true,
+      "expected": "no drift, no pending, no stale",
+      "observed": "drift=0 pending=0 stale=0"
+    },
+    {
+      "id": "D01_TABLES",
+      "ok": true,
+      "expected": "23 tables present",
+      "observed": "all present"
+    },
+    {
+      "id": "D01_REAL_POSTGRESQL",
+      "ok": true,
+      "expected": "real PostgreSQL server reports version",
+      "observed": "PostgreSQL 18.6 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit"
+    },
+    {
+      "id": "D01_LOOPBACK_OR_SOCKET_ONLY",
+      "ok": true,
+      "expected": "listener is loopback or Unix-socket only (never all-interfaces)",
+      "observed": "listen_addresses=\"\""
+    },
+    {
+      "id": "D01_API_NO_TEMP",
+      "ok": true,
+      "expected": "API role denied TEMP table creation",
+      "observed": "denied=42501"
+    },
+    {
+      "id": "D01_ATOMIC_ROLLBACK",
+      "ok": true,
+      "expected": "failed migration rolled back fully (no table, no tracking row)",
+      "observed": "threw=true table-absent=true no-row=true"
+    },
+    {
+      "id": "D01_DRIFT",
+      "ok": true,
+      "expected": "checksum drift fails closed",
+      "observed": "drift-threw=true"
+    },
+    {
+      "id": "D01_STALE_REFUSAL",
+      "ok": true,
+      "expected": "stale (removed) migration refused",
+      "observed": "stale-threw=true"
+    },
+    {
+      "id": "D01_LOCK_RELEASED_ON_ERROR",
+      "ok": true,
+      "expected": "migration lock released after a failed apply",
+      "observed": "released=true"
+    }
+  ],
+  "meta": {},
+  "at": "2026-11-13T09:55:33.070Z"
+}

@@ -815,10 +815,9 @@ export class WorkerStore {
     );
     if ((inserted.rowCount ?? 0) !== 1) return; // duplicate registration: already applied
     await client.query(
-      `INSERT INTO passes_projection (id, registration_id, deployment_id, pass_id, owner_account, issued_at, observed_at, metadata)
-       VALUES ($1, $2, $3, $4, $5, to_timestamp($6::double precision / 1000.0), to_timestamp($6::double precision / 1000.0), '{}'::jsonb)
-       ON CONFLICT (deployment_id, pass_id) DO NOTHING`,
-      [randomUUID(), regId, deploymentId, c.passId, c.participant, blockTimeMs],
+      `INSERT INTO passes_projection (id, registration_id, deployment_id, pass_id, owner_account, issued_at, observed_at, metadata, event_id)
+       VALUES ($1, $2, $3, $4, $5, to_timestamp($6::double precision / 1000.0), to_timestamp($6::double precision / 1000.0), '{}'::jsonb, $7)`,
+      [randomUUID(), regId, deploymentId, c.passId, c.participant, blockTimeMs, ev.id],
     );
     await client.query(
       `UPDATE events_projection

@@ -1,0 +1,39 @@
+{
+  "classification": "PASS_LOCAL",
+  "allStopped": true,
+  "dataRetained": true,
+  "ownedContainers": [
+    {
+      "container": "showstake-erd-pg-v2",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 0,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-11-13T09:55:30.730265658Z",
+        "FinishedAt": "2026-11-13T09:55:36.067552211Z"
+      }
+    },
+    {
+      "container": "showstake-erd-worker-pg-v4",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 0,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-11-13T09:57:35.891393051Z",
+        "FinishedAt": "2026-11-13T09:57:39.549121429Z"
+      }
+    }
+  ]
+}

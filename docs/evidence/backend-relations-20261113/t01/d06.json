@@ -1,0 +1,42 @@
+{
+  "phase": "d06",
+  "title": "D06 two-connection cursor/projection tx, rollback recovery, migration lock",
+  "run_id": "erd-t01-20261113-v2",
+  "ok": true,
+  "passed": 5,
+  "failed": 0,
+  "checks": [
+    {
+      "id": "D06_JOB_LEASE_ONE_WINNER",
+      "ok": true,
+      "expected": "exactly one connection claims the job lease",
+      "observed": "winner=1 loser=0"
+    },
+    {
+      "id": "D06_NONCE_ONE_CONSUMER",
+      "ok": true,
+      "expected": "one nonce consumer wins, the other gets 0 rows",
+      "observed": "rows=[1,0]"
+    },
+    {
+      "id": "D06_CURSOR_PROJECTION_OVERLAP",
+      "ok": true,
+      "expected": "one connection locks the cursor (FOR UPDATE NOWAIT); the other is refused 55P03",
+      "observed": "lockA=1 lockB=55P03"
+    },
+    {
+      "id": "D06_ROLLBACK_RECOVERY",
+      "ok": true,
+      "expected": "rolled-back projection+cursor transaction leaves no partial state",
+      "observed": "proj=0 cursor_h=0"
+    },
+    {
+      "id": "D06_MIGRATION_LOCK_CONCURRENT",
+      "ok": true,
+      "expected": "concurrent migration runs serialize: loser fails fast, bootstrap is under the lock",
+      "observed": "rejected=true noBootstrap=true winnerApplied=true"
+    }
+  ],
+  "meta": {},
+  "at": "2026-11-13T09:55:35.984Z"
+}

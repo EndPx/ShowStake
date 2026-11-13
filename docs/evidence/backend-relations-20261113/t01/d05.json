@@ -1,0 +1,42 @@
+{
+  "phase": "d05",
+  "title": "D05 atomic_amount numeric boundary + canonical string round-trip",
+  "run_id": "erd-t01-20261113-v2",
+  "ok": true,
+  "passed": 5,
+  "failed": 0,
+  "checks": [
+    {
+      "id": "D05_NEGATIVE",
+      "ok": true,
+      "expected": "atomic_amount(-1) -> 23514",
+      "observed": "code=23514"
+    },
+    {
+      "id": "D05_FRACTION",
+      "ok": true,
+      "expected": "atomic_amount(1.5) -> 23514",
+      "observed": "code=23514"
+    },
+    {
+      "id": "D05_OVERFLOW",
+      "ok": true,
+      "expected": "atomic_amount(340282366920938463463374607431768211456) -> 23514",
+      "observed": "code=23514"
+    },
+    {
+      "id": "D05_U128_MAX_OK",
+      "ok": true,
+      "expected": "2^128-1 accepted exactly",
+      "observed": "340282366920938463463374607431768211455"
+    },
+    {
+      "id": "D05_DB_STRING_ROUNDTRIP",
+      "ok": true,
+      "expected": "DB atomic_amount domain round-trips as exact string via ::text",
+      "observed": "d=5000000 type=atomic_amount"
+    }
+  ],
+  "meta": {},
+  "at": "2026-11-13T09:55:35.207Z"
+}

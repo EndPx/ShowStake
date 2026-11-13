@@ -1,0 +1,84 @@
+{
+  "phase": "d04-verify",
+  "title": "D04 dump/restore roundtrip + independent chain_events replay",
+  "run_id": "erd-t01-20261113-v2",
+  "ok": true,
+  "passed": 12,
+  "failed": 0,
+  "checks": [
+    {
+      "id": "D04_DUMP_RESTORE_EXITS",
+      "ok": true,
+      "expected": "pg_dump and pg_restore both exit 0",
+      "observed": "{\"pg_dump\":0,\"pg_restore\":0}"
+    },
+    {
+      "id": "D04_ROUNDTRIP_EQUAL",
+      "ok": true,
+      "expected": "all 23 tables byte-equal after pg_dump/pg_restore",
+      "observed": "identical"
+    },
+    {
+      "id": "D04_REPLAY_RECONSTRUCT_DB1",
+      "ok": true,
+      "expected": "replay rebuilds projection from chain_events == independent fixture (accepted incl. withdrawn; pending=0; liability=accepted) in DB1",
+      "observed": "accepted=20000000 active=15000000 wdCredit=5000000 paid=0 pending=0 liability=20000000"
+    },
+    {
+      "id": "D04_REPLAY_RECONSTRUCT_DB2",
+      "ok": true,
+      "expected": "replay rebuilds projection from chain_events == independent fixture in DB2",
+      "observed": "accepted=20000000 active=15000000 wdCredit=5000000 liability=20000000"
+    },
+    {
+      "id": "D04_REPLAY_EQUIVALENT",
+      "ok": true,
+      "expected": "DB1 and DB2 replay agree and both match the fixture",
+      "observed": "agreed"
+    },
+    {
+      "id": "D04_CHAINEVENTS_TOTAL",
+      "ok": true,
+      "expected": "accepted total is derived from chain_events (not summed from the projection) and equals the rebuilt projection",
+      "observed": "chain_events=20000000 projection=20000000"
+    },
+    {
+      "id": "D04_CONSERVATION",
+      "ok": true,
+      "expected": "conservation holds: accepted = active + withdrawnCredit AND accepted = paid + pending + liability",
+      "observed": "active+wdCredit=20000000 paid+pending+liability=20000000"
+    },
+    {
+      "id": "D04_WITHDRAWN_REFUND_CLAIM",
+      "ok": true,
+      "expected": "withdrawn row retains a claimable refund credit (claim_atomic=D, payout_state=CLAIMABLE)",
+      "observed": "state=WITHDRAWN claim=5000000 payout=CLAIMABLE"
+    },
+    {
+      "id": "D04_WITHDRAWN_HISTORIC_OWNER",
+      "ok": true,
+      "expected": "withdrawn row retains historic owner (participant/beneficiary unchanged)",
+      "observed": "participant=replay.dan beneficiary=replay.dan"
+    },
+    {
+      "id": "D04_REPLAY_IDEMPOTENT",
+      "ok": true,
+      "expected": "re-replay is idempotent (dedup by receipt/registration; canonical totals unchanged)",
+      "observed": "again accepted=20000000 active=15000000 wdCredit=5000000 liability=20000000"
+    },
+    {
+      "id": "D04_DUPLICATE_RECEIPT_REJECTED",
+      "ok": true,
+      "expected": "immutable ledger rejects a duplicate receipt (23505)",
+      "observed": "code=23505"
+    },
+    {
+      "id": "D04_DURABLE_CURSOR",
+      "ok": true,
+      "expected": "worker_cursors advanced for the replay consumer in the same transaction",
+      "observed": "cursor={\"event_id\":\"00000000-0000-4000-8000-000000000012\",\"block_height\":\"105\",\"receipts_applied\":6}"
+    }
+  ],
+  "meta": {},
+  "at": "2026-11-13T09:55:34.955Z"
+}

@@ -1,5 +1,7 @@
 # ShowStake
 
+Backend data model: [ERD with primary/foreign keys and multi-event boundaries](docs/backend-erd.md). Additive migration `0008` binds wallet ownership, event/deployment/token identity, pass ownership, payout beneficiaries and QR/check-in registrations. One database deployment can hold many events; the single-contract onchain implementation remains a separate pending change.
+
 Public frontend: **https://showstake.vercel.app** — built from this GitHub repository on Vercel. VPS API: **https://srv1330754.hstgr.cloud**. Connected wallets are organizers for new factory events; the old allocated escrow is Legacy review only. Factory and Earn financial gates remain disabled. See [deployment setup](docs/deploy-vercel.md), [VPS setup](deploy/vps/README.md) and the environment-scoped evidence under `docs/evidence`.
 
 Current mainnet review handoff (2026-11-13): [browser steps and scoped treasury plan](docs/mainnet-user-test.md), [new linked-withdraw source/build/Sandbox acceptance](docs/evidence/mainnet-feature-unlock-20261113/acceptance.json), and [exact public factory deployment plan](docs/mainnet-factory-v2-plan.md). The new leaf passes an actual-Rhea-Wasm local cycle with controlled withdrawal failure, retry and two5USDC payouts from five2USDC deposits. API private identity37 and worker91 real PostgreSQL checks pass locally, and HTTPS wallet-session authentication is live. Public factory deployment, actual mainnet USDC return and funded browser-wallet lifecycle remain gated; the old deployed escrow stays empty and paused.

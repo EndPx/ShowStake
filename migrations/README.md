@@ -5,6 +5,14 @@ PostgreSQL acceptance suite (D01–D06). This is the single home for database
 schema/role/interface work (the packet allows `db/` **or** `migrations/`; we
 choose `migrations/`).
 
+Current physical model: [backend ERD](../docs/backend-erd.md). Migration `0008`
+adds composite foreign keys for wallet ownership, canonical event assets,
+funding/registration scope, pass event/deployment/owner, payout beneficiary and
+QR/check-in registration identity. It backfills `passes_projection.event_id`;
+inconsistent existing rows abort the transaction rather than being deleted.
+The worker version that writes the new column must accompany the migration.
+Historical migrations `0001`–`0007` remain unchanged.
+
 ## Layout
 
 - `schema/0001_initial.sql` — initial schema, DDL body **verbatim** from
@@ -57,6 +65,9 @@ pnpm verify:t01-aggregate
 pnpm verify:openapi
 # all static checks
 pnpm verify:t01-static
+
+# real disposable-DB PK/FK, multi-event and 0007 -> 0008 upgrade checks
+pnpm verify:relations
 
 # full real-DB suite (D01-D06 + pg_dump/pg_restore + evidence, exit 0)
 pnpm verify:t01

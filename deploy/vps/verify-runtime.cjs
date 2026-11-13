@@ -13,7 +13,7 @@ function env(file) { return Object.fromEntries(fs.readFileSync(file,'utf8').spli
     const a=(await apiPool.query('SELECT current_user,session_user')).rows[0];
     const w=(await workerPool.query('SELECT current_user,session_user')).rows[0];
     const versions=(await apiPool.query('SELECT version FROM schema_migrations ORDER BY version')).rows.map(x=>x.version);
-    if(JSON.stringify(versions)!=='[1,2,3,4,5,6,7]')throw Error('Migration mismatch');
+    if(JSON.stringify(versions)!=='[1,2,3,4,5,6,7,8]')throw Error('Migration mismatch');
     const baseline=JSON.parse(fs.readFileSync('/var/lib/showstake/chain-baseline.json'));
     const cursors=(await workerPool.query('SELECT consumer,cursor_value,updated_at FROM worker_cursors WHERE deployment_id=$1',[baseline.deploymentId])).rows;
     const events=(await apiPool.query('SELECT count(*)::integer AS n FROM events_projection')).rows[0].n;

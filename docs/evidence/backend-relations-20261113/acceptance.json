@@ -1,0 +1,71 @@
+{
+  "classification": "PASS_LOCAL",
+  "observedAt": "2026-11-13T10:04:00.004Z",
+  "reviewer": "Codex",
+  "scope": "Actual PostgreSQL primary/foreign-key model, upgrade and existing API/worker compatibility; no multi-event onchain implementation or chain transaction implied",
+  "schema": {
+    "tablesWithPk": 25,
+    "validatedForeignKeys": 40,
+    "newForeignKeys": 12,
+    "migrationVersion": 8,
+    "baseline0001Unchanged": true,
+    "previousMigrationsUnchanged": true
+  },
+  "tests": {
+    "relationalChecks": 23,
+    "apiChecks": 37,
+    "workerChecks": 93,
+    "t01PhaseChecks": 57,
+    "pgDump": "PASS_LOCAL",
+    "pgRestore": "PASS_LOCAL",
+    "canonicalT01Aggregator": "NOT_RUN; phases plus dump/restore verified individually, owned database data retained",
+    "workerPassCollision": "new registration/receipt/totals/cursor rolled back"
+  },
+  "sourceSnapshotSha256": {
+    "migrations/schema/0008_relational_integrity.sql": "9c96883c817170569234dbba5c94c53903ff86ca4f62036151e69b9dfee915a2",
+    "migrations/tests/verify-relations.mjs": "9378606db983999c8c9d1052ccd7e99dbab0d255227133ef9c014284c6d10bc6",
+    "migrations/tests/run-t01.mjs": "fa04790b7b7ec5ba0c06b9a7698eb70c38c22404ed4b340c55d34a42d8eadbb6",
+    "apps/worker/src/store.ts": "8445b1007562812fc4dfb6a695c3907850246321322ab4097d53732568079064",
+    "apps/worker/test/verify-worker-db.mjs": "814076ddbc6725a8cba6ff000375292a42f45b56ffa80d11fb9f8f01865e3657",
+    "apps/api/test/verify-api-db.mjs": "f7bf1be1aa256e6a6372f2c62a1e89c05c4c365afae5b5d6409ce9f14da75c60",
+    "scripts/postgres-disposable/run-api-suite.sh": "57500f929863a310db1fa416640a9d03d29fb91dc1a7dc35aa87eec3ec33fed9",
+    "docs/backend-erd.md": "f604feb2fe9187aee129c7161f903faa2299d253c317d03470c2f290428050e7"
+  },
+  "commands": [
+    "pnpm verify:t01-static",
+    "pnpm --filter @showstake/api typecheck",
+    "pnpm --filter @showstake/api build",
+    "pnpm --filter @showstake/worker typecheck",
+    "pnpm --filter @showstake/worker build",
+    "node migrations/tests/verify-relations.mjs",
+    "node apps/api/test/verify-api-db.mjs",
+    "node apps/worker/test/verify-worker-db.mjs",
+    "node migrations/tests/run-t01.mjs <each d01,d02,d03,d04-fixtures,d04-verify,d05,d06>",
+    "PostgreSQL 18.6 pg_dump -Fc and pg_restore --no-owner --no-privileges on isolated DBs",
+    "bash -n scripts/postgres-disposable/run-api-suite.sh"
+  ],
+  "execution": {
+    "primaryCluster": "showstake-erd-pg-v2",
+    "workerCluster": "showstake-erd-worker-pg-v4",
+    "noPublishedPorts": true,
+    "noProductionDbUsed": true,
+    "noCredentialsMounted": true,
+    "ownedDataRetained": true,
+    "teardownEvidence": "teardown.json"
+  },
+  "failedAttempts": [
+    {
+      "run": "erd-v1",
+      "classification": "FAILED",
+      "reason": "Canonical-token FK rejected old API fixture that copied a testnet asset into mainnet deployment; fixture corrected to its own token.near, no constraints relaxed"
+    },
+    {
+      "run": "erd-v2 worker combined cluster",
+      "classification": "FAILED",
+      "reason": "API and worker suites both create a fixture service LOGIN; fixed test isolation with a separate worker cluster, unchanged application privilege guards"
+    }
+  ],
+  "deployment": "NOT_RUN at source acceptance; production preflight and migration recorded separately",
+  "moneyType": "atomic_amount numeric integer constrained to u128; JSON decimal strings",
+  "chainAuthorityPreserved": true
+}

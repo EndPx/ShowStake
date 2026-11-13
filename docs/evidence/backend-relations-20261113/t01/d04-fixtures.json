@@ -1,0 +1,18 @@
+{
+  "phase": "d04-fixtures",
+  "title": "D04 immutable labeled replay ledger loaded",
+  "run_id": "erd-t01-20261113-v2",
+  "ok": true,
+  "passed": 1,
+  "failed": 0,
+  "checks": [
+    {
+      "id": "D04_FIXTURES_LOADED",
+      "ok": true,
+      "expected": "replay chain_events ledger stored (EventCreated + 4 registrations + 1 withdrawal)",
+      "observed": "loaded"
+    }
+  ],
+  "meta": {},
+  "at": "2026-11-13T09:55:33.796Z"
+}

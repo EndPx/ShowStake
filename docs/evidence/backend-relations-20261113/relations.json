@@ -1,0 +1,575 @@
+{
+  "phase": "relations",
+  "title": "Relational isolation upgrade",
+  "run_id": "erd-pk-fk-20261113-v2",
+  "ok": true,
+  "passed": 23,
+  "failed": 0,
+  "checks": [
+    {
+      "id": "invalid_existing_rows_abort_migration",
+      "ok": true,
+      "expected": "true",
+      "observed": "{\"applied\":0,\"event_column\":0,\"owner\":\"wrong.testnet\"}"
+    },
+    {
+      "id": "migration_reapply_idempotent",
+      "ok": true,
+      "expected": "true",
+      "observed": "no migrations reapplied"
+    },
+    {
+      "id": "upgrade_backfill",
+      "ok": true,
+      "expected": "true",
+      "observed": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "id": "two_events_and_optional_nulls",
+      "ok": true,
+      "expected": "true",
+      "observed": "inserted"
+    },
+    {
+      "id": "event_deployment_asset",
+      "ok": true,
+      "expected": "true",
+      "observed": "23503"
+    },
+    {
+      "id": "session_owner",
+      "ok": true,
+      "expected": "true",
+      "observed": "23503"
+    },
+    {
+      "id": "draft_owner",
+      "ok": true,
+      "expected": "true",
+      "observed": "23503"
+    },
+    {
+      "id": "funding_near_owner",
+      "ok": true,
+      "expected": "true",
+      "observed": "23503"
+    },
+    {
+      "id": "funding_near_account",
+      "ok": true,
+      "expected": "true",
+      "observed": "23503"
+    },
+    {
+      "id": "funding_source_owner",
+      "ok": true,
+      "expected": "true",
+      "observed": "23503"
+    },
+    {
+      "id": "funding_registration_event",
+      "ok": true,
+      "expected": "true",
+      "observed": "23503"
+    },
+    {
+      "id": "pass_registration_event",
+      "ok": true,
+      "expected": "true",
+      "observed": "23503"
+    },
+    {
+      "id": "pass_event_deployment",
+      "ok": true,
+      "expected": "true",
+      "observed": "23503"
+    },
+    {
+      "id": "pass_owner",
+      "ok": true,
+      "expected": "true",
+      "observed": "23503"
+    },
+    {
+      "id": "payout_recipient",
+      "ok": true,
+      "expected": "true",
+      "observed": "23503"
+    },
+    {
+      "id": "qr_owner",
+      "ok": true,
+      "expected": "true",
+      "observed": "23503"
+    },
+    {
+      "id": "checkin_qr_registration",
+      "ok": true,
+      "expected": "true",
+      "observed": "23503"
+    },
+    {
+      "id": "delete_registration_parent",
+      "ok": true,
+      "expected": "true",
+      "observed": "23503"
+    },
+    {
+      "id": "delete_event_parent",
+      "ok": true,
+      "expected": "true",
+      "observed": "23503"
+    },
+    {
+      "id": "registration_owner_immutable",
+      "ok": true,
+      "expected": "true",
+      "observed": "23503"
+    },
+    {
+      "id": "all_tables_have_primary_keys",
+      "ok": true,
+      "expected": "true",
+      "observed": "[{\"table_name\":\"app_users\",\"has_pk\":true},{\"table_name\":\"audit_records\",\"has_pk\":true},{\"table_name\":\"auth_challenges\",\"has_pk\":true},{\"table_name\":\"auth_identities\",\"has_pk\":true},{\"table_name\":\"chain_events\",\"has_pk\":true},{\"table_name\":\"checkin_requests\",\"has_pk\":true},{\"table_name\":\"deployments\",\"has_pk\":true},{\"table_name\":\"event_content_versions\",\"has_pk\":true},{\"table_name\":\"event_drafts\",\"has_pk\":true},{\"table_name\":\"events_projection\",\"has_pk\":true},{\"table_name\":\"factory_deployment_allowlist\",\"has_pk\":true},{\"table_name\":\"funding_attempts\",\"has_pk\":true},{\"table_name\":\"funding_quotes\",\"has_pk\":true},{\"table_name\":\"idempotency_keys\",\"has_pk\":true},{\"table_name\":\"outbox_jobs\",\"has_pk\":true},{\"table_name\":\"passes_projection\",\"has_pk\":true},{\"table_name\":\"payouts_projection\",\"has_pk\":true},{\"table_name\":\"protected_resources\",\"has_pk\":true},{\"table_name\":\"qr_challenges\",\"has_pk\":true},{\"table_name\":\"registrations_projection\",\"has_pk\":true},{\"table_name\":\"rhea_microtest_runs\",\"has_pk\":true},{\"table_name\":\"schema_migrations\",\"has_pk\":true},{\"table_name\":\"sessions\",\"has_pk\":true},{\"table_name\":\"wallet_bindings\",\"has_pk\":true},{\"table_name\":\"worker_cursors\",\"has_pk\":true}]"
+    },
+    {
+      "id": "all_foreign_keys_validated",
+      "ok": true,
+      "expected": "true",
+      "observed": "[{\"conname\":\"audit_records_actor_user_id_fkey\",\"convalidated\":true,\"child_table\":\"audit_records\",\"parent_table\":\"app_users\",\"definition\":\"FOREIGN KEY (actor_user_id) REFERENCES app_users(id)\",\"on_delete\":\"a\"},{\"conname\":\"auth_challenges_linking_user_id_fkey\",\"convalidated\":true,\"child_table\":\"auth_challenges\",\"parent_table\":\"app_users\",\"definition\":\"FOREIGN KEY (linking_user_id) REFERENCES app_users(id)\",\"on_delete\":\"a\"},{\"conname\":\"auth_identities_user_id_fkey\",\"convalidated\":true,\"child_table\":\"auth_identities\",\"parent_table\":\"app_users\",\"definition\":\"FOREIGN KEY (user_id) REFERENCES app_users(id)\",\"on_delete\":\"a\"},{\"conname\":\"chain_events_deployment_id_fkey\",\"convalidated\":true,\"child_table\":\"chain_events\",\"parent_table\":\"deployments\",\"definition\":\"FOREIGN KEY (deployment_id) REFERENCES deployments(id)\",\"on_delete\":\"a\"},{\"conname\":\"checkin_qr_registration_fk\",\"convalidated\":true,\"child_table\":\"checkin_requests\",\"parent_table\":\"qr_challenges\",\"definition\":\"FOREIGN KEY (qr_challenge_id, registration_id) REFERENCES qr_challenges(id, registration_id)\",\"on_delete\":\"a\"},{\"conname\":\"checkin_requests_qr_challenge_id_fkey\",\"convalidated\":true,\"child_table\":\"checkin_requests\",\"parent_table\":\"qr_challenges\",\"definition\":\"FOREIGN KEY (qr_challenge_id) REFERENCES qr_challenges(id)\",\"on_delete\":\"a\"},{\"conname\":\"checkin_requests_registration_id_fkey\",\"convalidated\":true,\"child_table\":\"checkin_requests\",\"parent_table\":\"registrations_projection\",\"definition\":\"FOREIGN KEY (registration_id) REFERENCES registrations_projection(id)\",\"on_delete\":\"a\"},{\"conname\":\"draft_binding_owner_fk\",\"convalidated\":true,\"child_table\":\"event_drafts\",\"parent_table\":\"wallet_bindings\",\"definition\":\"FOREIGN KEY (organizer_binding_id, owner_user_id) REFERENCES wallet_bindings(id, user_id)\",\"on_delete\":\"a\"},{\"conname\":\"event_content_versions_author_user_id_fkey\",\"convalidated\":true,\"child_table\":\"event_content_versions\",\"parent_table\":\"app_users\",\"definition\":\"FOREIGN KEY (author_user_id) REFERENCES app_users(id)\",\"on_delete\":\"a\"},{\"conname\":\"event_content_versions_draft_id_fkey\",\"convalidated\":true,\"child_table\":\"event_content_versions\",\"parent_table\":\"event_drafts\",\"definition\":\"FOREIGN KEY (draft_id) REFERENCES event_drafts(id)\",\"on_delete\":\"a\"},{\"conname\":\"event_content_versions_event_id_fkey\",\"convalidated\":true,\"child_table\":\"event_content_versions\",\"parent_table\":\"events_projection\",\"definition\":\"FOREIGN KEY (event_id) REFERENCES events_projection(id)\",\"on_delete\":\"a\"},{\"conname\":\"event_deployment_asset_fk\",\"convalidated\":true,\"child_table\":\"events_projection\",\"parent_table\":\"deployments\",\"definition\":\"FOREIGN KEY (deployment_id, asset_contract) REFERENCES deployments(id, ft_contract_id)\",\"on_delete\":\"a\"},{\"conname\":\"event_drafts_organizer_binding_id_fkey\",\"convalidated\":true,\"child_table\":\"event_drafts\",\"parent_table\":\"wallet_bindings\",\"definition\":\"FOREIGN KEY (organizer_binding_id) REFERENCES wallet_bindings(id)\",\"on_delete\":\"a\"},{\"conname\":\"event_drafts_owner_user_id_fkey\",\"convalidated\":true,\"child_table\":\"event_drafts\",\"parent_table\":\"app_users\",\"definition\":\"FOREIGN KEY (owner_user_id) REFERENCES app_users(id)\",\"on_delete\":\"a\"},{\"conname\":\"events_projection_deployment_id_fkey\",\"convalidated\":true,\"child_table\":\"events_projection\",\"parent_table\":\"deployments\",\"definition\":\"FOREIGN KEY (deployment_id) REFERENCES deployments(id)\",\"on_delete\":\"a\"},{\"conname\":\"funding_attempts_event_id_fkey\",\"convalidated\":true,\"child_table\":\"funding_attempts\",\"parent_table\":\"events_projection\",\"definition\":\"FOREIGN KEY (event_id) REFERENCES events_projection(id)\",\"on_delete\":\"a\"},{\"conname\":\"funding_attempts_near_binding_id_fkey\",\"convalidated\":true,\"child_table\":\"funding_attempts\",\"parent_table\":\"wallet_bindings\",\"definition\":\"FOREIGN KEY (near_binding_id) REFERENCES wallet_bindings(id)\",\"on_delete\":\"a\"},{\"conname\":\"funding_attempts_registration_id_fkey\",\"convalidated\":true,\"child_table\":\"funding_attempts\",\"parent_table\":\"registrations_projection\",\"definition\":\"FOREIGN KEY (registration_id) REFERENCES registrations_projection(id)\",\"on_delete\":\"a\"},{\"conname\":\"funding_attempts_source_binding_id_fkey\",\"convalidated\":true,\"child_table\":\"funding_attempts\",\"parent_table\":\"wallet_bindings\",\"definition\":\"FOREIGN KEY (source_binding_id) REFERENCES wallet_bindings(id)\",\"on_delete\":\"a\"},{\"conname\":\"funding_attempts_user_id_fkey\",\"convalidated\":true,\"child_table\":\"funding_attempts\",\"parent_table\":\"app_users\",\"definition\":\"FOREIGN KEY (user_id) REFERENCES app_users(id)\",\"on_delete\":\"a\"},{\"conname\":\"funding_near_owner_account_fk\",\"convalidated\":true,\"child_table\":\"funding_attempts\",\"parent_table\":\"wallet_bindings\",\"definition\":\"FOREIGN KEY (near_binding_id, user_id, participant_account) REFERENCES wallet_bindings(id, user_id, account_id)\",\"on_delete\":\"a\"},{\"conname\":\"funding_quotes_attempt_id_fkey\",\"convalidated\":true,\"child_table\":\"funding_quotes\",\"parent_table\":\"funding_attempts\",\"definition\":\"FOREIGN KEY (attempt_id) REFERENCES funding_attempts(id)\",\"on_delete\":\"a\"},{\"conname\":\"funding_registration_event_fk\",\"convalidated\":true,\"child_table\":\"funding_attempts\",\"parent_table\":\"registrations_projection\",\"definition\":\"FOREIGN KEY (registration_id, event_id) REFERENCES registrations_projection(id, event_id)\",\"on_delete\":\"a\"},{\"conname\":\"funding_source_owner_fk\",\"convalidated\":true,\"child_table\":\"funding_attempts\",\"parent_table\":\"wallet_bindings\",\"definition\":\"FOREIGN KEY (source_binding_id, user_id) REFERENCES wallet_bindings(id, user_id)\",\"on_delete\":\"a\"},{\"conname\":\"pass_event_deployment_fk\",\"convalidated\":true,\"child_table\":\"passes_projection\",\"parent_table\":\"events_projection\",\"definition\":\"FOREIGN KEY (event_id, deployment_id) REFERENCES events_projection(id, deployment_id)\",\"on_delete\":\"a\"},{\"conname\":\"pass_registration_event_fk\",\"convalidated\":true,\"child_table\":\"passes_projection\",\"parent_table\":\"registrations_projection\",\"definition\":\"FOREIGN KEY (registration_id, event_id) REFERENCES registrations_projection(id, event_id)\",\"on_delete\":\"a\"},{\"conname\":\"pass_registration_owner_fk\",\"convalidated\":true,\"child_table\":\"passes_projection\",\"parent_table\":\"registrations_projection\",\"definition\":\"FOREIGN KEY (registration_id, owner_account) REFERENCES registrations_projection(id, participant_account)\",\"on_delete\":\"a\"},{\"conname\":\"passes_projection_deployment_id_fkey\",\"convalidated\":true,\"child_table\":\"passes_projection\",\"parent_table\":\"deployments\",\"definition\":\"FOREIGN KEY (deployment_id) REFERENCES deployments(id)\",\"on_delete\":\"a\"},{\"conname\":\"passes_projection_registration_id_fkey\",\"convalidated\":true,\"child_table\":\"passes_projection\",\"parent_table\":\"registrations_projection\",\"definition\":\"FOREIGN KEY (registration_id) REFERENCES registrations_projection(id)\",\"on_delete\":\"a\"},{\"conname\":\"payout_registration_recipient_fk\",\"convalidated\":true,\"child_table\":\"payouts_projection\",\"parent_table\":\"registrations_projection\",\"definition\":\"FOREIGN KEY (registration_id, recipient_account) REFERENCES registrations_projection(id, beneficiary_account)\",\"on_delete\":\"a\"},{\"conname\":\"payouts_projection_registration_id_fkey\",\"convalidated\":true,\"child_table\":\"payouts_projection\",\"parent_table\":\"registrations_projection\",\"definition\":\"FOREIGN KEY (registration_id) REFERENCES registrations_projection(id)\",\"on_delete\":\"a\"},{\"conname\":\"protected_resources_event_id_fkey\",\"convalidated\":true,\"child_table\":\"protected_resources\",\"parent_table\":\"events_projection\",\"definition\":\"FOREIGN KEY (event_id) REFERENCES events_projection(id)\",\"on_delete\":\"a\"},{\"conname\":\"qr_challenges_registration_id_fkey\",\"convalidated\":true,\"child_table\":\"qr_challenges\",\"parent_table\":\"registrations_projection\",\"definition\":\"FOREIGN KEY (registration_id) REFERENCES registrations_projection(id)\",\"on_delete\":\"a\"},{\"conname\":\"qr_registration_owner_fk\",\"convalidated\":true,\"child_table\":\"qr_challenges\",\"parent_table\":\"registrations_projection\",\"definition\":\"FOREIGN KEY (registration_id, owner_account) REFERENCES registrations_projection(id, participant_account)\",\"on_delete\":\"a\"},{\"conname\":\"registrations_projection_event_id_fkey\",\"convalidated\":true,\"child_table\":\"registrations_projection\",\"parent_table\":\"events_projection\",\"definition\":\"FOREIGN KEY (event_id) REFERENCES events_projection(id)\",\"on_delete\":\"a\"},{\"conname\":\"session_binding_owner_fk\",\"convalidated\":true,\"child_table\":\"sessions\",\"parent_table\":\"wallet_bindings\",\"definition\":\"FOREIGN KEY (wallet_binding_id, user_id) REFERENCES wallet_bindings(id, user_id)\",\"on_delete\":\"a\"},{\"conname\":\"sessions_user_id_fkey\",\"convalidated\":true,\"child_table\":\"sessions\",\"parent_table\":\"app_users\",\"definition\":\"FOREIGN KEY (user_id) REFERENCES app_users(id)\",\"on_delete\":\"a\"},{\"conname\":\"sessions_wallet_binding_id_fkey\",\"convalidated\":true,\"child_table\":\"sessions\",\"parent_table\":\"wallet_bindings\",\"definition\":\"FOREIGN KEY (wallet_binding_id) REFERENCES wallet_bindings(id)\",\"on_delete\":\"a\"},{\"conname\":\"wallet_bindings_user_id_fkey\",\"convalidated\":true,\"child_table\":\"wallet_bindings\",\"parent_table\":\"app_users\",\"definition\":\"FOREIGN KEY (user_id) REFERENCES app_users(id)\",\"on_delete\":\"a\"},{\"conname\":\"worker_cursors_deployment_id_fkey\",\"convalidated\":true,\"child_table\":\"worker_cursors\",\"parent_table\":\"deployments\",\"definition\":\"FOREIGN KEY (deployment_id) REFERENCES deployments(id)\",\"on_delete\":\"a\"}]"
+    },
+    {
+      "id": "history_foreign_keys_do_not_cascade",
+      "ok": true,
+      "expected": "true",
+      "observed": "NO ACTION or RESTRICT only"
+    }
+  ],
+  "meta": {
+    "primary_keys": [
+      {
+        "table_name": "app_users",
+        "has_pk": true
+      },
+      {
+        "table_name": "audit_records",
+        "has_pk": true
+      },
+      {
+        "table_name": "auth_challenges",
+        "has_pk": true
+      },
+      {
+        "table_name": "auth_identities",
+        "has_pk": true
+      },
+      {
+        "table_name": "chain_events",
+        "has_pk": true
+      },
+      {
+        "table_name": "checkin_requests",
+        "has_pk": true
+      },
+      {
+        "table_name": "deployments",
+        "has_pk": true
+      },
+      {
+        "table_name": "event_content_versions",
+        "has_pk": true
+      },
+      {
+        "table_name": "event_drafts",
+        "has_pk": true
+      },
+      {
+        "table_name": "events_projection",
+        "has_pk": true
+      },
+      {
+        "table_name": "factory_deployment_allowlist",
+        "has_pk": true
+      },
+      {
+        "table_name": "funding_attempts",
+        "has_pk": true
+      },
+      {
+        "table_name": "funding_quotes",
+        "has_pk": true
+      },
+      {
+        "table_name": "idempotency_keys",
+        "has_pk": true
+      },
+      {
+        "table_name": "outbox_jobs",
+        "has_pk": true
+      },
+      {
+        "table_name": "passes_projection",
+        "has_pk": true
+      },
+      {
+        "table_name": "payouts_projection",
+        "has_pk": true
+      },
+      {
+        "table_name": "protected_resources",
+        "has_pk": true
+      },
+      {
+        "table_name": "qr_challenges",
+        "has_pk": true
+      },
+      {
+        "table_name": "registrations_projection",
+        "has_pk": true
+      },
+      {
+        "table_name": "rhea_microtest_runs",
+        "has_pk": true
+      },
+      {
+        "table_name": "schema_migrations",
+        "has_pk": true
+      },
+      {
+        "table_name": "sessions",
+        "has_pk": true
+      },
+      {
+        "table_name": "wallet_bindings",
+        "has_pk": true
+      },
+      {
+        "table_name": "worker_cursors",
+        "has_pk": true
+      }
+    ],
+    "foreign_keys": [
+      {
+        "conname": "audit_records_actor_user_id_fkey",
+        "convalidated": true,
+        "child_table": "audit_records",
+        "parent_table": "app_users",
+        "definition": "FOREIGN KEY (actor_user_id) REFERENCES app_users(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "auth_challenges_linking_user_id_fkey",
+        "convalidated": true,
+        "child_table": "auth_challenges",
+        "parent_table": "app_users",
+        "definition": "FOREIGN KEY (linking_user_id) REFERENCES app_users(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "auth_identities_user_id_fkey",
+        "convalidated": true,
+        "child_table": "auth_identities",
+        "parent_table": "app_users",
+        "definition": "FOREIGN KEY (user_id) REFERENCES app_users(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "chain_events_deployment_id_fkey",
+        "convalidated": true,
+        "child_table": "chain_events",
+        "parent_table": "deployments",
+        "definition": "FOREIGN KEY (deployment_id) REFERENCES deployments(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "checkin_qr_registration_fk",
+        "convalidated": true,
+        "child_table": "checkin_requests",
+        "parent_table": "qr_challenges",
+        "definition": "FOREIGN KEY (qr_challenge_id, registration_id) REFERENCES qr_challenges(id, registration_id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "checkin_requests_qr_challenge_id_fkey",
+        "convalidated": true,
+        "child_table": "checkin_requests",
+        "parent_table": "qr_challenges",
+        "definition": "FOREIGN KEY (qr_challenge_id) REFERENCES qr_challenges(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "checkin_requests_registration_id_fkey",
+        "convalidated": true,
+        "child_table": "checkin_requests",
+        "parent_table": "registrations_projection",
+        "definition": "FOREIGN KEY (registration_id) REFERENCES registrations_projection(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "draft_binding_owner_fk",
+        "convalidated": true,
+        "child_table": "event_drafts",
+        "parent_table": "wallet_bindings",
+        "definition": "FOREIGN KEY (organizer_binding_id, owner_user_id) REFERENCES wallet_bindings(id, user_id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "event_content_versions_author_user_id_fkey",
+        "convalidated": true,
+        "child_table": "event_content_versions",
+        "parent_table": "app_users",
+        "definition": "FOREIGN KEY (author_user_id) REFERENCES app_users(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "event_content_versions_draft_id_fkey",
+        "convalidated": true,
+        "child_table": "event_content_versions",
+        "parent_table": "event_drafts",
+        "definition": "FOREIGN KEY (draft_id) REFERENCES event_drafts(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "event_content_versions_event_id_fkey",
+        "convalidated": true,
+        "child_table": "event_content_versions",
+        "parent_table": "events_projection",
+        "definition": "FOREIGN KEY (event_id) REFERENCES events_projection(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "event_deployment_asset_fk",
+        "convalidated": true,
+        "child_table": "events_projection",
+        "parent_table": "deployments",
+        "definition": "FOREIGN KEY (deployment_id, asset_contract) REFERENCES deployments(id, ft_contract_id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "event_drafts_organizer_binding_id_fkey",
+        "convalidated": true,
+        "child_table": "event_drafts",
+        "parent_table": "wallet_bindings",
+        "definition": "FOREIGN KEY (organizer_binding_id) REFERENCES wallet_bindings(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "event_drafts_owner_user_id_fkey",
+        "convalidated": true,
+        "child_table": "event_drafts",
+        "parent_table": "app_users",
+        "definition": "FOREIGN KEY (owner_user_id) REFERENCES app_users(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "events_projection_deployment_id_fkey",
+        "convalidated": true,
+        "child_table": "events_projection",
+        "parent_table": "deployments",
+        "definition": "FOREIGN KEY (deployment_id) REFERENCES deployments(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "funding_attempts_event_id_fkey",
+        "convalidated": true,
+        "child_table": "funding_attempts",
+        "parent_table": "events_projection",
+        "definition": "FOREIGN KEY (event_id) REFERENCES events_projection(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "funding_attempts_near_binding_id_fkey",
+        "convalidated": true,
+        "child_table": "funding_attempts",
+        "parent_table": "wallet_bindings",
+        "definition": "FOREIGN KEY (near_binding_id) REFERENCES wallet_bindings(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "funding_attempts_registration_id_fkey",
+        "convalidated": true,
+        "child_table": "funding_attempts",
+        "parent_table": "registrations_projection",
+        "definition": "FOREIGN KEY (registration_id) REFERENCES registrations_projection(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "funding_attempts_source_binding_id_fkey",
+        "convalidated": true,
+        "child_table": "funding_attempts",
+        "parent_table": "wallet_bindings",
+        "definition": "FOREIGN KEY (source_binding_id) REFERENCES wallet_bindings(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "funding_attempts_user_id_fkey",
+        "convalidated": true,
+        "child_table": "funding_attempts",
+        "parent_table": "app_users",
+        "definition": "FOREIGN KEY (user_id) REFERENCES app_users(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "funding_near_owner_account_fk",
+        "convalidated": true,
+        "child_table": "funding_attempts",
+        "parent_table": "wallet_bindings",
+        "definition": "FOREIGN KEY (near_binding_id, user_id, participant_account) REFERENCES wallet_bindings(id, user_id, account_id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "funding_quotes_attempt_id_fkey",
+        "convalidated": true,
+        "child_table": "funding_quotes",
+        "parent_table": "funding_attempts",
+        "definition": "FOREIGN KEY (attempt_id) REFERENCES funding_attempts(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "funding_registration_event_fk",
+        "convalidated": true,
+        "child_table": "funding_attempts",
+        "parent_table": "registrations_projection",
+        "definition": "FOREIGN KEY (registration_id, event_id) REFERENCES registrations_projection(id, event_id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "funding_source_owner_fk",
+        "convalidated": true,
+        "child_table": "funding_attempts",
+        "parent_table": "wallet_bindings",
+        "definition": "FOREIGN KEY (source_binding_id, user_id) REFERENCES wallet_bindings(id, user_id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "pass_event_deployment_fk",
+        "convalidated": true,
+        "child_table": "passes_projection",
+        "parent_table": "events_projection",
+        "definition": "FOREIGN KEY (event_id, deployment_id) REFERENCES events_projection(id, deployment_id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "pass_registration_event_fk",
+        "convalidated": true,
+        "child_table": "passes_projection",
+        "parent_table": "registrations_projection",
+        "definition": "FOREIGN KEY (registration_id, event_id) REFERENCES registrations_projection(id, event_id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "pass_registration_owner_fk",
+        "convalidated": true,
+        "child_table": "passes_projection",
+        "parent_table": "registrations_projection",
+        "definition": "FOREIGN KEY (registration_id, owner_account) REFERENCES registrations_projection(id, participant_account)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "passes_projection_deployment_id_fkey",
+        "convalidated": true,
+        "child_table": "passes_projection",
+        "parent_table": "deployments",
+        "definition": "FOREIGN KEY (deployment_id) REFERENCES deployments(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "passes_projection_registration_id_fkey",
+        "convalidated": true,
+        "child_table": "passes_projection",
+        "parent_table": "registrations_projection",
+        "definition": "FOREIGN KEY (registration_id) REFERENCES registrations_projection(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "payout_registration_recipient_fk",
+        "convalidated": true,
+        "child_table": "payouts_projection",
+        "parent_table": "registrations_projection",
+        "definition": "FOREIGN KEY (registration_id, recipient_account) REFERENCES registrations_projection(id, beneficiary_account)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "payouts_projection_registration_id_fkey",
+        "convalidated": true,
+        "child_table": "payouts_projection",
+        "parent_table": "registrations_projection",
+        "definition": "FOREIGN KEY (registration_id) REFERENCES registrations_projection(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "protected_resources_event_id_fkey",
+        "convalidated": true,
+        "child_table": "protected_resources",
+        "parent_table": "events_projection",
+        "definition": "FOREIGN KEY (event_id) REFERENCES events_projection(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "qr_challenges_registration_id_fkey",
+        "convalidated": true,
+        "child_table": "qr_challenges",
+        "parent_table": "registrations_projection",
+        "definition": "FOREIGN KEY (registration_id) REFERENCES registrations_projection(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "qr_registration_owner_fk",
+        "convalidated": true,
+        "child_table": "qr_challenges",
+        "parent_table": "registrations_projection",
+        "definition": "FOREIGN KEY (registration_id, owner_account) REFERENCES registrations_projection(id, participant_account)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "registrations_projection_event_id_fkey",
+        "convalidated": true,
+        "child_table": "registrations_projection",
+        "parent_table": "events_projection",
+        "definition": "FOREIGN KEY (event_id) REFERENCES events_projection(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "session_binding_owner_fk",
+        "convalidated": true,
+        "child_table": "sessions",
+        "parent_table": "wallet_bindings",
+        "definition": "FOREIGN KEY (wallet_binding_id, user_id) REFERENCES wallet_bindings(id, user_id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "sessions_user_id_fkey",
+        "convalidated": true,
+        "child_table": "sessions",
+        "parent_table": "app_users",
+        "definition": "FOREIGN KEY (user_id) REFERENCES app_users(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "sessions_wallet_binding_id_fkey",
+        "convalidated": true,
+        "child_table": "sessions",
+        "parent_table": "wallet_bindings",
+        "definition": "FOREIGN KEY (wallet_binding_id) REFERENCES wallet_bindings(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "wallet_bindings_user_id_fkey",
+        "convalidated": true,
+        "child_table": "wallet_bindings",
+        "parent_table": "app_users",
+        "definition": "FOREIGN KEY (user_id) REFERENCES app_users(id)",
+        "on_delete": "a"
+      },
+      {
+        "conname": "worker_cursors_deployment_id_fkey",
+        "convalidated": true,
+        "child_table": "worker_cursors",
+        "parent_table": "deployments",
+        "definition": "FOREIGN KEY (deployment_id) REFERENCES deployments(id)",
+        "on_delete": "a"
+      }
+    ]
+  },
+  "at": "2026-11-13T09:53:32.612Z"
+}

@@ -1,0 +1,32 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "Production database read-only compatibility preflight, no DDL or chain transactions",
+  "observedAt": "2026-11-13T10:02:07.001Z",
+  "versions": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "mismatches": {
+    "session_owner": 0,
+    "draft_owner": 0,
+    "event_asset": 0,
+    "funding_near": 0,
+    "funding_source": 0,
+    "funding_registration": 0,
+    "pass_owner_deployment": 0,
+    "payout_recipient": 0,
+    "qr_owner": 0,
+    "checkin_qr": 0,
+    "missing_pass": 0
+  },
+  "counts": {
+    "events": 0,
+    "registrations": 0,
+    "passes": 0
+  }
+}

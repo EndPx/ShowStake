@@ -1,0 +1,102 @@
+{
+  "phase": "d02",
+  "title": "D02 FK/unique/identity/idempotency/rules",
+  "run_id": "erd-t01-20261113-v2",
+  "ok": true,
+  "passed": 15,
+  "failed": 0,
+  "checks": [
+    {
+      "id": "D02_FK_EVENT",
+      "ok": true,
+      "expected": "foreign key violation 23503",
+      "observed": "code=23503"
+    },
+    {
+      "id": "D02_ONE_ACTIVE_REGISTRATION",
+      "ok": true,
+      "expected": "partial unique active-registration index 23505",
+      "observed": "code=23505"
+    },
+    {
+      "id": "D02_WITHDRAWN_EXCLUDED",
+      "ok": true,
+      "expected": "WITHDRAWN excluded from active-registration uniqueness (insert ok)",
+      "observed": "inserted"
+    },
+    {
+      "id": "D02_IDENTITY_CONFLICT",
+      "ok": true,
+      "expected": "duplicate provider+subject 23505",
+      "observed": "code=23505"
+    },
+    {
+      "id": "D02_WALLET_BINDING_CONFLICT",
+      "ok": true,
+      "expected": "duplicate namespace+network+account 23505",
+      "observed": "code=23505"
+    },
+    {
+      "id": "D02_IDEMPOTENCY_KEY",
+      "ok": true,
+      "expected": "duplicate (scope,key) 23505",
+      "observed": "code=23505"
+    },
+    {
+      "id": "D02_PARTICIPANT_EQ_BENEFICIARY",
+      "ok": true,
+      "expected": "participant!=beneficiary CHECK 23514",
+      "observed": "code=23514"
+    },
+    {
+      "id": "D02_REALIZED_YIELD_CONSERVATION",
+      "ok": true,
+      "expected": "10 principal + 2 realized yield supports 12 paid",
+      "observed": "2"
+    },
+    {
+      "id": "D02_UNALLOCATED_YIELD_NOT_A_CLAIM",
+      "ok": true,
+      "expected": "realized funds may remain outside participant allocations",
+      "observed": "2"
+    },
+    {
+      "id": "D02_REALIZED_YIELD_MISMATCH",
+      "ok": true,
+      "expected": "yield conservation mismatch rejected",
+      "observed": "code=23514"
+    },
+    {
+      "id": "D02_ALLOCATED_YIELD_BOUNDED",
+      "ok": true,
+      "expected": "allocated yield cannot exceed realized yield",
+      "observed": "code=23514"
+    },
+    {
+      "id": "D02_PRINCIPAL_PLUS_YIELD_U128",
+      "ok": true,
+      "expected": "combined principal and yield must fit u128",
+      "observed": "code=23514"
+    },
+    {
+      "id": "D02_CAPACITY_RANGE",
+      "ok": true,
+      "expected": "capacity 0 CHECK 23514",
+      "observed": "code=23514"
+    },
+    {
+      "id": "D02_ENVIRONMENT_ENUM",
+      "ok": true,
+      "expected": "environment 'prod' CHECK 23514",
+      "observed": "code=23514"
+    },
+    {
+      "id": "D02_SESSION_EXPIRY_RULE",
+      "ok": true,
+      "expected": "idle > absolute CHECK 23514",
+      "observed": "code=23514"
+    }
+  ],
+  "meta": {},
+  "at": "2026-11-13T09:55:33.322Z"
+}

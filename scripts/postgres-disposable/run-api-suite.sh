@@ -14,6 +14,12 @@
 # Classifier: PASS_LOCAL (generated keypair + fake resolver; no wallet proof).
 set -euo pipefail
 
+case "${1:-}" in
+  '') TEST_ENTRY=apps/api/test/verify-api-db.mjs; TEST_LABEL=api-db ;;
+  --relations) TEST_ENTRY=migrations/tests/verify-relations.mjs; TEST_LABEL=relations ;;
+  *) printf 'Usage: %s [--relations]\n' "$0" >&2; exit 2 ;;
+esac
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/setup.sh"
 
@@ -136,11 +142,11 @@ run_api_suite() {
 
   [ -d "$REPO/apps/api/node_modules" ] || die "apps/api node_modules missing (run: pnpm install first)"
 
-  log "=== apps/api DB acceptance ==="
-  if "$node" "$REPO/apps/api/test/verify-api-db.mjs" >"$artifacts/api-db.log" 2>&1; then
-    log "api-db PASS"
+  log "=== $TEST_LABEL DB acceptance ==="
+  if "$node" "$REPO/$TEST_ENTRY" >"$artifacts/$TEST_LABEL.log" 2>&1; then
+    log "$TEST_LABEL PASS"
   else
-    log "api-db FAILED"; cat "$artifacts/api-db.log" >&2; suite_ok=0
+    log "$TEST_LABEL FAILED"; cat "$artifacts/$TEST_LABEL.log" >&2; suite_ok=0
   fi
 
   if stop_record; then log "server stop PROVEN"; else log "server stop NOT proven"; suite_ok=0; fi

@@ -247,6 +247,19 @@ async function main() {
     const tot = await client.query(`SELECT accepted_atomic::text a, liability_atomic::text l FROM events_projection WHERE id=$1`, [ev.id]);
     check('DB_EVENT_TOTALS_AFTER_COMMIT', tot.rows[0].a === '5000000' && tot.rows[0].l === '5000000', 'accepted=liability=5000000', JSON.stringify(tot.rows[0]));
 
+    // A conflicting pass must roll back its new registration and receipt too.
+    const passCollision = commitBlock({ height: 102, hash: 'H102-COLLISION', prevHash: 'H101', prevHeight: 101,
+      registrationId: 'reg-pass-collision', passId: 'pass-local-0', eventSequence: 1, participant: 'carol.testnet' });
+    registerBlock(canonical, passCollision);
+    const beforeCollision = await chainCount();
+    await expectReject('DB_PASS_COLLISION_DENIED', () => store.ingestBlock(deploymentId, passCollision), 'passes_projection_deployment_id_pass_id_key');
+    const collisionRows = await client.query("SELECT count(*)::int AS n FROM registrations_projection WHERE chain_registration_id='reg-pass-collision'");
+    const afterCollision = await client.query('SELECT accepted_atomic::text AS a FROM events_projection WHERE id=$1', [ev.id]);
+    check('DB_PASS_COLLISION_ATOMIC', collisionRows.rows[0].n === 0 && await chainCount() === beforeCollision
+      && await store.readCursorHeight(deploymentId) === 101 && afterCollision.rows[0].a === '5000000',
+      'registration/receipt/totals/cursor all unchanged', JSON.stringify({ registrations: collisionRows.rows[0].n, accepted: afterCollision.rows[0].a }));
+    canonical.headers.delete(102); // restore the independent canonical-gap fixture below
+
     // 3. Public API role read (the same EVENT_SELECT the API uses) + pass read.
     await client.query('SET ROLE showstake_api');
     const apiRead = await client.query(`

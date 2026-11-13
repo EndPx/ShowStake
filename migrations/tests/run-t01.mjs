@@ -257,7 +257,7 @@ async function runD02() {
          (id,deployment_id,chain_event_id,organizer_account,asset_contract,deposit_atomic,capacity,
           reg_open,reg_close,cancel_cutoff,checkin_open,checkin_close,finalize_deadline,state,policy_version,
           rules_hash,accepted_atomic,paid_atomic,pending_atomic,liability_atomic,observed_at)
-       VALUES ($1,$2,'evt-cap-0','bob.testnet','ft','1',0,
+       VALUES ($1,$2,'evt-cap-0','bob.testnet','ft.showstake.testnet','1',0,
          '2026-11-06T00:00:00Z','2026-11-07T00:00:00Z','2026-11-07T12:00:00Z','2026-11-07T12:00:00Z',
          '2026-11-08T12:00:00Z','2026-11-09T12:00:00Z','PUBLISHED','p','h','0','0','0','0',now())`,
       [uuid(), FIX.deployment], '23514');

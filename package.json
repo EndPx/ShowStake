@@ -38,6 +38,7 @@
     "build:api": "pnpm --filter @showstake/api build",
     "verify:api": "pnpm --filter @showstake/api typecheck && pnpm --filter @showstake/api build && node scripts/verify-api.mjs",
     "verify:api-db": "pnpm --filter @showstake/api build && wsl -d Ubuntu -- bash scripts/postgres-disposable/run-api-suite.sh",
+    "verify:relations": "wsl -d Ubuntu -- bash scripts/postgres-disposable/run-api-suite.sh --relations",
     "verify:worker": "pnpm --filter @showstake/worker typecheck && pnpm --filter @showstake/worker build && node apps/worker/test/verify-worker-fixtures.mjs",
     "verify:worker-db": "pnpm --filter @showstake/worker build && wsl -d Ubuntu -- bash scripts/postgres-disposable/run-worker-suite.sh",
     "verify:worker-testnet": "pnpm --filter @showstake/api build && pnpm --filter @showstake/worker build && wsl -d Ubuntu -- bash scripts/postgres-disposable/run-worker-testnet.sh",

@@ -1,0 +1,285 @@
+{
+  "id": "api-increment-db",
+  "task": "apps/api challenge/verify/session + public event reads (DB acceptance)",
+  "classifier": "PASS_LOCAL",
+  "ok": true,
+  "reviewer_pending": false,
+  "run_id": "erd-pk-fk-20261113-v2",
+  "environment": {
+    "os": "Linux VPS; isolated network-none PostgreSQL 18.6 Docker, Unix socket only",
+    "postgresql": "disposable postgresql-18 cluster",
+    "database": "showstake_erd_api",
+    "socket": "/opt/showstake/backend-test/erd-socket-v2"
+  },
+  "totals": {
+    "checks": 37,
+    "failed": 0
+  },
+  "checks": [
+    {
+      "id": "DB_MIGRATIONS_APPLIED",
+      "ok": true,
+      "expected": ">=2 migrations applied",
+      "observed": "applied=8",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "API_ROLE_NO_PROJECTION_WRITE",
+      "ok": true,
+      "expected": "showstake_api UPDATE projection denied 42501",
+      "observed": "denied=true",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_RUNTIME_RESTRICTED_LOGIN",
+      "ok": true,
+      "expected": "actual service LOGIN and API role validated",
+      "observed": "showstake_api_service / showstake_api",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_RESET_ROLE_CANNOT_ESCALATE",
+      "ok": true,
+      "expected": "RESET ROLE cannot restore operator authority",
+      "observed": "true",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_OPERATOR_LOGIN_REJECTED",
+      "ok": true,
+      "expected": "operator credentials rejected by pool",
+      "observed": "true",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_RHEA_SINGLE_RESERVATION",
+      "ok": true,
+      "expected": "restricted role serializes one reservation and survives new store",
+      "observed": "{\"winners\":1,\"native\":\"50\"}",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_RHEA_IMMUTABLE_PLAN",
+      "ok": true,
+      "expected": "same approval cannot be reused with another plan",
+      "observed": "true",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_QR_PASS_LOOKUP",
+      "ok": true,
+      "expected": "projection lookup maps to chain pass",
+      "observed": "chain-pass",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_PRIVATE_CHAIN_IDENTITY",
+      "ok": true,
+      "expected": "restricted role reads exact chain tuple and unsigned pre-settlement bonus",
+      "observed": "{\"passes\":1,\"claims\":1}",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_QR_CONCURRENT_SINGLE_PROPOSAL",
+      "ok": true,
+      "expected": "one proposal, no attendance mutation",
+      "observed": "[true,false]",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_QR_EXPIRED",
+      "ok": true,
+      "expected": "expired QR cannot be consumed",
+      "observed": "false",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_HEALTH_UP",
+      "ok": true,
+      "expected": "health 200 db up",
+      "observed": "{\"status\":\"ok\",\"db\":\"up\"}",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_REAL_HTTP_SERVER",
+      "ok": true,
+      "expected": "real loopback HTTP server reads real DB",
+      "observed": 200,
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_EVENT_LIST",
+      "ok": true,
+      "expected": "one published event listed",
+      "observed": "count=1",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_EVENT_MONEY",
+      "ok": true,
+      "expected": "deposit serialized as canonical string",
+      "observed": "5000000",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_EVENT_TOTALS",
+      "ok": true,
+      "expected": "projection totals exact",
+      "observed": "{\"acceptedAtomic\":\"10000000\",\"realizedYieldAtomic\":\"0\",\"allocatedYieldAtomic\":\"0\",\"unallocatedYieldAtomic\":\"0\",\"paidAtomic\":\"0\",\"pendingAtomic\":\"0\",\"liabilityAtomic\":\"10000000\"}",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_EVENT_DETAIL",
+      "ok": true,
+      "expected": "event detail",
+      "observed": "200",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CHAIN_EVENT_ID",
+      "ok": true,
+      "expected": "contract event ID is distinct from database UUID",
+      "observed": "evt-api-1",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_PUBLIC_NETWORK_ISOLATION",
+      "ok": true,
+      "expected": "network-scoped list and colliding chain ids on real PG",
+      "observed": "404",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_PUBLIC_CONTRACT_IDENTITY",
+      "ok": true,
+      "expected": "ambiguous chain id fails closed, contract and UUID-like chain id resolve exactly",
+      "observed": "404/200/200/404",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CHALLENGE_ROW",
+      "ok": true,
+      "expected": "challenge persisted",
+      "observed": "200",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_VERIFY_OK",
+      "ok": true,
+      "expected": "verify 200 + userId",
+      "observed": "200",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_SESSION_COOKIE",
+      "ok": true,
+      "expected": "session cookie set",
+      "observed": "[REDACTED]",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_ME_ACTIVE",
+      "ok": true,
+      "expected": "session active",
+      "observed": "200",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_QR_ENDPOINT_CANDIDATE",
+      "ok": true,
+      "expected": "restricted PgStore and finalized candidate view issue challenge",
+      "observed": "200",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CONTENT_PUBLISH",
+      "ok": true,
+      "expected": "restricted PgStore publishes after chain organizer check",
+      "observed": "201",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CONTENT_ROW",
+      "ok": true,
+      "expected": "one protected resource row",
+      "observed": "1",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_REPLAY",
+      "ok": true,
+      "expected": "replay 401 consumed",
+      "observed": "401 CHALLENGE_ALREADY_CONSUMED",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CONCURRENT_NONCE",
+      "ok": true,
+      "expected": "parallel verify yields exactly one 200 and one 401",
+      "observed": "[200,401]",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_LOGOUT",
+      "ok": true,
+      "expected": "logout revokes",
+      "observed": "200",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_REVOKED_REJECTED",
+      "ok": true,
+      "expected": "revoked session rejected",
+      "observed": "SESSION_REVOKED",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_ABSOLUTE_EXPIRY",
+      "ok": true,
+      "expected": "absolute-expired session rejected",
+      "observed": "SESSION_EXPIRED",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_IDLE_EXPIRY",
+      "ok": true,
+      "expected": "idle-expired session rejected",
+      "observed": "SESSION_IDLE_EXPIRED",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_CHALLENGE_EXPIRY",
+      "ok": true,
+      "expected": "expired challenge denied 401",
+      "observed": "401 STALE_PROOF",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_EXPIRY_LOCK_OVERLAP",
+      "ok": true,
+      "expected": "actual overlapping lock wait observed",
+      "observed": "true",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_EXPIRY_AFTER_LOCK_DENIED",
+      "ok": true,
+      "expected": "expired challenge cannot open session after lock wait",
+      "observed": "true",
+      "classifier": "PASS_LOCAL"
+    },
+    {
+      "id": "DB_EXPIRY_AFTER_LOCK_UNCONSUMED",
+      "ok": true,
+      "expected": "rejected expired nonce stays unconsumed",
+      "observed": "true",
+      "classifier": "PASS_LOCAL"
+    }
+  ],
+  "commands": [
+    "wsl -d Ubuntu -- bash scripts/postgres-disposable/run-api-suite.sh",
+    "node scripts/verify-api.mjs (LOCAL no-DB unit checks)"
+  ],
+  "note": "LABELED local only: generated ed25519 keypair + fake final access-key resolver (never a wallet/testnet proof). Real disposable PostgreSQL: migrations applied, worker-seeded projection, API role read-only on projections re-asserted, transactional single-use nonce (replay/concurrent), and secure session lifecycle (revoke/idle/absolute/challenge expiry) exercised through the PgStore.",
+  "reviewedBy": "Codex"
+}

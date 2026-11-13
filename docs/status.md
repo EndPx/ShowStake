@@ -1,5 +1,9 @@
 # ShowStake status
 
+## Multi-event backend relational model — 2026-11-13
+
+D051 selects a single-contract multi-event target and puts the new factory funding proposal on hold. `docs/backend-erd.md` now describes the actual physical database model, including PK/FK/unique tuples and explicit onchain authority boundaries. Additive migration0008 adds12 foreign keys, backfills pass event identity, and retains all prior migrations. Real isolated PostgreSQL catalog verification found25 tables with PKs and40 validated FKs. Relations23, API37 and worker93 checks passed; the seven T01 phases passed57 checks with actual dump/restore. Source/backend acceptance does not mean the current onchain single-event contract has become multi-event. Production rollout evidence is recorded separately after backup and compatibility checks.
+
 ## Feature-unlock release checkpoint — 2026-11-13, after API f21e699
 
 The linked-withdraw candidate now uses `simple_withdraw` and a private terminal bool callback. The final new-instance artifact is 235060 bytes / `49a591ba26a4a23d05c01cc343779f1c66aa5da0384e3a663a37f4e5edb59b70`; the global schema-2 factory is 200691 bytes / `3819343c5024a4e6f290d8d45cc31c71f18ab35302e9b1783823fc3038ddf742`. Neither new artifact has been deployed publicly. The old manual escrow remains unchanged.

@@ -1,0 +1,66 @@
+{
+  "phase": "d03",
+  "title": "D03 SET ROLE least-privilege",
+  "run_id": "erd-t01-20261113-v2",
+  "ok": true,
+  "passed": 9,
+  "failed": 0,
+  "checks": [
+    {
+      "id": "D03_API_NO_PROJECTION_UPDATE",
+      "ok": true,
+      "expected": "API update projection denied 42501",
+      "observed": "code=42501"
+    },
+    {
+      "id": "D03_API_NO_PROJECTION_INSERT",
+      "ok": true,
+      "expected": "API insert projection denied 42501",
+      "observed": "code=42501"
+    },
+    {
+      "id": "D03_API_CAN_READ_PROJECTION",
+      "ok": true,
+      "expected": "API SELECT projection ok",
+      "observed": "rows=1"
+    },
+    {
+      "id": "D03_API_CAN_INSERT_SESSION",
+      "ok": true,
+      "expected": "API INSERT session allowed",
+      "observed": "inserted"
+    },
+    {
+      "id": "D03_WORKER_NO_SESSION",
+      "ok": true,
+      "expected": "worker INSERT session denied 42501",
+      "observed": "code=42501"
+    },
+    {
+      "id": "D03_WORKER_NO_IDENTITY",
+      "ok": true,
+      "expected": "worker INSERT identity denied 42501",
+      "observed": "code=42501"
+    },
+    {
+      "id": "D03_WORKER_NO_TEMP",
+      "ok": true,
+      "expected": "worker denied TEMP table",
+      "observed": "denied=42501"
+    },
+    {
+      "id": "D03_WORKER_CAN_WRITE_PROJECTION",
+      "ok": true,
+      "expected": "worker INSERT projection allowed",
+      "observed": "inserted evt-worker-1"
+    },
+    {
+      "id": "D03_WORKER_CAN_OBSERVE_FUNDING",
+      "ok": true,
+      "expected": "worker UPDATE funding observation allowed",
+      "observed": "state->SOURCE_PENDING"
+    }
+  ],
+  "meta": {},
+  "at": "2026-11-13T09:55:33.553Z"
+}
