@@ -10,9 +10,13 @@ import { resolveEventTarget } from "@/lib/near/event-target";
 import { ACCEPTED_MAINNET_RELEASE } from "@/lib/near/mainnet-actions";
 import { finalBlockViews,callView } from "@/lib/near/rpc";
 import { validateSessionEnvelope,validatePersonalRows,validateProjectionEvent,type ProjectionRow,type ProjectionEvent } from "@/lib/personal-dashboard";
+import { MULTI_EVENT_RELEASE } from "@/lib/near/multi-event";
+import { sharedSnapshot } from "@/lib/near/shared-event";
+import { loadSharedCatalog } from "@/lib/shared-catalog";
 type Row={event:ProjectionEvent;kind:"pass"|"claim"|"host";chainStatus:string;registrationId?:string;passId?:string;apiPassId?:string;claimAtomic?:string;claimLabel?:string;observedAt:string};
 async function read(path:string){const r=await fetch(path,{cache:"no-store"});const body=await r.json();if(!r.ok)throw Error(r.status===401?"Your session expired. Sign in again.":body.error?.message??"Data unavailable");return body;}
 async function verify(event:ProjectionEvent,account:string,kind:Row["kind"],projection?:ProjectionRow):Promise<Row>{
+ if(kind==="host"&&MULTI_EVENT_RELEASE?.contract===event.contractId){const s=await sharedSnapshot(MULTI_EVENT_RELEASE,event.chainEventId,RPC_URL);if(s.event.organizer!==account||s.event.organizer!==event.organizerAccount)throw Error("Organizer identity mismatch");return {event,kind,chainStatus:s.event.phase,observedAt:new Date(s.blockTimestampMs).toISOString()};}
  if(projection?.network!==undefined&&(projection.network!==event.network||projection.contractId!==event.contractId||projection.chainEventId!==event.chainEventId))throw Error("Projection event tuple mismatch");
  let target:Awaited<ReturnType<typeof resolveEventTarget>>|undefined;
  if(NETWORK==="mainnet")target=await resolveEventTarget(ACCEPTED_MAINNET_RELEASE,event.contractId,event.chainEventId,RPC_URL);
@@ -25,6 +29,7 @@ async function verify(event:ProjectionEvent,account:string,kind:Row["kind"],proj
  const eventState=initial.value.views[0] as {phase?:string;earn_state?:string};const refund=kind==="claim"&&["Cancelled","RefundOnly"].includes(eventState.phase??"")&&["NotStarted","Redeemed"].includes(eventState.earn_state??"")&&["None","Claimable"].includes(reg.claim);const amount=refund?reg.amount:reg.claim_amount;if(kind==="claim"&&!isAtomicString(amount))throw Error("Claim amount unavailable");return {event,kind,chainStatus:kind==="pass"?String(reg.attendance??"Unavailable"):String(reg.claim??"Unavailable"),registrationId:reg.registration_id,passId:reg.pass_id,claimAtomic:kind==="claim"?amount:undefined,claimLabel:refund?"Refund principal":"Claim",observedAt:initial.observedAt};
 }
 async function registryHosted(account:string):Promise<{rows:Row[];incomplete:boolean}>{
+ if(MULTI_EVENT_RELEASE?.network===NETWORK){const entries=await loadSharedCatalog();return {rows:entries.filter(e=>e.organizerAccount===account).map(e=>({event:{id:`chain:${e.contractId}:${e.chainEventId}`,network:e.network,contractId:e.contractId!,chainEventId:e.chainEventId!,organizerAccount:e.organizerAccount!,state:e.state},kind:"host" as const,chainStatus:e.state,observedAt:new Date().toISOString()})),incomplete:false};}
  if(NETWORK!=="mainnet")return {rows:[],incomplete:false};const rows:Row[]=[];let incomplete=false;
  if(account===MANUAL_TARGET.organizer){try{const v=await resolveManualTarget(null,RPC_URL);if(v.event){const e:ProjectionEvent={id:`chain:${v.contractId}`,network:"mainnet",contractId:v.contractId,chainEventId:v.event.event_id,organizerAccount:v.organizer,state:v.event.phase};rows.push({event:e,kind:"host",chainStatus:v.event.phase,observedAt:new Date(v.blockTimestampMs).toISOString()});}}catch{incomplete=true;}}
  const factory=ACCEPTED_MAINNET_RELEASE;if(!factory)return {rows,incomplete};

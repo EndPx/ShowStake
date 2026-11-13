@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import { multiEventAction, multiEventAllowed, multiEventIdentity, multiEventTransfer } from './multi-event.ts';
+const release={network:'mainnet' as const,contract:'shared.near',codeHash:'hash',canonicalFt:'17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1',policy:'policy'};
+const e={event_id:'one',organizer:'alice.near',canonical_ft:'17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1',policy_version:'policy',phase:'RegistrationClosed',earn_state:'Supplied',deposit:'1000000',reg_open:1,reg_close:2,checkin_open:3,checkin_close:5,finalize_deadline:10};
+const two={...e,event_id:'two',organizer:'bob.near'};
+const r={registration_id:'reg',event_id:'one',beneficiary:'carol.near',claim:'Claimable',claim_amount:'10',amount:'1000000'};
+assert.equal(multiEventIdentity(null,release,e),false); assert.equal(multiEventIdentity(release,release,e),true); assert.equal(multiEventIdentity(release,{...release,codeHash:'other'},e),false);
+assert.equal(multiEventAllowed('mark_attendance',e,'alice.near',3,r),true); assert.equal(multiEventAllowed('mark_attendance',e,'alice.near',5,r),false); assert.equal(multiEventAllowed('mark_attendance',two,'bob.near',3,r),false); assert.equal(multiEventAllowed('mark_attendance',two,'alice.near',3,{...r,event_id:'two'}),false);
+assert.equal(multiEventAllowed('claim',{...e,phase:'Settled'},'carol.near',5,r),true); assert.equal(multiEventAllowed('claim',{...two,phase:'Settled'},'carol.near',5,r),false); assert.equal(multiEventAllowed('claim',{...e,phase:'Settled'},'mallory.near',5,r),false);
+assert.deepEqual(multiEventAction('close_registration','two').params.args,{event_id:'two'}); assert.deepEqual(JSON.parse(String(multiEventTransfer('shared.near',two,'commit').params.args.msg)),{version:1,event_id:'two',commitment_id:'commit'}); assert.equal(multiEventAllowed('trigger_earn_supply',e,'alice.near',3),false);
+console.log('PASS_LOCAL multi-event identity, windows and recipients');

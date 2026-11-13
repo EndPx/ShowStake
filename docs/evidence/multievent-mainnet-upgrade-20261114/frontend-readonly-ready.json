@@ -1,0 +1,16 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "Actual frontend read-only CREATE preflight against frozen mainnet code; wallet was not called",
+  "observedAt": "2026-11-13T18:54:35.664Z",
+  "account": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5",
+  "contract": "showstake-mainnet-escrow-endpx-2026.near",
+  "codeHash": "EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY",
+  "policy": "showstake-native-usdc-multievent/1",
+  "quoteAtomic": "228930000000000000000000",
+  "capacity": 5,
+  "verifiedFreshContext": true,
+  "publicCreatePolicyAllowsExactRequest": true,
+  "crossSignerDenied": true,
+  "transactionsSubmitted": 0,
+  "eventCreated": false
+}

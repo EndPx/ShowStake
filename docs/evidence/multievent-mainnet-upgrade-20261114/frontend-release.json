@@ -1,0 +1,82 @@
+{
+  "classification": "PASS_LOCAL",
+  "scope": "Shared-contract public CREATE, discovery/detail/hosting, wallet context and final receipt recovery; no funded browser transaction",
+  "observedAt": "2026-11-13T19:05:26.590Z",
+  "reviewer": "Codex",
+  "tests": {
+    "testFiles": 33,
+    "frontendChecks": 100,
+    "typecheck": true,
+    "productionMainnetBuild": true,
+    "readOnlyLivePreflight": "PASS_LIVE"
+  },
+  "buildId": "uILe4Fpj0kpR_GUOuVfGl",
+  "testFiles": [
+    "apps/web/src\\lib\\factory-event-policy.test.ts",
+    "apps/web/src\\lib\\checkin-session.test.ts",
+    "apps/web/src\\lib\\api-event-binding.test.ts",
+    "apps/web/src\\lib\\lifecycle.test.ts",
+    "apps/web/src\\lib\\funding-server.test.ts",
+    "apps/web/src\\lib\\mainnet-event-preview.test.ts",
+    "apps/web/src\\lib\\mainnet-policy.test.ts",
+    "apps/web/src\\lib\\vercel-config.test.ts",
+    "apps/web/src\\lib\\rhea-microtest.test.ts",
+    "apps/web/src\\lib\\rhea-journal.test.ts",
+    "apps/web/src\\lib\\personal-dashboard.test.ts",
+    "apps/web/src\\lib\\money-input.test.ts",
+    "apps/web/src\\lib\\near\\final-block.test.ts",
+    "apps/web/src\\lib\\near\\factory.test.ts",
+    "apps/web/src\\lib\\near\\factory-recovery.test.ts",
+    "apps/web/src\\lib\\near\\factory-context.test.ts",
+    "apps/web/src\\lib\\near\\claim-failure.test.ts",
+    "apps/web/src\\lib\\near\\mainnet-actions.test.ts",
+    "apps/web/src\\lib\\near\\linked-withdraw.test.ts",
+    "apps/web/src\\lib\\near\\linked-profile.test.ts",
+    "apps/web/src\\lib\\near\\linked-actual-graph.test.ts",
+    "apps/web/src\\lib\\near\\manual-target.test.ts",
+    "apps/web/src\\lib\\near\\mainnet-lifecycle.test.ts",
+    "apps/web/src\\lib\\near\\multi-create.test.ts",
+    "apps/web/src\\lib\\near\\multi-event.test.ts",
+    "apps/web/src\\lib\\near\\wallet-request.test.ts",
+    "apps/web/src\\lib\\near\\storage-approval.test.ts",
+    "apps/web/src\\lib\\near\\shared-event.test.ts",
+    "apps/web/src\\lib\\near\\reviewed-leaf-release.test.ts",
+    "apps/web/src\\lib\\near\\receipt-graph.test.ts",
+    "apps/web/src\\lib\\near\\public-child.test.ts",
+    "apps/web/src\\lib\\near\\participant-deposit.test.ts",
+    "apps/web/src\\lib\\near\\native-storage-budget.test.ts"
+  ],
+  "contract": {
+    "account": "showstake-mainnet-escrow-endpx-2026.near",
+    "policy": "showstake-native-usdc-multievent/1",
+    "sha256": "c81cf3d7293c111fc29c930ac19f94d3c88cdcf4d7dcf70a73f73911c87999e7",
+    "codeHash": "EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY",
+    "upgradeTransaction": "Cpb4sh2B2ASAfLEQouz3sPq9DqN3JYsfJoiXxogqr3BJ",
+    "contractChangesAfterDeploy": 0
+  },
+  "publicCreate": {
+    "enabled": true,
+    "anyConnectedOrganizer": true,
+    "contextBindsSignerEventQuoteAndTarget": true,
+    "storageReserveCeilingAtomic": "10000000000000000000000000",
+    "defaultCapacity": 5,
+    "persistBeforeWallet": true,
+    "unknownAttemptRecoveryOnly": true,
+    "receiptFinalAndEventReadbackRequired": true,
+    "backendProjectionIsNotAuthority": true
+  },
+  "readonlyEvidence": "docs/evidence/multievent-mainnet-upgrade-20261114/frontend-readonly-ready.json",
+  "limitations": [
+    "User signs CREATE in their wallet; no agent-created mainnet event in this scope",
+    "Mainnet USDC registration/provider flows are disabled by frozen contract, visible before storage payment",
+    "Shared financial routes besides CREATE remain unavailable",
+    "An accepted release is not Rhea liquidity acceptance"
+  ],
+  "commands": [
+    "pnpm --filter @showstake/web exec tsc --noEmit --incremental false",
+    "node --no-warnings --experimental-strip-types <each test file>",
+    "node --experimental-strip-types scripts/verify-frontend-slice.mjs",
+    "NEXT_PUBLIC_SHOWSTAKE_NETWORK=mainnet SHOWSTAKE_NEXT_DIST_DIR=.next-shared-create-review SHOWSTAKE_API_UPSTREAM_URL=https://srv1330754.hstgr.cloud pnpm --filter @showstake/web build"
+  ],
+  "financialTransactionsInFrontendTests": 0
+}

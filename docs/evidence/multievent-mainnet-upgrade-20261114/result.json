@@ -1,0 +1,42 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "Approved exact frozen mainnet CREATE-only upgrade; no participant USDC or provider transfer",
+  "network": "mainnet",
+  "account": "showstake-mainnet-escrow-endpx-2026.near",
+  "transactionHash": "Cpb4sh2B2ASAfLEQouz3sPq9DqN3JYsfJoiXxogqr3BJ",
+  "artifact": {
+    "sha256": "c81cf3d7293c111fc29c930ac19f94d3c88cdcf4d7dcf70a73f73911c87999e7",
+    "bytes": 225667,
+    "codeHash": "EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY"
+  },
+  "upgradeBlock": {
+    "height": 224402760,
+    "hash": "EgDLaFEjAdotQT6RLm5yffUVoM2EjrWkfwpWrRdrmPp7"
+  },
+  "afterBlock": {
+    "hash": "35PUxqHaNg2z8oytxpHbZMD9GUrPgL7t9Fv78HYa37sp",
+    "height": 224403145
+  },
+  "fees": {
+    "authorizedMaximumAtomic": "10000000000000000000000",
+    "tokensBurntAtomic": "1819197727169600000000",
+    "netAccountDebitAtomic": "1819197727169600000000",
+    "accountBalanceBefore": "2298189927568376000000000",
+    "accountBalanceAfter": "2296370729841206400000000"
+  },
+  "post": {
+    "policy": "showstake-native-usdc-multievent/1",
+    "providerEnabled": false,
+    "eventCount": 0,
+    "usdcAtomic": "0",
+    "providerPosition": null,
+    "storageBytes": 226189,
+    "accessKeyUnchanged": true
+  },
+  "newAccountsCreated": 0,
+  "participantAssetTransfers": 0,
+  "privateKeyExported": false,
+  "signatureRecorded": false,
+  "receiptLocator": "Nearblocks used only to locate hash; full tx/actions/code/finality/fees independently checked against NEAR RPC",
+  "cliQuietOutputIssue": "CLI exited0 with no hash output; no transaction repeated"
+}

@@ -1,0 +1,56 @@
+{
+  "block": {
+    "hash": "Gvd7SVWJWj8NoTj7ZvYVAXM7vq88b8tzjPa5Novknphh",
+    "height": 224402750
+  },
+  "account": {
+    "amount": "2298189927568376000000000",
+    "block_hash": "Gvd7SVWJWj8NoTj7ZvYVAXM7vq88b8tzjPa5Novknphh",
+    "block_height": 224402750,
+    "code_hash": "CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os",
+    "locked": "0",
+    "storage_paid_at": 0,
+    "storage_usage": 225503
+  },
+  "keys": [
+    {
+      "access_key": {
+        "nonce": 224273797000001,
+        "permission": "FullAccess"
+      },
+      "public_key": "ed25519:FQJ3SrmLBtQU7xjigLN9NW2aMu2PUTT6Tper1CvnYe2X"
+    }
+  ],
+  "config": {
+    "organizer": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5",
+    "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+    "network": "mainnet",
+    "policy_version": "showstake-native-usdc-rhea-review/1",
+    "provider_account": "contract.main.burrow.near",
+    "provider_kind": "RHEA_MAINNET"
+  },
+  "storagePrice": "10000000000000000000",
+  "gasPrice": "100000000",
+  "event": null,
+  "control": {
+    "paused": true,
+    "stage": "Idle",
+    "principal_cap": "0",
+    "shares": "0",
+    "last_internal_balance": "0",
+    "baseline_ft": "0",
+    "expected_return": "0"
+  },
+  "usdc": "0",
+  "position": null,
+  "rawState": {
+    "block_hash": "Gvd7SVWJWj8NoTj7ZvYVAXM7vq88b8tzjPa5Novknphh",
+    "block_height": 224402750,
+    "values": [
+      {
+        "key": "U1RBVEU=",
+        "value": "QAAAAGRjNjM0YzUwNWVlNmI4NmE5YjYxNWVkN2ViZWY3ZmZmNmEyMzVjMzQwNjE2M2QzNWQ0ZjBlNjBjNTc2YTI3YjVAAAAAMTcyMDg2MjhmODRmNWQ2YWQzM2YwZGEzYmJiZWIyN2ZmY2IzOThlYWM1MDFhMzFiZDZhZDIwMTFlMzYxMzNhMQQAAABVU0RDBAAAAFVTREMGGQAAAGNvbnRyYWN0Lm1haW4uYnVycm93Lm5lYXIMAAAAUkhFQV9NQUlOTkVUAAQAAABlYy1yBAAAAGVjLXAEAAAAZWMtYQQAAABlYy1jAAAAAAAAAAAEAAAAZWMtaQAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+      }
+    ]
+  }
+}

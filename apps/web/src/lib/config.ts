@@ -19,7 +19,7 @@ export const CANDIDATE_LIFECYCLE_TARGET: { contractId: string; eventId: string; 
 export function candidateTarget(): typeof CANDIDATE_LIFECYCLE_TARGET { return CANDIDATE_LIFECYCLE_TARGET; }
 
 /** Public read-only NEAR testnet RPC. No keys are ever sent. */
-export const RPC_URL = NETWORK === "testnet" ? "https://test.rpc.fastnear.com" : "https://rpc.mainnet.near.org";
+export const RPC_URL = NETWORK === "testnet" ? "https://test.rpc.fastnear.com" : "https://free.rpc.fastnear.com";
 
 /**
  * Accepted v6 product deployment (README/ABI, source b744c00, deployed

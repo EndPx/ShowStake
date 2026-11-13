@@ -5,6 +5,8 @@
 // accepted deployment's single event id is resolved read-only from the contract
 // (`list_events`) so a discovery row can only route to an accepted event.
 
+import { MULTI_EVENT_RELEASE } from "./near/multi-event";
+import { loadSharedCatalog } from "./shared-catalog";
 import { fetchEventList, mapApiEvent, ApiRequestError } from "./api";
 import { apiBaseUrl, acceptedContract, isAcceptedEvent, RPC_URL, NETWORK } from "./config";
 import { MANUAL_TARGET } from "./near/manual-target";
@@ -60,6 +62,7 @@ async function annotateDetailKeys(items: EventSummary[]): Promise<EventSummary[]
 }
 
 export async function loadCatalog(fetchImpl: typeof fetch = fetch): Promise<CatalogResult> {
+  if (MULTI_EVENT_RELEASE?.network === NETWORK) { try { const items=await loadSharedCatalog(fetchImpl); const page={items,nextCursor:null}; return items.length ? {kind:"ready",page,stale:false,observedAt:new Date().toISOString()} : {kind:"empty",page,stale:false,observedAt:new Date().toISOString()}; } catch { return {kind:"error",message:"On-chain events are temporarily unavailable.",retryable:true}; } }
   const baseUrl = apiBaseUrl();
   try {
     const envelope = await fetchEventList(baseUrl, fetchImpl);

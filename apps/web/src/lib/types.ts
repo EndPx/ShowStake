@@ -38,6 +38,7 @@ export interface EventSummary {
   id: string;
   network: string;
   contractId?: string;
+  organizerAccount?: string;
   state: EventState;
   /** Canonical unsigned-128 base-10 string (OpenAPI `Money`). */
   depositAtomic: string;
