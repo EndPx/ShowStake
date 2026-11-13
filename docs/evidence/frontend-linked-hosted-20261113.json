@@ -1,0 +1,103 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "Public GitHub-built UI, wallet picker, static artifact and VPS runtime hosting only; no funded mainnet lifecycle or liquidity acceptance",
+  "observedAt": "2026-11-13T07:41:29.720Z",
+  "url": "https://showstake.vercel.app",
+  "frontendImplementationCommit": "874bca9",
+  "frontendReviewedDeploymentCommit": "5b8ed8d",
+  "vercelStatus": "success",
+  "vercelDashboardUrl": "https://vercel.com/muhammad-meidy-noor-al-barrys-projects/showstake/9UMMNdUzEfgv8Ba8uFB9nMWV776M",
+  "backendRelease": "/opt/showstake/releases/cb584b7",
+  "backendSourceCommit": "cb584b7aa9e3420f81f5fa2a3adb27b3be7b1954",
+  "backendArchiveSha256": "920afe308810357409fa6912831d2cd72501bcef07714e511425d796c5f7a294",
+  "backend": {
+    "api": "active",
+    "worker": "active",
+    "database": "up",
+    "leastPrivilege": true,
+    "migrations": 7,
+    "cursorHeightOnRestart": 224311437,
+    "cursorJump": false,
+    "factoryTrustEnabled": false,
+    "unrelatedServicesPreserved": true
+  },
+  "http": [
+    {
+      "path": "/events",
+      "status": 200
+    },
+    {
+      "path": "/events/new",
+      "status": 200
+    },
+    {
+      "path": "/funding",
+      "status": 200
+    },
+    {
+      "path": "/earn",
+      "status": 200
+    }
+  ],
+  "artifact": {
+    "path": "/contracts/showstake-event-escrow-49a591ba.wasm",
+    "status": 200,
+    "bytes": 235060,
+    "sha256": "49a591ba26a4a23d05c01cc343779f1c66aa5da0384e3a663a37f4e5edb59b70"
+  },
+  "browser": {
+    "engine": "Orca embedded Chromium",
+    "pageId": "9e974362-3c42-4ed4-a128-99a91a849336",
+    "eventsPageHeadings": [
+      "My events",
+      "My passes",
+      "My claims",
+      "Hosting"
+    ],
+    "walletPickerOpened": true,
+    "walletsObserved": [
+      "HOT Wallet",
+      "Meteor Wallet",
+      "Intear Wallet",
+      "Ledger",
+      "MyNearWallet",
+      "OKX Wallet",
+      "NEAR Mobile",
+      "Trezu Wallet",
+      "Nightly Wallet",
+      "Hana Wallet",
+      "Ethereum Wallets",
+      "NEAR CLI"
+    ],
+    "walletSelected": false,
+    "walletSignature": false,
+    "transactionBroadcast": false,
+    "createFormVisible": true,
+    "factoryGateVisible": true,
+    "mobile": [
+      {
+        "route": "/events",
+        "width": 390,
+        "documentWidth": 390
+      },
+      {
+        "route": "/events/new",
+        "width": 390,
+        "documentWidth": 390
+      }
+    ],
+    "consoleEntries": [],
+    "screenshotIsFinancialProof": false
+  },
+  "financial": {
+    "mainnetNewTransactions": 0,
+    "newFactoryDeployed": false,
+    "providerTechnicallyAccepted": false,
+    "authorization": "Pending exact factory2.08NEAR plan and funding; no USDC approved"
+  },
+  "evidence": {
+    "local": "docs/evidence/mainnet-feature-unlock-20261113/acceptance.json",
+    "webTests": "docs/evidence/frontend-linked-local-20261113.json",
+    "auth": "docs/evidence/vps-auth-through-vercel-20261113.json"
+  }
+}
