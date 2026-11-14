@@ -9,9 +9,9 @@ export default async function EventDetailPage({
   params, searchParams,
 }: {
   params: Promise<{ eventId: string }>;
-  searchParams: Promise<{ contract?: string; registration?:string; pass?:string }>;
+  searchParams: Promise<{ contract?: string; registration?:string; pass?:string;payment?:string }>;
 }) {
   const { eventId } = await params;
-  const { contract, registration, pass } = await searchParams;
-  return sharedReleaseForNetwork(NETWORK) && contract === sharedReleaseForNetwork(NETWORK)?.contract ? <SharedEventRoute eventId={eventId} mode="participant" initialRegistrationId={registration ?? ""} initialApiPassId={pass ?? ""} /> : (NETWORK === "mainnet" || !!FACTORY_EVENT_RELEASE && FACTORY_EVENT_RELEASE.network === NETWORK && !!contract?.endsWith(`.${FACTORY_EVENT_RELEASE.factory}`)) ? <MainnetParticipant eventId={eventId} contractId={contract ?? ""} initialRegistrationId={registration ?? ""} initialApiPassId={pass ?? ""} /> : <EventDetailClient eventId={eventId} />;
+  const { contract, registration, pass, payment } = await searchParams;
+  return sharedReleaseForNetwork(NETWORK) && contract === sharedReleaseForNetwork(NETWORK)?.contract ? <SharedEventRoute eventId={eventId} mode="participant" initialPaymentOpen={payment==='1'} initialRegistrationId={registration ?? ""} initialApiPassId={pass ?? ""} /> : (NETWORK === "mainnet" || !!FACTORY_EVENT_RELEASE && FACTORY_EVENT_RELEASE.network === NETWORK && !!contract?.endsWith(`.${FACTORY_EVENT_RELEASE.factory}`)) ? <MainnetParticipant eventId={eventId} contractId={contract ?? ""} initialRegistrationId={registration ?? ""} initialApiPassId={pass ?? ""} /> : <EventDetailClient eventId={eventId} />;
 }

@@ -280,5 +280,27 @@
         "favicon"
       ]
     }
+  },
+  "eventCentricUx": {
+    "date": "2026-11-14",
+    "reference": "CommitPass Monad/apps/web",
+    "referenceCommit": "542273df306a7e5887f1dfcabf1383e78930f579",
+    "changes": [
+      "Reuse editorial event editor, option rows, field dialogs, event cover and existing shell",
+      "Contextual registration, onchain pass, check-in proposals, organizer actions, results and materials",
+      "Inline supported cross-chain funding; standalone finance destinations redirect",
+      "NEAR connect automatically requests verified sign-in when needed; matching server-session restoration",
+      "Logo navy/cyan tokens; existing landing gradient geometry, opacity, animation and layout preserved",
+      "Landing sample-poster artwork recolored to the same navy/cyan family; geometry retained"
+    ],
+    "financialAuthority": "Pinned NEAR contract views and final receipt graphs; no timer or database success",
+    "dependencies": [
+      {
+        "name": "jsqr",
+        "version": "1.4.0",
+        "license": "Apache-2.0",
+        "purpose": "Local QR decoding fallback only, loaded on camera use"
+      }
+    ]
   }
 }

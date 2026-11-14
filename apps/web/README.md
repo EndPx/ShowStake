@@ -12,7 +12,19 @@ Next App Router application reusing the CommitPass frontend shell (read-only
 baseline `542273df306a7e5887f1dfcabf1383e78930f579`), adapted to ShowStake tokens
 and copy. See `../../DESIGN.md` and `../../docs/frontend-provenance.json`.
 
-## Sliced scope (this increment)
+## Event-centric UX (2026-11-14)
+
+Connect wallet continues to a server-verified NEP-413 sign-in when required. Existing verified sessions restore only for the matching connected account and network. Navigation preserves the wallet boundary; message rejection offers explicit retry.
+
+Create an event at /events/new: edit the title, schedule, location, rules, USDC commitment and guest limit. Create event reads the exact native storage reservation, then Approve and publish opens the actual wallet transaction. The organizer page opens after the final receipt and matching event view are verified. Drafts and unknown transaction attempts are durable.
+
+Open an event to reserve a spot, approve required token storage, deposit exact USDC and view the onchain pass. Add USDC from another chain is an optional inline payment step. The supported source routes are native ETH on Base and Ethereum; funding never creates a registration. /funding redirects to event payment recovery and /earn redirects to hosted events.
+
+Manage your event shows the next available organizer action, guest search, QR/manual check-in proposals, signed attendance, finalization, supply/redeem, settlement and materials. Scan proposals do not mark attendance until the organizer signs and the receipt is final. Camera frames stay on device, with manual input available. Results and claims come from final chain state; pending and failed payouts keep their recovery controls.
+
+Logo navy/cyan now set the app and landing brand tokens. Existing gradient geometry, alpha, animation and landing composition are retained. All following sliced notes are historical and do not override this current release.
+
+## Historical sliced scope
 
 - `/` — landing (hero, walkthrough, host/manifesto/FAQ, native-CSS sample art).
 - `/discover` — public catalog wired to the real `/v1/events` projection with

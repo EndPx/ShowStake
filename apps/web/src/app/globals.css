@@ -2,10 +2,11 @@
   /* ---- ShowStake design tokens (authoritative; docs/planning/showstake-v2/tokens.css) ---- */
   --color-canvas: #f7f5f0;
   --color-surface: #ffffff;
-  --color-text: #19231d;
-  --color-muted: #5b645e;
-  --color-primary: #b33a1b;
-  --color-primary-hover: #912b13;
+  --color-text: #04142b;
+  --color-muted: #5b6676;
+  --color-primary: #087295;
+  --color-primary-hover: #065775;
+  --color-logo-cyan: #00c5f5;
   --color-on-primary: #ffffff;
   --color-success: #245c3e;
   --color-success-bg: #e8f2eb;
@@ -14,7 +15,7 @@
   --color-error: #a12622;
   --color-error-bg: #fceceb;
   --color-focus: #1d4ed8;
-  --color-border: #dcddd6;
+  --color-border: #dce3e8;
   --color-control-border: #78837a;
   --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-serif: Georgia, "Times New Roman", serif;
@@ -34,7 +35,7 @@
   --muted: var(--color-muted);
   --line: var(--color-border);
   --accent: var(--color-primary);
-  --accent-soft: #fae6db;
+  --accent-soft: #dcf5fc;
   --green: var(--color-success);
   --green-soft: var(--color-success-bg);
   --shadow: var(--shadow-panel);
@@ -253,7 +254,7 @@ svg {
 .hero-glow {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 50% 52%, #fae6db40, transparent 65%);
+  background: radial-gradient(ellipse at 50% 52%, #dcf5fc40, transparent 65%);
   z-index: -1;
 }
 .poster-idle {
@@ -450,8 +451,8 @@ svg {
   padding-top: 8px;
 }
 .poster--run .poster-paper {
-  background: #dceb8c;
-  color: #235443;
+  background: #bcecf7;
+  color: #065775;
 }
 .run-lines {
   position: absolute;
@@ -461,8 +462,8 @@ svg {
   height: 40%;
 }
 .poster--dinner .poster-paper {
-  background: #ec6848;
-  color: #fae0b1;
+  background: #087295;
+  color: #dcf5fc;
 }
 .poster--dinner .poster-title {
   font-family: var(--font-serif), Georgia, serif;
@@ -478,8 +479,8 @@ svg {
   left: 24%;
   top: 49%;
   box-shadow:
-    inset 0 0 0 7px #ec6848,
-    inset 0 0 0 9px #fae0b1;
+    inset 0 0 0 7px #087295,
+    inset 0 0 0 9px #dcf5fc;
 }
 .plate span {
   position: absolute;
@@ -488,7 +489,7 @@ svg {
   top: 30%;
   left: 44%;
   border-radius: 50%;
-  background: #fae0b1;
+  background: #dcf5fc;
   transform: rotate(24deg);
 }
 .plate span:nth-child(2) {
@@ -504,8 +505,8 @@ svg {
   transform: rotate(205deg);
 }
 .poster--build .poster-paper {
-  background: #ccd9ee;
-  color: #334b86;
+  background: #c8dfef;
+  color: #153e67;
 }
 .poster--build .poster-title {
   font-size: clamp(22px, 2.2vw, 40px);
@@ -517,8 +518,8 @@ svg {
   margin-top: 20px;
 }
 .poster--clay .poster-paper {
-  background: #dcc8b9;
-  color: #6c422e;
+  background: #d8e8ed;
+  color: #173e52;
 }
 .poster--clay .poster-title {
   font-family: var(--font-serif), Georgia, serif;
@@ -531,11 +532,11 @@ svg {
   position: absolute;
   top: 36%;
   left: 15%;
-  color: #b9462d;
+  color: #087295;
 }
 .poster--music .poster-paper {
-  background: #efb8c4;
-  color: #743345;
+  background: #c3eaf4;
+  color: #04142b;
   text-align: left;
 }
 .poster--music .poster-title {
@@ -550,23 +551,23 @@ svg {
   position: absolute;
   bottom: -12%;
   right: -17%;
-  background: repeating-radial-gradient(circle, #743345 0 3px, #8b485a 4px 5px);
+  background: repeating-radial-gradient(circle, #04142b 0 3px, #173e52 4px 5px);
   display: grid;
   place-items: center;
 }
 .record span {
   width: 27%;
   aspect-ratio: 1;
-  background: #fae0b1;
+  background: #dcf5fc;
   border-radius: 50%;
-  border: 2px solid #743345;
+  border: 2px solid #04142b;
 }
 .poster--music .poster-note {
   width: 55%;
 }
 .poster--coffee .poster-paper {
-  background: #fae0b1;
-  color: #6c422e;
+  background: #dcf5fc;
+  color: #173e52;
   text-align: left;
 }
 .poster--coffee .poster-title {
@@ -580,7 +581,7 @@ svg {
   height: 40%;
   right: -4%;
   bottom: 7%;
-  color: #b9462d;
+  color: #087295;
   transform: rotate(-12deg);
 }
 .poster--coffee .poster-note {
@@ -853,7 +854,7 @@ svg {
   height: 192px;
   overflow: hidden;
   position: relative;
-  background: #dceb8c;
+  background: #bcecf7;
 }
 .reservation-image .poster {
   width: 150px;
@@ -1052,14 +1053,14 @@ svg {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #dceb8c;
-  color: #235443;
+  background: #bcecf7;
+  color: #065775;
   font-family: var(--font-serif), Georgia, serif;
   font-size: 20px;
 }
 .guest-avatar--rose {
-  background: #efb8c4;
-  color: #743345;
+  background: #c3eaf4;
+  color: #04142b;
 }
 .guest-row div span {
   display: block;
@@ -1221,7 +1222,7 @@ svg {
 }
 .closing-area {
   background:
-    radial-gradient(ellipse at 50% 25%, #fae6db60, transparent 70%),
+    radial-gradient(ellipse at 50% 25%, #dcf5fc60, transparent 70%),
     var(--canvas);
   position: relative;
   overflow: hidden;

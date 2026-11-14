@@ -3,11 +3,11 @@
 .platform--commitpass {
   --canvas: #faf9f6;
   --white: #fff;
-  --ink: #252622;
-  --muted: #686963;
+  --ink: #04142b;
+  --muted: #5b6676;
   --line: #e5e5de;
-  --accent: #b9462d;
-  --accent-soft: #fae6db;
+  --accent: #087295;
+  --accent-soft: #dcf5fc;
   --green: #315c45;
   --green-soft: #e5eee4;
   --shadow: 0 4px 8px #25262208, 0 24px 64px -20px #25262230;

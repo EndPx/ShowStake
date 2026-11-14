@@ -1,2 +1,2 @@
-﻿import { PersonalDashboard } from "@/components/event/personal-dashboard";
-export default function EventsPage(){return <PersonalDashboard/>;}
+import {PersonalDashboard} from '@/components/event/personal-dashboard';
+export default async function EventsPage({searchParams}:{searchParams:Promise<{payment?:string;tab?:string}>}){const q=await searchParams;return <PersonalDashboard showPayments={q.payment==='1'} initialTab={q.tab==='hosting'?'hosting':'all'}/>;}

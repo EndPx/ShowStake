@@ -1855,7 +1855,7 @@ components:
         network: { type: string, enum: [local, testnet, mainnet] }
         nearAccount: { type: string, description: 'optional proof of NEAR account control; REQUIRED before participant actions' }
 
-    MeEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, required: [userId, sessionId, active, accountId, network], properties: { userId: { type: string, format: uuid }, sessionId: { type: string, format: uuid }, active: { type: boolean }, accountId: { type: string, nullable: true }, network: { type: string, nullable: true } } } } } ] }
+    MeEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, required: [userId, sessionId, active, accountId, network], properties: { userId: { type: string, format: uuid }, sessionId: { type: string, format: uuid }, active: { type: boolean }, accountId: { type: string, nullable: true }, network: { type: string, nullable: true }, expiresAtMs: { type: integer, format: int64, nullable: true, description: 'Earlier of idle and absolute server session expiry; response is not cacheable.' } } } } } ] }
     LogoutEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { type: object, required: [loggedOut, revoked], properties: { loggedOut: { type: boolean }, revoked: { type: boolean } } } } } ] }
     # ---- response envelopes -------------------------------------------------
     EventEnvelope: { allOf: [ { $ref: '#/components/schemas/BaseEnvelope' }, { type: object, properties: { data: { $ref: '#/components/schemas/Event' } } } ] }

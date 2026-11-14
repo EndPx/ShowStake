@@ -6,7 +6,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LayoutList, List } from "lucide-react";
+import { LayoutList, List,Search } from "lucide-react";
 import type { EventSummary } from "@/lib/types";
 import { dateLabel, isPastEvent } from "@/lib/events";
 import { EventListCard } from "./event-list-card";
@@ -43,6 +43,7 @@ export function DiscoverEvents({ load = loadCatalog }: { load?: CatalogLoader })
   const [attempt, setAttempt] = useState(0);
   const [view, setView] = useState<"cards" | "list">("cards");
   const [period, setPeriod] = useState("upcoming");
+  const [query,setQuery]=useState(''),[selectedDate,setSelectedDate]=useState('');
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -81,8 +82,8 @@ export function DiscoverEvents({ load = loadCatalog }: { load?: CatalogLoader })
     return () => controller.abort();
   }, [load, attempt]);
 
-  const timezone = eventDisplayTimezone({});
-  const visible = rows.filter((event) =>
+  const [timezone,setTimezone]=useState('UTC');useEffect(()=>setTimezone(eventDisplayTimezone({})),[]);
+  const visible = rows.filter(event=>(!query||`${event.title??''} ${event.venue??''}`.toLowerCase().includes(query.toLowerCase()))&&(!selectedDate||dayKey(new Date(event.times.checkinOpen),timezone)===selectedDate)).filter((event) =>
     period === "past"
       ? isPastEvent(event, now)
       : !isPastEvent(event, now),
@@ -99,6 +100,7 @@ export function DiscoverEvents({ load = loadCatalog }: { load?: CatalogLoader })
       <div className="discovery-heading">
         <h1>Discover</h1>
         <div className="discovery-tools">
+          <label className="ss-discover-search"><Search size={17}/><input type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search events" aria-label="Search events"/></label>
           <div className="discovery-view" aria-label="Event layout">
             <button
               aria-label="Card view"
@@ -127,6 +129,7 @@ export function DiscoverEvents({ load = loadCatalog }: { load?: CatalogLoader })
             Times in {utcOffset(new Date(now), timezone)}
             <span>{timezone.replaceAll("_", " ")}</span>
           </p>
+          <label className="ss-discover-date">Filter by date<input type="date" value={selectedDate} onChange={e=>setSelectedDate(e.target.value)}/></label>{selectedDate&&<button className="ss-text-link" onClick={()=>setSelectedDate('')}>Clear date</button>}
         </aside>
         <div className="discovery-results">
           <div className="discovery-result-count" aria-live="polite">
@@ -135,7 +138,7 @@ export function DiscoverEvents({ load = loadCatalog }: { load?: CatalogLoader })
               : `${visible.length} ${visible.length === 1 ? "event" : "events"}`}
           </div>
 
-          {status === "ready" && direct && <p role="status">DIRECT_CHAIN: events read from the verified contract. Index projections may be unavailable.</p>}
+          {status === "ready" && direct && <details className="ss-data-details"><summary>Event updates</summary><p>Event details are checked against the final contract state. Some indexed history may still be updating.</p></details>}
           {status === "error" ? (
             <LoadError
               message={message}

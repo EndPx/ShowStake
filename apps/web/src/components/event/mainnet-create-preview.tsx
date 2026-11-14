@@ -1,69 +1,28 @@
-﻿"use client";
-
-import { useEffect, useState } from "react";
-import { AlignLeft, CalendarDays, Globe2, MapPin, Ticket, Users } from "lucide-react";
-import { NETWORK } from "@/lib/config";
-import { parseUnits } from "@/lib/money";
-import { eventRulesPreview, type EventDraft } from "@/lib/mainnet-event-preview";
-import { useWallet } from "@/components/wallet/wallet-context";
-import { EventCover } from "./event-cover";
-import { MultiCreate } from "./multi-create";
-import { FactoryEventCreate } from "./factory-event-create";
-import { sharedReleaseForNetwork } from "@/lib/near/multi-event";
-import { FACTORY_EVENT_RELEASE } from "@/lib/near/factory-event";
-
-const initial: EventDraft = { event_id: "", title: "", location: "", rules_text: "", deposit: "", capacity: "5", reg_open: "", reg_close: "", checkin_open: "", checkin_close: "" };
-
-export function MainnetCreatePreview() {
-  const wallet = useWallet();
-  const sharedYield = sharedReleaseForNetwork(NETWORK)?.policy === "showstake-native-usdc-shared-yield/2";
-  const [fields, setFields] = useState<EventDraft>(initial);
-  const [rules, setRules] = useState<Record<string, unknown> | null>(null);
-  const [notice, setNotice] = useState("");
-  useEffect(() => { setFields(previous => previous.event_id ? previous : { ...previous, event_id: `event-${crypto.randomUUID().replaceAll("-", "")}` }); }, []);
-  function change(key: keyof EventDraft, value: string) {
-    setFields(previous => ({ ...previous, [key]: value }));
-    setRules(null);
-    setNotice("");
-  }
-  function prepare() {
-    const deposit = parseUnits(fields.deposit, 6);
-    const result = deposit === null ? null : eventRulesPreview({ ...fields, deposit });
-    if (!result) { setRules(null); setNotice("Enter valid event details, a USDC deposit, capacity, and ordered times."); return; }
-    setRules(result.args.rules);
-    setNotice("Event rules are ready. Review the storage quote below before publishing.");
-  }
-  return <div className="commitpass-create create-workspace">
-    <div className="create-grid">
-      <aside className="create-cover-column">
-        <EventCover title={fields.title} />
-        <p className="cover-note">Sample cover · presentation only. Cover artwork is not saved with your event.</p>
-      </aside>
-      <div className="create-fields">
-        <div className="create-context"><span><CalendarDays size={15} /> New event</span><span><Globe2 size={14} /> Public</span></div>
-        <label className="sr-only" htmlFor="create-event-title">Event name</label>
-        <input id="create-event-title" className="event-name-input" placeholder="Event name" value={fields.title} onChange={e => change("title", e.target.value)} />
-        <div className="create-schedule">
-          <div className="create-date-rows">
-            {([ ["reg_open", "Registration opens"], ["reg_close", "Registration closes"], ["checkin_open", "Check-in opens"], ["checkin_close", "Check-in closes"] ] as const).map(([key, label]) => <label className="create-date-row" key={key}><span className="schedule-dot" aria-hidden="true" /><span>{label}</span><input type="datetime-local" value={fields[key]} onChange={e => change(key, e.target.value)} /></label>)}
-          </div>
-          <p className="schedule-note">Times use your device's local time. Registration close is also the cancellation cutoff. Finalization is due 24 hours after check-in closes.</p>
-        </div>
-        <label className="create-location editor-row-trigger"><MapPin size={18} /><span><strong>Location</strong><input placeholder="Offline location or virtual link" value={fields.location} onChange={e => change("location", e.target.value)} /></span></label>
-        <label className="create-description editor-row-trigger"><AlignLeft size={18} /><span><strong>Event rules</strong><textarea placeholder="Describe the event and attendance rules" value={fields.rules_text} onChange={e => change("rules_text", e.target.value)} rows={3} /></span></label>
-        <h2>Event options</h2>
-        <div className="create-options">
-          <label><Ticket size={18} /><span>Commitment <small>{NETWORK === "testnet" ? "Mock USDC" : "USDC"}</small></span><input type="text" inputMode="decimal" placeholder="0.00" value={fields.deposit} onChange={e => change("deposit", e.target.value)} /></label>
-          <label><Users size={18} /><span>Capacity</span><input type="text" inputMode="numeric" value={fields.capacity} onChange={e => change("capacity", e.target.value)} /></label>
-        </div>
-        <details className="create-advanced"><summary>Advanced event ID</summary><label>Event ID<input value={fields.event_id} onChange={e => change("event_id", e.target.value)} /></label></details>
-        {!FACTORY_EVENT_RELEASE && !sharedYield && <div className="create-release-notice"><strong>CREATE-only release</strong><p>You can create an event on the shared NEAR contract. USDC registration and Earn are unavailable in this release.</p></div>}
-        <div className="create-actions">{!wallet.account ? <button type="button" className="button" onClick={() => void wallet.connect()}>Connect NEAR wallet</button> : <p>Organizer: {wallet.account.accountId}</p>}<button type="button" className="button button--secondary" onClick={prepare}>Review event rules</button></div>
-        {wallet.error && <p className="create-feedback" role="alert">{wallet.error}</p>}
-        {notice && <p className="create-feedback" role="status">{notice}</p>}
-        {rules && <p className="create-feedback">Commitment: {fields.deposit} USDC · Capacity: {fields.capacity}</p>}
-        {FACTORY_EVENT_RELEASE && !sharedYield ? <FactoryEventCreate release={FACTORY_EVENT_RELEASE} rules={rules} /> : <MultiCreate rules={rules} />}
-      </div>
-    </div>
-  </div>;
+"use client";
+import {useEffect,useMemo,useState} from 'react';
+import {AlignLeft,CalendarDays,Clock3,Globe2,MapPin,Pencil,Ticket,Users} from 'lucide-react';
+import {NETWORK} from '@/lib/config';
+import {parseUnits} from '@/lib/money';
+import {eventRulesPreview,type EventDraft} from '@/lib/mainnet-event-preview';
+import {useWallet} from '@/components/wallet/wallet-context';
+import {EventCover} from './event-cover';
+import {MultiCreate} from './multi-create';
+import {EventEditorDialog,type EventEditor} from './editor-dialog';
+import {browserTimezone} from '@/lib/timezone';
+const empty:EventDraft={event_id:'',title:'',location:'',rules_text:'',deposit:'2',capacity:'5',reg_open:'',reg_close:'',checkin_open:'',checkin_close:''};
+function local(date:Date){return new Date(date.getTime()-date.getTimezoneOffset()*60000).toISOString().slice(0,16);}
+function fresh():EventDraft{const start=new Date();start.setDate(start.getDate()+1);start.setHours(18,0,0,0);return {...empty,event_id:`event-${crypto.randomUUID().replaceAll('-','')}`,reg_open:local(new Date(Date.now()-60000)),reg_close:local(start),checkin_open:local(start),checkin_close:local(new Date(start.getTime()+7200000))};}
+function readable(value:string){const d=new Date(value);return Number.isFinite(d.getTime())?d.toLocaleString('en',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'Choose a date';}
+export function MainnetCreatePreview(){const wallet=useWallet(),[fields,setFields]=useState<EventDraft>(empty),[editor,setEditor]=useState<EventEditor|null>(null),[loadedKey,setLoadedKey]=useState<string|null>(null),[notice,setNotice]=useState(''),[creationLocked,setCreationLocked]=useState(false),[timezone,setTimezone]=useState('UTC');useEffect(()=>setTimezone(browserTimezone()),[]);const draftKey=`showstake:event-draft:${NETWORK}:${wallet.account?.accountId??'guest'}`;
+ useEffect(()=>{let next:EventDraft|null=null;try{const raw=localStorage.getItem(draftKey)??localStorage.getItem(`showstake:event-draft:${NETWORK}:guest`);if(raw){const x=JSON.parse(raw);if(x&&Object.keys(empty).every(k=>typeof x[k]==='string')&&/^event-[a-f0-9]{32}$/.test(x.event_id))next=x;}}catch{}setFields(next??fresh());setLoadedKey(draftKey);},[draftKey]);
+ useEffect(()=>{if(loadedKey!==draftKey)return;try{localStorage.setItem(draftKey,JSON.stringify(fields));}catch{}},[fields,loadedKey,draftKey]);
+ const rules=useMemo(()=>{const deposit=parseUnits(fields.deposit,6);if(deposit===null||new TextEncoder().encode(fields.title).length>256||new TextEncoder().encode(fields.rules_text).length>8192)return null;return eventRulesPreview({...fields,deposit})?.args.rules??null;},[fields]);
+ const update=(next:EventDraft)=>{setFields(next);setNotice('');setEditor(null);};
+ return <div className="commitpass-create create-workspace"><div className="create-grid"><aside className="create-cover-column"><EventCover title={fields.title}/><div className="ss-editor-cover-caption"><span>ShowStake event</span><span>Public</span></div></aside><div className="create-fields"><div className="create-context"><span><CalendarDays size={15}/>Your event</span><span><Globe2 size={14}/>Public</span></div><label className="sr-only" htmlFor="create-event-title">Event name</label><input id="create-event-title" disabled={creationLocked} className="event-name-input" placeholder="Event name" value={fields.title} maxLength={120} onChange={e=>{setFields(p=>({...p,title:e.target.value}));setNotice('');}}/>
+ <button type="button" disabled={creationLocked} className="ss-editor-schedule" onClick={()=>setEditor('schedule')} aria-label="Edit event schedule"><div><span className="schedule-dot"/><span>Start</span><strong>{readable(fields.checkin_open)}</strong></div><div><span className="schedule-dot"/><span>End</span><strong>{readable(fields.checkin_close)}</strong></div><small><Globe2 size={14}/>{timezone.replaceAll('_',' ')}<Pencil size={13}/></small></button>
+ <button type="button" disabled={creationLocked} className="editor-row-trigger ss-editor-row" onClick={()=>setEditor('location')}><MapPin size={20}/><span><strong>{fields.location||'Add event location'}</strong><small>{fields.location?'Venue or virtual meeting':'Offline location or virtual link'}</small></span><Pencil size={15}/></button>
+ <button type="button" disabled={creationLocked} className="editor-row-trigger ss-editor-row" onClick={()=>setEditor('rules')}><AlignLeft size={20}/><span><strong>{fields.rules_text?'Event description':'Add description'}</strong><small>{fields.rules_text?fields.rules_text.slice(0,160):'Tell guests what to expect'}</small></span><Pencil size={15}/></button>
+ <h2>Event options</h2><div className="ss-editor-options"><button type="button" disabled={creationLocked} onClick={()=>setEditor('deposit')}><Ticket size={18}/><span>Attendance commitment</span><strong>{fields.deposit||'0'} {NETWORK==='testnet'?'Mock USDC':'USDC'}</strong><Pencil size={14}/></button><button type="button" disabled={creationLocked} onClick={()=>setEditor('capacity')}><Users size={18}/><span>Guest limit</span><strong>{fields.capacity} guests</strong><Pencil size={14}/></button><button type="button" disabled={creationLocked} onClick={()=>setEditor('schedule')}><Clock3 size={18}/><span>Registration closes</span><strong>{readable(fields.reg_close)}</strong><Pencil size={14}/></button></div>
+ {notice&&<p className="ss-form-error" role="alert">{notice}</p>}<MultiCreate rules={rules} onLockChange={setCreationLocked} onInvalid={()=>setNotice('Add an event name, location and description, then check your dates and guest options.')} onPublished={()=>{try{localStorage.removeItem(draftKey);localStorage.removeItem(`showstake:event-draft:${NETWORK}:guest`);}catch{}setFields(fresh());}}/>
+ </div></div>{editor&&<EventEditorDialog key={editor} field={editor} value={fields} onClose={()=>setEditor(null)} onSave={update}/>}</div>;
 }

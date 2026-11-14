@@ -72,9 +72,13 @@ interface MaybeOutcome {
 }
 
 let connector: ConnectorShape | null = null;
+let connectorInit: Promise<ConnectorShape> | null = null;
+let connectorGeneration=0;
 const connectorListeners = new Set<() => void>();
 export function subscribeWalletChanges(listener:()=>void):()=>void { connectorListeners.add(listener); return () => { connectorListeners.delete(listener); }; }
 export async function readConnectedWalletAccount():Promise<string|null> { try { if(!connector)return null; const wallet=await connector.wallet();return (await wallet.getAccounts())[0]?.accountId??null; } catch {return null;} }
+/** Passive restoration of a previously selected wallet; never opens a picker. */
+export async function restoreWalletAccount():Promise<WalletAccount|null>{try{const c=await getConnector(),w=await c.wallet(),a=(await w.getAccounts())[0];return a?.accountId?{accountId:a.accountId,publicKey:a.publicKey}:null;}catch{return null;}}
 
 
 function hex(bytes: Uint8Array): string {
@@ -82,14 +86,21 @@ function hex(bytes: Uint8Array): string {
 }
 
 async function getConnector(): Promise<ConnectorShape> {
-  if (!connector) {
+  if(connector)return connector;
+  if(connectorInit)return connectorInit;
+  const epoch=connectorGeneration;
+  const pending=(async()=>{
     const { NearConnector } = (await import("@hot-labs/near-connect")) as {
       NearConnector: new (options: unknown) => ConnectorShape;
     };
-    connector = new NearConnector({ network: NETWORK, features: { testnet: NETWORK === "testnet" } });
-    for (const event of ["wallet:signIn", "wallet:signOut", "wallet:signInAndSignMessage"]) connector.on(event, () => { invalidateWalletBoundary(); for (const listener of connectorListeners) listener(); });
-  }
-  return connector;
+    if(epoch!==connectorGeneration)throw Error('Wallet connection changed');
+    connector = new NearConnector({ network: NETWORK, autoConnect:false, features: { testnet: NETWORK === "testnet" } });
+    const created=connector;
+    for (const event of ["wallet:signIn", "wallet:signOut", "wallet:signInAndSignMessage"]) connector.on(event, () => { if(connector!==created||epoch!==connectorGeneration)return;invalidateWalletBoundary(); for (const listener of connectorListeners) listener(); });
+    return connector;
+  })();
+  connectorInit=pending;
+  try{return await pending;}finally{if(connectorInit===pending)connectorInit=null;}
 }
 
 /** Open the wallet picker and read the selected account (read-only, off-chain). */
@@ -112,6 +123,8 @@ export async function connectWallet(): Promise<WalletResult<WalletAccount>> {
 
 export async function disconnectWallet(): Promise<WalletResult<null>> {
   invalidateWalletBoundary();
+  connectorGeneration++;
+  connectorInit=null;
   try {
     if (connector) await connector.disconnect();
     return { ok: true, code: "DISCONNECTED", value: null };

@@ -1,0 +1,45 @@
+{
+  "classification": "PASS_LOCAL",
+  "date": "2026-11-14T13:16:49.222Z",
+  "scope": "Event-centric CommitPass adaptation, logo palette, wallet/session UX; unchanged financial Rust and mainnet deployment",
+  "checks": [
+    {
+      "command": "pnpm --filter @showstake/web typecheck",
+      "result": "PASS_LOCAL"
+    },
+    {
+      "command": "pnpm --filter @showstake/web build",
+      "result": "PASS_LOCAL"
+    },
+    {
+      "command": "pnpm verify:t08-frontend",
+      "result": "PASS_LOCAL",
+      "checks": 69
+    },
+    {
+      "command": "pnpm verify:frontend-slice",
+      "result": "PASS_LOCAL",
+      "checks": 100
+    },
+    {
+      "command": "node --experimental-strip-types --test apps/web/src/lib/wallet-login.test.ts apps/web/src/lib/event-experience.test.ts apps/web/src/lib/qr-decode.test.ts",
+      "result": "PASS_LOCAL",
+      "files": 3
+    },
+    {
+      "command": "pnpm verify:api",
+      "result": "PASS_LOCAL",
+      "checks": 43
+    }
+  ],
+  "gradientGeometryOpacityCount": "UNCHANGED versus 1cfefcd",
+  "brandPalette": {
+    "navy": "#04142b",
+    "cyan": "#00c5f5",
+    "accessiblePrimary": "#087295",
+    "primaryWhiteContrast": 5.45
+  },
+  "browser": "PENDING preview review before production",
+  "mainnetAssetActions": "NOT_RUN; user signs separately",
+  "physicalCamera": "NOT_RUN; local decoder and manual fallback tested"
+}

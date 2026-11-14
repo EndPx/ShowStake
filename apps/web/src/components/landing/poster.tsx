@@ -101,11 +101,11 @@ export function Poster({
                 d="M46 15h58l-9 44c2 18 37 29 34 61-2 26-28 29-54 29s-52-3-54-29c-3-32 32-43 34-61z"
                 fill="currentColor"
               />
-              <ellipse cx="75" cy="15" rx="29" ry="8" fill="#6c422e" />
+              <ellipse cx="75" cy="15" rx="29" ry="8" fill="#173e52" />
               <path
                 d="M44 90q31 17 62 0M37 108q38 17 76 0M39 126q36 14 72 0"
                 fill="none"
-                stroke="#dcc8b9"
+                stroke="#d8e8ed"
                 strokeWidth="3"
               />
             </svg>
@@ -145,8 +145,8 @@ export function Poster({
                 stroke="currentColor"
                 strokeWidth="10"
               />
-              <ellipse cx="75" cy="30" rx="44" ry="12" fill="#fae0b1" />
-              <ellipse cx="75" cy="32" rx="34" ry="7" fill="#6c422e" />
+              <ellipse cx="75" cy="30" rx="44" ry="12" fill="#dcf5fc" />
+              <ellipse cx="75" cy="32" rx="34" ry="7" fill="#173e52" />
             </svg>
             <span className="poster-note">
               COME FOR THE COFFEE. STAY FOR THE COMPANY.

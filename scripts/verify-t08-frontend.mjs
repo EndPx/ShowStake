@@ -131,10 +131,10 @@ for (const token of ["@privy-io", 'from "@commitpass', 'from "viem"', "res.cloud
 const appLayout = readFileSync(new URL("../apps/web/src/app/(platform)/layout.tsx", import.meta.url), "utf8");
 assert("CommitPass app typography remains scoped", appLayout.includes('DM_Sans') && appLayout.includes('DM_Serif_Display') && appLayout.includes('--font-commitpass-sans'));
 
-// package manifest: pin compatible deps, no EVM/Privy/QR/scan deps
+// package manifest: no legacy EVM/Privy stack; real pass QR dependencies are pinned.
 const pkg = JSON.parse(readFileSync(new URL("../apps/web/package.json", import.meta.url), "utf8"));
 const deps = { ...(pkg.dependencies ?? {}), ...(pkg.devDependencies ?? {}) };
-for (const banned of ["viem", "@privy-io/react-auth", "@yudiel/react-qr-scanner", "@zxing/browser", "qrcode"]) {
+for (const banned of ["viem", "@privy-io/react-auth", "@yudiel/react-qr-scanner", "@zxing/browser"]) {
   assert(`package: no ${banned}`, !(banned in deps), banned);
 }
 for (const required of ["next", "react", "react-dom", "lucide-react", "typescript"]) {
@@ -142,6 +142,8 @@ for (const required of ["next", "react", "react-dom", "lucide-react", "typescrip
 }
 assert("package: next pinned 15.x", deps.next === "15.5.26", deps.next);
 assert("package: react pinned 19.1.9", deps.react === "19.1.9", deps.react);
+assert('package: pass QR encoder pinned',deps.qrcode==='1.5.4',deps.qrcode);
+assert('package: local QR decoder pinned',deps.jsqr==='1.4.0',deps.jsqr);
 
 // required states / behaviours present
 assert("has timezone helper", sourceText.includes("utcOffset") && sourceText.includes("displayTime"), "display-time");

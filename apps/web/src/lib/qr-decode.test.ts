@@ -1,0 +1,4 @@
+import assert from 'node:assert/strict';import QRCode from 'qrcode';import decode from 'jsqr';
+const value='public-unit-checkin-challenge.not-a-live-pass',code=QRCode.create(value,{errorCorrectionLevel:'M'}),scale=6,border=4,w=(code.modules.size+border*2)*scale,pixels=new Uint8ClampedArray(w*w*4);pixels.fill(255);
+for(let y=0;y<code.modules.size;y++)for(let x=0;x<code.modules.size;x++)if(code.modules.data[y*code.modules.size+x])for(let yy=0;yy<scale;yy++)for(let xx=0;xx<scale;xx++){const i=(((y+border)*scale+yy)*w+(x+border)*scale+xx)*4;pixels[i]=pixels[i+1]=pixels[i+2]=0;}
+assert.equal(decode(pixels,w,w,{inversionAttempts:'dontInvert'})?.data,value);const blank=new Uint8ClampedArray(w*w*4);blank.fill(255);assert.equal(decode(blank,w,w),null);console.log('PASS_LOCAL generated pass QR decoded exactly; blank camera frame rejected');
