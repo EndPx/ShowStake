@@ -17,14 +17,15 @@ import {sharedSnapshot} from '@/lib/near/shared-event';
 import {oneWalletRequest} from '@/lib/wallet-login';
 import {readCreateFunding,type CreateFunding} from '@/lib/near/create-funding';
 import {inspectSavedCreate,savedCreateRules} from '@/lib/near/create-recovery';
+import {shouldHydrateCreate} from '@/lib/near/create-recovery-ui';
 
 export function MultiCreate({rules,onInvalid,onPublished,onLockChange}:{rules:Record<string,unknown>|null;onInvalid?:()=>void;onPublished?:(id:string)=>void;onLockChange?:(locked:boolean)=>void}){
  const wallet=useWallet(),router=useRouter(),account=wallet.account?.accountId,release=sharedReleaseForNetwork(NETWORK);
- const [quote,setQuote]=useState<MultiCreateContext|null>(null),[funding,setFunding]=useState<CreateFunding|null>(null),[notice,setNotice]=useState(''),[fundingDialog,setFundingDialog]=useState(false),[fundingError,setFundingError]=useState('');
+ const [quote,setQuote]=useState<MultiCreateContext|null>(null),[funding,setFunding]=useState<CreateFunding|null>(null),[notice,setNotice]=useState(''),[walletNotice,setWalletNotice]=useState(''),[fundingDialog,setFundingDialog]=useState(false),[fundingError,setFundingError]=useState('');
  const [pending,setPending]=useState(false),[confirming,setConfirming]=useState(false),[hash,setHash]=useState(''),[hasAttempt,setHasAttempt]=useState(false),[savedAttempt,setSavedAttempt]=useState<MainnetAttempt|null>(null);
  const [intent,setIntent]=useState(false),[quoting,setQuoting]=useState(false),[recoveryChecked,setRecoveryChecked]=useState(false),[foundEvent,setFoundEvent]=useState(false),[editingRetry,setEditingRetry]=useState(false),[failedConfirmed,setFailedConfirmed]=useState(false);
  const effectiveRules=useMemo(()=>editingRetry&&savedAttempt&&rules?{...rules,event_id:savedAttempt.eventId}:rules,[rules,editingRetry,savedAttempt?.eventId]);
- const quoteFlight=useRef<Promise<void>|null>(null),verifyFlight=useRef<Promise<boolean>|null>(null),recoveryFlight=useRef<Promise<boolean>|null>(null),rulesRef=useRef(rules),publishing=useRef(false),trigger=useRef<HTMLElement|null>(null),dialog=useRef<HTMLDialogElement>(null),restorePending=useRef(false),dialogGeneration=useRef(0),previousAccount=useRef(account),intentAccount=useRef<string|null>(null);rulesRef.current=effectiveRules;
+ const quoteFlight=useRef<Promise<void>|null>(null),verifyFlight=useRef<Promise<boolean>|null>(null),recoveryFlight=useRef<Promise<boolean>|null>(null),rulesRef=useRef(rules),publishing=useRef(false),trigger=useRef<HTMLElement|null>(null),dialog=useRef<HTMLDialogElement>(null),restorePending=useRef(false),dialogGeneration=useRef(0),previousAccount=useRef(account),intentAccount=useRef<string|null>(null),hydratedIndex=useRef<string|null>(null);rulesRef.current=effectiveRules;
  const quoteCurrent=!!quote&&!!rules&&quote.signer===account&&JSON.stringify(quote.rules)===JSON.stringify(effectiveRules);
  const insufficient=!!funding&&funding.account===account&&funding.shortfall!=='0';
  const index=release&&account?`showstake:multi-create-active:${release.network}:${release.contract}:${account}`:null;
@@ -37,6 +38,8 @@ export function MultiCreate({rules,onInvalid,onPublished,onLockChange}:{rules:Re
  useEffect(()=>{if(!fundingDialog&&!quoting&&!confirming&&!pending&&restorePending.current){restorePending.current=false;if(document.activeElement===document.body)trigger.current?.focus();}},[fundingDialog,quoting,confirming,pending]);
  useEffect(()=>{onLockChange?.(pending||hasAttempt&&!editingRetry);},[pending,hasAttempt,editingRetry,onLockChange]);
  useEffect(()=>{
+  if(!shouldHydrateCreate(editingRetry,hydratedIndex.current,index))return;
+  if(hydratedIndex.current!==index)setWalletNotice('');hydratedIndex.current=index;
   setHash('');setHasAttempt(false);setSavedAttempt(null);setRecoveryChecked(false);setFoundEvent(false);setEditingRetry(false);setFailedConfirmed(false);
   if(!account||!release||!index)return;
   try {
@@ -94,10 +97,10 @@ export function MultiCreate({rules,onInvalid,onPublished,onLockChange}:{rules:Re
    const attempt:MainnetAttempt={account,child:release.contract,eventId:String(creationRules.event_id),actions:[action],hash:null},encoded=JSON.stringify(attempt);
    localStorage.setItem(key,encoded);localStorage.setItem(index!,key);if(localStorage.getItem(key)!==encoded||localStorage.getItem(index!)!==key)throw Error('Could not safely save this creation. No transaction was requested.');
    setSavedAttempt(attempt);setHasAttempt(true);setRecoveryChecked(false);setEditingRetry(false);setFailedConfirmed(false);setHash('');
-   const result=await signAndSendTransaction(params,undefined,undefined,undefined,fresh);
+   setWalletNotice('');const result=await signAndSendTransaction(params,undefined,undefined,undefined,fresh);
    if(!result.ok){
     if(!retry&&result.submission==='not_requested'&&localStorage.getItem(key)===encoded&&localStorage.getItem(index!)===key){localStorage.removeItem(key);localStorage.removeItem(index!);if(wallet.getSessionEpoch()===epoch){setHasAttempt(false);setSavedAttempt(null);}}
-    if(wallet.getSessionEpoch()===epoch)setNotice(`${result.detail} ${result.submission==='not_requested'?'No wallet transaction was requested.':'No final transaction is confirmed. Check event status before retrying.'}`);return;
+    if(wallet.getSessionEpoch()===epoch)setWalletNotice(`${friendly(result.detail)} ${result.submission==='not_requested'?'No wallet transaction was requested.':'No final transaction is confirmed. Check event status before retrying.'}`);return;
    }
    const updated={...attempt,hash:result.value.transactionHash};localStorage.setItem(key,JSON.stringify(updated));if(wallet.getSessionEpoch()!==epoch)return;
    setSavedAttempt(updated);setHash(updated.hash??'');setNotice(updated.hash?'Transaction submitted. Checking its final receipt...':'Your wallet returned no transaction hash. Check the event and wallet activity below.');
@@ -126,6 +129,7 @@ export function MultiCreate({rules,onInvalid,onPublished,onLockChange}:{rules:Re
   </div>}
   {editingRetry&&<p className="ss-muted">Editing your saved event. Publishing checks the event and balance again before opening your wallet.</p>}
   {notice&&<p className="create-feedback" role="status">{notice.replace(/^Error:\s*/,'')}</p>}
+  {walletNotice&&<p className="create-feedback" role="status">Last wallet response: {walletNotice.replace(/^Error:\s*/,'')}</p>}
   {hasAttempt&&!editingRetry&&<details className="ss-recovery-details"><summary>Transaction details and recovery</summary><label>Transaction hash<input value={hash} onChange={e=>setHash(e.target.value)} autoComplete="off" spellCheck={false}/></label><button type="button" className="button button--secondary" disabled={!hash||confirming||pending} onClick={()=>void reconcile()}>Check confirmation<ExternalLink size={14}/></button></details>}
   {fundingDialog&&funding&&funding.account===account&&<dialog ref={dialog} className="ss-editor-dialog ss-funding-dialog" aria-labelledby="funding-dialog-title" onCancel={e=>{e.preventDefault();closeFunding();}}><div className="ss-dialog-content"><div className="ss-dialog-heading"><h2 id="funding-dialog-title">More NEAR needed</h2><button type="button" className="ss-icon-button" aria-label="Close" onClick={closeFunding}><X size={19}/></button></div><p className="ss-funding-explanation">Native NEAR pays for event storage and gas. USDC cannot pay these costs. The gas budget includes a buffer and is not the final fee.</p><div className="ss-create-funding"><dl><div><dt>Connected account</dt><dd className="ss-funding-account">{funding.account}</dd></div><div><dt>Event storage reservation</dt><dd>{formatUnits(funding.storage,24,'NEAR')}</dd></div><div><dt>Gas budget, including buffer</dt><dd>{formatUnits(funding.gasBudget,24,'NEAR')}</dd></div><div><dt>Available native NEAR</dt><dd>{formatUnits(funding.available,24,'NEAR')}</dd></div><div className="ss-funding-shortfall"><dt>Add at least</dt><dd>{formatUnits(funding.shortfall,24,'NEAR')}</dd></div></dl></div>{fundingError&&<p className="ss-form-error" role="alert">{fundingError}</p>}<div className="ss-funding-actions"><button type="button" className="button button--secondary ss-full" disabled={quoting||confirming} onClick={()=>void(hasAttempt&&!editingRetry?checkRecovery(true):quoteNow())}>{quoting||confirming?'Checking...':'Check balance again'}</button><button type="button" className="button button--dark ss-full" onClick={closeFunding}>Got it</button></div></div></dialog>}
  </section>;

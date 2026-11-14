@@ -1,0 +1,31 @@
+{
+  "classification": "PASS_LOCAL",
+  "scope": "Fix deterministic create editor relock and preserve wallet failure detail; actual wallet dispatch failure cause remains unproven",
+  "observedAt": "2026-11-14T23:43:10.904736+00:00",
+  "reportedBehavior": "User reports wallet opens and approval is given, then frontend returns to hashless recovery",
+  "verifiedBugs": [
+    "Derived rules become null during incomplete edits; hydration effect previously reset editingRetry on this dependency change",
+    "Automatic recovery overwrote the wallet error notice with a generic no-event message"
+  ],
+  "changes": [
+    "Keep unlocked retry across temporary invalid rules within the same account-scoped journal",
+    "Keep wallet response notice separate from read-only recovery notice"
+  ],
+  "checks": {
+    "web build and serial typecheck": "PASS_LOCAL executor",
+    "recovery UI policy test": "PASS_LOCAL independently rerun",
+    "existing create recovery and funding tests": "PASS_LOCAL independently rerun"
+  },
+  "notChanged": [
+    "saved attempt and event ID",
+    "fresh final-state inspection before retry",
+    "wallet approval requirements",
+    "financial receipt verification",
+    "contract code"
+  ],
+  "notProven": [
+    "actual wallet approval/broadcast completion",
+    "full React component signed-user recovery",
+    "mainnet event creation"
+  ]
+}
