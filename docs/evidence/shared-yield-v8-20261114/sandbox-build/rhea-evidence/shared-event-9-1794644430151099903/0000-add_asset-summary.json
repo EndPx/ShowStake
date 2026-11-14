@@ -1,0 +1,29 @@
+{
+  "contract": "contract.main.burrow.near",
+  "deposit": "1",
+  "method": "add_asset",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "BFCg8nNK7BTNYBZFgX1cs9yZoJD78vssxPhTAtbp8Gju"
+      ],
+      "executor": "contract.main.burrow.near",
+      "failure": false,
+      "gas_burnt": 2791310066342,
+      "id": "3w3uRWay2tvrVhHxxiDQ6NFaqRd4wbhq7hE8on3KrXty",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "owner.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "BFCg8nNK7BTNYBZFgX1cs9yZoJD78vssxPhTAtbp8Gju",
+      "success": true
+    }
+  ],
+  "signer": "owner.testnet",
+  "success": true
+}

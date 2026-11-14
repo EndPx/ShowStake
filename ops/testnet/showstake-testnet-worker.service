@@ -1,0 +1,21 @@
+[Unit]
+Description=ShowStake TESTNET projection factory discovery worker
+After=network-online.target docker.service
+Wants=network-online.target
+[Service]
+Type=simple
+User=showstake-testnet-worker
+Group=showstake-testnet-worker
+WorkingDirectory=/opt/showstake-testnet/release
+EnvironmentFile=/etc/showstake-testnet/worker.env
+ExecStart=/opt/showstake/tools/node-v24.18.0-linux-x64/bin/node /opt/showstake-testnet/release/apps/worker/dist/cli.js --watch
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=20
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+UMask=0077
+[Install]
+WantedBy=multi-user.target

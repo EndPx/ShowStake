@@ -1,0 +1,71 @@
+{
+  "contract": "usdc.testnet",
+  "deposit": "1",
+  "method": "ft_transfer_call",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "DPNFeWJfqWF5eNc4tUyNg9jMcTaUfFhwZxpa2L6zzKDf",
+        "5FewWd6NXiAwKFbGwEcK8uhSWwjjRv7S6QuYAzhnSxfB",
+        "6TMieC4onafJfK5wk5M2b77Ltfoty5aVZp7jm7NKgkVa"
+      ],
+      "executor": "usdc.testnet",
+      "failure": false,
+      "gas_burnt": 2638002214817,
+      "id": "9G7uqVDAwpFJHwKjRgjmVTQ615yu5RV5JZ15NVivbYi2",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "BxazpJh2UbUa7BTi2B1jnfARzUCf8C1RZ1UhJW7NQaBm"
+      ],
+      "executor": "shared.testnet",
+      "failure": false,
+      "gas_burnt": 2525118502832,
+      "id": "DPNFeWJfqWF5eNc4tUyNg9jMcTaUfFhwZxpa2L6zzKDf",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "u4.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "BxazpJh2UbUa7BTi2B1jnfARzUCf8C1RZ1UhJW7NQaBm",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "FPLY4d2adP2bVuKGMrvnFNr5Ldsm9MM5xvF5vBBRkA2Y"
+      ],
+      "executor": "usdc.testnet",
+      "failure": false,
+      "gas_burnt": 1430425729054,
+      "id": "5FewWd6NXiAwKFbGwEcK8uhSWwjjRv7S6QuYAzhnSxfB",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "u4.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "FPLY4d2adP2bVuKGMrvnFNr5Ldsm9MM5xvF5vBBRkA2Y",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "u4.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "6TMieC4onafJfK5wk5M2b77Ltfoty5aVZp7jm7NKgkVa",
+      "success": true
+    }
+  ],
+  "signer": "u4.testnet",
+  "success": true
+}

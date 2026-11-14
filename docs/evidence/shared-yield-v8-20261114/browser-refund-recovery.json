@@ -1,0 +1,15 @@
+{
+  "classification": "PASS_TESTNET",
+  "scope": "Real browser create, reconnect/sign-in reload, delayed-deposit full-refund reconciliation; not full positive browser cycle or mainnet",
+  "observedAt": "2026-11-14T09:20:03.172Z",
+  "network": "testnet",
+  "contract": "ss-shared-s1114151743.testnet",
+  "eventId": "event-1d38104186df426ab1a5e9ab3c02cd82",
+  "sourceCommit": "d2588843592f804c62f46dadf76a3394aa164e1a",
+  "url": "https://showstake-testnet.vercel.app/events/event-1d38104186df426ab1a5e9ab3c02cd82?contract=ss-shared-s1114151743.testnet",
+  "title": "ShowStake — Stake your spot. Show up.",
+  "refundMessage": true,
+  "pendingJournalAbsent": true,
+  "verifyPendingButtonAbsent": true,
+  "documentVisibility": "hidden"
+}

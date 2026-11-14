@@ -1,0 +1,24 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "GitHub-triggered Vercel hosting acceptance only; application network TESTNET, not mainnet financial acceptance",
+  "observedAt": "2026-11-14T03:48:45.063Z",
+  "sourceCommit": "d453626063c074cf7c5cf568035f5c19daf4d4df",
+  "sourceBranch": "codex/atomic-event-lifecycle-20261114",
+  "pullRequest": "https://github.com/EndPx/ShowStake/pull/1",
+  "deploymentId": "dpl_3WovYXdHgtBGY5MAFsH1uJv9cYzk",
+  "deploymentSource": "git",
+  "gitHubCheck": "success",
+  "stableUrl": "https://showstake-testnet.vercel.app",
+  "deploymentUrl": "https://showstake-dgtrxfswz-muhammad-meidy-noor-al-barrys-projects.vercel.app",
+  "publicApi": "https://srv1330754.hstgr.cloud/testnet",
+  "publicAsset": {
+    "path": "/contracts/showstake-event-factory-a90cc890.wasm",
+    "sha256": "a90cc890fbda1d8e7166697551693de684a264b1a3bc86ff098f59371033514a",
+    "bytes": 241187
+  },
+  "publicResultsReadback": "Settled; 2 Attended Paid5000000; 3 NoShow0; zero realized mock yield",
+  "productionNetworkConfig": "mainnet unchanged",
+  "previewNetworkConfig": "testnet / same-origin API prefix /testnet",
+  "visualScreenshotAcceptance": "NOT_RUN: hidden page screenshot blank",
+  "mainnetBlockchainTransactions": 0
+}

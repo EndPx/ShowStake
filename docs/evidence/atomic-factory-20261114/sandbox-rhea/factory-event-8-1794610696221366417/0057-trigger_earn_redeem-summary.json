@@ -1,0 +1,281 @@
+{
+  "contract": "32794ddf25ba1e6f.factory.sandbox",
+  "deposit": "0",
+  "method": "trigger_earn_redeem",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "9PtYpUQxafHrTCHpZqyBuEgrWdUQt4yYqtzb35EGKAQJ",
+        "E46fmR4d5VQvWwrMj3mX5H2EDUzU7EyQnx1Z9UCL79cw",
+        "3MZKM1CBr92cn6FaNRSvdtVgKqBy5NMsXXdCYtyzmsDh",
+        "FYSp2mV73GSBUFZmGxaAHgLsFWUzLCkhqBCyWx2nTaDg",
+        "CYFavQxpZhod2afjRBmB5b9RKy4MfRc44xq6d72jHMnk"
+      ],
+      "executor": "32794ddf25ba1e6f.factory.sandbox",
+      "failure": false,
+      "gas_burnt": 3048138864015,
+      "id": "DhbtqLy9cfG5yf9qzo314PaftStjHmPQzaZpxcggSeC8",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "6c1wQHEyCADk5Jg3UTLAf9LXrFEcFaDvr5x5DppVKEVP"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": false,
+      "gas_burnt": 1364244938510,
+      "id": "9PtYpUQxafHrTCHpZqyBuEgrWdUQt4yYqtzb35EGKAQJ",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "6c1wQHEyCADk5Jg3UTLAf9LXrFEcFaDvr5x5DppVKEVP",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "DqG6Z1YeUGDGthPTtXcAK5uqNmYScBzTm8DaJZeqyqHz"
+      ],
+      "executor": "contract.main.burrow.near",
+      "failure": false,
+      "gas_burnt": 3832542113633,
+      "id": "E46fmR4d5VQvWwrMj3mX5H2EDUzU7EyQnx1Z9UCL79cw",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "DqG6Z1YeUGDGthPTtXcAK5uqNmYScBzTm8DaJZeqyqHz",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "5Yo122EYC7TEs49r8kzqmmkz914w4CwmqYhue5QVrTg9"
+      ],
+      "executor": "contract.main.burrow.near",
+      "failure": false,
+      "gas_burnt": 4512430225221,
+      "id": "3MZKM1CBr92cn6FaNRSvdtVgKqBy5NMsXXdCYtyzmsDh",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "5Yo122EYC7TEs49r8kzqmmkz914w4CwmqYhue5QVrTg9",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "67BjQFCQaY66y83vM6ufq6YJtxQV92K1htVfpGRtj7tT",
+        "AuiA8PrKUsnZGUtv5kqcEF3mfXrqsP2UcfANorniTxrU",
+        "DWC2Qme9zj8WWHXoiDXxuJ22feL99AEN1Gd2ZDGCzrq4"
+      ],
+      "executor": "32794ddf25ba1e6f.factory.sandbox",
+      "failure": false,
+      "gas_burnt": 2558192862066,
+      "id": "FYSp2mV73GSBUFZmGxaAHgLsFWUzLCkhqBCyWx2nTaDg",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "EEqP8LLAvm6nZVPVwPmxkX5VgfzfPZnsvzsfiB7hpddg",
+        "3iV5BEcwPQdgK88ci5shtyveN8YtUGtmkyUeAJZDuwsS",
+        "DD8KKyRz49rz4UeJMCzh5U95DLSgz3mko3su1P334w4D"
+      ],
+      "executor": "contract.main.burrow.near",
+      "failure": false,
+      "gas_burnt": 5762636614597,
+      "id": "67BjQFCQaY66y83vM6ufq6YJtxQV92K1htVfpGRtj7tT",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "CKBcfPLEuVhDyk7cFKeSh43LFG3pfmYiDk6L4rqBW6ft"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": false,
+      "gas_burnt": 1866201419536,
+      "id": "EEqP8LLAvm6nZVPVwPmxkX5VgfzfPZnsvzsfiB7hpddg",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "CKBcfPLEuVhDyk7cFKeSh43LFG3pfmYiDk6L4rqBW6ft",
+      "success": true
+    },
+    {
+      "bool": true,
+      "children": [
+        "J7urub9TQpEh623pDbNrWFghqtT1ew68Tousv2iXUYXd"
+      ],
+      "executor": "contract.main.burrow.near",
+      "failure": false,
+      "gas_burnt": 2452357522148,
+      "id": "3iV5BEcwPQdgK88ci5shtyveN8YtUGtmkyUeAJZDuwsS",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "J7urub9TQpEh623pDbNrWFghqtT1ew68Tousv2iXUYXd",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "DD8KKyRz49rz4UeJMCzh5U95DLSgz3mko3su1P334w4D",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "BW8bpzBH85NNv9krtrE2LuvCBmgf5TQChCV6cjtWMUMN",
+        "CX9B7FaUPa54tWdm3XxRRvAQx7CY39cArsG91qoFXzSh",
+        "Borjar6ubqcG31Kkq2PxucQYLijWxfdNp26Z95UcWf9",
+        "2Gz2rAx1x1YeELbzHtkGR5qZAb9Pqxv3MwRZU5bV3iut",
+        "Er18Rbdwo6itaf9jhVXzKrXz32Yye8hRRhafEjd8gR2E"
+      ],
+      "executor": "32794ddf25ba1e6f.factory.sandbox",
+      "failure": false,
+      "gas_burnt": 3083194904530,
+      "id": "AuiA8PrKUsnZGUtv5kqcEF3mfXrqsP2UcfANorniTxrU",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "8mLaNgeKW5aNBEBzspM2eDjMQc5CwHA1Wg8RtdNh6exs"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": false,
+      "gas_burnt": 1365170106163,
+      "id": "BW8bpzBH85NNv9krtrE2LuvCBmgf5TQChCV6cjtWMUMN",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "8mLaNgeKW5aNBEBzspM2eDjMQc5CwHA1Wg8RtdNh6exs",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "Gq236FPeu7tndoJkaHMjZgazMCjzoonzF9JsBcuazAh9"
+      ],
+      "executor": "contract.main.burrow.near",
+      "failure": false,
+      "gas_burnt": 2407880694183,
+      "id": "CX9B7FaUPa54tWdm3XxRRvAQx7CY39cArsG91qoFXzSh",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "Gq236FPeu7tndoJkaHMjZgazMCjzoonzF9JsBcuazAh9",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "C3EgCpLa4H4LQn66NRHSKHk8JmG3CG8uuUHBEVi7s3GF"
+      ],
+      "executor": "contract.main.burrow.near",
+      "failure": false,
+      "gas_burnt": 4038000435707,
+      "id": "Borjar6ubqcG31Kkq2PxucQYLijWxfdNp26Z95UcWf9",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "C3EgCpLa4H4LQn66NRHSKHk8JmG3CG8uuUHBEVi7s3GF",
+      "success": true
+    },
+    {
+      "bool": true,
+      "children": [
+        "2CAxTuo1D63djbcEAGHXXHwZX3vUaYKbg1hVTEMPPG6x"
+      ],
+      "executor": "32794ddf25ba1e6f.factory.sandbox",
+      "failure": false,
+      "gas_burnt": 1739346694540,
+      "id": "2Gz2rAx1x1YeELbzHtkGR5qZAb9Pqxv3MwRZU5bV3iut",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "2CAxTuo1D63djbcEAGHXXHwZX3vUaYKbg1hVTEMPPG6x",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "Er18Rbdwo6itaf9jhVXzKrXz32Yye8hRRhafEjd8gR2E",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "DWC2Qme9zj8WWHXoiDXxuJ22feL99AEN1Gd2ZDGCzrq4",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "CYFavQxpZhod2afjRBmB5b9RKy4MfRc44xq6d72jHMnk",
+      "success": true
+    }
+  ],
+  "signer": "second.sandbox",
+  "success": true
+}

@@ -1,0 +1,17 @@
+import assert from "node:assert/strict";
+import { ensureFundingRecipient, sendReservedFunding } from "./funding-recipient.ts";
+const recipient="alice.near",session={data:{active:true,accountId:recipient,network:"mainnet"},meta:{network:"mainnet"}};
+let epoch=1,account:string|null=recipient,sessionValue:unknown=session,reads=0;
+const options={recipient,network:"mainnet",epoch:1,getEpoch:()=>epoch,readAccount:async()=>{reads++;return account;},readSession:async()=>sessionValue};
+await ensureFundingRecipient(options);assert.equal(reads,2);
+account="other.near";await assert.rejects(()=>ensureFundingRecipient(options),/wallet changed/);account=recipient;
+sessionValue={...session,data:{...session.data,accountId:"other.near"}};await assert.rejects(()=>ensureFundingRecipient(options),/session changed/);sessionValue=session;
+epoch=2;await assert.rejects(()=>ensureFundingRecipient(options),/session changed/);epoch=1;
+await assert.rejects(()=>ensureFundingRecipient({...options,network:"testnet"}),/session changed/);
+let calls=0;await assert.rejects(()=>ensureFundingRecipient({...options,readAccount:async()=>++calls===1?recipient:"other.near"}),/wallet changed/);
+let sends=0,sourceChecks=0;account=recipient;
+await assert.rejects(()=>sendReservedFunding(()=>ensureFundingRecipient(options),async()=>{sourceChecks++;account="other.near";},async()=>{sends++;}),/wallet changed/);
+assert.equal(sourceChecks,1);assert.equal(sends,0);
+account=recipient;await assert.rejects(()=>sendReservedFunding(()=>ensureFundingRecipient(options),async()=>{throw Error("source wallet changed");},async()=>{sends++;}),/source wallet changed/);assert.equal(sends,0);
+await sendReservedFunding(()=>ensureFundingRecipient(options),async()=>{},async()=>{sends++;});assert.equal(sends,1);
+console.log("PASS_LOCAL funding recipient SDK and session guard");

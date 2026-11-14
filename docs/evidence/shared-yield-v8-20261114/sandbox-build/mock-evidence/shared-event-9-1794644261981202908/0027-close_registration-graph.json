@@ -1,0 +1,145 @@
+{
+  "final_execution_status": "FINAL",
+  "receipts": [
+    {
+      "predecessor_id": "owner.testnet",
+      "priority": 0,
+      "receipt": {
+        "Action": {
+          "actions": [
+            {
+              "FunctionCall": {
+                "args": "eyJldmVudF9pZCI6ImIifQ==",
+                "deposit": "0",
+                "gas": 300000000000000,
+                "method_name": "close_registration"
+              }
+            }
+          ],
+          "gas_price": "1000000000",
+          "input_data_ids": [],
+          "is_promise_yield": false,
+          "output_data_receivers": [],
+          "signer_id": "owner.testnet",
+          "signer_public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB"
+        }
+      },
+      "receipt_id": "13R5vQSQTGkxbC5nmXwvSJHWx4zAhygcsHeA6cUCZKLB",
+      "receiver_id": "shared.testnet"
+    },
+    {
+      "predecessor_id": "system",
+      "priority": 0,
+      "receipt": {
+        "Action": {
+          "actions": [
+            {
+              "Transfer": {
+                "deposit": "300712727942340000000000"
+              }
+            }
+          ],
+          "gas_price": "0",
+          "input_data_ids": [],
+          "is_promise_yield": false,
+          "output_data_receivers": [],
+          "signer_id": "owner.testnet",
+          "signer_public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB"
+        }
+      },
+      "receipt_id": "ubvsC64A8SbBeyNVV18rJ7sQsKjJNYxEcGPs7BMqXC9",
+      "receiver_id": "owner.testnet"
+    }
+  ],
+  "receipts_outcome": [
+    {
+      "block_hash": "7R8AFM2RTTJofdpBwgdfS2iqCpALkHngA5wV6mxTN5Fr",
+      "id": "13R5vQSQTGkxbC5nmXwvSJHWx4zAhygcsHeA6cUCZKLB",
+      "outcome": {
+        "executor_id": "shared.testnet",
+        "gas_burnt": 1754075794160,
+        "logs": [
+          "EVENT_JSON:{\"standard\":\"showstake\",\"version\":\"1.0.0\",\"event\":\"RegistrationClosed\",\"data\":{\"event_id\":\"b\"}}"
+        ],
+        "metadata": {
+          "contracts": [
+            {
+              "local": "4Dq4uEH2PE9FEB7n67d3r3fvHPUy5KAvjhgZ8q5sX4PU"
+            }
+          ],
+          "version": 4
+        },
+        "receipt_ids": [
+          "ubvsC64A8SbBeyNVV18rJ7sQsKjJNYxEcGPs7BMqXC9"
+        ],
+        "status": {
+          "SuccessValue": ""
+        },
+        "tokens_burnt": "175407579416000000000"
+      },
+      "proof": []
+    },
+    {
+      "block_hash": "F3UkAGWenr9SYhSQoFEvcG1YHbCqhUqCrBKBP54rNVuv",
+      "id": "ubvsC64A8SbBeyNVV18rJ7sQsKjJNYxEcGPs7BMqXC9",
+      "outcome": {
+        "executor_id": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "logs": [],
+        "metadata": {
+          "contracts": [
+            null
+          ],
+          "version": 4
+        },
+        "receipt_ids": [],
+        "status": {
+          "SuccessValue": ""
+        },
+        "tokens_burnt": "0"
+      },
+      "proof": []
+    }
+  ],
+  "status": {
+    "SuccessValue": ""
+  },
+  "transaction": {
+    "actions": [
+      {
+        "FunctionCall": {
+          "args": "eyJldmVudF9pZCI6ImIifQ==",
+          "deposit": "0",
+          "gas": 300000000000000,
+          "method_name": "close_registration"
+        }
+      }
+    ],
+    "hash": "mYZDVKvJ6TyktmH4Z3gntsV3nJR4FeRDhi9GYMRS4pU",
+    "nonce": 15,
+    "priority_fee": 0,
+    "public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB",
+    "receiver_id": "shared.testnet",
+    "signer_id": "owner.testnet"
+  },
+  "transaction_outcome": {
+    "block_hash": "Dwn8Ms1KKNPSo43MFsFGL5Hhq9PsrEtj7k6cSQPY2wp6",
+    "id": "mYZDVKvJ6TyktmH4Z3gntsV3nJR4FeRDhi9GYMRS4pU",
+    "outcome": {
+      "executor_id": "owner.testnet",
+      "gas_burnt": 309680746310,
+      "logs": [],
+      "metadata": {
+        "version": 1
+      },
+      "receipt_ids": [
+        "13R5vQSQTGkxbC5nmXwvSJHWx4zAhygcsHeA6cUCZKLB"
+      ],
+      "status": {
+        "SuccessReceiptId": "13R5vQSQTGkxbC5nmXwvSJHWx4zAhygcsHeA6cUCZKLB"
+      },
+      "tokens_burnt": "30968074631000000000"
+    },
+    "proof": []
+  }
+}

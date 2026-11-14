@@ -1,6 +1,8 @@
+import { isLinkedPolicy } from "./mainnet-lifecycle.ts";
 ﻿export const REGISTRATION_RESERVE_BYTES=2304;
 export function registrationReserveBytes(policy:unknown):number {
- if(policy==="showstake-native-usdc-rhea-linked-withdraw-review/2")return 2320;
+ if(policy==="showstake-native-usdc-factory-rhea/3")return 4096;
+ if(isLinkedPolicy(policy))return 2320;
  if(policy==="showstake-native-usdc-rhea-review/1"||policy==="showstake-native-usdc-event/1")return 2304;
  throw Error("Unknown storage policy");
 }

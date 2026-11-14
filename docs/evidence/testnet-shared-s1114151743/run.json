@@ -1,0 +1,25 @@
+{
+    "ft":  "mockusdc.testnet",
+    "codeHash":  "4Dq4uEH2PE9FEB7n67d3r3fvHPUy5KAvjhgZ8q5sX4PU",
+    "shared":  "ss-shared-s1114151743.testnet",
+    "organizers":  [
+                       "showstake-participant-endpx.testnet",
+                       "showstake-attendee-d-endpx.testnet"
+                   ],
+    "users":  [
+                  "showstake-participant-endpx.testnet",
+                  "showstake-attendee-a-endpx.testnet",
+                  "showstake-attendee-b-endpx.testnet",
+                  "showstake-attendee-c-endpx.testnet",
+                  "showstake-attendee-d-endpx.testnet"
+              ],
+    "provider":  "ss-shared-earn-s1114151743.testnet",
+    "events":  [
+                   "attendee",
+                   "cancelled"
+               ],
+    "checkinClose":  1794644838051,
+    "regClose":  1794644538051,
+    "network":  "testnet",
+    "sharedSha256":  "2fdc615b6427858b8a351b03343385052353ef1b466caad47d16a19c49e24c53"
+}

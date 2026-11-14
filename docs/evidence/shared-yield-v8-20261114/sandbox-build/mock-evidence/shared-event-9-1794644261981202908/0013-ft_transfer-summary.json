@@ -1,0 +1,29 @@
+{
+  "contract": "usdc.testnet",
+  "deposit": "1",
+  "method": "ft_transfer",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "5LCwpabGm43cqQwQSEtZAYVi8voXd95YueES6pvkF8jd"
+      ],
+      "executor": "usdc.testnet",
+      "failure": false,
+      "gas_burnt": 1851201433307,
+      "id": "Ay2CBG6h1fYUrdyaryxLZqXueZ97x2qnwnDBSbg7DFD8",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "owner.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "5LCwpabGm43cqQwQSEtZAYVi8voXd95YueES6pvkF8jd",
+      "success": true
+    }
+  ],
+  "signer": "owner.testnet",
+  "success": true
+}

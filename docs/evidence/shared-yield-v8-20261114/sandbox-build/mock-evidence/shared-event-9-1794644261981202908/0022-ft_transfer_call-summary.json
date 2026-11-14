@@ -1,0 +1,71 @@
+{
+  "contract": "usdc.testnet",
+  "deposit": "1",
+  "method": "ft_transfer_call",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "8hjxuWakVAyQf4gcW6kFZAuMUaNWeAr1HNLTtroXisLV",
+        "E7vEKnL337G4RTuPdDHjVZw2tzYPiP3nLDM4jy8uuxLU",
+        "2UVzFVGaJhpy8iR32GF6aFAE3nfRrtBiJAC2nVSjLmZ2"
+      ],
+      "executor": "usdc.testnet",
+      "failure": false,
+      "gas_burnt": 2638002214817,
+      "id": "HA6aWoiKyhqpD6k11UZ841dpBQiPqvcS6B1FWYTWkrFb",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "BazMZGmtSfZFZFGEZaT3HQUwzmPUaufKYB2xJW4RGLhV"
+      ],
+      "executor": "shared.testnet",
+      "failure": false,
+      "gas_burnt": 2525876225593,
+      "id": "8hjxuWakVAyQf4gcW6kFZAuMUaNWeAr1HNLTtroXisLV",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "u2.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "BazMZGmtSfZFZFGEZaT3HQUwzmPUaufKYB2xJW4RGLhV",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "ABW6PEddzXQE44aZZFe9bsbRiSb6da9BbwtgdZ9UZhNM"
+      ],
+      "executor": "usdc.testnet",
+      "failure": false,
+      "gas_burnt": 1430425729054,
+      "id": "E7vEKnL337G4RTuPdDHjVZw2tzYPiP3nLDM4jy8uuxLU",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "u2.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "ABW6PEddzXQE44aZZFe9bsbRiSb6da9BbwtgdZ9UZhNM",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "u2.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "2UVzFVGaJhpy8iR32GF6aFAE3nfRrtBiJAC2nVSjLmZ2",
+      "success": true
+    }
+  ],
+  "signer": "u2.testnet",
+  "success": true
+}

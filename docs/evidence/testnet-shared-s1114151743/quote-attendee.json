@@ -1,0 +1,17 @@
+{
+    "atomic":  "227960000000000000000000",
+    "rules":  {
+                  "rules_text":  "One shared contract, independent per-event vault shares. Mock USDC and zero-yield MockEarn.",
+                  "finalize_deadline":  1794731238051,
+                  "reg_open":  1794644297051,
+                  "checkin_close":  1794644838051,
+                  "reg_close":  1794644538051,
+                  "deposit":  "2000000",
+                  "capacity":  5,
+                  "event_id":  "attendee",
+                  "location":  "NEAR testnet",
+                  "title":  "Shared ShowStake 0",
+                  "checkin_open":  1794644538051
+              },
+    "organizer":  "showstake-participant-endpx.testnet"
+}

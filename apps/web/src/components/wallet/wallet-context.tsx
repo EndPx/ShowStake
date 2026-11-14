@@ -28,6 +28,7 @@ import {
   type SignedProof,
   type WalletAccount,
 } from "@/lib/near/wallet";
+import { checkWalletFocus } from "@/lib/near/wallet-focus";
 import { invalidateWalletBoundary } from "@/lib/near/wallet-boundary";
 import { NETWORK } from "@/lib/config";
 
@@ -65,9 +66,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const invalidate=() => { if(statusRef.current === "connecting") return; generation.current++; const epoch=generation.current; setSessionEpoch(epoch); setProof(null); setKeyPermission(null); void readConnectedWalletAccount().then(id => { if(generation.current!==epoch)return; if(!id||id!==accountRef.current?.accountId) {setAccount(null);setStatus("idle");} }); };
     const unsubscribe=subscribeWalletChanges(invalidate);
-    const focus=()=>{if(document.visibilityState === "visible") {invalidateWalletBoundary();invalidate();}};
+    let focusGeneration=0;
+    const focus=()=>{if(document.visibilityState !== "visible" || statusRef.current === "connecting")return;const seq=++focusGeneration,epoch=generation.current,expected=accountRef.current?.accountId??null;void checkWalletFocus(readConnectedWalletAccount,expected,()=>seq===focusGeneration&&generation.current===epoch&&(accountRef.current?.accountId??null)===expected,()=>{invalidateWalletBoundary();invalidate();});};
     window.addEventListener("focus",focus);document.addEventListener("visibilitychange",focus);
-    return()=>{unsubscribe();window.removeEventListener("focus",focus);document.removeEventListener("visibilitychange",focus);};
+    return()=>{focusGeneration++;unsubscribe();window.removeEventListener("focus",focus);document.removeEventListener("visibilitychange",focus);};
   }, []);
 
   const getSessionEpoch = useCallback(() => generation.current, []);

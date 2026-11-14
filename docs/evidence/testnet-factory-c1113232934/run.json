@@ -1,0 +1,31 @@
+{
+    "ft":  "mockusdc.testnet",
+    "leafCodeHash":  "CNuCzGqyU6Ypoz8qFtUvHKBESsEmppu4MW93WiZk6Au7",
+    "leafSha256":  "a90cc890fbda1d8e7166697551693de684a264b1a3bc86ff098f59371033514a",
+    "users":  [
+                  "showstake-participant-endpx.testnet",
+                  "showstake-attendee-a-endpx.testnet",
+                  "showstake-attendee-b-endpx.testnet",
+                  "showstake-attendee-c-endpx.testnet",
+                  "showstake-attendee-d-endpx.testnet"
+              ],
+    "provider":  "ss-prov-b1113232402.testnet",
+    "children":  [
+                     "a5e5b34366070e54.ss-fac-c1113232934.testnet",
+                     "961a277b21cf13ac.ss-fac-c1113232934.testnet"
+                 ],
+    "events":  [
+                   "settlement",
+                   "refund"
+               ],
+    "factory":  "ss-fac-c1113232934.testnet",
+    "baseline":  [
+                     "999970000000",
+                     "10000000",
+                     "0",
+                     "10000000",
+                     "0"
+                 ],
+    "network":  "testnet",
+    "factorySha256":  "c6c5a8daa5dcb0ab020b910299e2df9c4d5a6f262a46203f37b4759624e4f391"
+}

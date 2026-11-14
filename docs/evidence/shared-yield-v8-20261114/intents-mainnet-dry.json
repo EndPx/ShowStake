@@ -1,0 +1,85 @@
+{
+  "observedAt": "2026-11-14T08:40:25.956Z",
+  "scope": "Public catalog and dry preview only. No API key, wet quote, deposit address, signed transaction or funds.",
+  "apiKeyUsed": false,
+  "catalog": {
+    "http": 200,
+    "sha256": "888b17687d84fd66cb5a03afecebf310c1c06615cf97729bb78a9d6a2252703f",
+    "assets": [
+      {
+        "assetId": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "blockchain": "near",
+        "symbol": "USDC",
+        "decimals": 6,
+        "contractAddress": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1"
+      },
+      {
+        "assetId": "nep141:eth.omft.near",
+        "blockchain": "eth",
+        "symbol": "ETH",
+        "decimals": 18
+      },
+      {
+        "assetId": "nep141:base.omft.near",
+        "blockchain": "base",
+        "symbol": "ETH",
+        "decimals": 18
+      }
+    ]
+  },
+  "commands": [
+    "GET https://1click.chaindefuser.com/v0/tokens",
+    "POST https://1click.chaindefuser.com/v0/quote with recorded request and content-type application/json; dry=true",
+    "Validate via apps/web/src/lib/funding-server.ts validateDryQuote"
+  ],
+  "quotes": [
+    {
+      "asset": "nep141:base.omft.near",
+      "http": 201,
+      "request": {
+        "dry": true,
+        "swapType": "EXACT_OUTPUT",
+        "slippageTolerance": 50,
+        "originAsset": "nep141:base.omft.near",
+        "depositType": "ORIGIN_CHAIN",
+        "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "amount": "5000000",
+        "refundTo": "0x1111111111111111111111111111111111111111",
+        "refundType": "ORIGIN_CHAIN",
+        "recipient": "showstake-mainnet-escrow-endpx-2026.near",
+        "recipientType": "DESTINATION_CHAIN",
+        "deadline": "2026-11-14T09:00:24.040Z"
+      },
+      "requestSha256": "5ca3467c93d1acc269d592c09367dee9ef9478c7a09a0b5c5b05586d52a79d85",
+      "responseSha256": "2b28cefc9d8dae430f9c8fe3dc47f25a0a31397cc5443ae23294088bab8c8b8e",
+      "classification": "PASS_READONLY_DRY",
+      "amountIn": "2656234707337534",
+      "amountOut": "5000000",
+      "deadline": "2026-11-14T09:00:24.040Z"
+    },
+    {
+      "asset": "nep141:eth.omft.near",
+      "http": 201,
+      "request": {
+        "dry": true,
+        "swapType": "EXACT_OUTPUT",
+        "slippageTolerance": 50,
+        "originAsset": "nep141:eth.omft.near",
+        "depositType": "ORIGIN_CHAIN",
+        "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "amount": "5000000",
+        "refundTo": "0x1111111111111111111111111111111111111111",
+        "refundType": "ORIGIN_CHAIN",
+        "recipient": "showstake-mainnet-escrow-endpx-2026.near",
+        "recipientType": "DESTINATION_CHAIN",
+        "deadline": "2026-11-14T09:00:24.986Z"
+      },
+      "requestSha256": "3cf3ad0d96debc100860d73231de0a6eb450310f1c8f847af337057c93013856",
+      "responseSha256": "83bc7e7748757a9b498a533ba3275094a3551e061354c9674d4cd2dcfc253b85",
+      "classification": "PASS_READONLY_DRY",
+      "amountIn": "2656473572324630",
+      "amountOut": "5000000",
+      "deadline": "2026-11-14T09:00:24.986Z"
+    }
+  ]
+}

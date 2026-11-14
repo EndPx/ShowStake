@@ -83,7 +83,9 @@ export async function inspectRhea(readRpc,treasury,options={}){
 }
 export async function inspectFinalReceipt(readRpc,txHash,treasury){
  accountId(treasury);if(typeof readRpc!=='function'||typeof txHash!=='string'||!txHash)throw Error('receipt identity required');
- const head=await finalHead(readRpc),transaction=await readRpc('tx',{tx_hash:txHash,sender_account_id:treasury,wait_until:'FINAL'});
+ const head=await finalHead(readRpc),raw=await readRpc('EXPERIMENTAL_tx_status',[txHash,treasury]);
+ const inner=raw?.final_execution_outcome??raw;if(raw!==inner&&raw.final_execution_status&&inner?.final_execution_status&&raw.final_execution_status!==inner.final_execution_status)throw Error('conflicting transaction finality');
+ const transaction=raw===inner?raw:{...inner,final_execution_status:raw.final_execution_status??inner?.final_execution_status};
  graph(transaction,treasury,txHash);
  const hashes=[transaction.transaction_outcome?.block_hash,...transaction.receipts_outcome.map(x=>x.block_hash)];
  if(hashes.some(h=>typeof h!=='string'||!h))throw Error('receipt block missing');

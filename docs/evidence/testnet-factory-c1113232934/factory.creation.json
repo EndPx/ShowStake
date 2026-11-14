@@ -1,0 +1,8 @@
+{
+    "account":  "ss-fac-c1113232934.testnet",
+    "receipt":  "NOT_AVAILABLE",
+    "block_hash":  "8wPyUuvmFqzbr2v2txv6B6SA98zYkMeDgD4FDHMRsQiJ",
+    "public_key":  "ed25519:985joeb9WVzYxfuzrWJRnR5ecPCQHBUdrfmgYTYq72wq",
+    "code_hash":  "11111111111111111111111111111111",
+    "status":  "FINAL_ACCOUNT_OBSERVED"
+}

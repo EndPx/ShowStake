@@ -1,0 +1,58 @@
+{
+  "block_hash": "8hGq1UjTujy5WJHqhdP1DxFs1oq4gdbvc4jgWftPfKUx",
+  "block_height": 888,
+  "views": {
+    "control": {
+      "baseline_ft": "0",
+      "expected_return": "0",
+      "last_internal_balance": "0",
+      "paused": false,
+      "principal_cap": "10000000",
+      "retry_after_block": 0,
+      "shares": "0",
+      "stage": "Idle"
+    },
+    "escrow_ft": "10000000",
+    "event": {
+      "accepted_principal": "10000000",
+      "active_registrations": 5,
+      "cancel_cutoff": 1794611005514,
+      "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "capacity": 5,
+      "checkin_close": 1794611305514,
+      "checkin_open": 1794611005514,
+      "created_at": 1794610709182,
+      "deposit": "2000000",
+      "earn_action_completed": false,
+      "earn_attempt": 0,
+      "earn_state": "NotStarted",
+      "event_id": "event1",
+      "finalize_deadline": 1794697705514,
+      "location": "Sandbox",
+      "organizer": "second.sandbox",
+      "phase": "RegistrationOpen",
+      "policy_version": "showstake-native-usdc-factory-rhea/3",
+      "realized_yield": "0",
+      "redeemed_amount": "0",
+      "reg_close": 1794611005514,
+      "reg_open": 1794610705514,
+      "rules_hash": "",
+      "rules_text": "Candidate",
+      "title": "Test",
+      "total_registrations": 5,
+      "withdrawn_registrations": 0,
+      "yield_distributed": "0"
+    },
+    "position": {
+      "account_id": "32794ddf25ba1e6f.factory.sandbox",
+      "booster_staking": null,
+      "booster_stakings": {},
+      "borrowed": [],
+      "collateral": [],
+      "farms": [],
+      "has_non_farmed_assets": false,
+      "supplied": []
+    },
+    "provider_ft": "10000000"
+  }
+}

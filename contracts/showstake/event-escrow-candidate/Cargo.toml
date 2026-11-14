@@ -5,13 +5,23 @@ edition = "2024"
 resolver = "3"
 rust-version = "1.95"
 license = "MIT"
+repository = "https://github.com/EndPx/ShowStake"
 
 [features]
 multi-event = ["rhea-linked-withdraw-review"]
+shared-yield = ["multi-event"]
+# Clean keyless factory children only; historical constructor remains unchanged.
+factory-event = ["rhea-linked-withdraw-review"]
 mainnet-review = []
 # Clean instances only: existing pending redemption state has different meaning.
 # Candidate policy; provider source equivalence and receipt behavior remain unaccepted.
 rhea-linked-withdraw-review = ["mainnet-review"]
+
+[package.metadata.near.reproducible_build]
+image = "sourcescan/cargo-near:0.22.0-rust-1.99.1"
+image_digest = "sha256:c9655eaf7436b90c87ea8b25739f91063032c5c30ba24cfeafe72c142943b5bb"
+passed_env = []
+container_build_command = ["cargo", "near", "build", "non-reproducible-wasm", "--locked", "--features", "shared-yield"]
 
 [lib]
 path = "lib.rs"

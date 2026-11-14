@@ -1,0 +1,145 @@
+{
+  "final_execution_status": "FINAL",
+  "receipts": [
+    {
+      "predecessor_id": "first.testnet",
+      "priority": 0,
+      "receipt": {
+        "Action": {
+          "actions": [
+            {
+              "FunctionCall": {
+                "args": "eyJhdHRlbmRlZCI6dHJ1ZSwicmVnaXN0cmF0aW9uX2lkIjoicmVnLTIifQ==",
+                "deposit": "0",
+                "gas": 300000000000000,
+                "method_name": "mark_attendance"
+              }
+            }
+          ],
+          "gas_price": "1000000000",
+          "input_data_ids": [],
+          "is_promise_yield": false,
+          "output_data_receivers": [],
+          "signer_id": "first.testnet",
+          "signer_public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB"
+        }
+      },
+      "receipt_id": "ferFixQJWTmXpy9KXp5V5VruWC41UYBBRbB7NYXr45i",
+      "receiver_id": "shared.sandbox"
+    },
+    {
+      "predecessor_id": "system",
+      "priority": 0,
+      "receipt": {
+        "Action": {
+          "actions": [
+            {
+              "Transfer": {
+                "deposit": "300675008468233800000000"
+              }
+            }
+          ],
+          "gas_price": "0",
+          "input_data_ids": [],
+          "is_promise_yield": false,
+          "output_data_receivers": [],
+          "signer_id": "first.testnet",
+          "signer_public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB"
+        }
+      },
+      "receipt_id": "88QF8vCsyDQLS8Tg8Cdew77noBGRmjRWfXofJEpsRQwv",
+      "receiver_id": "first.testnet"
+    }
+  ],
+  "receipts_outcome": [
+    {
+      "block_hash": "Dk9xWAp1vDDxLZCKw9pAP8zc1cJiSYrvgrNStSempGsr",
+      "id": "ferFixQJWTmXpy9KXp5V5VruWC41UYBBRbB7NYXr45i",
+      "outcome": {
+        "executor_id": "shared.sandbox",
+        "gas_burnt": 2131807159382,
+        "logs": [
+          "EVENT_JSON:{\"standard\":\"showstake\",\"version\":\"1.0.0\",\"event\":\"AttendanceMarked\",\"data\":{\"event_id\":\"a\",\"registration_id\":\"reg-2\",\"attended\":true}}"
+        ],
+        "metadata": {
+          "contracts": [
+            {
+              "local": "4Dq4uEH2PE9FEB7n67d3r3fvHPUy5KAvjhgZ8q5sX4PU"
+            }
+          ],
+          "version": 4
+        },
+        "receipt_ids": [
+          "88QF8vCsyDQLS8Tg8Cdew77noBGRmjRWfXofJEpsRQwv"
+        ],
+        "status": {
+          "SuccessValue": ""
+        },
+        "tokens_burnt": "213180715938200000000"
+      },
+      "proof": []
+    },
+    {
+      "block_hash": "DtKjcfFiPTBkBv1PjnNxwbBub1mS78CrGQ7pzktB3Bo6",
+      "id": "88QF8vCsyDQLS8Tg8Cdew77noBGRmjRWfXofJEpsRQwv",
+      "outcome": {
+        "executor_id": "first.testnet",
+        "gas_burnt": 223182562500,
+        "logs": [],
+        "metadata": {
+          "contracts": [
+            null
+          ],
+          "version": 4
+        },
+        "receipt_ids": [],
+        "status": {
+          "SuccessValue": ""
+        },
+        "tokens_burnt": "0"
+      },
+      "proof": []
+    }
+  ],
+  "status": {
+    "SuccessValue": ""
+  },
+  "transaction": {
+    "actions": [
+      {
+        "FunctionCall": {
+          "args": "eyJhdHRlbmRlZCI6dHJ1ZSwicmVnaXN0cmF0aW9uX2lkIjoicmVnLTIifQ==",
+          "deposit": "0",
+          "gas": 300000000000000,
+          "method_name": "mark_attendance"
+        }
+      }
+    ],
+    "hash": "DyfpcnVskHKSdx7Lm14iMtrrvoVyJtg613hh5Dks4MGC",
+    "nonce": 3,
+    "priority_fee": 0,
+    "public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB",
+    "receiver_id": "shared.sandbox",
+    "signer_id": "first.testnet"
+  },
+  "transaction_outcome": {
+    "block_hash": "A82mmTMrL795jVfrYHm2PevobuZoV9T7gLxtvDXD2LBP",
+    "id": "DyfpcnVskHKSdx7Lm14iMtrrvoVyJtg613hh5Dks4MGC",
+    "outcome": {
+      "executor_id": "first.testnet",
+      "gas_burnt": 310825155470,
+      "logs": [],
+      "metadata": {
+        "version": 1
+      },
+      "receipt_ids": [
+        "ferFixQJWTmXpy9KXp5V5VruWC41UYBBRbB7NYXr45i"
+      ],
+      "status": {
+        "SuccessReceiptId": "ferFixQJWTmXpy9KXp5V5VruWC41UYBBRbB7NYXr45i"
+      },
+      "tokens_burnt": "31082515547000000000"
+    },
+    "proof": []
+  }
+}

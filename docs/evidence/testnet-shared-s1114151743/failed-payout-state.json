@@ -1,0 +1,16 @@
+{
+    "registration_id":  "reg-7",
+    "pass_id":  "pass-7",
+    "participant":  "showstake-attendee-b-endpx.testnet",
+    "beneficiary":  "showstake-attendee-b-endpx.testnet",
+    "commitment_id":  "shared-cancelled-2",
+    "amount":  "2000000",
+    "sequence":  2,
+    "attendance":  "Unmarked",
+    "registration_status":  "Active",
+    "attendance_status":  "Unmarked",
+    "claim":  "Claimable",
+    "claim_amount":  "2000000",
+    "claim_attempt":  1,
+    "event_id":  "cancelled"
+}

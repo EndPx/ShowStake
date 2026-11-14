@@ -1,0 +1,71 @@
+{
+  "contract": "32794ddf25ba1e6f.factory.sandbox",
+  "deposit": "1",
+  "method": "claim",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "3EGPD2wVw8LCBRN9ouQNbT6Wg4ipgD5nqjvQpH9iBRLj",
+        "2Fyy1oChXDtYctwJAHT4ELe325J9qnv1ZtTGmu6W6q7s",
+        "3GfhFaUCZcsWPkAg7hqWh9sBepK5oLXDxbh7GNsMJJVV"
+      ],
+      "executor": "32794ddf25ba1e6f.factory.sandbox",
+      "failure": false,
+      "gas_burnt": 2460782167415,
+      "id": "8V47FNgxdahFDVj4po2zRDwxLeeWRZAWBXHvWy5xLKBJ",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "BbGvFbXYyK9Ey3qD4micn6hQa55QawfD1FtVztgAwxJ5"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": false,
+      "gas_burnt": 1879668424715,
+      "id": "3EGPD2wVw8LCBRN9ouQNbT6Wg4ipgD5nqjvQpH9iBRLj",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "user9.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "BbGvFbXYyK9Ey3qD4micn6hQa55QawfD1FtVztgAwxJ5",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "27FGuNeNqk5k9R6HS1MHfpoP6oycPU9nTcAkhPyov6Fp"
+      ],
+      "executor": "32794ddf25ba1e6f.factory.sandbox",
+      "failure": false,
+      "gas_burnt": 1672872761838,
+      "id": "2Fyy1oChXDtYctwJAHT4ELe325J9qnv1ZtTGmu6W6q7s",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "user9.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "27FGuNeNqk5k9R6HS1MHfpoP6oycPU9nTcAkhPyov6Fp",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "user9.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "3GfhFaUCZcsWPkAg7hqWh9sBepK5oLXDxbh7GNsMJJVV",
+      "success": true
+    }
+  ],
+  "signer": "user9.testnet",
+  "success": true
+}

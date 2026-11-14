@@ -1,0 +1,50 @@
+{
+  "contract": "32794ddf25ba1e6f.factory.sandbox",
+  "deposit": "100000000000000000000000",
+  "method": "rhea_storage_deposit",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "4jiYMK2RGr8FFGeikzhTkz8m6FKDfwCB4JX1e83jDqHK",
+        "8hKFCzVyZ3AhZeGKKfpovDZc1KPxJ4CrPsx2qhVTXGz7"
+      ],
+      "executor": "32794ddf25ba1e6f.factory.sandbox",
+      "failure": false,
+      "gas_burnt": 1784611050773,
+      "id": "6pUJPQ2FjjTgbeSn7qKpZW14Xf5fc2GKT5a9fh72TnB7",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "Hp8d7A8nJmoT2hjMcgAa6jWFCoKNPGSVxqYpG1AEn9wL"
+      ],
+      "executor": "contract.main.burrow.near",
+      "failure": false,
+      "gas_burnt": 3657800970871,
+      "id": "4jiYMK2RGr8FFGeikzhTkz8m6FKDfwCB4JX1e83jDqHK",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "Hp8d7A8nJmoT2hjMcgAa6jWFCoKNPGSVxqYpG1AEn9wL",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "8hKFCzVyZ3AhZeGKKfpovDZc1KPxJ4CrPsx2qhVTXGz7",
+      "success": true
+    }
+  ],
+  "signer": "second.sandbox",
+  "success": true
+}

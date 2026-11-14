@@ -1,0 +1,281 @@
+{
+  "contract": "32794ddf25ba1e6f.factory.sandbox",
+  "deposit": "0",
+  "method": "trigger_earn_supply",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "FfwcQoL5pjGD5AgyRx8mrQiaYb5tVffCyTi7G9b3cZMh",
+        "AGeaE16W2fbmkeDGa1o2ab3CwcKvgPmZNNHHCTonuora",
+        "DtuMo5GAok98xpkVuCkt4tuahRJMpkkDNeJuihWmC7Wq",
+        "BCiHPDxpwEmca1GuN1r9XEEWbw7QZfLrYBZS5wHFmr1K",
+        "B9wUxyoHxLanEmWD4kr1LfriXvyHLubQmn588jM4Zko4"
+      ],
+      "executor": "32794ddf25ba1e6f.factory.sandbox",
+      "failure": false,
+      "gas_burnt": 3049290563094,
+      "id": "FjAfz7yoat44CSXsaUEgiGzhCFGJwD5DP1tEzw6SVdcE",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "4uFffGTYZRhEhhcQZSR1SNFtehCnDwV2FhHGsLdYoS7x"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": false,
+      "gas_burnt": 1365170106163,
+      "id": "FfwcQoL5pjGD5AgyRx8mrQiaYb5tVffCyTi7G9b3cZMh",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "4uFffGTYZRhEhhcQZSR1SNFtehCnDwV2FhHGsLdYoS7x",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "Gte9g2TMSP1WU4tsH6JPNPCpDQAAd6GFrQWjB1xcZ7tN"
+      ],
+      "executor": "contract.main.burrow.near",
+      "failure": false,
+      "gas_burnt": 2407880694183,
+      "id": "AGeaE16W2fbmkeDGa1o2ab3CwcKvgPmZNNHHCTonuora",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "Gte9g2TMSP1WU4tsH6JPNPCpDQAAd6GFrQWjB1xcZ7tN",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "9idLzZZP33NxmoSpnsEg4oXKaWdaRJm2VRPYyCUcYaKj"
+      ],
+      "executor": "contract.main.burrow.near",
+      "failure": false,
+      "gas_burnt": 4261017383277,
+      "id": "DtuMo5GAok98xpkVuCkt4tuahRJMpkkDNeJuihWmC7Wq",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "9idLzZZP33NxmoSpnsEg4oXKaWdaRJm2VRPYyCUcYaKj",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "E9FjyRSbKjdrZWMSFY1GVhqvJnYKz2mJW16CQ8Tvo1ag",
+        "E8pSavQ6Ct2e4QjGFiK8x8sze6KxnXE8MdFfiscwrETr",
+        "8tSJphDdp8NfFzGWLqhrbfUje4cqfXW54X4qjPGoRqit"
+      ],
+      "executor": "32794ddf25ba1e6f.factory.sandbox",
+      "failure": false,
+      "gas_burnt": 2525322029207,
+      "id": "BCiHPDxpwEmca1GuN1r9XEEWbw7QZfLrYBZS5wHFmr1K",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "E4fmcbPctvcDMDg9c8DGQNwNvmqVNnymENJUgt5YCv5q",
+        "B1vSze1pLsCZ5wthzvvDpr1LUympTtERdiH4uRnFBvjT",
+        "6hiHwu7SuFsqykgbPwwYhfPBkbAaT1yK5SnD17nvtnMk"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": false,
+      "gas_burnt": 2660556668919,
+      "id": "E9FjyRSbKjdrZWMSFY1GVhqvJnYKz2mJW16CQ8Tvo1ag",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "6YpPqw2D2z1UdMd3qpqwGcQn1wpdfWdKVe1q9thFb5vS"
+      ],
+      "executor": "contract.main.burrow.near",
+      "failure": false,
+      "gas_burnt": 4947162302236,
+      "id": "E4fmcbPctvcDMDg9c8DGQNwNvmqVNnymENJUgt5YCv5q",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "6YpPqw2D2z1UdMd3qpqwGcQn1wpdfWdKVe1q9thFb5vS",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "CfjkG65iZs1o2jXiFJBLgsTJqAubU1ZJsro79DGZzyHk"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": false,
+      "gas_burnt": 1439460989503,
+      "id": "B1vSze1pLsCZ5wthzvvDpr1LUympTtERdiH4uRnFBvjT",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "CfjkG65iZs1o2jXiFJBLgsTJqAubU1ZJsro79DGZzyHk",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "6hiHwu7SuFsqykgbPwwYhfPBkbAaT1yK5SnD17nvtnMk",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "C6e7jrzV15bmzoB2VnRCsE9zdpP1dZ48FX3HpQShyY7j",
+        "77Jwi58LGHFVBZzYf2aC57Pii6ziPbgSvAMsZ8JbBDnH",
+        "9PwhAgwA4fjxjN1Cj8LbbFSX72BryA4ghxiRvdbvTtwQ",
+        "HBa2JTE8vGZXyWsWn8erPbzXXDkW4owBuD5atQ7yfkC7",
+        "4KTfAHSfHncxWYzcaSRogNa8qFo4c6vdhF3V843ZqKEL"
+      ],
+      "executor": "32794ddf25ba1e6f.factory.sandbox",
+      "failure": false,
+      "gas_burnt": 3085141201354,
+      "id": "E8pSavQ6Ct2e4QjGFiK8x8sze6KxnXE8MdFfiscwrETr",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "Ha4GRvzZCnYSzr15sQf66W3c84Yf1sD7LCTLEACCi5e"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": false,
+      "gas_burnt": 1364244938510,
+      "id": "C6e7jrzV15bmzoB2VnRCsE9zdpP1dZ48FX3HpQShyY7j",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "Ha4GRvzZCnYSzr15sQf66W3c84Yf1sD7LCTLEACCi5e",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "2o2UARAufsfzejF8rYsiQkNJKMKvFTnZqrXDrKKBK4hV"
+      ],
+      "executor": "contract.main.burrow.near",
+      "failure": false,
+      "gas_burnt": 3501971916929,
+      "id": "77Jwi58LGHFVBZzYf2aC57Pii6ziPbgSvAMsZ8JbBDnH",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "2o2UARAufsfzejF8rYsiQkNJKMKvFTnZqrXDrKKBK4hV",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "2QQA1GfdwRqLhHY79XwoM49Poo6wuH57obtjJF1QD8mf"
+      ],
+      "executor": "contract.main.burrow.near",
+      "failure": false,
+      "gas_burnt": 4175718977733,
+      "id": "9PwhAgwA4fjxjN1Cj8LbbFSX72BryA4ghxiRvdbvTtwQ",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "2QQA1GfdwRqLhHY79XwoM49Poo6wuH57obtjJF1QD8mf",
+      "success": true
+    },
+    {
+      "bool": true,
+      "children": [
+        "Aszm2PATpGnpZPTbWxskQUg1jKRAdkUtYcxLiWqT8KMs"
+      ],
+      "executor": "32794ddf25ba1e6f.factory.sandbox",
+      "failure": false,
+      "gas_burnt": 1772792938558,
+      "id": "HBa2JTE8vGZXyWsWn8erPbzXXDkW4owBuD5atQ7yfkC7",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "Aszm2PATpGnpZPTbWxskQUg1jKRAdkUtYcxLiWqT8KMs",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "4KTfAHSfHncxWYzcaSRogNa8qFo4c6vdhF3V843ZqKEL",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "8tSJphDdp8NfFzGWLqhrbfUje4cqfXW54X4qjPGoRqit",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "B9wUxyoHxLanEmWD4kr1LfriXvyHLubQmn588jM4Zko4",
+      "success": true
+    }
+  ],
+  "signer": "second.sandbox",
+  "success": true
+}

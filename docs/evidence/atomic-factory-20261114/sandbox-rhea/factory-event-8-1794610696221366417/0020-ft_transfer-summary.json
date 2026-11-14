@@ -1,0 +1,29 @@
+{
+  "contract": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+  "deposit": "1",
+  "method": "ft_transfer",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "DCGkQHSyLXDVpBUAz377Dq8GuUuK9nE9joju1LW5hUc7"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": false,
+      "gas_burnt": 1857460588262,
+      "id": "6vSdKsWoLQ5YF7UF7YShm1QsA5wgAXHgeTxMhCVTJqeJ",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "owner.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "DCGkQHSyLXDVpBUAz377Dq8GuUuK9nE9joju1LW5hUc7",
+      "success": true
+    }
+  ],
+  "signer": "owner.testnet",
+  "success": true
+}

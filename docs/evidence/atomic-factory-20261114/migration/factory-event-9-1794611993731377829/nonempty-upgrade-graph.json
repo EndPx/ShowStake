@@ -1,0 +1,155 @@
+{
+  "final_execution_status": "FINAL",
+  "receipts": [
+    {
+      "predecessor_id": "system",
+      "priority": 0,
+      "receipt": {
+        "Action": {
+          "actions": [
+            {
+              "Transfer": {
+                "deposit": "23705002775538200000000"
+              }
+            }
+          ],
+          "gas_price": "0",
+          "input_data_ids": [],
+          "is_promise_yield": false,
+          "output_data_receivers": [],
+          "signer_id": "nonempty.near",
+          "signer_public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB"
+        }
+      },
+      "receipt_id": "FoccEyGoxSe2H6QmT8vSUqdxjnDiaAp2BNiw7ZPx8YN9",
+      "receiver_id": "nonempty.near"
+    }
+  ],
+  "receipts_outcome": [
+    {
+      "block_hash": "GSVAUtPdiB41pTahyxGn3jrRo9Sx84xPdgnL79ywvQCf",
+      "id": "6dMSeP9TyhoCGMZzoktseqqdk4MswhDtKQds7nSYvr3H",
+      "outcome": {
+        "executor_id": "nonempty.near",
+        "gas_burnt": 15630800341538,
+        "logs": [],
+        "metadata": {
+          "contracts": [
+            {
+              "local": "EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY"
+            },
+            {
+              "local": "ENvY3jqpnMWnmQEBRjcvQkuJvELYMLkkqTC9wRBPjZ9J"
+            }
+          ],
+          "version": 4
+        },
+        "receipt_ids": [
+          "FoccEyGoxSe2H6QmT8vSUqdxjnDiaAp2BNiw7ZPx8YN9"
+        ],
+        "status": {
+          "Failure": {
+            "ActionError": {
+              "index": 1,
+              "kind": {
+                "FunctionCallError": {
+                  "ExecutionError": "WebAssembly trap: An `unreachable` opcode was executed."
+                }
+              }
+            }
+          }
+        },
+        "tokens_burnt": "1563080034153800000000"
+      },
+      "proof": [
+        {
+          "direction": "Left",
+          "hash": "Er58RpFWCTc1YDHLzKEFp3kdXsQvLtuQMPD3uaWJbDWx"
+        }
+      ]
+    },
+    {
+      "block_hash": "6jgn1joBYNV5rTKy2AjK6F8YY27j3Z1hTLjF4Q6zoMST",
+      "id": "FoccEyGoxSe2H6QmT8vSUqdxjnDiaAp2BNiw7ZPx8YN9",
+      "outcome": {
+        "executor_id": "nonempty.near",
+        "gas_burnt": 223182562500,
+        "logs": [],
+        "metadata": {
+          "contracts": [
+            {
+              "local": "EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY"
+            }
+          ],
+          "version": 4
+        },
+        "receipt_ids": [],
+        "status": {
+          "SuccessValue": ""
+        },
+        "tokens_burnt": "0"
+      },
+      "proof": []
+    }
+  ],
+  "status": {
+    "Failure": {
+      "ActionError": {
+        "index": 1,
+        "kind": {
+          "FunctionCallError": {
+            "ExecutionError": "WebAssembly trap: An `unreachable` opcode was executed."
+          }
+        }
+      }
+    }
+  },
+  "transaction": {
+    "actions": [
+      {
+        "DeployContract": {
+          "code": "xsWo2qXcsKsCC5ECmeLfnE1abyYqRiA/N7R1liTk85E="
+        }
+      },
+      {
+        "FunctionCall": {
+          "args": "e30=",
+          "deposit": "0",
+          "gas": 10000000000000,
+          "method_name": "migrate_empty_multievent"
+        }
+      }
+    ],
+    "hash": "CLdtWzxGPLuUREbPEGosE1wPDmb8LyitamT2udZ3oQs1",
+    "nonce": 2,
+    "priority_fee": 0,
+    "public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB",
+    "receiver_id": "nonempty.near",
+    "signer_id": "nonempty.near"
+  },
+  "transaction_outcome": {
+    "block_hash": "GSVAUtPdiB41pTahyxGn3jrRo9Sx84xPdgnL79ywvQCf",
+    "id": "CLdtWzxGPLuUREbPEGosE1wPDmb8LyitamT2udZ3oQs1",
+    "outcome": {
+      "executor_id": "nonempty.near",
+      "gas_burnt": 1990598580452,
+      "logs": [],
+      "metadata": {
+        "version": 1
+      },
+      "receipt_ids": [
+        "6dMSeP9TyhoCGMZzoktseqqdk4MswhDtKQds7nSYvr3H"
+      ],
+      "status": {
+        "SuccessReceiptId": "6dMSeP9TyhoCGMZzoktseqqdk4MswhDtKQds7nSYvr3H"
+      },
+      "tokens_burnt": "199059858045200000000"
+    },
+    "proof": [
+      {
+        "direction": "Right",
+        "hash": "2kvubhAuzdfLbqWFU8FQSmGkzfgYvDDBfU964w3gV4Rz"
+      }
+    ]
+  }
+}

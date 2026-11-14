@@ -1,0 +1,81 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "Existing VPS API and PostgreSQL funding journal deployment only; no blockchain signing, asset transfer, or funded swap",
+  "observedAt": "2026-11-14T03:22:41.179Z",
+  "release": "/opt/showstake/releases/funding-api-20261114",
+  "schema": {
+    "versions": [
+      {
+        "version": 1,
+        "checksum": "45b6469488b84e0da39965c209ace910d398e8d6d53dbcadf2fef6b2be423db2"
+      },
+      {
+        "version": 2,
+        "checksum": "e5074c6f2a5fdd370f442532a169b6d0723ac33093cac07e7bd2e5dfdca9f74a"
+      },
+      {
+        "version": 3,
+        "checksum": "e58154a9540239cfa74ac5c90ae731af3eadb630f81e97d772ec230f85f0e4d8"
+      },
+      {
+        "version": 4,
+        "checksum": "8b3981b8560527ab1109985550be98f90ee1ab62b84176576c19c8328affab45"
+      },
+      {
+        "version": 5,
+        "checksum": "f1afab4ab2f218ddbc4122b1f6570c115e29711106cbc1c8d5c533cfc7fdc702"
+      },
+      {
+        "version": 6,
+        "checksum": "f8809cfec3d094186e052604d6d71ff21262de38c6a6586e9e9c24a4534458bb"
+      },
+      {
+        "version": 7,
+        "checksum": "cc34571e70b294116a4e04913fb247fff8dac37e71b67670798f86846eb0cec9"
+      },
+      {
+        "version": 8,
+        "checksum": "9c96883c817170569234dbba5c94c53903ff86ca4f62036151e69b9dfee915a2"
+      },
+      {
+        "version": 9,
+        "checksum": "eb83fb8135b2c5c9372e7ef6a50587e5fe0101d84f4f666219fe6351a19012cc"
+      }
+    ],
+    "counts": {
+      "pk": 25,
+      "fk": 40,
+      "invalid": 0
+    },
+    "fundingColumns": [
+      {
+        "attname": "event_id",
+        "attnotnull": false
+      },
+      {
+        "attname": "provider_status",
+        "attnotnull": false
+      },
+      {
+        "attname": "provider_status_observed_at",
+        "attnotnull": false
+      }
+    ]
+  },
+  "health": {
+    "status": "ok",
+    "db": "up"
+  },
+  "fundingUnauthenticatedHttp": 401,
+  "privateBackupVerified": true,
+  "firstActivation": {
+    "classification": "FAILED",
+    "reason": "New compiler output inherited private umask and API service could not read factory-profile.js",
+    "oldApiRollback": "PASS_LIVE",
+    "databaseRollback": false
+  },
+  "fix": "Only public source/build file permissions corrected; actual service-user module imports verified before reactivation",
+  "mainnetWorkerProcessPreserved": true,
+  "testnetServicesIndependent": true,
+  "blockchainTransactions": 0
+}

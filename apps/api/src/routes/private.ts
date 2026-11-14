@@ -11,6 +11,7 @@ import { Errors } from '../errors.js';
 import { requireSession } from '../auth/middleware.js';
 import type { Store } from '../store/types.js';
 import { isUuid } from '../lib/util.js';
+import { factoryAccessProfile } from '../lib/factory-profile.js';
 
 const meta = (req: FastifyRequest, network: string | null, stale: boolean) => ({ requestId:req.id, observedAt:new Date().toISOString(), network, stale });
 const staleAt = (iso: string, now: number, max: number) => { const t=Date.parse(iso); return !Number.isFinite(t) || now-t>max; };
@@ -21,14 +22,15 @@ function account(req: FastifyRequest): { accountId:string; network:string } {
 
 
 type Token = {id:string; eventId:string; passId:string; chainPassId:string; owner:string; nonce:string; exp:number};
-type Event = NonNullable<Awaited<ReturnType<Store['getEvent']>>>;
+type Event = Pick<NonNullable<Awaited<ReturnType<Store['getEvent']>>>, 'network'|'contractId'|'chainEventId'|'assetContract'>;
 type Snapshot = {event:Record<string,unknown>; pass:Record<string,unknown>|null; blockMs:number; abi:string};
-async function chainSnapshot(config:Config,event:Event,chainPassId?:string):Promise<Snapshot> {
-  const factoryId = event.network==='mainnet' && /^[a-f0-9]{16}\./.test(event.contractId) ? event.contractId.slice(17) : '';
-  const factoryHash = factoryId ? config.accessFactoryCodeHashes[`mainnet:${factoryId}`] : undefined;
+export async function chainSnapshot(config:Config,event:Event,chainPassId?:string):Promise<Snapshot> {
+  const factoryId = ['mainnet','testnet'].includes(event.network) && /^[a-f0-9]{16}\./.test(event.contractId) ? event.contractId.slice(17) : '';
+  const explicitAbi=config.accessContractAbis[`${event.network}:${event.contractId}`];
+  const factoryHash = factoryId && explicitAbi!=='shared-yield-v2' ? config.accessFactoryCodeHashes[`${event.network}:${factoryId}`] : undefined;
   if (!config.accessContractAllowlist?.includes(`${event.network}:${event.contractId}`) && !factoryHash) throw Errors.unavailable('CONTRACT_NOT_ALLOWED','contract is not configured for authorization');
   const abi=factoryHash ? 'candidate-v1' : config.accessContractAbis[`${event.network}:${event.contractId}`];
-  if (!['candidate-v1','legacy-v6','multievent-v1'].includes(abi ?? '')) throw Errors.unavailable('CONTRACT_ABI_NOT_CONFIGURED','contract ABI is not configured for authorization');
+  if (!['candidate-v1','legacy-v6','multievent-v1','shared-yield-v2'].includes(abi ?? '')) throw Errors.unavailable('CONTRACT_ABI_NOT_CONFIGURED','contract ABI is not configured for authorization');
   const url=config.rpcUrls[event.network as keyof Config['rpcUrls']];
   if (!url) throw Errors.unavailable('CHAIN_UNAVAILABLE','final chain state unavailable');
   try {
@@ -36,12 +38,12 @@ async function chainSnapshot(config:Config,event:Event,chainPassId?:string):Prom
     const block=await post({jsonrpc:'2.0',id:'block',method:'block',params:{finality:'final'}}) as {result?:{header?:{hash?:string;timestamp_nanosec?:string}};error?:unknown};
     const header=block.result?.header; if(block.error || !header?.hash || typeof header.timestamp_nanosec!=='string' || !/^\d+$/.test(header.timestamp_nanosec)) throw new Error('invalid block');
     const blockMs=Number(BigInt(header.timestamp_nanosec)/1000000n); if(!Number.isSafeInteger(blockMs) || blockMs>Date.now()+5000 || Date.now()-blockMs>30000) throw new Error('stale block');
-    if (abi === 'multievent-v1') {
+    if (abi === 'multievent-v1' || abi === 'shared-yield-v2') {
       const pinned = config.accessContractCodeHashes[`${event.network}:${event.contractId}`];
       if (!pinned) throw new Error('multi-event code hash not pinned');
       const identity=await post({jsonrpc:'2.0',id:'identity',method:'query',params:{request_type:'view_account',block_id:header.hash,account_id:event.contractId}}) as {result?:{code_hash?:string;block_hash?:string};error?:unknown};
       if(identity.error || identity.result?.block_hash!==header.hash || identity.result.code_hash!==pinned) throw new Error('unreviewed multi-event code');
-    } else if (event.network === 'mainnet') {
+    } else if (event.network === 'mainnet' && !factoryHash) {
       const pinned = 'CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os';
       if ((!factoryHash && event.contractId !== 'showstake-mainnet-escrow-endpx-2026.near' && config.accessContractCodeHashes[`mainnet:${event.contractId}`] !== pinned) || abi !== 'candidate-v1') throw new Error('unreviewed mainnet deployment');
       const identity=await post({jsonrpc:'2.0',id:'identity',method:'query',params:{request_type:'view_account',block_id:header.hash,account_id:event.contractId}}) as {result?:{code_hash?:string;block_hash?:string};error?:unknown};
@@ -52,17 +54,27 @@ async function chainSnapshot(config:Config,event:Event,chainPassId?:string):Prom
       const body=result.result; if(result.error || !body || body.block_hash!==header.hash || !Array.isArray(body.result) || Date.now()-blockMs>30000) throw new Error('invalid result');
       const value:unknown=JSON.parse(Buffer.from(body.result).toString()); if(!value || typeof value!=='object' || Array.isArray(value)) throw new Error('invalid view'); return value as Record<string,unknown>;
     };
-    if (abi === 'multievent-v1') {
+    if (abi === 'multievent-v1' || abi === 'shared-yield-v2') {
       const cfg=await view('get_config',{});
-      if(cfg.policy_version!=='showstake-native-usdc-multievent/1' || cfg.network!==event.network) throw new Error('multi-event config mismatch');
+      if(cfg.network!==event.network) throw new Error('multi-event config mismatch');
+      if(abi==='multievent-v1' && cfg.policy_version!=='showstake-native-usdc-multievent/1') throw new Error('multi-event policy mismatch');
+      if(abi==='shared-yield-v2') {
+        const profile=config.accessSharedYieldProfiles?.[`${event.network}:${event.contractId}`];
+        if(!profile || cfg.policy_version!=='showstake-native-usdc-shared-yield/2' || cfg.schema_version!==2 || cfg.canonical_ft!==profile.canonicalFt || cfg.canonical_ft!==event.assetContract || cfg.provider_account!==profile.providerAccount || cfg.provider_kind!==(event.network==='mainnet'?'RHEA_MAINNET':'MOCK_TESTNET') || cfg.token_symbol!=='USDC' || cfg.token_decimals!==6)throw new Error('shared yield config mismatch');
+      }
     }
     let factoryOrganizer:string|null=null;
     if(factoryHash) {
       const query=async(accountId:string,params:object)=>{const r=await post({jsonrpc:'2.0',id:'factory',method:'query',params:{...params,block_id:header.hash,account_id:accountId}}) as {result?:Record<string,unknown>;error?:unknown};if(r.error || !r.result || r.result.block_hash!==header.hash) throw new Error('invalid factory query');return r.result;};
       const factoryView=async(method_name:string,args:object)=>{const r=await query(factoryId,{request_type:'call_function',method_name,args_base64:Buffer.from(JSON.stringify(args)).toString('base64')});if(!Array.isArray(r.result)) throw new Error('factory view');const v:unknown=JSON.parse(Buffer.from(r.result as number[]).toString());if(!v || typeof v!=='object' || Array.isArray(v)) throw new Error('factory view');return v as Record<string,unknown>;};
       const [factoryAccount,keys,factoryConfig,child,leaf]=await Promise.all([query(factoryId,{request_type:'view_account'}),query(event.contractId,{request_type:'view_access_key_list'}),factoryView('get_config',{}),factoryView('get_child',{child_id:event.contractId}),view('get_config',{})]);
-      const ft='17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1', policy='showstake-native-usdc-rhea-review/1', sha='03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2';
-      if(factoryAccount.code_hash!==factoryHash || !Array.isArray(keys.keys) || keys.keys.length!==0 || factoryConfig.factory_account!==factoryId || factoryConfig.network!=='mainnet' || factoryConfig.factory_policy_identity!=='showstake-factory-d039/1' || factoryConfig.schema_version!==1 || factoryConfig.canonical_ft!==ft || factoryConfig.provider_account!=='contract.main.burrow.near' || factoryConfig.provider_kind!=='RHEA_MAINNET' || factoryConfig.leaf_code_sha256!==sha || factoryConfig.leaf_policy_version!==policy || child.state!=='Ready' || child.child_id!==event.contractId || typeof child.organizer!=='string' || child.network!=='mainnet' || child.canonical_ft!==ft || child.leaf_code_sha256!==sha || child.leaf_policy_version!==policy || leaf.organizer!==child.organizer || leaf.network!=='mainnet' || leaf.canonical_ft!==ft || leaf.provider_account!=='contract.main.burrow.near' || leaf.provider_kind!=='RHEA_MAINNET' || leaf.policy_version!==policy) throw new Error('untrusted factory child');
+      const profile=factoryAccessProfile(factoryConfig,`${event.network}:${factoryId}`,config.accessFactoryProfiles);
+      const ft=profile.canonicalFt??'17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1';
+      const provider=profile.providerAccount??'contract.main.burrow.near',kind=profile.providerKind??'RHEA_MAINNET';
+      const policy=profile.leafPolicy, sha=profile.leafSha256;
+      const leafAccount=await query(event.contractId,{request_type:'view_account'});
+      if(leafAccount.code_hash!==profile.leafCodeHash)throw Error('factory leaf code mismatch');
+      if(factoryAccount.code_hash!==factoryHash || !Array.isArray(keys.keys) || keys.keys.length!==0 || factoryConfig.factory_account!==factoryId || factoryConfig.network!==event.network || factoryConfig.factory_policy_identity!==profile.factoryPolicy || factoryConfig.schema_version!==profile.schema || factoryConfig.canonical_ft!==ft || factoryConfig.provider_account!==provider || factoryConfig.provider_kind!==kind || factoryConfig.leaf_code_sha256!==sha || factoryConfig.leaf_policy_version!==policy || child.state!=='Ready' || child.child_id!==event.contractId || typeof child.organizer!=='string' || child.network!==event.network || child.canonical_ft!==ft || child.leaf_code_sha256!==sha || child.leaf_policy_version!==policy || leaf.organizer!==child.organizer || leaf.network!==event.network || leaf.canonical_ft!==ft || leaf.provider_account!==provider || leaf.provider_kind!==kind || leaf.policy_version!==policy) throw new Error('untrusted factory child');
       factoryOrganizer=child.organizer;
     }
     const [e,p]=await Promise.all([view('get_event',abi==='candidate-v1'?{}:{event_id:event.chainEventId}),chainPassId?view('get_pass',{pass_id:chainPassId}):Promise.resolve(null)]);
@@ -74,9 +86,9 @@ async function authorize(config:Config,event:Event,chainPassId:string,owner:stri
   const snapshot=await chainSnapshot(config,event,chainPassId); const e=snapshot.event, p=snapshot.pass!;
   if(e.event_id!==event.chainEventId || p.event_id!==event.chainEventId || p.pass_id!==chainPassId || p.owner!==owner || p.registration_status!=='Active') throw Errors.forbidden('PASS_NOT_ELIGIBLE','active on-chain pass ownership required');
   if(organizer && e.organizer!==organizer) throw Errors.forbidden('ORGANIZER_REQUIRED','on-chain organizer required');
-  const checkinPhase=['candidate-v1','multievent-v1'].includes(snapshot.abi) ? e.phase==='RegistrationClosed' : e.state==='Published';
-  const unmarked=['candidate-v1','multievent-v1'].includes(snapshot.abi) ? p.attendance_status==='Unmarked' : p.attendance_status==='NotMarked';
-  const settled=['candidate-v1','multievent-v1'].includes(snapshot.abi) ? e.phase==='Settled' : e.state==='Settled';
+  const checkinPhase=['candidate-v1','multievent-v1','shared-yield-v2'].includes(snapshot.abi) ? e.phase==='RegistrationClosed' : e.state==='Published';
+  const unmarked=['candidate-v1','multievent-v1','shared-yield-v2'].includes(snapshot.abi) ? p.attendance_status==='Unmarked' : p.attendance_status==='NotMarked';
+  const settled=['candidate-v1','multievent-v1','shared-yield-v2'].includes(snapshot.abi) ? e.phase==='Settled' : e.state==='Settled';
   if(mode==='checkin' && (!checkinPhase || !unmarked || !Number.isSafeInteger(e.checkin_open) || !Number.isSafeInteger(e.checkin_close) || snapshot.blockMs<(e.checkin_open as number) || snapshot.blockMs>=(e.checkin_close as number))) throw Errors.forbidden('CHECKIN_NOT_ELIGIBLE','check-in requires an active unmarked pass');
   if(mode==='content' && (!settled || p.attendance_status!=='Attended')) throw Errors.forbidden('CONTENT_NOT_ELIGIBLE','settled event and attended pass required');
 }
@@ -141,7 +153,7 @@ export function registerPrivate(app: FastifyInstance, store: Store, config: Conf
     const a=account(req); const items=await store.getAttendance(req.params.eventId,a.accountId,a.network);
     if (items===null) throw Errors.forbidden('ORGANIZER_REQUIRED','authenticated account is not the event organizer');
     const event=await store.getEvent(req.params.eventId); if(!event || event.network!==a.network) throw Errors.forbidden('ORGANIZER_REQUIRED','event unavailable');
-    const chain=await chainSnapshot(config,event); const validPhase=['candidate-v1','multievent-v1'].includes(chain.abi) ? ['RegistrationOpen','RegistrationClosed','Cancelled','RefundOnly','AttendanceFinalized','Settled'].includes(String(chain.event.phase)) : ['Published','Cancelled','RefundOnly','AttendanceFinalized','Settling','Settled'].includes(String(chain.event.state)); if(chain.event.event_id!==event.chainEventId || chain.event.organizer!==a.accountId || !validPhase) throw Errors.forbidden('ORGANIZER_REQUIRED','valid on-chain event and organizer required');
+    const chain=await chainSnapshot(config,event); const validPhase=['candidate-v1','multievent-v1','shared-yield-v2'].includes(chain.abi) ? ['RegistrationOpen','RegistrationClosed','Cancelled','RefundOnly','AttendanceFinalized','Settled'].includes(String(chain.event.phase)) : ['Published','Cancelled','RefundOnly','AttendanceFinalized','Settling','Settled'].includes(String(chain.event.state)); if(chain.event.event_id!==event.chainEventId || chain.event.organizer!==a.accountId || !validPhase) throw Errors.forbidden('ORGANIZER_REQUIRED','valid on-chain event and organizer required');
     const stale=items.some(x=>staleAt(x.observedAt,Date.now(),config.projectionFreshnessMs));
     if (stale) throw Errors.unavailable('PROJECTION_STALE','attendance projection is stale or unavailable');
     return reply.send(okEnvelope({items},meta(req,a.network,false)));

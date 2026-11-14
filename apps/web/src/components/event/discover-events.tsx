@@ -39,6 +39,7 @@ export function DiscoverEvents({ load = loadCatalog }: { load?: CatalogLoader })
   );
   const [message, setMessage] = useState("");
   const [stale, setStale] = useState(false);
+  const [direct, setDirect] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const [view, setView] = useState<"cards" | "list">("cards");
   const [period, setPeriod] = useState("upcoming");
@@ -73,6 +74,7 @@ export function DiscoverEvents({ load = loadCatalog }: { load?: CatalogLoader })
       } else {
         setRows(result.page.items);
         setStale(result.stale);
+        setDirect(result.source === "DIRECT_CHAIN");
         setStatus("ready");
       }
     })();
@@ -133,6 +135,7 @@ export function DiscoverEvents({ load = loadCatalog }: { load?: CatalogLoader })
               : `${visible.length} ${visible.length === 1 ? "event" : "events"}`}
           </div>
 
+          {status === "ready" && direct && <p role="status">DIRECT_CHAIN: events read from the verified contract. Index projections may be unavailable.</p>}
           {status === "error" ? (
             <LoadError
               message={message}
@@ -144,8 +147,7 @@ export function DiscoverEvents({ load = loadCatalog }: { load?: CatalogLoader })
             <>
               {stale && (
                 <p className="catalog-stale" role="status">
-                  Showing a stale projection (the chain source is behind). Money
-                  actions are disabled until it refreshes.
+                  Some sources are unavailable or incomplete. Open an event to check its current contract state.
                 </p>
               )}
               <div className={`discovery-agenda discovery-agenda--${view}`}>

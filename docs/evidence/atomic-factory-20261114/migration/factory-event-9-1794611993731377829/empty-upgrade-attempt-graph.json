@@ -1,0 +1,137 @@
+{
+  "final_execution_status": "FINAL",
+  "receipts": [
+    {
+      "predecessor_id": "system",
+      "priority": 0,
+      "receipt": {
+        "Action": {
+          "actions": [
+            {
+              "Transfer": {
+                "deposit": "23692398538167200000000"
+              }
+            }
+          ],
+          "gas_price": "0",
+          "input_data_ids": [],
+          "is_promise_yield": false,
+          "output_data_receivers": [],
+          "signer_id": "showstake-mainnet-escrow-endpx-2026.near",
+          "signer_public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB"
+        }
+      },
+      "receipt_id": "7ojBa9ytZM3VZNEvJjJn3VhA4ZUq5Db82ajcqZCBFjoM",
+      "receiver_id": "showstake-mainnet-escrow-endpx-2026.near"
+    }
+  ],
+  "receipts_outcome": [
+    {
+      "block_hash": "Eta79ysQvYjevJWaG83ULr7HFxoooLKsaZ7q8zftqBZB",
+      "id": "14QJXnTRJG8UMXRPqNigToEzBQs73sSSnqNEQLjSLFpx",
+      "outcome": {
+        "executor_id": "showstake-mainnet-escrow-endpx-2026.near",
+        "gas_burnt": 15756842715248,
+        "logs": [],
+        "metadata": {
+          "contracts": [
+            {
+              "local": "EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY"
+            },
+            {
+              "local": "ENvY3jqpnMWnmQEBRjcvQkuJvELYMLkkqTC9wRBPjZ9J"
+            }
+          ],
+          "version": 4
+        },
+        "receipt_ids": [
+          "7ojBa9ytZM3VZNEvJjJn3VhA4ZUq5Db82ajcqZCBFjoM"
+        ],
+        "status": {
+          "SuccessValue": ""
+        },
+        "tokens_burnt": "1575684271524800000000"
+      },
+      "proof": [
+        {
+          "direction": "Left",
+          "hash": "93QxSe2gLkEfUrC5BVGKqJXGMKN3NL7r5sCGCVudKUgt"
+        }
+      ]
+    },
+    {
+      "block_hash": "ErsRP1HFMsMYwbwhUKZp18FVuVT3hTgC1zNEv4MxdSFk",
+      "id": "7ojBa9ytZM3VZNEvJjJn3VhA4ZUq5Db82ajcqZCBFjoM",
+      "outcome": {
+        "executor_id": "showstake-mainnet-escrow-endpx-2026.near",
+        "gas_burnt": 223182562500,
+        "logs": [],
+        "metadata": {
+          "contracts": [
+            {
+              "local": "ENvY3jqpnMWnmQEBRjcvQkuJvELYMLkkqTC9wRBPjZ9J"
+            }
+          ],
+          "version": 4
+        },
+        "receipt_ids": [],
+        "status": {
+          "SuccessValue": ""
+        },
+        "tokens_burnt": "0"
+      },
+      "proof": []
+    }
+  ],
+  "status": {
+    "SuccessValue": ""
+  },
+  "transaction": {
+    "actions": [
+      {
+        "DeployContract": {
+          "code": "xsWo2qXcsKsCC5ECmeLfnE1abyYqRiA/N7R1liTk85E="
+        }
+      },
+      {
+        "FunctionCall": {
+          "args": "e30=",
+          "deposit": "0",
+          "gas": 10000000000000,
+          "method_name": "migrate_empty_multievent"
+        }
+      }
+    ],
+    "hash": "CvThuh3zRVRST2RA3uWZ6w1oUsFxxR8u3QP6VTskeqHD",
+    "nonce": 2,
+    "priority_fee": 0,
+    "public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB",
+    "receiver_id": "showstake-mainnet-escrow-endpx-2026.near",
+    "signer_id": "showstake-mainnet-escrow-endpx-2026.near"
+  },
+  "transaction_outcome": {
+    "block_hash": "Eta79ysQvYjevJWaG83ULr7HFxoooLKsaZ7q8zftqBZB",
+    "id": "CvThuh3zRVRST2RA3uWZ6w1oUsFxxR8u3QP6VTskeqHD",
+    "outcome": {
+      "executor_id": "showstake-mainnet-escrow-endpx-2026.near",
+      "gas_burnt": 1990598580452,
+      "logs": [],
+      "metadata": {
+        "version": 1
+      },
+      "receipt_ids": [
+        "14QJXnTRJG8UMXRPqNigToEzBQs73sSSnqNEQLjSLFpx"
+      ],
+      "status": {
+        "SuccessReceiptId": "14QJXnTRJG8UMXRPqNigToEzBQs73sSSnqNEQLjSLFpx"
+      },
+      "tokens_burnt": "199059858045200000000"
+    },
+    "proof": [
+      {
+        "direction": "Right",
+        "hash": "2DQiAhy1V6kte8zkyWYAxssy7aqfgtyx7FPtmy9RMeG8"
+      }
+    ]
+  }
+}

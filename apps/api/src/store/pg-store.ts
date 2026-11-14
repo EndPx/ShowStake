@@ -138,7 +138,8 @@ export class PgStore implements Store {
     return res.rows.length===1 ? mapEvent(res.rows[0]!) : null;
   }
   async getEventResults(id: string): Promise<EventResultsRead | null> {
-    const ev = await this.pool.query<EventRow>(`SELECT ${EVENT_SELECT} WHERE ${isUuid(id) ? "e.id" : "e.chain_event_id"} = $1`, [id]);
+    const ev = await this.pool.query<EventRow>(`SELECT ${EVENT_SELECT} WHERE ${isUuid(id) ? "e.id" : "e.chain_event_id"} = $1 LIMIT 2`, [id]);
+    if (ev.rows.length !== 1) return null;
     const event = ev.rows[0];
     if (!event) return null;
     const counts = await this.pool.query<{ registrations: string; active: string; withdrawn: string; attendees: string; no_shows: string }>(

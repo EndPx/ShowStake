@@ -1,0 +1,21 @@
+{
+  "classification": "PASS_TESTNET",
+  "scope": "Operator deployment identity only; not projection catch-up",
+  "target": {
+    "network": "testnet",
+    "contract": "ss-shared-s1114144616.testnet",
+    "canonicalFt": "mockusdc.testnet",
+    "provider": "ss-shared-earn-s1114144616.testnet",
+    "providerKind": "MOCK_TESTNET",
+    "policy": "showstake-native-usdc-shared-yield/2",
+    "schema": 2,
+    "codeHash": "Ft6tNcKFYbGLtvcU6Mo6Qobkr9JWp62fUTsAKNeZ3vc8",
+    "sha256": "dd1ae4ac2eee7e556e5b411ff651291e6f63bb8516101a16f4d02351010b5419",
+    "startBlock": 277628137,
+    "deploymentHash": "5b1ijLSHtMBY36AQufGHQTLAAEftwT74PsGkn9j5q4gU"
+  },
+  "block": {
+    "height": 277629600,
+    "hash": "p3m84xYCVAHm4Qphtv4aMztfYnssjyxfhsEYmyzkPCB"
+  }
+}

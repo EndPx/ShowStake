@@ -242,7 +242,9 @@ pub struct EventEscrowContract {
 #[near]
 impl EventEscrowContract {
     fn policy_version(&self) -> String {
-        #[cfg(feature = "rhea-linked-withdraw-review")]
+        #[cfg(feature = "factory-event")]
+        if self.config.provider_kind == "RHEA_MAINNET" { return "showstake-native-usdc-factory-rhea/3".into(); }
+        #[cfg(all(feature = "rhea-linked-withdraw-review", not(feature = "factory-event")))]
         if self.config.provider_kind == "RHEA_MAINNET" { return "showstake-native-usdc-rhea-linked-withdraw-review/2".into(); }
         if self.config.provider_kind == "RHEA_MAINNET" { "showstake-native-usdc-rhea-review/1" } else { "showstake-native-usdc-event/1" }.into()
     }
@@ -288,6 +290,27 @@ impl EventEscrowContract {
             #[cfg(feature = "mainnet-review")]
             rhea: RheaControl { paused: true, stage: RheaStage::Idle, principal_cap: U128(0), shares: U128(0), last_internal_balance: U128(0), baseline_ft: U128(0), expected_return: U128(0), #[cfg(feature = "rhea-linked-withdraw-review")] retry_after_block: 0 },
         }
+    }
+
+    /// Factory-only atomic initialization candidate. The code is deployed to a
+    /// new keyless child in the same receipt, so no third party can preinitialize it.
+    #[cfg(feature = "factory-event")]
+    #[init]
+    pub fn new_with_event(
+        organizer: AccountId, provider_account: AccountId, canonical_ft: AccountId,
+        token_symbol: String, token_name: String, token_decimals: u8,
+        provider_kind: String, rules: EventRules,
+    ) -> Self {
+        let mut contract = Self::new(organizer, provider_account, canonical_ft,
+            token_symbol, token_name, token_decimals, provider_kind);
+        #[cfg(feature = "mainnet-review")]
+        if contract.config.provider_kind == "RHEA_MAINNET" {
+            contract.rhea.principal_cap = U128(rules.deposit.0.checked_mul(rules.capacity as u128)
+                .expect("cap overflow"));
+            contract.rhea.paused = false;
+        }
+        contract.create_event_inner(rules);
+        contract
     }
 
     pub fn get_event(&self) -> Option<EventView> {
@@ -374,6 +397,10 @@ impl EventEscrowContract {
             env::predecessor_account_id() == self.config.organizer,
             "organizer required"
         );
+        self.create_event_inner(rules);
+    }
+
+    fn create_event_inner(&mut self, rules: EventRules) {
         require!(self.event.is_none(), "event already created");
         require!(
             rules.deposit.0 > 0 && rules.capacity > 0 && rules.capacity <= 200,
@@ -553,7 +580,9 @@ impl EventEscrowContract {
             if self.rhea.stage == RheaStage::Preparing {
                 #[cfg(feature = "rhea-linked-withdraw-review")]
                 {
-                    let refund = matches!(event.phase, EscrowPhase::Cancelled | EscrowPhase::RefundOnly);
+                    let refund = matches!(event.phase, EscrowPhase::Cancelled | EscrowPhase::RefundOnly)
+                        || (cfg!(feature = "factory-event") && event.phase == EscrowPhase::AttendanceFinalized
+                            && event.earn_state == EarnState::RedeemPending && env::block_timestamp_ms() >= event.rules.checkin_close);
                     require!(env::predecessor_account_id() == self.config.organizer || (refund && env::block_height() >= self.rhea.retry_after_block), "preflight retry unavailable");
                     self.rhea.retry_after_block = env::block_height().saturating_add(20);
                 }
@@ -638,6 +667,19 @@ impl EventEscrowContract {
 
     #[cfg(feature = "mainnet-review")]
     pub fn get_rhea_control(&self) -> RheaControl { self.rhea.clone() }
+
+    /// Read-only status; a lost dispatched callback is never retried blindly.
+    #[cfg(feature = "factory-event")]
+    pub fn get_recovery_status(&self) -> near_sdk::serde_json::Value {
+        let dispatched = self.rhea.stage == RheaStage::Dispatched;
+        near_sdk::serde_json::json!({
+            "stage": self.rhea.stage,
+            "attempt": self.event.as_ref().map(|e| e.earn_attempt),
+            "manual_reconciliation_required": dispatched,
+            "automatic_redispatch_allowed": false,
+            "reason": if dispatched { Some("CALLBACK_OUTCOME_UNKNOWN") } else { None::<&str> },
+        })
+    }
 
     /// Owner funds precisely the attached storage deposit; never spends escrow FT.
     /// Registration must still be verified independently before supply.
@@ -805,11 +847,13 @@ impl EventEscrowContract {
     }
     #[cfg(feature = "mainnet-review")]
     fn trigger_rhea_redeem(&mut self) -> Promise {
-        #[cfg(feature = "rhea-linked-withdraw-review")]
+        #[cfg(all(feature = "rhea-linked-withdraw-review", not(feature = "factory-event")))]
         {
             let e = self.event.as_ref().expect("event missing");
             require!(env::predecessor_account_id() == self.config.organizer || matches!(e.phase, EscrowPhase::Cancelled | EscrowPhase::RefundOnly), "organizer required");
         }
+        // The factory-event candidate permits anyone to trigger a full redeem
+        // after finalization: the beneficiary is fixed to this child account.
         let e=self.event.as_mut().expect("event missing");
         require!(e.earn_state == EarnState::Supplied && (e.phase == EscrowPhase::Cancelled || e.phase == EscrowPhase::RefundOnly || (e.phase == EscrowPhase::AttendanceFinalized && env::block_timestamp_ms() >= e.rules.checkin_close)), "redeem gate closed");
         e.earn_attempt=e.earn_attempt.checked_add(1).expect("attempt overflow"); e.earn_state=EarnState::RedeemPending; e.earn_action_completed=false;
@@ -846,7 +890,9 @@ impl EventEscrowContract {
     pub fn recover_rhea_ambiguous(&mut self) -> Promise {
         require!(self.config.provider_kind == "RHEA_MAINNET" && self.rhea.stage == RheaStage::Ambiguous, "ambiguous recovery unavailable");
         let event = self.event.as_mut().expect("event missing");
-        let refund = matches!(event.phase, EscrowPhase::Cancelled | EscrowPhase::RefundOnly);
+        let refund = matches!(event.phase, EscrowPhase::Cancelled | EscrowPhase::RefundOnly)
+                        || (cfg!(feature = "factory-event") && event.phase == EscrowPhase::AttendanceFinalized
+                            && event.earn_state == EarnState::RedeemPending && env::block_timestamp_ms() >= event.rules.checkin_close);
         require!(env::predecessor_account_id() == self.config.organizer || (refund && env::block_height() >= self.rhea.retry_after_block), "ambiguous recovery unavailable");
         self.rhea.retry_after_block = env::block_height().saturating_add(20);
         require!(event.earn_state == EarnState::RedeemPending && !event.earn_action_completed, "ambiguous recovery unavailable");
@@ -1113,6 +1159,51 @@ mod tests {
             checkin_open: 20,
             checkin_close: 30,
         }
+    }
+
+    #[cfg(feature = "factory-event")]
+    #[test]
+    fn factory_initializer_publishes_for_original_organizer() {
+        context("factory.testnet", 0);
+        let c = EventEscrowContract::new_with_event(
+            account("host.testnet"), account("mock-earn.testnet"),
+            account("mock.usdc.testnet"), "USDC".into(), "Mock USDC".into(),
+            6, "MOCK_TESTNET".into(), rules());
+        let event = c.get_event().unwrap();
+        assert_eq!(event.organizer, account("host.testnet"));
+        assert_eq!(event.deposit, U128(10));
+        assert_eq!(event.capacity, 10);
+    }
+
+    #[cfg(feature = "factory-event")]
+    #[test]
+    fn factory_mainnet_initializer_sets_bounded_cap_and_unpauses() {
+        testing_env!(VMContextBuilder::new().current_account_id(account("child.near")).predecessor_account_id(account("factory.near")).build());
+        let mut r = rules(); r.finalize_deadline = r.checkin_close + 86_400_000;
+        let c = EventEscrowContract::new_with_event(account("host.near"), account(rhea_adapter::PROVIDER), account(rhea_adapter::USDC), "USDC".into(), "USDC".into(), 6, "RHEA_MAINNET".into(), r);
+        assert_eq!(c.get_rhea_control().principal_cap, U128(100));
+        assert!(!c.get_rhea_control().paused);
+        assert_eq!(c.get_event().unwrap().organizer, account("host.near"));
+        assert_eq!(c.get_config().policy_version, "showstake-native-usdc-factory-rhea/3");
+    }
+
+    #[test]
+    fn timeout_refund_is_available_without_earn_supply() {
+        context("host.testnet", 0);
+        let mut c = EventEscrowContract::new(account("host.testnet"), account("mock-earn.testnet"), account("mock.usdc.testnet"), "USDC".into(), "Mock USDC".into(), 6, "MOCK_TESTNET".into());
+        c.publish_event(rules());
+        context("mock.usdc.testnet", 10);
+        let msg = r#"{"version":1,"event_id":"e","commitment_id":"c0"}"#.into();
+        assert!(matches!(c.ft_on_transfer(account("user.testnet"), U128(10), msg), PromiseOrValue::Value(U128(0))));
+        context("any.testnet", 40); c.activate_timeout_refund("e".into());
+        let ctx = VMContextBuilder::new().current_account_id(account("event.testnet")).predecessor_account_id(account("user.testnet")).attached_deposit(NearToken::from_yoctonear(1)).block_timestamp(40_000_000).build();
+        testing_env!(ctx);
+        drop(c.claim("e-reg-0".into()));
+        let r = c.get_registration("e-reg-0".into()).unwrap();
+        assert_eq!(r.claim, ClaimState::Pending); assert_eq!(r.claim_amount, U128(10));
+        promise_context(vec![near_sdk::PromiseResult::Successful(vec![])]);
+        c.on_claim_result("e-reg-0".into(), 1);
+        assert_eq!(c.get_registration("e-reg-0".into()).unwrap().claim, ClaimState::Paid);
     }
 
     #[test]
@@ -1434,13 +1525,41 @@ mod tests {
         promise_context(linked_rows(0,5,10_000_000_000_000)); drop(c.on_rhea_reconcile(4,true)); assert_eq!(c.rhea.stage,RheaStage::Preparing);
         promise_context(linked_rows(0,5,10_000_000_000_000)); drop(c.on_rhea_reconcile(5,true)); assert_eq!(c.rhea.stage,RheaStage::Dispatched); assert_eq!(c.rhea.expected_return,U128(4));
     }
-    #[cfg(feature = "rhea-linked-withdraw-review")]
+    #[cfg(all(feature = "rhea-linked-withdraw-review", not(feature = "factory-event")))]
     #[test]
     fn linked_full_redeem_requires_organizer() {
         let mut c=linked_pending(); c.rhea.stage=RheaStage::Idle; c.event.as_mut().unwrap().earn_state=EarnState::Supplied;
         context("outsider.testnet",30);
         let rejected=std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| drop(c.trigger_earn_redeem())));
         assert!(rejected.is_err()); assert_eq!(c.event.as_ref().unwrap().earn_state,EarnState::Supplied); assert_eq!(c.rhea.stage,RheaStage::Idle);
+    }
+    #[cfg(feature = "factory-event")]
+    #[test]
+    fn finalized_full_redeem_is_permissionless_but_not_early() {
+        let mut c = linked_pending(); c.rhea.stage = RheaStage::Idle;
+        c.event.as_mut().unwrap().earn_state = EarnState::Supplied;
+        context("outsider.testnet", 29);
+        assert!(std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| drop(c.trigger_earn_redeem()))).is_err());
+        assert_eq!(c.event.as_ref().unwrap().earn_state, EarnState::Supplied);
+        context("outsider.testnet", 30); drop(c.trigger_earn_redeem());
+        assert_eq!(c.event.as_ref().unwrap().earn_state, EarnState::RedeemPending);
+        assert_eq!(c.rhea.stage, RheaStage::Preparing);
+    }
+    #[cfg(feature = "factory-event")]
+    #[test]
+    fn finalized_public_recovery_respects_retry_cooldown() {
+        let mut c = linked_pending();
+        c.rhea.stage = RheaStage::Preparing; c.rhea.retry_after_block = 120;
+        linked_context("outsider.testnet", 30, 119);
+        assert!(std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| drop(c.reconcile_earn()))).is_err());
+        linked_context("outsider.testnet", 30, 120); drop(c.reconcile_earn());
+        assert_eq!(c.event.as_ref().unwrap().earn_attempt, 4);
+        c.rhea.stage = RheaStage::Ambiguous; c.rhea.retry_after_block = 140;
+        linked_context("outsider.testnet", 30, 139);
+        assert!(std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| drop(c.recover_rhea_ambiguous()))).is_err());
+        linked_context("outsider.testnet", 30, 140); drop(c.recover_rhea_ambiguous());
+        assert_eq!(c.event.as_ref().unwrap().earn_attempt, 5);
+        assert_eq!(c.rhea.stage, RheaStage::Ambiguous);
     }
     #[cfg(feature = "rhea-linked-withdraw-review")]
     #[test]
@@ -1461,6 +1580,18 @@ mod tests {
         let mut c=linked_pending(); context("host.testnet",30);
         let rejected=std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| drop(c.recover_rhea_ambiguous())));
         assert!(rejected.is_err()); assert_eq!(c.rhea.stage,RheaStage::Dispatched); assert_eq!(c.event.as_ref().unwrap().earn_attempt,3);
+        let no_retry = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| drop(c.reconcile_earn())));
+        assert!(no_retry.is_err());
+        assert_eq!(c.rhea.stage, RheaStage::Dispatched);
+        assert_eq!(c.event.as_ref().unwrap().earn_attempt, 3);
+        #[cfg(feature = "factory-event")]
+        {
+            let status = c.get_recovery_status();
+            assert_eq!(status["manual_reconciliation_required"], true);
+            assert_eq!(status["automatic_redispatch_allowed"], false);
+            assert_eq!(c.event.as_ref().unwrap().earn_attempt, 3);
+            assert_eq!(c.rhea.stage, RheaStage::Dispatched);
+        }
     }
 
     #[test]

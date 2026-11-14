@@ -1,0 +1,71 @@
+{
+  "contract": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+  "deposit": "1",
+  "method": "ft_transfer_call",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "Es9nAt1NysTC27pyGZei3rsFKcwPRAdJaib32qS3qUof",
+        "BzE855aTcyA4yz3g3TQGWczSCQi9nVQE9xAYUUL2q4Zr",
+        "B2SFwEqhDzC6gZwHFeMu5sXAH9ays1YfYFggYBZbT1E7"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": false,
+      "gas_burnt": 2649391549901,
+      "id": "58RfJ4BveBnvBqPCjAnoinhXcP1JpsfGVVNv3F2KpnPd",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "AJTmP66aA9YBQY9Wtfdt2bXzKXnF4zVUFFKb5fd4pGL7"
+      ],
+      "executor": "shared.sandbox",
+      "failure": false,
+      "gas_burnt": 2454918075097,
+      "id": "Es9nAt1NysTC27pyGZei3rsFKcwPRAdJaib32qS3qUof",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "u0.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "AJTmP66aA9YBQY9Wtfdt2bXzKXnF4zVUFFKb5fd4pGL7",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "8hQpTmtnr9Z79w21kniEoGQ5hS8NGcTWd3uDp5tQnwf7"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": false,
+      "gas_burnt": 1434519858406,
+      "id": "BzE855aTcyA4yz3g3TQGWczSCQi9nVQE9xAYUUL2q4Zr",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "u0.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "8hQpTmtnr9Z79w21kniEoGQ5hS8NGcTWd3uDp5tQnwf7",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "u0.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "B2SFwEqhDzC6gZwHFeMu5sXAH9ays1YfYFggYBZbT1E7",
+      "success": true
+    }
+  ],
+  "signer": "u0.testnet",
+  "success": true
+}

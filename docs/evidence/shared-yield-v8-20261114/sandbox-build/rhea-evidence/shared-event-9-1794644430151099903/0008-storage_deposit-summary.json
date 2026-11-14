@@ -1,0 +1,29 @@
+{
+  "contract": "contract.main.burrow.near",
+  "deposit": "100000000000000000000000",
+  "method": "storage_deposit",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "6WPe5eqBf8KQrGoAjVbYpiRkvvSqnmhXig37M4Eagf7W"
+      ],
+      "executor": "contract.main.burrow.near",
+      "failure": false,
+      "gas_burnt": 3583031977957,
+      "id": "8P1gtTsHLBP8bZUvnQoG6K9KERB71DX9LQqk9DciGqSB",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "owner.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "6WPe5eqBf8KQrGoAjVbYpiRkvvSqnmhXig37M4Eagf7W",
+      "success": true
+    }
+  ],
+  "signer": "owner.testnet",
+  "success": true
+}

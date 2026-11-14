@@ -1,0 +1,368 @@
+{
+  "a_real_registrations": 1,
+  "a_synthetic_registrations": 199,
+  "b_synthetic_registrations": 200,
+  "cancel": {
+    "attached_tgas": 300,
+    "receipts": [
+      {
+        "executor": "shared.testnet",
+        "gas_burnt": 2577667980899,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      }
+    ],
+    "total_gas_burnt": 3110245187419
+  },
+  "classification": "PASS_LOCAL",
+  "event_a": {
+    "accepted_principal": "400000000",
+    "active_registrations": 200,
+    "cancel_cutoff": 1794645382327,
+    "canonical_ft": "usdc.testnet",
+    "capacity": 200,
+    "checkin_close": 1794645397327,
+    "checkin_open": 1794645382327,
+    "created_at": 1794645262707,
+    "deposit": "2000000",
+    "earn_action_completed": false,
+    "earn_attempt": 2,
+    "earn_state": "Redeemed",
+    "event_id": "a",
+    "finalize_deadline": 1794731797327,
+    "location": "Sandbox",
+    "organizer": "owner.testnet",
+    "phase": "Settled",
+    "policy_version": "showstake-native-usdc-shared-yield/2",
+    "realized_yield": "0",
+    "redeemed_amount": "400000000",
+    "reg_close": 1794645382327,
+    "reg_open": 1794645262327,
+    "rules_hash": "",
+    "rules_text": "Capacity gas fixture",
+    "title": "Capacity",
+    "total_registrations": 200,
+    "withdrawn_registrations": 0,
+    "yield_distributed": "0"
+  },
+  "event_b_totals": {
+    "accepted_principal": "400000000",
+    "allocated_yield": "0",
+    "event_id": "b",
+    "liability": "400000000",
+    "paid": "0",
+    "pending": "0",
+    "realized_yield": "0",
+    "reserved_cash": "400000000"
+  },
+  "finalize": {
+    "attached_tgas": 300,
+    "receipts": [
+      {
+        "executor": "shared.testnet",
+        "gas_burnt": 96090614113764,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      }
+    ],
+    "total_gas_burnt": 96623525106289
+  },
+  "redeem": {
+    "attached_tgas": 300,
+    "receipts": [
+      {
+        "executor": "shared.testnet",
+        "gas_burnt": 4505828932730,
+        "success": true
+      },
+      {
+        "executor": "usdc.testnet",
+        "gas_burnt": 1363936382538,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      },
+      {
+        "executor": "earn.testnet",
+        "gas_burnt": 1201533652035,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      },
+      {
+        "executor": "shared.testnet",
+        "gas_burnt": 1323720813952,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      },
+      {
+        "executor": "shared.testnet",
+        "gas_burnt": 2958887161591,
+        "success": true
+      },
+      {
+        "executor": "earn.testnet",
+        "gas_burnt": 2195701996910,
+        "success": true
+      },
+      {
+        "executor": "usdc.testnet",
+        "gas_burnt": 1865259318540,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      },
+      {
+        "executor": "earn.testnet",
+        "gas_burnt": 1434184575076,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      },
+      {
+        "executor": "shared.testnet",
+        "gas_burnt": 3078606173119,
+        "success": true
+      },
+      {
+        "executor": "usdc.testnet",
+        "gas_burnt": 1363936382538,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      },
+      {
+        "executor": "earn.testnet",
+        "gas_burnt": 1200359603759,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      },
+      {
+        "executor": "shared.testnet",
+        "gas_burnt": 1323720813952,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      },
+      {
+        "executor": "shared.testnet",
+        "gas_burnt": 3010699977694,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      }
+    ],
+    "total_gas_burnt": 30037477526959
+  },
+  "scope": "Sandbox 2.14.0, MockEarn, one real FT registration plus 399 synthetic FT-predecessor calls, bulk FT backing, synthetic event clock; no live proof",
+  "settle": {
+    "attached_tgas": 300,
+    "receipts": [
+      {
+        "executor": "shared.testnet",
+        "gas_burnt": 67570469993289,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      }
+    ],
+    "total_gas_burnt": 68102761097519
+  },
+  "supply": {
+    "attached_tgas": 300,
+    "receipts": [
+      {
+        "executor": "shared.testnet",
+        "gas_burnt": 4502612930189,
+        "success": true
+      },
+      {
+        "executor": "usdc.testnet",
+        "gas_burnt": 1363936382538,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      },
+      {
+        "executor": "earn.testnet",
+        "gas_burnt": 1189352353284,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      },
+      {
+        "executor": "shared.testnet",
+        "gas_burnt": 1322173799602,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      },
+      {
+        "executor": "shared.testnet",
+        "gas_burnt": 2681135994259,
+        "success": true
+      },
+      {
+        "executor": "usdc.testnet",
+        "gas_burnt": 2619240059501,
+        "success": true
+      },
+      {
+        "executor": "earn.testnet",
+        "gas_burnt": 1383759471094,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      },
+      {
+        "executor": "usdc.testnet",
+        "gas_burnt": 1431652021062,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      },
+      {
+        "executor": "shared.testnet",
+        "gas_burnt": 3077415806044,
+        "success": true
+      },
+      {
+        "executor": "usdc.testnet",
+        "gas_burnt": 1363936382538,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      },
+      {
+        "executor": "earn.testnet",
+        "gas_burnt": 1201533652035,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      },
+      {
+        "executor": "shared.testnet",
+        "gas_burnt": 1322173799602,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      },
+      {
+        "executor": "shared.testnet",
+        "gas_burnt": 2778596529383,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      },
+      {
+        "executor": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "success": true
+      }
+    ],
+    "total_gas_burnt": 29448620923656
+  },
+  "timeout": "NOT_RUN: 24-hour event deadline not advanced"
+}

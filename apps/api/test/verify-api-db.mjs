@@ -87,7 +87,7 @@ async function seedEvent(client) {
   await client.query(`
     INSERT INTO deployments (id, environment, network, contract_id, ft_contract_id, ft_decimals, start_block, code_hash)
     VALUES ($1, 'testnet', 'testnet', 'escrow.showstake.testnet', 'ft.showstake.testnet', 6, 1, $2)
-    ON CONFLICT (network, contract_id) DO NOTHING`,
+    ON CONFLICT (network, contract_id, code_hash) DO NOTHING`,
     [DEPLOYMENT_ID, '0'.repeat(64)]);
   await client.query('SET ROLE showstake_worker');
   await client.query(`

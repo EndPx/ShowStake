@@ -1,0 +1,81 @@
+{
+  "after_empty": {
+    "amount": "2892375604700406800000000",
+    "code_hash": "4Dq4uEH2PE9FEB7n67d3r3fvHPUy5KAvjhgZ8q5sX4PU",
+    "global_contract_account_id": null,
+    "global_contract_hash": null,
+    "locked": "0",
+    "storage_usage": 276695,
+    "version": "V2"
+  },
+  "after_nonempty": {
+    "amount": "30058977896395846000000000",
+    "code_hash": "EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY",
+    "global_contract_account_id": null,
+    "global_contract_hash": null,
+    "locked": "0",
+    "storage_usage": 226617,
+    "version": "V2"
+  },
+  "before_empty": {
+    "amount": "2894558170705441800000000",
+    "code_hash": "EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY",
+    "global_contract_account_id": null,
+    "global_contract_hash": null,
+    "locked": "0",
+    "storage_usage": 226189,
+    "version": "V2"
+  },
+  "before_nonempty": {
+    "amount": "30061147343301780800000000",
+    "code_hash": "EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY",
+    "global_contract_account_id": null,
+    "global_contract_hash": null,
+    "locked": "0",
+    "storage_usage": 226617,
+    "version": "V2"
+  },
+  "config": {
+    "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+    "network": "mainnet",
+    "policy_version": "showstake-native-usdc-shared-yield/2",
+    "provider_account": "contract.main.burrow.near",
+    "provider_enabled": true,
+    "provider_kind": "RHEA_MAINNET",
+    "provider_status": "CANDIDATE_UNVERIFIED",
+    "schema_version": 2,
+    "token_decimals": 6,
+    "token_name": "USDC",
+    "token_symbol": "USDC"
+  },
+  "retained_event": {
+    "accepted_principal": "0",
+    "active_registrations": 0,
+    "cancel_cutoff": 1794645087187,
+    "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+    "capacity": 1,
+    "checkin_close": 1794645387187,
+    "checkin_open": 1794645087187,
+    "created_at": 1794644487565,
+    "deposit": "2000000",
+    "earn_action_completed": false,
+    "earn_attempt": 0,
+    "earn_state": "NotStarted",
+    "event_id": "must-survive",
+    "finalize_deadline": 1794731787187,
+    "location": "Sandbox",
+    "organizer": "host.near",
+    "phase": "RegistrationOpen",
+    "policy_version": "showstake-native-usdc-multievent/1",
+    "realized_yield": "0",
+    "redeemed_amount": "0",
+    "reg_close": 1794645087187,
+    "reg_open": 1794644487187,
+    "rules_hash": "",
+    "rules_text": "Test",
+    "title": "Test",
+    "total_registrations": 0,
+    "withdrawn_registrations": 0,
+    "yield_distributed": "0"
+  }
+}

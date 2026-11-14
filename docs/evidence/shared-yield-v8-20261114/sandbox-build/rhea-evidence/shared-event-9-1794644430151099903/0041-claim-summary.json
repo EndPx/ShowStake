@@ -1,0 +1,81 @@
+{
+  "contract": "shared.sandbox",
+  "deposit": "1",
+  "method": "claim",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "HFzNhwCZGyhFKxcezKvqQjHZc4WKdi2paeMU1SZb3d1N",
+        "6pmYv5q8MxZEKFBQfGyhgssqEEygJNd2L3FZKekhmjMJ",
+        "8cHyaPLZcStcYSsPWR4Gp5X3meWqRLWtN1UwW2b61qzm"
+      ],
+      "executor": "shared.sandbox",
+      "failure": false,
+      "gas_burnt": 2913149216140,
+      "id": "FaXFsuXcbWT2PLGBNkmHna3KQJHzJyivBSsmoM2gYj5x",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "2KhMFWpL2xLwFKREbK9SJ767StF2pC52Jviw6Meu7KVk",
+        "BScksUgXwETeffjEZoq2gi4GmRsZfCuA5MEyj7TbBguz"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": true,
+      "gas_burnt": 1554575202614,
+      "id": "HFzNhwCZGyhFKxcezKvqQjHZc4WKdi2paeMU1SZb3d1N",
+      "success": false
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "shared.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "2KhMFWpL2xLwFKREbK9SJ767StF2pC52Jviw6Meu7KVk",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "u1.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "BScksUgXwETeffjEZoq2gi4GmRsZfCuA5MEyj7TbBguz",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "6vCvGasJUb4phT1WiJPQxvQqcdodouxM5StHpJ6RKQoG"
+      ],
+      "executor": "shared.sandbox",
+      "failure": false,
+      "gas_burnt": 2122999323614,
+      "id": "6pmYv5q8MxZEKFBQfGyhgssqEEygJNd2L3FZKekhmjMJ",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "u1.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "6vCvGasJUb4phT1WiJPQxvQqcdodouxM5StHpJ6RKQoG",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "u1.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "8cHyaPLZcStcYSsPWR4Gp5X3meWqRLWtN1UwW2b61qzm",
+      "success": true
+    }
+  ],
+  "signer": "u1.testnet",
+  "success": true
+}

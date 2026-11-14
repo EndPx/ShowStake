@@ -1,0 +1,35 @@
+{
+  "classification": "PASS_TESTNET",
+  "qr": {
+    "http": 200,
+    "expiresAt": "2026-11-14T08:07:15.829Z",
+    "meta": {
+      "requestId": "64609d79-deb6-4738-af96-724653059c5d",
+      "observedAt": "2026-11-14T08:06:15.834Z",
+      "network": "testnet",
+      "stale": false,
+      "source": "FINAL_CHAIN",
+      "authority": "FINAL_CHAIN"
+    }
+  },
+  "scope": "Real signed testnet session and direct final-chain QR; not frontend widget or indexer catch-up",
+  "scan": {
+    "http": 200,
+    "data": {
+      "requestId": "532648af-a4ef-4327-85f7-6330bf6e4f30",
+      "passId": "pass-2",
+      "registrationId": "reg-2",
+      "ownerAccount": "showstake-attendee-b-endpx.testnet",
+      "state": "PENDING_SIGNATURE"
+    },
+    "meta": {
+      "requestId": "01130b01-522d-4e33-ae2e-a271a83f4de4",
+      "observedAt": "2026-11-14T08:06:19.151Z",
+      "network": "testnet",
+      "stale": false,
+      "source": "FINAL_CHAIN",
+      "authority": "FINAL_CHAIN"
+    },
+    "replayHttp": 409
+  }
+}

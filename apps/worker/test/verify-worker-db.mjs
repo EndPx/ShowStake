@@ -126,7 +126,7 @@ async function seedDeployment(client, { id = DEPLOYMENT_ID, contractId = DEP.con
   await client.query(`
     INSERT INTO deployments (id, environment, network, contract_id, ft_contract_id, ft_decimals, start_block, code_hash)
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-    ON CONFLICT (network, contract_id) DO UPDATE SET code_hash = EXCLUDED.code_hash, start_block = EXCLUDED.start_block`,
+    ON CONFLICT (network, contract_id, code_hash) DO UPDATE SET start_block = EXCLUDED.start_block`,
     [id, DEP.environment, DEP.network, contractId, DEP.ftContractId, DEP.ftDecimals, startBlock, DEP.codeHash]);
 }
 
@@ -461,7 +461,7 @@ async function main() {
     await client.query(`
       INSERT INTO deployments (id, environment, network, contract_id, ft_contract_id, ft_decimals, start_block, code_hash)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      ON CONFLICT (network, contract_id) DO UPDATE SET code_hash = EXCLUDED.code_hash, start_block = EXCLUDED.start_block`,
+      ON CONFLICT (network, contract_id, code_hash) DO UPDATE SET start_block = EXCLUDED.start_block`,
       [SO_SETTLE_DEPLOYMENT_ID, DEP6.environment, DEP6.network, DEP6.contractId, DEP6.ftContractId, DEP6.ftDecimals, 200, DEP6.codeHash]);
 
     const settleView = {

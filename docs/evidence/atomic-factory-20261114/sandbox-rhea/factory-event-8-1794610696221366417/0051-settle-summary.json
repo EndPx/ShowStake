@@ -1,0 +1,29 @@
+{
+  "contract": "017e20cf6a9babb5.factory.sandbox",
+  "deposit": "0",
+  "method": "settle",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "BU8XwyBp5erREEVhNKuQZP1MC3djom3R2dZmdskELVdF"
+      ],
+      "executor": "017e20cf6a9babb5.factory.sandbox",
+      "failure": false,
+      "gas_burnt": 2640030961946,
+      "id": "A777JrFMrLMioHXequtF7mo7dxkK6rsxNd8WP7nCqjx8",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "first.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "BU8XwyBp5erREEVhNKuQZP1MC3djom3R2dZmdskELVdF",
+      "success": true
+    }
+  ],
+  "signer": "first.sandbox",
+  "success": true
+}

@@ -1,0 +1,29 @@
+{
+  "contract": "shared.testnet",
+  "deposit": "0",
+  "method": "mark_attendance",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "G8VeG8LEkbn5haVF34GWv7U8nao4wkDCF8Jx98Wu1z7"
+      ],
+      "executor": "shared.testnet",
+      "failure": false,
+      "gas_burnt": 2131013009025,
+      "id": "EUqtfhMfWnvauQ3nh5DXSiKa4bbLmSLJgBUbbsiVhrFj",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "first.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "G8VeG8LEkbn5haVF34GWv7U8nao4wkDCF8Jx98Wu1z7",
+      "success": true
+    }
+  ],
+  "signer": "first.testnet",
+  "success": true
+}

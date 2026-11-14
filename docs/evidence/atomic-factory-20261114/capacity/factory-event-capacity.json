@@ -1,0 +1,661 @@
+{
+  "attendee_allocation_atomic": "4000000",
+  "attendees": 100,
+  "child_id": "9f7824cd2c39faed.factory.testnet",
+  "clock": "synthetic event windows advanced using Sandbox blocks",
+  "computed_claim_liability_atomic": "400000000",
+  "escrow_ft_balance_atomic": "400000000",
+  "event": {
+    "accepted_principal": "400000000",
+    "active_registrations": 200,
+    "cancel_cutoff": 1794617874236,
+    "canonical_ft": "usdc.testnet",
+    "capacity": 200,
+    "checkin_close": 1794618174236,
+    "checkin_open": 1794617874236,
+    "created_at": 1794616975072,
+    "deposit": "2000000",
+    "earn_action_completed": false,
+    "earn_attempt": 2,
+    "earn_state": "Redeemed",
+    "event_id": "capacity",
+    "finalize_deadline": 1794704574236,
+    "location": "Sandbox",
+    "organizer": "host.testnet",
+    "phase": "Settled",
+    "policy_version": "showstake-native-usdc-event/1",
+    "realized_yield": "0",
+    "redeemed_amount": "400000000",
+    "reg_close": 1794617874236,
+    "reg_open": 1794616974236,
+    "rules_hash": "",
+    "rules_text": "Local capacity proof",
+    "title": "Capacity",
+    "total_registrations": 200,
+    "withdrawn_registrations": 0,
+    "yield_distributed": "0"
+  },
+  "factory_quote": {
+    "attached_gas_tgas": 300,
+    "canonical_ft": "usdc.testnet",
+    "child_funding": "10620080000000000000000000",
+    "child_id": "9f7824cd2c39faed.factory.testnet",
+    "code_config_funding": "2424330000000000000000000",
+    "leaf_code_sha256": "a90cc890fbda1d8e7166697551693de684a264b1a3bc86ff098f59371033514a",
+    "leaf_policy_version": "showstake-native-usdc-event/1",
+    "network": "testnet",
+    "organizer": "host.testnet",
+    "participant_reserve": "8192000000000000000000000",
+    "pending_timeout_blocks": 100,
+    "provider_account": "mock-earn.testnet",
+    "provider_kind": "MOCK_TESTNET",
+    "registry_fee": "6330000000000000000000",
+    "request_nonce": 1,
+    "rules_funding": "3750000000000000000000",
+    "total": "10626410000000000000000000"
+  },
+  "graphs": {
+    "finalize": {
+      "receipts": [
+        {
+          "bool": null,
+          "children": [
+            "2sxwkecHwNFqgD2j3ZXtUQRqjLXpAky7ZNJpEHZC1XVt"
+          ],
+          "executor": "9f7824cd2c39faed.factory.testnet",
+          "failure": false,
+          "gas_burnt": 84810801856934,
+          "id": "4MzktYECYDNUwnRYzuQStq63vtjF3216Z987eMhYdVEv",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "host.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "2sxwkecHwNFqgD2j3ZXtUQRqjLXpAky7ZNJpEHZC1XVt",
+          "success": true
+        }
+      ],
+      "transaction_outcome_id": "GC5uUsQQYNex8ugbBCHSoGfixzVvpmRA1bmn6RVk5BVG"
+    },
+    "first_deposit": {
+      "receipts": [
+        {
+          "bool": null,
+          "children": [
+            "8CzacviN7WRFMybpmodhkoBpC28J7vWryLKze9JqtBc3",
+            "8b7GokUmB3puJkZUJcCiqtRLdrmQEWwS8Yc7nAgdZERz",
+            "7yQ6i7xoaYQyFQkvajXfpgucANS2vu8kHCZH4w9368eY"
+          ],
+          "executor": "usdc.testnet",
+          "failure": false,
+          "gas_burnt": 2652048466271,
+          "id": "7CVGX12JsM5qsmLRA2N4LQdPUqvGPcGxCxnKLQdfcBdS",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [
+            "EWjQ487BDHTT7Pegm6Dvac4PJV4Qnk9xMyWufaaejzuq"
+          ],
+          "executor": "9f7824cd2c39faed.factory.testnet",
+          "failure": false,
+          "gas_burnt": 2172545768286,
+          "id": "8CzacviN7WRFMybpmodhkoBpC28J7vWryLKze9JqtBc3",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "user0.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "EWjQ487BDHTT7Pegm6Dvac4PJV4Qnk9xMyWufaaejzuq",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [
+            "AbdGp3pBp6PerZvicYSZgCywtHAntzFPYZSkAVqZ8zU7"
+          ],
+          "executor": "usdc.testnet",
+          "failure": false,
+          "gas_burnt": 1429368432574,
+          "id": "8b7GokUmB3puJkZUJcCiqtRLdrmQEWwS8Yc7nAgdZERz",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "user0.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "AbdGp3pBp6PerZvicYSZgCywtHAntzFPYZSkAVqZ8zU7",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "user0.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "7yQ6i7xoaYQyFQkvajXfpgucANS2vu8kHCZH4w9368eY",
+          "success": true
+        }
+      ],
+      "transaction_outcome_id": "CunLzbbiVL7W5FiddT1BCU5uCvhWSWgQSBGutcBDie9w"
+    },
+    "last_deposit": {
+      "receipts": [
+        {
+          "bool": null,
+          "children": [
+            "BRXSbvuc9cecfEzT1Yiy14iFvdeWW2sCJze8PuQ9kAJW",
+            "BZtGE9geLdtLgUvVs5ba7yu8Qc3sTgXaQNKEaimDVvhm",
+            "oS63K6VC83zgv9jCD2HRAA9VsyR2V8ccX7QDnLp4sGs"
+          ],
+          "executor": "usdc.testnet",
+          "failure": false,
+          "gas_burnt": 2653594876343,
+          "id": "3VefJKsnGcyV7CHZt3db6DPztHx1W5kKCjJMfe3H8ysB",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [
+            "14LTzfTfvYKJiRfZEwsAANMYgkKKJbr8WNGd3fXBhv1b"
+          ],
+          "executor": "9f7824cd2c39faed.factory.testnet",
+          "failure": false,
+          "gas_burnt": 2286212616958,
+          "id": "BRXSbvuc9cecfEzT1Yiy14iFvdeWW2sCJze8PuQ9kAJW",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "user199.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "14LTzfTfvYKJiRfZEwsAANMYgkKKJbr8WNGd3fXBhv1b",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [
+            "DAo6Xv8w3zFQJFu5YFQ5TcrtctftLuwyyzJQzpSW8LhQ"
+          ],
+          "executor": "usdc.testnet",
+          "failure": false,
+          "gas_burnt": 1429605629766,
+          "id": "BZtGE9geLdtLgUvVs5ba7yu8Qc3sTgXaQNKEaimDVvhm",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "user199.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "DAo6Xv8w3zFQJFu5YFQ5TcrtctftLuwyyzJQzpSW8LhQ",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "user199.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "oS63K6VC83zgv9jCD2HRAA9VsyR2V8ccX7QDnLp4sGs",
+          "success": true
+        }
+      ],
+      "transaction_outcome_id": "AHwv2xR9NPAuRoS8bmrwf1bokf6vaERYp9khVeUqHHnU"
+    },
+    "redeem": {
+      "receipts": [
+        {
+          "bool": null,
+          "children": [
+            "BBt8kECrmRiah3QdYecA6qpqvyhNqTU1GNd1Re2MLc2X",
+            "38Y1regLqn1HExBTYiVCm1BJ58qu9SgmuwXnzk3NKtdR",
+            "D52DLFhcN4qaFftWT9wVU884SPvtXUg7ddwcwo3cdzcg"
+          ],
+          "executor": "9f7824cd2c39faed.factory.testnet",
+          "failure": false,
+          "gas_burnt": 2166544093287,
+          "id": "53WyAVkETZQYkszwKQABvsrfE5Y6KQe4jDDfNtAyP4UE",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [
+            "2XDnNNbVFVomBJMwka6f5L7dbdHD2Y7koxKxL5tER91m",
+            "69ezJnpBN3dBrZPfFtXBM3f5k8X6Kb8g8MbCrZ3x6fhQ",
+            "BSCzXLUvm1rAWSpqXkm2iFisnBQqxNAHqSNimHUNKXpg"
+          ],
+          "executor": "mock-earn.testnet",
+          "failure": false,
+          "gas_burnt": 2207203755110,
+          "id": "BBt8kECrmRiah3QdYecA6qpqvyhNqTU1GNd1Re2MLc2X",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [
+            "CfbQZn4ShaxuLfKMBbGJxE87rM9B3jFYHs8hzNB9ijcW"
+          ],
+          "executor": "usdc.testnet",
+          "failure": false,
+          "gas_burnt": 1865743514205,
+          "id": "2XDnNNbVFVomBJMwka6f5L7dbdHD2Y7koxKxL5tER91m",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "host.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "CfbQZn4ShaxuLfKMBbGJxE87rM9B3jFYHs8hzNB9ijcW",
+          "success": true
+        },
+        {
+          "bool": true,
+          "children": [
+            "GwjfyLHT2BE8HKYqUyTNjru5jECYba17HdibeMm3wL1g"
+          ],
+          "executor": "mock-earn.testnet",
+          "failure": false,
+          "gas_burnt": 1442055076000,
+          "id": "69ezJnpBN3dBrZPfFtXBM3f5k8X6Kb8g8MbCrZ3x6fhQ",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "host.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "GwjfyLHT2BE8HKYqUyTNjru5jECYba17HdibeMm3wL1g",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "host.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "BSCzXLUvm1rAWSpqXkm2iFisnBQqxNAHqSNimHUNKXpg",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [
+            "79sSqP3KghKBE3fyEeuNRfwgpSafYtSh18vZFhgjqESs",
+            "EeTrcrqJ6iBX7H2NsWHz4yjURbKrSUwnQDpXC2bsNeGk",
+            "4zxEXeP3b7ce5v2YJUasKbwTgx2BvmTRo3zC9GfwTQXd",
+            "DoK2sLhMr3a1AEvYNkakXAAogC2CksBnFWsXNmDK3dVj"
+          ],
+          "executor": "9f7824cd2c39faed.factory.testnet",
+          "failure": false,
+          "gas_burnt": 2632346711097,
+          "id": "38Y1regLqn1HExBTYiVCm1BJ58qu9SgmuwXnzk3NKtdR",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [
+            "EuYmjvcq1yz4KAunceMZvF81UGRDLQP5S5WkTxXt7ku8"
+          ],
+          "executor": "usdc.testnet",
+          "failure": false,
+          "gas_burnt": 1365299687166,
+          "id": "79sSqP3KghKBE3fyEeuNRfwgpSafYtSh18vZFhgjqESs",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "host.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "EuYmjvcq1yz4KAunceMZvF81UGRDLQP5S5WkTxXt7ku8",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [
+            "8rQZCHcefH65xRJ8RHi9VQWAA85izm7YT3tkR8AiNysA"
+          ],
+          "executor": "mock-earn.testnet",
+          "failure": false,
+          "gas_burnt": 1201638164519,
+          "id": "EeTrcrqJ6iBX7H2NsWHz4yjURbKrSUwnQDpXC2bsNeGk",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "host.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "8rQZCHcefH65xRJ8RHi9VQWAA85izm7YT3tkR8AiNysA",
+          "success": true
+        },
+        {
+          "bool": true,
+          "children": [
+            "51Lhwr6o1yebA3rfDWFjsCK9LS6GdbpxzkZ6svgh5taV"
+          ],
+          "executor": "9f7824cd2c39faed.factory.testnet",
+          "failure": false,
+          "gas_burnt": 1457822814672,
+          "id": "4zxEXeP3b7ce5v2YJUasKbwTgx2BvmTRo3zC9GfwTQXd",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "host.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "51Lhwr6o1yebA3rfDWFjsCK9LS6GdbpxzkZ6svgh5taV",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "host.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "DoK2sLhMr3a1AEvYNkakXAAogC2CksBnFWsXNmDK3dVj",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "host.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "D52DLFhcN4qaFftWT9wVU884SPvtXUg7ddwcwo3cdzcg",
+          "success": true
+        }
+      ],
+      "transaction_outcome_id": "4TPE8SJCTYtYvmzmUx23LTXN8aqSnig3UUh6eQwiurHF"
+    },
+    "settle": {
+      "receipts": [
+        {
+          "bool": null,
+          "children": [
+            "2r3nVe59dwVdLchHq39tTHzZswzsMHrAsGm9EsFyjmrX"
+          ],
+          "executor": "9f7824cd2c39faed.factory.testnet",
+          "failure": false,
+          "gas_burnt": 56258265080411,
+          "id": "4ntj7Kum6fk9NkXH5jnL2xFA3wpKPtykq1W6JLefJr1k",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "host.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "2r3nVe59dwVdLchHq39tTHzZswzsMHrAsGm9EsFyjmrX",
+          "success": true
+        }
+      ],
+      "transaction_outcome_id": "5s8MV2Bw9z1oHrv9ooiF2HM1wRgoadFL8ghgPPW2NQeU"
+    },
+    "supply": {
+      "receipts": [
+        {
+          "bool": null,
+          "children": [
+            "CPirowGzFryK8bF7SGQw2MktM6DQkfi1E98SRabFNrZ8",
+            "A4aaX77z8xjSK24RTG7YRGRKMPq6f5ZanjiP8a4FRu93",
+            "fJabbhQhym3ac3SFzQNKdQeNvvKUi1dse5VShJv3nS6",
+            "BiJNkiwEtvJBBaXk3c9ed8xDkHmBChmWSeBzm2r2cXZH"
+          ],
+          "executor": "9f7824cd2c39faed.factory.testnet",
+          "failure": false,
+          "gas_burnt": 2597726731262,
+          "id": "ALrzea4vY7CgHc3xdwH9isrUvYt7kVwNjheC9q1q18sS",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [
+            "HfLYaZeBba2koFoL5mCRAziWCdszAri14Udbz8HGcYcn"
+          ],
+          "executor": "usdc.testnet",
+          "failure": false,
+          "gas_burnt": 1365299687166,
+          "id": "CPirowGzFryK8bF7SGQw2MktM6DQkfi1E98SRabFNrZ8",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "host.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "HfLYaZeBba2koFoL5mCRAziWCdszAri14Udbz8HGcYcn",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [
+            "FPLi3VghLGw6yVGREVa7ZWz65KsH3E3NCLb29QWTM7BT"
+          ],
+          "executor": "mock-earn.testnet",
+          "failure": false,
+          "gas_burnt": 1190630914044,
+          "id": "A4aaX77z8xjSK24RTG7YRGRKMPq6f5ZanjiP8a4FRu93",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "host.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "FPLi3VghLGw6yVGREVa7ZWz65KsH3E3NCLb29QWTM7BT",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [
+            "H2RWWFiCrugXhSnMAnTiiAK7t1xcgcpthELmn3HExxE1",
+            "rdYRvzE3YC8aT2iM1cWLrsyJe5GvCquprPD2RuRQqAd",
+            "AfpmqoRvWxHKVVjotWgUczJpBBGZVRziCuv99b5RqNKu"
+          ],
+          "executor": "9f7824cd2c39faed.factory.testnet",
+          "failure": false,
+          "gas_burnt": 2227161218504,
+          "id": "fJabbhQhym3ac3SFzQNKdQeNvvKUi1dse5VShJv3nS6",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [
+            "CKVzTNYC4VzUKu6CLg5a9fGiyCSt96Y2654Ds9tZeXb6",
+            "GL8eCZc9jTwV3CjoE8RGY3yTL75i24aYgquNb4bDzjD1",
+            "9RsEBP2wS3mvyhjqWDjqkaJNkC7FY411e828MGaasvYm"
+          ],
+          "executor": "usdc.testnet",
+          "failure": false,
+          "gas_burnt": 2624585885685,
+          "id": "H2RWWFiCrugXhSnMAnTiiAK7t1xcgcpthELmn3HExxE1",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [
+            "7ohxhYx6o2jjvhEAgXSdNotyvcJZZxyZcQjqEUgNNVse"
+          ],
+          "executor": "mock-earn.testnet",
+          "failure": false,
+          "gas_burnt": 1391405763886,
+          "id": "CKVzTNYC4VzUKu6CLg5a9fGiyCSt96Y2654Ds9tZeXb6",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "host.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "7ohxhYx6o2jjvhEAgXSdNotyvcJZZxyZcQjqEUgNNVse",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [
+            "5e31Krk6u4zRHqL2Vd6PoEzowy8GVyfVfvMgiMStGFrV"
+          ],
+          "executor": "usdc.testnet",
+          "failure": false,
+          "gas_burnt": 1430706862862,
+          "id": "GL8eCZc9jTwV3CjoE8RGY3yTL75i24aYgquNb4bDzjD1",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "host.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "5e31Krk6u4zRHqL2Vd6PoEzowy8GVyfVfvMgiMStGFrV",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "host.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "9RsEBP2wS3mvyhjqWDjqkaJNkC7FY411e828MGaasvYm",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [
+            "6GbgijqerypH3Nt8CwpQUzYHLHLvL1nBTR5VL6Dvbeo8",
+            "EDp73SF64yzKgQ6DmzKDBWxJSwGUxsaqw6MuDnJB3avV",
+            "36Zy3YBYBekiThnLiJfwkdCq131NbyQxf69oM8AmRUvi",
+            "4LzX2C7TviXhVyJdJZktw3HBdPE7zJ8tapNoKxVFegVL"
+          ],
+          "executor": "9f7824cd2c39faed.factory.testnet",
+          "failure": false,
+          "gas_burnt": 2632366467435,
+          "id": "rdYRvzE3YC8aT2iM1cWLrsyJe5GvCquprPD2RuRQqAd",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [
+            "CyynxYSKst77ZMXfkw8XpBDfYCbkge9X9mRiKpDESVEt"
+          ],
+          "executor": "usdc.testnet",
+          "failure": false,
+          "gas_burnt": 1364244938510,
+          "id": "6GbgijqerypH3Nt8CwpQUzYHLHLvL1nBTR5VL6Dvbeo8",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "host.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "CyynxYSKst77ZMXfkw8XpBDfYCbkge9X9mRiKpDESVEt",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [
+            "99S828ktXffvXpYUnBxVbm5FF669F7XZA1X5bQhqE32A"
+          ],
+          "executor": "mock-earn.testnet",
+          "failure": false,
+          "gas_burnt": 1202812212795,
+          "id": "EDp73SF64yzKgQ6DmzKDBWxJSwGUxsaqw6MuDnJB3avV",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "host.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "99S828ktXffvXpYUnBxVbm5FF669F7XZA1X5bQhqE32A",
+          "success": true
+        },
+        {
+          "bool": true,
+          "children": [
+            "FKK4gWdMzm51WmxYxt31oDhtPgfPs1WWEspKLe82PsYi"
+          ],
+          "executor": "9f7824cd2c39faed.factory.testnet",
+          "failure": false,
+          "gas_burnt": 1457816232624,
+          "id": "36Zy3YBYBekiThnLiJfwkdCq131NbyQxf69oM8AmRUvi",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "host.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "FKK4gWdMzm51WmxYxt31oDhtPgfPs1WWEspKLe82PsYi",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "host.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "4LzX2C7TviXhVyJdJZktw3HBdPE7zJ8tapNoKxVFegVL",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "host.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "AfpmqoRvWxHKVVjotWgUczJpBBGZVRziCuv99b5RqNKu",
+          "success": true
+        },
+        {
+          "bool": null,
+          "children": [],
+          "executor": "host.testnet",
+          "failure": false,
+          "gas_burnt": 223182562500,
+          "id": "BiJNkiwEtvJBBaXk3c9ed8xDkHmBChmWSeBzm2r2cXZH",
+          "success": true
+        }
+      ],
+      "transaction_outcome_id": "58X5uANLmzVZjuWY5f58ypVNyNq2BoQRYKr9EoEMbJV"
+    }
+  },
+  "no_show_allocation_atomic": "0",
+  "passes": 200,
+  "registrations": 200,
+  "scope": "synthetic Sandbox 2.14, factory-event leaf, mock Earn and mock USDC; no live-chain proof",
+  "status": "PASS_LOCAL",
+  "storage": {
+    "account_balance_yocto": "10620079999999999999999999",
+    "payer": "contract",
+    "storage_bytes": 368149,
+    "storage_cost_yocto": "3681490000000000000000000"
+  }
+}

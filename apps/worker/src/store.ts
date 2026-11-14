@@ -26,7 +26,7 @@
 // consumer. Canonical hash + official-finality proof happen in the production
 // ingest path itself, not only in tests.
 import { randomUUID } from 'node:crypto';
-import { isMulti, isCandidate, isMainnetCandidate, isLinkedCandidate, LINKED_POLICY, parseCandidateEvent, parseCandidateRegistration, validateCandidatePass, validateCandidateConfig, validateCandidateCoverage, validateLinkedCoverage } from './candidate.js';
+import { isMulti, isCandidate, isMainnetCandidate, isLinkedCandidate, LINKED_POLICY, parseCandidateEvent, parseCandidateRegistration, validateCandidatePasses, validateCandidateConfig, validateCandidateCoverage, validateLinkedCoverage } from './candidate.js';
 import { parseMultiLogs, readMultiSnapshot } from './multievent.js';
 import { Pool, type Client, type PoolConfig } from 'pg';
 import { WORKER_DB_ROLE, type DeploymentAllowlist } from './config.js';
@@ -91,6 +91,7 @@ function assertDeploymentRow(row: DeploymentRow, d: DeploymentAllowlist): number
   if (row.code_hash !== d.codeHash) throw new Error('deployment code_hash mismatch');
   const startBlock = Number(row.start_block);
   if (!Number.isSafeInteger(startBlock) || startBlock < 0) throw new Error('deployment start_block invalid');
+  if (startBlock !== d.startHeight) throw new Error('deployment start_block mismatch');
   return startBlock;
 }
 
@@ -230,11 +231,11 @@ export class WorkerStore {
   async resolveDeployment(): Promise<{ id: string; startBlock: number }> {
     const res = await this.pool.query<DeploymentRow>(
       `SELECT id, environment, network, contract_id, ft_contract_id, ft_decimals, start_block::text, code_hash
-         FROM deployments WHERE network = $1 AND contract_id = $2`,
-      [this.allowlist.network, this.allowlist.contractId],
+         FROM deployments WHERE network = $1 AND contract_id = $2 AND code_hash = $3 AND start_block = $4`,
+      [this.allowlist.network, this.allowlist.contractId, this.allowlist.codeHash, this.allowlist.startHeight],
     );
     const row = res.rows[0];
-    if (!row) throw new Error(`no deployment row for ${this.allowlist.network}/${this.allowlist.contractId}`);
+    if (!row) throw new Error(`no deployment row or code_hash mismatch for ${this.allowlist.network}/${this.allowlist.contractId}`);
     const startBlock = assertDeploymentRow(row, this.allowlist);
     if (this.allowlist.startHeight < startBlock) {
       throw new Error(`start height ${this.allowlist.startHeight} precedes deployment start_block ${startBlock}`);
@@ -278,6 +279,7 @@ export class WorkerStore {
     if (cfg['canonical_ft'] !== this.allowlist.ftContractId) throw new Error('live canonical_ft mismatch');
     if (cfg['network'] !== this.allowlist.network) throw new Error(`live network ${String(cfg['network'])} mismatch`);
     if (cfg['policy_version'] !== this.allowlist.policyVersion) throw new Error('live policy_version mismatch');
+    if (this.allowlist.adapter==='shared-yield-v2' && (cfg['schema_version']!==2 || cfg['provider_account']!==this.allowlist.candidateProviderAccount || cfg['provider_kind']!==(this.allowlist.network==='mainnet'?'RHEA_MAINNET':'MOCK_TESTNET'))) throw new Error('live shared yield provider mismatch');
 
     // Token identity is the FT's own on-chain metadata, not just the config/DB echo.
     const ftView = await this.live.viewSource.callView('ft_metadata', { accountId: this.allowlist.ftContractId, args: {} }, 'final');
@@ -337,7 +339,7 @@ export class WorkerStore {
       );
     }
 
-    if (['showstake-native-usdc-event/1','showstake-native-usdc-rhea-review/1',LINKED_POLICY].includes(this.allowlist.policyVersion) && !isCandidate(this.allowlist)) throw new Error('candidate code hash is not reviewed');
+    if (['showstake-native-usdc-event/1','showstake-native-usdc-rhea-review/1',LINKED_POLICY,'showstake-native-usdc-factory-rhea/3'].includes(this.allowlist.policyVersion) && !isCandidate(this.allowlist)) throw new Error('candidate code hash is not reviewed');
     const multi = isMulti(this.allowlist);
     const candidate = isCandidate(this.allowlist) || multi;
     const kept = block.receipts.filter((r) => r.executorId === this.allowlist.contractId && r.success);
@@ -370,22 +372,22 @@ export class WorkerStore {
         this.assertPinned(result.blockHeight, result.blockHash, block, method);
         return result.result;
       };
-      const provider = validateCandidateConfig(await read('get_config', {}), this.allowlist);
-      const event = parseCandidateEvent(await read('get_event', {}), this.allowlist);
+      const [rawConfig,rawEvent]=await Promise.all([read('get_config',{}),read('get_event',{})]);
+      const provider = validateCandidateConfig(rawConfig, this.allowlist);
+      const event = parseCandidateEvent(rawEvent, this.allowlist);
       if (event) {
         const registrations: ReturnType<typeof parseCandidateRegistration>[] = [];
         for (let from = 0; from < event.count; from += 50) {
           const raw = await read('list_event_registrations', { event_id: event.rules.eventId, from, limit: 50 });
           if (!Array.isArray(raw) || raw.length !== Math.min(50, event.count - from)) throw new Error('candidate registration page incomplete');
-          for (const item of raw) {
-            const registration = parseCandidateRegistration(item, event, registrations.length);
-            validateCandidatePass(await read('get_pass', { pass_id: registration.passId }), registration, this.allowlist);
-            registrations.push(registration);
-          }
+          const page=raw.map((item,index)=>parseCandidateRegistration(item,event,registrations.length+index));
+          // The read closure checks the exact block hash for every parallel result.
+          await validateCandidatePasses(page,passId=>read('get_pass',{pass_id:passId}),this.allowlist);
+          registrations.push(...page);
         }
         if (new Set(registrations.map(r => r.registrationId)).size !== event.count || new Set(registrations.map(r => r.passId)).size !== event.count || new Set(registrations.map(r => r.participant)).size !== event.count || new Set(registrations.map(r => r.commitmentId)).size !== event.count) throw new Error('candidate duplicate registration identity');
         if (event.phase === 'Settled' && registrations.reduce((sum, r) => sum + BigInt(r.claimAmount), 0n) !== BigInt(event.accepted) + BigInt(event.allocatedYield)) throw new Error('candidate settlement conservation failed');
-        const balance = await read('ft_balance_of', { account_id: this.allowlist.contractId }, this.allowlist.ftContractId);
+        const [balance,mockPosition]=await Promise.all([read('ft_balance_of',{account_id:this.allowlist.contractId},this.allowlist.ftContractId),!isLinkedCandidate(this.allowlist)&&!isMainnetCandidate(this.allowlist)?read('get_position',{account_id:this.allowlist.contractId},provider):Promise.resolve(null)]);
         if (isLinkedCandidate(this.allowlist)) {
           const needsPosition=['Supplied','RedeemPending'].includes(event.earnState);
           const [position,asset]=needsPosition?await Promise.all([read('get_account',{account_id:this.allowlist.contractId},provider),read('get_asset',{token_id:this.allowlist.ftContractId},provider)]):[null,null];
@@ -395,7 +397,7 @@ export class WorkerStore {
           // Only assert wallet coverage in states in which the contract says funds are local.
           if (event.earnState === 'NotStarted' || event.earnState === 'Redeemed') validateCandidateCoverage(event, registrations, balance, '0');
         } else {
-          const position = await read('get_position', { account_id: this.allowlist.contractId }, provider);
+          const position = mockPosition;
           validateCandidateCoverage(event, registrations, balance, position);
         }
         singleSnapshot = { event, registrations };
@@ -554,11 +556,17 @@ export class WorkerStore {
         let paid = 0n, pending = 0n;
         for (const r of snapshot.registrations) {
           const settled = snapshot.event.phase === 'Settled';
-          const refundReady = !multi && refund && ['NotStarted','Redeemed'].includes(snapshot.event.earnState);
+          const refundReady = (!multi || snapshot.event.shared) && refund && ['NotStarted','Redeemed'].includes(snapshot.event.earnState) && BigInt(snapshot.event.accepted)>0n;
+          let refundAmount=r.amount;
+          if(refundReady && snapshot.event.shared) {
+            const n=BigInt(snapshot.event.count), y=BigInt(snapshot.event.realizedYield);
+            if(n===0n)throw new Error('shared refund without registrations');
+            refundAmount=['Pending','Paid','Claimable'].includes(r.claim) ? r.claimAmount : (BigInt(r.amount)+y/n+(BigInt(r.eventSequence)<y%n?1n:0n)).toString();
+          }
           const payout = !settled && !refundReady ? 'NOT_CLAIMABLE' : settled && r.claimAmount === '0' ? 'ZERO' : r.claim === 'Paid' ? 'PAID' : r.claim === 'Pending' ? 'PENDING' : 'CLAIMABLE';
           if (r.claim === 'Paid') paid += BigInt(r.claimAmount);
           if (r.claim === 'Pending') pending += BigInt(r.claimAmount);
-          await client.query(`UPDATE registrations_projection SET state = $3, attended = $4, claim_atomic = $5::numeric, payout_state = $6, observed_at = to_timestamp($8::double precision / 1000) WHERE event_id = (SELECT id FROM events_projection WHERE deployment_id = $1 AND chain_event_id = $2) AND chain_registration_id = $7`, [deploymentId, rules.eventId, refund ? 'REFUNDABLE' : final ? (r.attendance === 'Attended' ? 'ATTENDED' : 'NO_SHOW') : 'COMMITTED', r.attendance === 'Attended', settled ? r.claimAmount : refundReady ? r.amount : '0', payout, r.registrationId, block.timestampMs]);
+          await client.query(`UPDATE registrations_projection SET state = $3, attended = $4, claim_atomic = $5::numeric, payout_state = $6, observed_at = to_timestamp($8::double precision / 1000) WHERE event_id = (SELECT id FROM events_projection WHERE deployment_id = $1 AND chain_event_id = $2) AND chain_registration_id = $7`, [deploymentId, rules.eventId, refund ? 'REFUNDABLE' : final ? (r.attendance === 'Attended' ? 'ATTENDED' : 'NO_SHOW') : 'COMMITTED', r.attendance === 'Attended', settled ? r.claimAmount : refundReady ? refundAmount : '0', payout, r.registrationId, block.timestampMs]);
         }
         const liability = BigInt(snapshot.event.accepted) + BigInt(snapshot.event.allocatedYield) - paid - pending;
         if (liability < 0n) throw new Error('candidate negative liability');

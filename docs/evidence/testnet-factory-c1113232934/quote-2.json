@@ -1,0 +1,19 @@
+{
+    "organizer":  "showstake-participant-endpx.testnet",
+    "request_nonce":  2,
+    "child_id":  "961a277b21cf13ac.ss-fac-c1113232934.testnet",
+    "code_config_funding":  "2424810000000000000000000",
+    "rules_funding":  "3890000000000000000000",
+    "participant_reserve":  "204800000000000000000000",
+    "child_funding":  "2633500000000000000000000",
+    "registry_fee":  "7140000000000000000000",
+    "total":  "2640640000000000000000000",
+    "attached_gas_tgas":  300,
+    "pending_timeout_blocks":  100,
+    "canonical_ft":  "mockusdc.testnet",
+    "network":  "testnet",
+    "provider_account":  "ss-prov-b1113232402.testnet",
+    "provider_kind":  "MOCK_TESTNET",
+    "leaf_policy_version":  "showstake-native-usdc-event/1",
+    "leaf_code_sha256":  "a90cc890fbda1d8e7166697551693de684a264b1a3bc86ff098f59371033514a"
+}

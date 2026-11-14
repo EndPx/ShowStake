@@ -1,0 +1,71 @@
+{
+  "contract": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+  "deposit": "1",
+  "method": "ft_transfer_call",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "63ZS1FgkwL1bwjwkmJPfDyobYUJVXkib1t4GCNrCNkJ",
+        "6k5qqM7AnRWFDCsLXE63uMdgbG6DAkd6TgyyCEfXdyqE",
+        "Gt7mguEe9q7dW1o2awgu9FQ8X6kHqr9BgiW1L3aCzEP9"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": false,
+      "gas_burnt": 2679156364787,
+      "id": "EZTpSAXQbFZNhRG5uoTQpyihMntECJBXk2pMBgChm9Br",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "HE3GRK8y8xeAuiExtTgHy6K3qd8UJHEMhWVt8f2B4EnT"
+      ],
+      "executor": "017e20cf6a9babb5.factory.sandbox",
+      "failure": false,
+      "gas_burnt": 2266586579713,
+      "id": "63ZS1FgkwL1bwjwkmJPfDyobYUJVXkib1t4GCNrCNkJ",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "user4.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "HE3GRK8y8xeAuiExtTgHy6K3qd8UJHEMhWVt8f2B4EnT",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "7sLfydS1ZXMscUk5VeSicFKFX65ExLJ3EgzXiutNBSJF"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": false,
+      "gas_burnt": 1438022561926,
+      "id": "6k5qqM7AnRWFDCsLXE63uMdgbG6DAkd6TgyyCEfXdyqE",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "user4.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "7sLfydS1ZXMscUk5VeSicFKFX65ExLJ3EgzXiutNBSJF",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "user4.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "Gt7mguEe9q7dW1o2awgu9FQ8X6kHqr9BgiW1L3aCzEP9",
+      "success": true
+    }
+  ],
+  "signer": "user4.testnet",
+  "success": true
+}

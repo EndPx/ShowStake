@@ -1,0 +1,50 @@
+{
+  "contract": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+  "deposit": "10000000000000000000000",
+  "method": "storage_deposit",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "SHmrXRJuQG3RUSGej2Sp5wjtt6w75iWcK6XpUvMJAVF",
+        "4USfG5sE24x4orzZDrdScnAupMXKffBCYvK2C5dvb8qu"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": false,
+      "gas_burnt": 1862238247665,
+      "id": "FhKmx1gu5jEEXcP8c422KeMTGgmLsbaHAu4TwxyQTfKr",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "AZ1onSEkBLuvJwSYSoYW7sYP4Z41qkvFhHgC83psjj5"
+      ],
+      "executor": "owner.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "SHmrXRJuQG3RUSGej2Sp5wjtt6w75iWcK6XpUvMJAVF",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "owner.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "AZ1onSEkBLuvJwSYSoYW7sYP4Z41qkvFhHgC83psjj5",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "owner.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "4USfG5sE24x4orzZDrdScnAupMXKffBCYvK2C5dvb8qu",
+      "success": true
+    }
+  ],
+  "signer": "owner.testnet",
+  "success": true
+}

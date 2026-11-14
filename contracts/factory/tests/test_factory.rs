@@ -7,6 +7,7 @@
 // frozen leaf artifact.
 
 #![allow(deprecated)]
+#![cfg(not(feature = "factory-event"))]
 
 use std::panic::{catch_unwind, AssertUnwindSafe};
 

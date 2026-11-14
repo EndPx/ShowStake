@@ -1,0 +1,29 @@
+{
+  "contract": "32794ddf25ba1e6f.factory.sandbox",
+  "deposit": "0",
+  "method": "close_registration",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "8JhNo4Sp7R1JEUy8FXeg6sKsno7mDYGaaWYftoJQznPC"
+      ],
+      "executor": "32794ddf25ba1e6f.factory.sandbox",
+      "failure": false,
+      "gas_burnt": 1401246240399,
+      "id": "Cu9sUoRvYyRt1Mo5JkFHwMSbwvWQUSqDHau9HgmLqy7M",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "8JhNo4Sp7R1JEUy8FXeg6sKsno7mDYGaaWYftoJQznPC",
+      "success": true
+    }
+  ],
+  "signer": "second.sandbox",
+  "success": true
+}

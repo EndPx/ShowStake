@@ -1,4 +1,5 @@
 import { isKnownNetwork } from '@showstake/domain';
+import { parseFactoryAccessProfiles, type FactoryAccessProfile } from './lib/factory-profile.js';
 
 /** Fixed, server-side configuration. No secrets live here (only non-secret policy). */
 export interface Config {
@@ -7,7 +8,9 @@ export interface Config {
   /** Explicit deployment-to-ABI binding, e.g. testnet:escrow.testnet=candidate-v1. */
   accessContractAbis: Record<string, string>;
   accessContractCodeHashes: Record<string, string>;
+  accessSharedYieldProfiles?: Record<string, { canonicalFt: string; providerAccount: string }>;
   accessFactoryCodeHashes: Record<string, string>;
+  accessFactoryProfiles?: Record<string, FactoryAccessProfile>;
   qrHmacKey?: string;
   privateContentDir?: string;
   rheaMicrotestApprovalFile?: string;
@@ -49,6 +52,21 @@ const N = (v: string | undefined, d: number): number => {
   return Math.floor(n);
 };
 
+function sharedYieldProfiles(raw: string | undefined): Record<string, { canonicalFt: string; providerAccount: string }> {
+  if (!raw) return {};
+  let profiles: unknown; try { profiles = JSON.parse(raw); } catch { throw new Error('invalid ACCESS_SHARED_YIELD_PROFILES'); }
+  if (!profiles || typeof profiles !== 'object' || Array.isArray(profiles)) throw new Error('invalid ACCESS_SHARED_YIELD_PROFILES');
+  const out: Record<string, { canonicalFt: string; providerAccount: string }> = {};
+  for (const [key, value] of Object.entries(profiles)) {
+    if (!/^(?:testnet|mainnet):[a-z0-9._-]+$/.test(key) || !value || typeof value !== 'object' || Array.isArray(value)) throw new Error('invalid shared yield profile');
+    const p=value as Record<string,unknown>;
+    if (Object.keys(p).sort().join(',')!=='canonicalFt,providerAccount' || typeof p.canonicalFt!=='string' || typeof p.providerAccount!=='string' || !/^[a-z0-9._-]+$/.test(p.canonicalFt) || !/^[a-z0-9._-]+$/.test(p.providerAccount)) throw new Error('invalid shared yield profile');
+    if (key.startsWith('mainnet:') ? p.canonicalFt!=='17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1' || p.providerAccount!=='contract.main.burrow.near' : !key.endsWith('.testnet') || !p.canonicalFt.endsWith('.testnet') || !p.providerAccount.endsWith('.testnet')) throw new Error('shared yield network mismatch');
+    out[key]={canonicalFt:p.canonicalFt,providerAccount:p.providerAccount};
+  }
+  return out;
+}
+
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const authDomain = env.AUTH_DOMAIN ?? '';
   const authNetwork = env.AUTH_NETWORK ?? '';
@@ -61,8 +79,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   if (!authPurpose) throw new Error('AUTH_PURPOSE must not be empty');
 
   return {
+    accessFactoryProfiles: parseFactoryAccessProfiles(env.ACCESS_FACTORY_PROFILES),
+    accessSharedYieldProfiles: sharedYieldProfiles(env.ACCESS_SHARED_YIELD_PROFILES),
     accessContractAllowlist: (env.ACCESS_CONTRACT_ALLOWLIST ?? '').split(',').map(x=>x.trim()).filter(Boolean),
-    accessContractAbis: Object.fromEntries((env.ACCESS_CONTRACT_ABIS ?? '').split(',').map(x=>x.trim()).filter(Boolean).map(x=>{ const parts=x.split('='); if(parts.length!==2 || !parts[0] || !['candidate-v1','legacy-v6','multievent-v1'].includes(parts[1]!)) throw new Error('invalid ACCESS_CONTRACT_ABIS'); return [parts[0]!,parts[1]!]; })),
+    accessContractAbis: Object.fromEntries((env.ACCESS_CONTRACT_ABIS ?? '').split(',').map(x=>x.trim()).filter(Boolean).map(x=>{ const parts=x.split('='); if(parts.length!==2 || !parts[0] || !['candidate-v1','legacy-v6','multievent-v1','shared-yield-v2'].includes(parts[1]!)) throw new Error('invalid ACCESS_CONTRACT_ABIS'); return [parts[0]!,parts[1]!]; })),
     accessContractCodeHashes: Object.fromEntries((env.ACCESS_CONTRACT_CODE_HASHES ?? '').split(',').map(x=>x.trim()).filter(Boolean).map(x=>{const parts=x.split('='); if(parts.length!==2 || !/^(?:mainnet|testnet):[a-z0-9._-]+$/.test(parts[0]!) || !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(parts[1]!)) throw new Error('invalid ACCESS_CONTRACT_CODE_HASHES'); return [parts[0]!,parts[1]!];})),
     accessFactoryCodeHashes: Object.fromEntries((env.ACCESS_FACTORY_CODE_HASHES ?? '').split(',').map(x=>x.trim()).filter(Boolean).map(x=>{const parts=x.split('=');if(parts.length!==2 || !/^(?:mainnet|testnet):[a-z0-9._-]+$/.test(parts[0]!) || !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(parts[1]!)) throw new Error('invalid ACCESS_FACTORY_CODE_HASHES');return [parts[0]!,parts[1]!];})),
     qrHmacKey: env.QR_HMAC_KEY,
