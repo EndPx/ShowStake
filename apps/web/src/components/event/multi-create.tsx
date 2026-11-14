@@ -102,6 +102,7 @@ export function MultiCreate({rules,onInvalid,onPublished,onLockChange}:{rules:Re
     if(!retry&&result.submission==='not_requested'&&localStorage.getItem(key)===encoded&&localStorage.getItem(index!)===key){localStorage.removeItem(key);localStorage.removeItem(index!);if(wallet.getSessionEpoch()===epoch){setHasAttempt(false);setSavedAttempt(null);}}
     if(wallet.getSessionEpoch()===epoch)setWalletNotice(`${friendly(result.detail)} ${result.submission==='not_requested'?'No wallet transaction was requested.':'No final transaction is confirmed. Check event status before retrying.'}`);return;
    }
+   if(wallet.getSessionEpoch()===epoch&&!result.value.transactionHash)setWalletNotice(`The wallet returned no transaction hash (${result.value.responseShape??'unknown response'}). The request remains saved for reconciliation.`);
    const updated={...attempt,hash:result.value.transactionHash};localStorage.setItem(key,JSON.stringify(updated));if(wallet.getSessionEpoch()!==epoch)return;
    setSavedAttempt(updated);setHash(updated.hash??'');setNotice(updated.hash?'Transaction submitted. Checking its final receipt...':'Your wallet returned no transaction hash. Check the event and wallet activity below.');
   });}catch(error){if(wallet.getSessionEpoch()===epoch)setNotice(friendly(error));}finally{publishing.current=false;setPending(false);}

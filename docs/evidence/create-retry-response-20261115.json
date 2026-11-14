@@ -9,12 +9,15 @@
   ],
   "changes": [
     "Keep unlocked retry across temporary invalid rules within the same account-scoped journal",
-    "Keep wallet response notice separate from read-only recovery notice"
+    "Keep wallet response notice separate from read-only recovery notice",
+    "For a hashless wallet response, retain the response type and bounded top-level field names only; no response values or credentials"
   ],
   "checks": {
     "web build and serial typecheck": "PASS_LOCAL executor",
     "recovery UI policy test": "PASS_LOCAL independently rerun",
-    "existing create recovery and funding tests": "PASS_LOCAL independently rerun"
+    "existing create recovery and funding tests": "PASS_LOCAL independently rerun",
+    "coordinator final web build and serial typecheck": "PASS_LOCAL",
+    "wallet outcome hash and safe shape tests": "PASS_LOCAL"
   },
   "notChanged": [
     "saved attempt and event ID",
@@ -27,5 +30,6 @@
     "actual wallet approval/broadcast completion",
     "full React component signed-user recovery",
     "mainnet event creation"
-  ]
+  ],
+  "reportedWallet": "HOT Wallet, confirmed by user"
 }

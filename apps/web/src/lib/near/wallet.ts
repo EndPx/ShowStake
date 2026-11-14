@@ -17,7 +17,7 @@ import type { SharedActionContext } from "./shared-event";
 import type { MultiCreateContext } from "./multi-create";
 import { walletBoundary, invalidateWalletBoundary } from "./wallet-boundary";
 import { checkedWalletCall, snapshotWalletRequest } from "./wallet-request";
-import {walletOutcomeHash} from './wallet-outcome';
+import {walletOutcomeHash,walletOutcomeShape} from './wallet-outcome';
 import type { FactoryRecoveryContext } from "./factory-recovery-context";
 import type { PublicChildEmpty } from "./public-child";
 import type { VerifiedFactoryContext } from "./factory-context";
@@ -49,6 +49,7 @@ export interface SignedProof {
 export interface TxResult {
   transactionHash: string | null;
   status: string | null;
+  responseShape?: string;
 }
 
 export type WalletResult<T = WalletAccount> =
@@ -228,6 +229,7 @@ export async function signAndSendTransaction(params: SignAndSendParams, factoryC
       code: "TRANSACTION_PROPOSED",
       value: {
         transactionHash: walletOutcomeHash(outcome),
+        responseShape: walletOutcomeShape(outcome),
         status: typeof outcome?.status === "string" ? (outcome.status as string) : JSON.stringify(outcome?.status ?? null),
       },
     };
