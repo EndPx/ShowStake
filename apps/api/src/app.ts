@@ -14,12 +14,15 @@ import { registerMainnetReadiness } from './routes/mainnet-readiness.js';
 import { registerRheaMicrotest } from './routes/rhea-microtest.js';
 import { registerFunding } from './routes/funding.js';
 import type { FundingStore } from './store/funding-store.js';
+import type { DirectStore } from './store/direct-store.js';
+import { registerDirect } from './routes/direct.js';
 
 export interface BuildOptions {
   store: Store;
   config: Config;
   accessKeyVerifier: AccessKeyVerifier;
   fundingStore?: FundingStore;
+  directStore?: DirectStore;
 }
 
 /**
@@ -58,6 +61,7 @@ export function buildApp(opts: BuildOptions): FastifyInstance {
   registerEvents(app, opts.store, opts.config);
   registerAuth(app, opts.store, opts.config, opts.accessKeyVerifier);
   registerPrivate(app, opts.store, opts.config);
+  registerDirect(app, opts.store, opts.config, opts.directStore);
   registerFunding(app, opts.store, opts.config, opts.fundingStore);
 
   return app;

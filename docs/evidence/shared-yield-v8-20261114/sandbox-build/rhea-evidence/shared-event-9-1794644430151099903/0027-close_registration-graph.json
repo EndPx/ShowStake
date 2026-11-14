@@ -1,0 +1,145 @@
+{
+  "final_execution_status": "FINAL",
+  "receipts": [
+    {
+      "predecessor_id": "owner.testnet",
+      "priority": 0,
+      "receipt": {
+        "Action": {
+          "actions": [
+            {
+              "FunctionCall": {
+                "args": "eyJldmVudF9pZCI6ImEifQ==",
+                "deposit": "0",
+                "gas": 300000000000000,
+                "method_name": "close_registration"
+              }
+            }
+          ],
+          "gas_price": "1000000000",
+          "input_data_ids": [],
+          "is_promise_yield": false,
+          "output_data_receivers": [],
+          "signer_id": "owner.testnet",
+          "signer_public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB"
+        }
+      },
+      "receipt_id": "6itwBiZatz6oiJfBmC5fCYjuce4oPXmqaMj6LamvwUPH",
+      "receiver_id": "shared.sandbox"
+    },
+    {
+      "predecessor_id": "system",
+      "priority": 0,
+      "receipt": {
+        "Action": {
+          "actions": [
+            {
+              "Transfer": {
+                "deposit": "300712788883034700000000"
+              }
+            }
+          ],
+          "gas_price": "0",
+          "input_data_ids": [],
+          "is_promise_yield": false,
+          "output_data_receivers": [],
+          "signer_id": "owner.testnet",
+          "signer_public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB"
+        }
+      },
+      "receipt_id": "39dXDNciqkWdHHY3AkxePsyiu4ttBHYrvsauwMYP3j4A",
+      "receiver_id": "owner.testnet"
+    }
+  ],
+  "receipts_outcome": [
+    {
+      "block_hash": "CthEfAn4W5uEdB199V5sude1Qao6HHcVFqv679wcuE7M",
+      "id": "6itwBiZatz6oiJfBmC5fCYjuce4oPXmqaMj6LamvwUPH",
+      "outcome": {
+        "executor_id": "shared.sandbox",
+        "gas_burnt": 1753466387213,
+        "logs": [
+          "EVENT_JSON:{\"standard\":\"showstake\",\"version\":\"1.0.0\",\"event\":\"RegistrationClosed\",\"data\":{\"event_id\":\"a\"}}"
+        ],
+        "metadata": {
+          "contracts": [
+            {
+              "local": "4Dq4uEH2PE9FEB7n67d3r3fvHPUy5KAvjhgZ8q5sX4PU"
+            }
+          ],
+          "version": 4
+        },
+        "receipt_ids": [
+          "39dXDNciqkWdHHY3AkxePsyiu4ttBHYrvsauwMYP3j4A"
+        ],
+        "status": {
+          "SuccessValue": ""
+        },
+        "tokens_burnt": "175346638721300000000"
+      },
+      "proof": []
+    },
+    {
+      "block_hash": "2XBeL18SYauQGNhvqY1GQcxCNBmU9SjGoVB78ZSQf8sn",
+      "id": "39dXDNciqkWdHHY3AkxePsyiu4ttBHYrvsauwMYP3j4A",
+      "outcome": {
+        "executor_id": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "logs": [],
+        "metadata": {
+          "contracts": [
+            null
+          ],
+          "version": 4
+        },
+        "receipt_ids": [],
+        "status": {
+          "SuccessValue": ""
+        },
+        "tokens_burnt": "0"
+      },
+      "proof": []
+    }
+  ],
+  "status": {
+    "SuccessValue": ""
+  },
+  "transaction": {
+    "actions": [
+      {
+        "FunctionCall": {
+          "args": "eyJldmVudF9pZCI6ImEifQ==",
+          "deposit": "0",
+          "gas": 300000000000000,
+          "method_name": "close_registration"
+        }
+      }
+    ],
+    "hash": "Ab3U5nidoQo33G7epipFqPBAt6JjVc1AiUQjnudLrzZ3",
+    "nonce": 15,
+    "priority_fee": 0,
+    "public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB",
+    "receiver_id": "shared.sandbox",
+    "signer_id": "owner.testnet"
+  },
+  "transaction_outcome": {
+    "block_hash": "4EoAQbC9esfZCg7FzmJcfSrhNtDW9DU96dcHScHHJufV",
+    "id": "Ab3U5nidoQo33G7epipFqPBAt6JjVc1AiUQjnudLrzZ3",
+    "outcome": {
+      "executor_id": "owner.testnet",
+      "gas_burnt": 309680746310,
+      "logs": [],
+      "metadata": {
+        "version": 1
+      },
+      "receipt_ids": [
+        "6itwBiZatz6oiJfBmC5fCYjuce4oPXmqaMj6LamvwUPH"
+      ],
+      "status": {
+        "SuccessReceiptId": "6itwBiZatz6oiJfBmC5fCYjuce4oPXmqaMj6LamvwUPH"
+      },
+      "tokens_burnt": "30968074631000000000"
+    },
+    "proof": []
+  }
+}

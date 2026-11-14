@@ -1248,6 +1248,173 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '503': { $ref: '#/components/responses/Unavailable' }
 
+
+  /direct/events/{eventId}/qr:
+    post:
+      summary: Issue a final-chain verified check-in token
+      description: Requires a session-bound owner, active unmarked onchain pass, and the registration-closed check-in window. The token expires in at most 60 seconds. The direct profile and deployment must be explicitly pinned.
+      tags: [checkin]
+      parameters:
+        - $ref: '#/components/parameters/DirectEventId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contractId, passId]
+              properties:
+                contractId: { type: string, minLength: 1, maxLength: 128 }
+                passId: { type: string, minLength: 1, maxLength: 128 }
+      responses:
+        '200':
+          description: Signed owner-bound token; attendance is unchanged
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DirectEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [token, expiresAt]
+                        properties:
+                          token: { type: string }
+                          expiresAt: { type: string, format: date-time }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /direct/events/{eventId}/checkin:
+    post:
+      summary: Create a one-use onchain check-in proposal
+      description: HOST-ONLY. Requires the current onchain organizer and rechecks the pass against a fresh finalized block. PENDING_SIGNATURE is a proposal; it does not mark attendance or spend funds.
+      tags: [checkin]
+      parameters:
+        - $ref: '#/components/parameters/DirectEventId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contractId, token]
+              properties:
+                contractId: { type: string, minLength: 1, maxLength: 128 }
+                token: { type: string, maxLength: 4096 }
+      responses:
+        '200':
+          description: Pending organizer signature
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DirectEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [requestId, passId, registrationId, ownerAccount, state]
+                        properties:
+                          requestId: { type: string, format: uuid }
+                          passId: { type: string }
+                          registrationId: { type: string }
+                          ownerAccount: { type: string }
+                          state: { type: string, enum: [PENDING_SIGNATURE] }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /direct/events/{eventId}/content:
+    post:
+      summary: Upload private content as the onchain organizer
+      description: HOST-ONLY. Uses a fresh final-chain organizer check. The decoded file is at most 512 KiB and is never exposed through a public URL.
+      tags: [content]
+      parameters:
+        - $ref: '#/components/parameters/DirectEventId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contractId, title, mimeType, contentBase64]
+              properties:
+                contractId: { type: string, minLength: 1, maxLength: 128 }
+                title: { type: string, minLength: 1, description: Maximum 256 UTF-8 bytes. }
+                mimeType: { type: string, enum: [application/pdf, text/plain, image/png, image/jpeg] }
+                contentBase64: { type: string, maxLength: 699052, description: Canonical base64; decoded size at most 524288 bytes. }
+      responses:
+        '201':
+          description: Private resource metadata
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DirectEnvelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/DirectResource' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+    get:
+      summary: List resources for a settled attended onchain pass
+      description: Requires a session-bound owner, Attended pass, and final-chain Settled and Redeemed event. Opaque resource IDs are not public URLs.
+      tags: [content]
+      parameters:
+        - $ref: '#/components/parameters/DirectEventId'
+        - $ref: '#/components/parameters/DirectContractId'
+        - $ref: '#/components/parameters/DirectPassId'
+      responses:
+        '200':
+          description: Private resource metadata
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DirectEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [items]
+                        properties:
+                          items:
+                            type: array
+                            items: { $ref: '#/components/schemas/DirectListedResource' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /direct/events/{eventId}/content/{resourceId}:
+    get:
+      summary: Download a private resource with fresh final-chain authorization
+      description: Session cookie and the same attended settled-pass check are required for every download. The response is a private attachment with no-store and FINAL_CHAIN source and authority headers.
+      tags: [content]
+      parameters:
+        - $ref: '#/components/parameters/DirectEventId'
+        - $ref: '#/components/parameters/DirectContractId'
+        - $ref: '#/components/parameters/DirectPassId'
+        - { name: resourceId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Private attachment
+          headers:
+            X-ShowStake-Source: { schema: { type: string, enum: [FINAL_CHAIN] } }
+            X-ShowStake-Authority: { schema: { type: string, enum: [FINAL_CHAIN] } }
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
 components:
   securitySchemes:
     sessionCookie:
@@ -1257,6 +1424,23 @@ components:
       description: HttpOnly Secure SameSite session cookie whose token hash is stored server-side.
 
   parameters:
+    DirectEventId:
+      name: eventId
+      in: path
+      required: true
+      description: Contract event ID, not a database UUID.
+      schema: { type: string, minLength: 1, maxLength: 128 }
+    DirectContractId:
+      name: contractId
+      in: query
+      required: true
+      schema: { type: string, minLength: 1, maxLength: 128 }
+    DirectPassId:
+      name: passId
+      in: query
+      required: true
+      description: Contract pass ID, not a database UUID.
+      schema: { type: string, minLength: 1, maxLength: 128 }
     Cursor:
       name: cursor
       in: query
@@ -1341,6 +1525,37 @@ components:
           schema: { $ref: '#/components/schemas/ErrorEnvelope' }
 
   schemas:
+    DirectEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/BaseEnvelope'
+        - type: object
+          properties:
+            meta:
+              type: object
+              required: [requestId, observedAt, network, stale, source, authority]
+              description: stale describes only final-chain authorization; it does not report indexer coverage.
+              properties:
+                requestId: { type: string }
+                observedAt: { type: string, format: date-time }
+                network: { type: string, enum: [testnet, mainnet] }
+                stale: { type: boolean, enum: [false] }
+                source: { type: string, enum: [FINAL_CHAIN] }
+                authority: { type: string, enum: [FINAL_CHAIN] }
+    DirectListedResource:
+      type: object
+      required: [id, title, mimeType, publishedAt]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        mimeType: { type: string }
+        publishedAt: { type: string, format: date-time }
+    DirectResource:
+      allOf:
+        - $ref: '#/components/schemas/DirectListedResource'
+        - type: object
+          required: [bytesSize]
+          properties:
+            bytesSize: { type: integer, minimum: 1, maximum: 524288 }
     FundingProviderStatus:
       type: string
       enum: [PENDING_DEPOSIT, KNOWN_DEPOSIT_TX, PROCESSING, SUCCESS, REFUNDED, FAILED, INCOMPLETE_DEPOSIT]

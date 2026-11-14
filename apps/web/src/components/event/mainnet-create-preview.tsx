@@ -9,12 +9,14 @@ import { useWallet } from "@/components/wallet/wallet-context";
 import { EventCover } from "./event-cover";
 import { MultiCreate } from "./multi-create";
 import { FactoryEventCreate } from "./factory-event-create";
+import { sharedReleaseForNetwork } from "@/lib/near/multi-event";
 import { FACTORY_EVENT_RELEASE } from "@/lib/near/factory-event";
 
 const initial: EventDraft = { event_id: "", title: "", location: "", rules_text: "", deposit: "", capacity: "5", reg_open: "", reg_close: "", checkin_open: "", checkin_close: "" };
 
 export function MainnetCreatePreview() {
   const wallet = useWallet();
+  const sharedYield = sharedReleaseForNetwork(NETWORK)?.policy === "showstake-native-usdc-shared-yield/2";
   const [fields, setFields] = useState<EventDraft>(initial);
   const [rules, setRules] = useState<Record<string, unknown> | null>(null);
   const [notice, setNotice] = useState("");
@@ -55,12 +57,12 @@ export function MainnetCreatePreview() {
           <label><Users size={18} /><span>Capacity</span><input type="text" inputMode="numeric" value={fields.capacity} onChange={e => change("capacity", e.target.value)} /></label>
         </div>
         <details className="create-advanced"><summary>Advanced event ID</summary><label>Event ID<input value={fields.event_id} onChange={e => change("event_id", e.target.value)} /></label></details>
-        {!FACTORY_EVENT_RELEASE && <div className="create-release-notice"><strong>CREATE-only release</strong><p>You can create an event on the shared NEAR contract. USDC registration and Earn are unavailable in this release.</p></div>}
+        {!FACTORY_EVENT_RELEASE && !sharedYield && <div className="create-release-notice"><strong>CREATE-only release</strong><p>You can create an event on the shared NEAR contract. USDC registration and Earn are unavailable in this release.</p></div>}
         <div className="create-actions">{!wallet.account ? <button type="button" className="button" onClick={() => void wallet.connect()}>Connect NEAR wallet</button> : <p>Organizer: {wallet.account.accountId}</p>}<button type="button" className="button button--secondary" onClick={prepare}>Review event rules</button></div>
         {wallet.error && <p className="create-feedback" role="alert">{wallet.error}</p>}
         {notice && <p className="create-feedback" role="status">{notice}</p>}
         {rules && <p className="create-feedback">Commitment: {fields.deposit} USDC · Capacity: {fields.capacity}</p>}
-        {FACTORY_EVENT_RELEASE ? <FactoryEventCreate release={FACTORY_EVENT_RELEASE} rules={rules} /> : <MultiCreate rules={rules} />}
+        {FACTORY_EVENT_RELEASE && !sharedYield ? <FactoryEventCreate release={FACTORY_EVENT_RELEASE} rules={rules} /> : <MultiCreate rules={rules} />}
       </div>
     </div>
   </div>;

@@ -1,0 +1,43 @@
+{
+    "vault":  {
+                  "policy_version":  "showstake-native-usdc-shared-yield/2",
+                  "schema_version":  2,
+                  "total_shares":  "10000000",
+                  "strategy_cash":  "0",
+                  "provider_shares":  "10000000",
+                  "quarantined_provider_shares":  "0",
+                  "provider_balance":  "10000000",
+                  "operation":  null,
+                  "last_operation":  "KNOWN_FAILURE"
+              },
+    "b":  {
+              "event_id":  "cancelled",
+              "title":  "Shared ShowStake 1",
+              "location":  "NEAR testnet",
+              "rules_text":  "One shared contract, independent per-event vault shares. Mock USDC and zero-yield MockEarn.",
+              "phase":  "Cancelled",
+              "earn_state":  "Supplied",
+              "earn_attempt":  2,
+              "earn_action_completed":  false,
+              "organizer":  "showstake-attendee-d-endpx.testnet",
+              "canonical_ft":  "mockusdc.testnet",
+              "policy_version":  "showstake-native-usdc-shared-yield/2",
+              "deposit":  "2000000",
+              "capacity":  5,
+              "reg_open":  1794642412325,
+              "reg_close":  1794643013325,
+              "checkin_open":  1794643013325,
+              "checkin_close":  1794643913325,
+              "cancel_cutoff":  1794643013325,
+              "finalize_deadline":  1794730313325,
+              "active_registrations":  5,
+              "total_registrations":  5,
+              "withdrawn_registrations":  0,
+              "rules_hash":  "",
+              "created_at":  1794642423654,
+              "accepted_principal":  "10000000",
+              "redeemed_amount":  "0",
+              "realized_yield":  "0",
+              "yield_distributed":  "0"
+          }
+}

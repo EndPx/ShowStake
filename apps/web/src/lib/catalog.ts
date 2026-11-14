@@ -5,7 +5,7 @@
 // accepted deployment's single event id is resolved read-only from the contract
 // (`list_events`) so a discovery row can only route to an accepted event.
 
-import { MULTI_EVENT_RELEASE } from "./near/multi-event";
+import { sharedReleaseForNetwork } from "./near/multi-event";
 import { loadSharedCatalog } from "./shared-catalog";
 import { fetchEventList, mapApiEvent, ApiRequestError } from "./api";
 import { apiBaseUrl, acceptedContract, isAcceptedEvent, RPC_URL, NETWORK } from "./config";
@@ -18,8 +18,8 @@ import { listEvents } from "./near/views";
 import type { EventPage, EventSummary } from "./types";
 
 export type CatalogResult =
-  | { kind: "ready"; page: EventPage; stale: boolean; observedAt: string | null }
-  | { kind: "empty"; page: EventPage; stale: boolean; observedAt: string | null }
+  | { kind: "ready"; page: EventPage; stale: boolean; observedAt: string | null; source?: "DIRECT_CHAIN" }
+  | { kind: "empty"; page: EventPage; stale: boolean; observedAt: string | null; source?: "DIRECT_CHAIN" }
   | { kind: "error"; message: string; retryable: boolean };
 
 /** Dependency-injected loader so loading/error/empty/stale/ready states are all real. */
@@ -65,9 +65,9 @@ async function annotateDetailKeys(items: EventSummary[]): Promise<EventSummary[]
 }
 
 export async function loadCatalog(fetchImpl: typeof fetch = fetch): Promise<CatalogResult> {
-  if (MULTI_EVENT_RELEASE?.network === NETWORK || FACTORY_EVENT_RELEASE?.network === NETWORK) {
+  if (sharedReleaseForNetwork(NETWORK)?.network === NETWORK || FACTORY_EVENT_RELEASE?.network === NETWORK) {
     try {
-      const items = FACTORY_EVENT_RELEASE ? [] : await loadSharedCatalog(fetchImpl);
+      const items = sharedReleaseForNetwork(NETWORK) ? await loadSharedCatalog(fetchImpl) : [];
       let stale = false;
       const factoryRelease = ACCEPTED_MAINNET_RELEASE ?? FACTORY_EVENT_RELEASE;
       if (FACTORY_EVENT_RELEASE && FACTORY_EVENT_RELEASE.network === NETWORK) {
@@ -91,7 +91,7 @@ export async function loadCatalog(fetchImpl: typeof fetch = fetch): Promise<Cata
         } catch { stale = true; }
       }
       const page = { items, nextCursor: null };
-      return items.length ? {kind:"ready",page,stale,observedAt:new Date().toISOString()} : {kind:"empty",page,stale,observedAt:new Date().toISOString()};
+      return items.length ? {kind:"ready",page,stale,observedAt:new Date().toISOString(),source:"DIRECT_CHAIN"} : {kind:"empty",page,stale,observedAt:new Date().toISOString(),source:"DIRECT_CHAIN"};
     } catch { return {kind:"error",message:"On-chain events are temporarily unavailable.",retryable:true}; }
   }
   const baseUrl = apiBaseUrl();

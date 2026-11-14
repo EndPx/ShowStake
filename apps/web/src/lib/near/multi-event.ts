@@ -4,6 +4,28 @@ import type { FunctionCallAction } from './actions.ts';
 export interface MultiEventRelease {
   network: 'mainnet' | 'testnet'; contract: string; codeHash: string;
   canonicalFt: string; policy: string;
+  provider?: string; providerKind?: string; schema?: number; maxStorageYocto?: string;
+}
+/** Filled only after this exact deployment, provider and code have been reviewed. */
+export const SHARED_YIELD_RELEASE: MultiEventRelease | null = Object.freeze({
+  network:'testnet',
+  contract:'ss-shared-s1114151743.testnet',
+  codeHash:'4Dq4uEH2PE9FEB7n67d3r3fvHPUy5KAvjhgZ8q5sX4PU',
+  canonicalFt:'mockusdc.testnet',
+  policy:'showstake-native-usdc-shared-yield/2',
+  provider:'ss-shared-earn-s1114151743.testnet',
+  providerKind:'MOCK_TESTNET',
+  schema:2,
+  maxStorageYocto:'12000000000000000000000000',
+});
+export function sharedReleaseForNetwork(network:string): MultiEventRelease | null {
+  return reviewedSharedYieldRelease(SHARED_YIELD_RELEASE) && SHARED_YIELD_RELEASE.network === network ? SHARED_YIELD_RELEASE : MULTI_EVENT_RELEASE?.network === network ? MULTI_EVENT_RELEASE : null;
+}
+export function reviewedSharedYieldRelease(r:MultiEventRelease|null): r is MultiEventRelease {
+ return !!r && r.policy==='showstake-native-usdc-shared-yield/2' && r.schema===2 && !!r.contract && !!r.codeHash && !!r.canonicalFt && !!r.provider && /^(0|[1-9][0-9]*)$/.test(r.maxStorageYocto??'') && (r.network==='testnet' ? r.providerKind==='MOCK_TESTNET' && [r.contract,r.canonicalFt,r.provider].every(x=>x.endsWith('.testnet')) : r.providerKind==='RHEA_MAINNET' && r.provider==='contract.main.burrow.near' && r.canonicalFt==='17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1');
+}
+export function sharedConfigMatches(r:MultiEventRelease,config:Record<string,unknown>):boolean {
+ return r.policy!=='showstake-native-usdc-shared-yield/2' || reviewedSharedYieldRelease(r) && config.schema_version===r.schema && config.provider_account===r.provider && config.provider_kind===r.providerKind && config.token_symbol==='USDC';
 }
 export const MULTI_EVENT_RELEASE: MultiEventRelease | null = Object.freeze({
   network:'mainnet',
@@ -15,7 +37,7 @@ export const MULTI_EVENT_RELEASE: MultiEventRelease | null = Object.freeze({
 export interface MultiEventView {
   event_id: string; organizer: string; canonical_ft: string; policy_version: string;
   phase: string; earn_state: string; deposit: string; reg_open: number; reg_close: number;
-  checkin_open: number; checkin_close: number; finalize_deadline: number;
+  checkin_open: number; checkin_close: number; finalize_deadline: number; accepted_principal?: unknown; earn_attempt?: number;
 }
 export interface MultiRegistration { registration_id: string; event_id: string; beneficiary: string; claim: string; claim_amount: string; amount: string; attendance?: string }
 const atomic = (x: unknown): x is string => typeof x === 'string' && /^(0|[1-9][0-9]*)$/.test(x) && BigInt(x) < 2n ** 128n;
@@ -39,14 +61,20 @@ export function multiEventTransfer(contract: string, event: MultiEventView, comm
   return call('ft_transfer_call',{receiver_id:contract,amount:event.deposit,msg:JSON.stringify({version:1,event_id:event.event_id,commitment_id:commitmentId})},'1');
 }
 /** Fail closed for pooled provider operations until its release is accepted. */
-export function multiEventAllowed(method:string,event:MultiEventView,account:string,now:number,registration?:MultiRegistration):boolean {
+export function multiEventAllowed(method:string,event:MultiEventView,account:string,now:number,registration?:MultiRegistration,control?:Record<string,unknown>,vault?:Record<string,unknown>):boolean {
   if(!id(event.event_id)||!account||!Number.isSafeInteger(now))return false;
+  const shared=event.policy_version==='showstake-native-usdc-shared-yield/2';
+  if(shared && (!control || !vault || control.ambiguous===true))return false;
+  if(shared && ['claim','trigger_earn_supply','trigger_earn_redeem','settle'].includes(method) && (control?.pending!==false || control.shortfall!=='0'))return false;
   if(method==='claim') return !!registration && registration.event_id===event.event_id && registration.beneficiary===account && (event.phase==='Settled' ? registration.claim==='Claimable' && atomic(registration.claim_amount) && registration.claim_amount!=='0' : ['Cancelled','RefundOnly'].includes(event.phase) && ['NotStarted','Redeemed'].includes(event.earn_state) && ['None','Claimable'].includes(registration.claim) && atomic(registration.amount) && registration.amount!=='0');
   if(method==='activate_timeout_refund')return ['RegistrationOpen','RegistrationClosed'].includes(event.phase)&&now>=event.finalize_deadline;
   if(account!==event.organizer)return false;
   if(method==='mark_attendance')return !!registration && registration.event_id===event.event_id && event.phase==='RegistrationClosed' && now>=event.checkin_open && now<event.checkin_close;
   if(method==='close_registration')return event.phase==='RegistrationOpen'&&now>=event.reg_close;
   if(method==='cancel_event')return ['RegistrationOpen','RegistrationClosed','AttendanceFinalized'].includes(event.phase);
+  if(method==='trigger_earn_supply')return shared && control?.pending===false && control.paused===false && event.phase==='RegistrationClosed' && event.earn_state==='NotStarted' && atomic(event.accepted_principal) && event.accepted_principal!=='0' && atomic(control.principal_cap) && BigInt(event.accepted_principal)<=BigInt(control.principal_cap) && now>=event.checkin_open && now<event.finalize_deadline;
+  if(method==='trigger_earn_redeem')return shared && control?.pending===false && event.earn_state==='Supplied' && (['Cancelled','RefundOnly'].includes(event.phase)||event.phase==='AttendanceFinalized'&&now>=event.checkin_close);
+  if(method==='reconcile_earn') {const op=vault?.operation as Record<string,unknown>|null;return shared && !!op && op.event_id===event.event_id && ['Preparing','TerminalUsed','TerminalRefund'].includes(String(op.stage));}
   if(method==='finalize_attendance')return event.phase==='RegistrationClosed'&&event.earn_state==='Supplied'&&now>=event.checkin_close&&now<event.finalize_deadline;
   if(method==='settle')return event.phase==='AttendanceFinalized'&&event.earn_state==='Redeemed';
   return false;

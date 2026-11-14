@@ -1,0 +1,71 @@
+{
+  "contract": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+  "deposit": "1",
+  "method": "ft_transfer_call",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "E6XY9xWkBzVEquDGSmckhhxSRXfcY63YEBfbCbYzcSDa",
+        "AcrfcZkhiEhGXHHms2WhRKgNpnF1Mfi6XiqCLcaGHXoN",
+        "9RhyGEadRnTg3whEjaAnaHCLLoj4QG7MtTkqyKLbJnGr"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": false,
+      "gas_burnt": 2649391549901,
+      "id": "9FExCAyuR4d6pSYTpSb7dYaXCwG5GK5SHkbRgiqw3RT3",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "ujoncwsmnucUuNVhBvJpTbr1qSKYAt6AqUpN6sfN44U"
+      ],
+      "executor": "shared.sandbox",
+      "failure": false,
+      "gas_burnt": 2528598066060,
+      "id": "E6XY9xWkBzVEquDGSmckhhxSRXfcY63YEBfbCbYzcSDa",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "u4.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "ujoncwsmnucUuNVhBvJpTbr1qSKYAt6AqUpN6sfN44U",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "2uwW1MnKubDzKkFhyyY6ksqRnUvpKnBQLuNyCmWCZv92"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": false,
+      "gas_burnt": 1434519858406,
+      "id": "AcrfcZkhiEhGXHHms2WhRKgNpnF1Mfi6XiqCLcaGHXoN",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "u4.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "2uwW1MnKubDzKkFhyyY6ksqRnUvpKnBQLuNyCmWCZv92",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "u4.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "9RhyGEadRnTg3whEjaAnaHCLLoj4QG7MtTkqyKLbJnGr",
+      "success": true
+    }
+  ],
+  "signer": "u4.testnet",
+  "success": true
+}

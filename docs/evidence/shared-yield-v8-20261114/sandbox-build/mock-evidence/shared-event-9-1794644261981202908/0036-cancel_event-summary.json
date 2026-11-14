@@ -1,0 +1,29 @@
+{
+  "contract": "shared.testnet",
+  "deposit": "0",
+  "method": "cancel_event",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "27R6S3yymCNWE2nTDvfcLQYVPn3jEcB9sHvLadf3c7tw"
+      ],
+      "executor": "shared.testnet",
+      "failure": false,
+      "gas_burnt": 1764193112363,
+      "id": "EdEqUf7xdtVgqkYfuks3a67tigTeHCPoMUG4vgjzFkNC",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "27R6S3yymCNWE2nTDvfcLQYVPn3jEcB9sHvLadf3c7tw",
+      "success": true
+    }
+  ],
+  "signer": "second.testnet",
+  "success": true
+}

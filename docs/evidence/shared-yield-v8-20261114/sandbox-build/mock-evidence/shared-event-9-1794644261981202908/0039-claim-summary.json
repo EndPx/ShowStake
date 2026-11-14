@@ -1,0 +1,81 @@
+{
+  "contract": "shared.testnet",
+  "deposit": "1",
+  "method": "claim",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "4U9aU5pYiNFT6zg28ykvDpqy73BxuJMnMUdaQxQG5fh2",
+        "9TEQeYaxVLzgkx78zCYcFWmo2D5oca4tNprds1G677G1",
+        "GSvkmCihahiBbyX5ZXCAZKyVUNEVmyKXowyynfPvwHrJ"
+      ],
+      "executor": "shared.testnet",
+      "failure": false,
+      "gas_burnt": 2896925277299,
+      "id": "8qhWyYJjH8asuzGxKAy4HW9VRaeCeH9nCcVMY76wTCYS",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "3JdRLiDw8wZAxN2RA5Ycavtu82rCLBxaimR5XQgLoc8X",
+        "7hAsGrDmxunfzmFiWE9w33gfoC3au2N5VgmBYc4j37KT"
+      ],
+      "executor": "usdc.testnet",
+      "failure": true,
+      "gas_burnt": 1556855202614,
+      "id": "4U9aU5pYiNFT6zg28ykvDpqy73BxuJMnMUdaQxQG5fh2",
+      "success": false
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "shared.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "3JdRLiDw8wZAxN2RA5Ycavtu82rCLBxaimR5XQgLoc8X",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "u1.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "7hAsGrDmxunfzmFiWE9w33gfoC3au2N5VgmBYc4j37KT",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "6nygXhRev3LLhoibp8tVWPTTKuRDDZqyiFj3b45gySKs"
+      ],
+      "executor": "shared.testnet",
+      "failure": false,
+      "gas_burnt": 2121955055433,
+      "id": "9TEQeYaxVLzgkx78zCYcFWmo2D5oca4tNprds1G677G1",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "u1.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "6nygXhRev3LLhoibp8tVWPTTKuRDDZqyiFj3b45gySKs",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "u1.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "GSvkmCihahiBbyX5ZXCAZKyVUNEVmyKXowyynfPvwHrJ",
+      "success": true
+    }
+  ],
+  "signer": "u1.testnet",
+  "success": true
+}

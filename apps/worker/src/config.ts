@@ -25,7 +25,7 @@ export interface DeploymentAllowlist {
   startHeight: number;
   /** Explicit mock provider identity for the reviewed candidate adapter. */
   candidateProviderAccount?: string;
-  adapter?: 'multievent-v1'|'testnet-static-v3';
+  adapter?: 'multievent-v1'|'shared-yield-v2'|'testnet-static-v3';
   /** Set only by the final-chain factory discovery path, never from an environment variable. */
   verifiedFactoryId?: string;
 }
@@ -78,12 +78,14 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): WorkerConfig {
   if (!ftContractId) throw new Error('WORKER_FT_CONTRACT_ID is required (canonical FT)');
   if (!codeHash) throw new Error('WORKER_CODE_HASH is required (base58 contract code hash)');
   if (!wasmSha256) throw new Error('WORKER_WASM_SHA256 is required (hex wasm sha256)');
-  if (!organizer && policyVersion !== 'showstake-native-usdc-multievent/1') throw new Error('WORKER_ORGANIZER is required (immutable event organizer)');
+  if (!organizer && !['showstake-native-usdc-multievent/1','showstake-native-usdc-shared-yield/2'].includes(policyVersion)) throw new Error('WORKER_ORGANIZER is required (immutable event organizer)');
   if (!policyVersion) throw new Error('WORKER_POLICY_VERSION is required (immutable policy version)');
 
   if (policyVersion === 'showstake-native-usdc-multievent/1' && (env.WORKER_ADAPTER !== 'multievent-v1' || !candidateProviderAccount)) throw new Error('multi-event adapter and provider must be explicitly configured');
-  if (env.WORKER_ADAPTER && env.WORKER_ADAPTER !== 'multievent-v1' && env.WORKER_ADAPTER !== 'testnet-static-v3') throw new Error('unknown worker adapter');
+  if (env.WORKER_ADAPTER && env.WORKER_ADAPTER !== 'multievent-v1' && env.WORKER_ADAPTER !== 'shared-yield-v2' && env.WORKER_ADAPTER !== 'testnet-static-v3') throw new Error('unknown worker adapter');
   if (env.WORKER_ADAPTER === 'multievent-v1' && policyVersion !== 'showstake-native-usdc-multievent/1') throw new Error('multi-event policy mismatch');
+  if ((env.WORKER_ADAPTER === 'shared-yield-v2') !== (policyVersion === 'showstake-native-usdc-shared-yield/2')) throw new Error('shared yield policy mismatch');
+  if(env.WORKER_ADAPTER==='shared-yield-v2' && (!candidateProviderAccount || !verifyCodeIdentity(codeHash,wasmSha256) || (network==='testnet' ? ![contractId,ftContractId,candidateProviderAccount].every(x=>x.endsWith('.testnet')) : ftContractId!=='17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1' || candidateProviderAccount!=='contract.main.burrow.near'))) throw new Error('invalid shared yield pins');
   if(env.WORKER_ADAPTER==='testnet-static-v3'&&!verifyCodeIdentity(codeHash,wasmSha256))throw new Error('static testnet code hash mismatch');
   if(env.WORKER_ADAPTER==='testnet-static-v3'&&(network!=='testnet'||policyVersion!=='showstake-native-usdc-event/1'||!contractId.endsWith('.testnet')||!ftContractId.endsWith('.testnet')||!candidateProviderAccount.endsWith('.testnet')))throw new Error('invalid static testnet candidate');
   const ftDecimalsRaw = env.WORKER_FT_DECIMALS ?? '';
@@ -92,6 +94,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): WorkerConfig {
   if (!Number.isInteger(ftDecimals) || ftDecimals < 0 || ftDecimals > 38) {
     throw new Error(`WORKER_FT_DECIMALS must be 0..38; got ${ftDecimalsRaw}`);
   }
+  if(env.WORKER_ADAPTER==='shared-yield-v2'&&ftDecimals!==6)throw new Error('shared yield requires six-decimal FT');
   if(env.WORKER_ADAPTER==='testnet-static-v3'&&ftDecimals!==6)throw new Error('static testnet candidate requires six-decimal FT');
   const startHeightRaw = env.WORKER_START_HEIGHT ?? '';
   if (!/^[0-9]+$/.test(startHeightRaw)) throw new Error('WORKER_START_HEIGHT is required (>= deployments.start_block)');
@@ -100,7 +103,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): WorkerConfig {
     throw new Error(`WORKER_START_HEIGHT must be a non-negative safe integer; got ${startHeightRaw}`);
   }
 
-  if (network === 'mainnet' && env.WORKER_ADAPTER !== 'multievent-v1' && (contractId !== 'showstake-mainnet-escrow-endpx-2026.near' || ftContractId !== '17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1' || ftDecimals !== 6 || codeHash !== 'CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os' || wasmSha256 !== '03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2' || policyVersion !== 'showstake-native-usdc-rhea-review/1' || candidateProviderAccount !== 'contract.main.burrow.near')) throw new Error('unreviewed mainnet deployment');
+  if (network === 'mainnet' && env.WORKER_ADAPTER !== 'multievent-v1' && env.WORKER_ADAPTER !== 'shared-yield-v2' && (contractId !== 'showstake-mainnet-escrow-endpx-2026.near' || ftContractId !== '17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1' || ftDecimals !== 6 || codeHash !== 'CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os' || wasmSha256 !== '03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2' || policyVersion !== 'showstake-native-usdc-rhea-review/1' || candidateProviderAccount !== 'contract.main.burrow.near')) throw new Error('unreviewed mainnet deployment');
   const result:WorkerConfig = {
     nebula: network,
     rpcUrl: env.WORKER_RPC_URL || `https://rpc.${network}.near.org`,
@@ -119,7 +122,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): WorkerConfig {
       policyVersion,
       startHeight,
       candidateProviderAccount: candidateProviderAccount || undefined,
-      adapter: env.WORKER_ADAPTER === 'multievent-v1' ? 'multievent-v1' : env.WORKER_ADAPTER === 'testnet-static-v3'?'testnet-static-v3':undefined,
+      adapter: env.WORKER_ADAPTER === 'shared-yield-v2' ? 'shared-yield-v2' : env.WORKER_ADAPTER === 'multievent-v1' ? 'multievent-v1' : env.WORKER_ADAPTER === 'testnet-static-v3'?'testnet-static-v3':undefined,
     },
     databaseUrl: env.DATABASE_URL ?? null,
   };

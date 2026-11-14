@@ -1,6 +1,7 @@
 import { loadConfig } from './config.js';
 import { PgStore } from './store/pg-store.js';
 import { PgFundingStore } from './store/funding-store.js';
+import { PgDirectStore } from './store/direct-store.js';
 import { buildApp } from './app.js';
 import { buildAccessKeyVerifier } from './auth/rpc.js';
 import { assertRestrictedDbRole, assertRuntimeLeastPrivilege, createScopedPool } from './db.js';
@@ -24,6 +25,7 @@ async function main(): Promise<void> {
     config,
     accessKeyVerifier: buildAccessKeyVerifier(config),
     fundingStore: new PgFundingStore(pool),
+    directStore: new PgDirectStore(pool),
   });
 
   const close = async (): Promise<void> => {

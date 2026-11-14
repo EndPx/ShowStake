@@ -1,0 +1,145 @@
+{
+  "final_execution_status": "FINAL",
+  "receipts": [
+    {
+      "predecessor_id": "owner.testnet",
+      "priority": 0,
+      "receipt": {
+        "Action": {
+          "actions": [
+            {
+              "FunctionCall": {
+                "args": "eyJldmVudF9pZCI6ImEifQ==",
+                "deposit": "0",
+                "gas": 300000000000000,
+                "method_name": "settle"
+              }
+            }
+          ],
+          "gas_price": "1000000000",
+          "input_data_ids": [],
+          "is_promise_yield": false,
+          "output_data_receivers": [],
+          "signer_id": "owner.testnet",
+          "signer_public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB"
+        }
+      },
+      "receipt_id": "EEGcu51hL9iNhCMZJyTyqvpfuqi5ssANw2RNhkBubCbd",
+      "receiver_id": "shared.sandbox"
+    },
+    {
+      "predecessor_id": "system",
+      "priority": 0,
+      "receipt": {
+        "Action": {
+          "actions": [
+            {
+              "Transfer": {
+                "deposit": "300625462588438000000000"
+              }
+            }
+          ],
+          "gas_price": "0",
+          "input_data_ids": [],
+          "is_promise_yield": false,
+          "output_data_receivers": [],
+          "signer_id": "owner.testnet",
+          "signer_public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB"
+        }
+      },
+      "receipt_id": "4u3ZDe1sFjMYLxL2MNSAWmhFw75jw4rY6kex1qRpfYbu",
+      "receiver_id": "owner.testnet"
+    }
+  ],
+  "receipts_outcome": [
+    {
+      "block_hash": "27NePZe1rkd5PytP7g72JsMJXgp6abgS6A7EuR4U3Bmz",
+      "id": "EEGcu51hL9iNhCMZJyTyqvpfuqi5ssANw2RNhkBubCbd",
+      "outcome": {
+        "executor_id": "shared.sandbox",
+        "gas_burnt": 2626461021100,
+        "logs": [
+          "EVENT_JSON:{\"standard\":\"showstake\",\"version\":\"1.0.0\",\"event\":\"EventSettled\",\"data\":{\"event_id\":\"a\"}}"
+        ],
+        "metadata": {
+          "contracts": [
+            {
+              "local": "4Dq4uEH2PE9FEB7n67d3r3fvHPUy5KAvjhgZ8q5sX4PU"
+            }
+          ],
+          "version": 4
+        },
+        "receipt_ids": [
+          "4u3ZDe1sFjMYLxL2MNSAWmhFw75jw4rY6kex1qRpfYbu"
+        ],
+        "status": {
+          "SuccessValue": ""
+        },
+        "tokens_burnt": "262646102110000000000"
+      },
+      "proof": []
+    },
+    {
+      "block_hash": "2tgEip88BFbKh8zh7YTjzY9JSDBTftQ2R7GF8GsJBeiZ",
+      "id": "4u3ZDe1sFjMYLxL2MNSAWmhFw75jw4rY6kex1qRpfYbu",
+      "outcome": {
+        "executor_id": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "logs": [],
+        "metadata": {
+          "contracts": [
+            null
+          ],
+          "version": 4
+        },
+        "receipt_ids": [],
+        "status": {
+          "SuccessValue": ""
+        },
+        "tokens_burnt": "0"
+      },
+      "proof": []
+    }
+  ],
+  "status": {
+    "SuccessValue": ""
+  },
+  "transaction": {
+    "actions": [
+      {
+        "FunctionCall": {
+          "args": "eyJldmVudF9pZCI6ImEifQ==",
+          "deposit": "0",
+          "gas": 300000000000000,
+          "method_name": "settle"
+        }
+      }
+    ],
+    "hash": "HeG9Pk1S4nkcREvNvyDEEXoTqRuTgoMVsfPAYpzJD3um",
+    "nonce": 20,
+    "priority_fee": 0,
+    "public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB",
+    "receiver_id": "shared.sandbox",
+    "signer_id": "owner.testnet"
+  },
+  "transaction_outcome": {
+    "block_hash": "FoM1Yoz8LC6KRJBS2NpASpwEP7d9vrx5c6orjYm8aYmj",
+    "id": "HeG9Pk1S4nkcREvNvyDEEXoTqRuTgoMVsfPAYpzJD3um",
+    "outcome": {
+      "executor_id": "owner.testnet",
+      "gas_burnt": 309108541730,
+      "logs": [],
+      "metadata": {
+        "version": 1
+      },
+      "receipt_ids": [
+        "EEGcu51hL9iNhCMZJyTyqvpfuqi5ssANw2RNhkBubCbd"
+      ],
+      "status": {
+        "SuccessReceiptId": "EEGcu51hL9iNhCMZJyTyqvpfuqi5ssANw2RNhkBubCbd"
+      },
+      "tokens_burnt": "30910854173000000000"
+    },
+    "proof": []
+  }
+}

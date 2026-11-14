@@ -278,6 +278,7 @@ export class WorkerStore {
     if (cfg['canonical_ft'] !== this.allowlist.ftContractId) throw new Error('live canonical_ft mismatch');
     if (cfg['network'] !== this.allowlist.network) throw new Error(`live network ${String(cfg['network'])} mismatch`);
     if (cfg['policy_version'] !== this.allowlist.policyVersion) throw new Error('live policy_version mismatch');
+    if (this.allowlist.adapter==='shared-yield-v2' && (cfg['schema_version']!==2 || cfg['provider_account']!==this.allowlist.candidateProviderAccount || cfg['provider_kind']!==(this.allowlist.network==='mainnet'?'RHEA_MAINNET':'MOCK_TESTNET'))) throw new Error('live shared yield provider mismatch');
 
     // Token identity is the FT's own on-chain metadata, not just the config/DB echo.
     const ftView = await this.live.viewSource.callView('ft_metadata', { accountId: this.allowlist.ftContractId, args: {} }, 'final');
@@ -554,11 +555,17 @@ export class WorkerStore {
         let paid = 0n, pending = 0n;
         for (const r of snapshot.registrations) {
           const settled = snapshot.event.phase === 'Settled';
-          const refundReady = !multi && refund && ['NotStarted','Redeemed'].includes(snapshot.event.earnState);
+          const refundReady = (!multi || snapshot.event.shared) && refund && ['NotStarted','Redeemed'].includes(snapshot.event.earnState) && BigInt(snapshot.event.accepted)>0n;
+          let refundAmount=r.amount;
+          if(refundReady && snapshot.event.shared) {
+            const n=BigInt(snapshot.event.count), y=BigInt(snapshot.event.realizedYield);
+            if(n===0n)throw new Error('shared refund without registrations');
+            refundAmount=['Pending','Paid','Claimable'].includes(r.claim) ? r.claimAmount : (BigInt(r.amount)+y/n+(BigInt(r.eventSequence)<y%n?1n:0n)).toString();
+          }
           const payout = !settled && !refundReady ? 'NOT_CLAIMABLE' : settled && r.claimAmount === '0' ? 'ZERO' : r.claim === 'Paid' ? 'PAID' : r.claim === 'Pending' ? 'PENDING' : 'CLAIMABLE';
           if (r.claim === 'Paid') paid += BigInt(r.claimAmount);
           if (r.claim === 'Pending') pending += BigInt(r.claimAmount);
-          await client.query(`UPDATE registrations_projection SET state = $3, attended = $4, claim_atomic = $5::numeric, payout_state = $6, observed_at = to_timestamp($8::double precision / 1000) WHERE event_id = (SELECT id FROM events_projection WHERE deployment_id = $1 AND chain_event_id = $2) AND chain_registration_id = $7`, [deploymentId, rules.eventId, refund ? 'REFUNDABLE' : final ? (r.attendance === 'Attended' ? 'ATTENDED' : 'NO_SHOW') : 'COMMITTED', r.attendance === 'Attended', settled ? r.claimAmount : refundReady ? r.amount : '0', payout, r.registrationId, block.timestampMs]);
+          await client.query(`UPDATE registrations_projection SET state = $3, attended = $4, claim_atomic = $5::numeric, payout_state = $6, observed_at = to_timestamp($8::double precision / 1000) WHERE event_id = (SELECT id FROM events_projection WHERE deployment_id = $1 AND chain_event_id = $2) AND chain_registration_id = $7`, [deploymentId, rules.eventId, refund ? 'REFUNDABLE' : final ? (r.attendance === 'Attended' ? 'ATTENDED' : 'NO_SHOW') : 'COMMITTED', r.attendance === 'Attended', settled ? r.claimAmount : refundReady ? refundAmount : '0', payout, r.registrationId, block.timestampMs]);
         }
         const liability = BigInt(snapshot.event.accepted) + BigInt(snapshot.event.allocatedYield) - paid - pending;
         if (liability < 0n) throw new Error('candidate negative liability');

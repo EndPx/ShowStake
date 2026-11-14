@@ -1,0 +1,51 @@
+{
+  "accounting": {
+    "accepted_principal": "20000000",
+    "allocated_yield": "0",
+    "global_operation": null,
+    "liability": "0",
+    "paid": "20000000",
+    "pending": "0",
+    "realized_yield": "0",
+    "reserved_cash": "0"
+  },
+  "attendee_claims": [
+    "5000000",
+    "5000000"
+  ],
+  "balances": [
+    "7000000",
+    "2000000",
+    "7000000",
+    "2000000",
+    "2000000"
+  ],
+  "cancel_refunds": [
+    "2000000",
+    "2000000",
+    "2000000",
+    "2000000",
+    "2000000"
+  ],
+  "classification": "PASS_LOCAL",
+  "escrow": "shared.sandbox",
+  "events": [
+    "a",
+    "b"
+  ],
+  "failed_claim_restored": true,
+  "network": "Sandbox 2.14.0",
+  "per_event_principal": "10000000",
+  "provider": "actual public Rhea Wasm",
+  "vault": {
+    "last_operation": "REDEEM_RECONCILED",
+    "operation": null,
+    "policy_version": "showstake-native-usdc-shared-yield/2",
+    "provider_balance": "0",
+    "provider_shares": "0",
+    "quarantined_provider_shares": "0",
+    "schema_version": 2,
+    "strategy_cash": "0",
+    "total_shares": "0"
+  }
+}

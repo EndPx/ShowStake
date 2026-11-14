@@ -22,14 +22,15 @@ function account(req: FastifyRequest): { accountId:string; network:string } {
 
 
 type Token = {id:string; eventId:string; passId:string; chainPassId:string; owner:string; nonce:string; exp:number};
-type Event = NonNullable<Awaited<ReturnType<Store['getEvent']>>>;
+type Event = Pick<NonNullable<Awaited<ReturnType<Store['getEvent']>>>, 'network'|'contractId'|'chainEventId'|'assetContract'>;
 type Snapshot = {event:Record<string,unknown>; pass:Record<string,unknown>|null; blockMs:number; abi:string};
-async function chainSnapshot(config:Config,event:Event,chainPassId?:string):Promise<Snapshot> {
+export async function chainSnapshot(config:Config,event:Event,chainPassId?:string):Promise<Snapshot> {
   const factoryId = ['mainnet','testnet'].includes(event.network) && /^[a-f0-9]{16}\./.test(event.contractId) ? event.contractId.slice(17) : '';
-  const factoryHash = factoryId ? config.accessFactoryCodeHashes[`${event.network}:${factoryId}`] : undefined;
+  const explicitAbi=config.accessContractAbis[`${event.network}:${event.contractId}`];
+  const factoryHash = factoryId && explicitAbi!=='shared-yield-v2' ? config.accessFactoryCodeHashes[`${event.network}:${factoryId}`] : undefined;
   if (!config.accessContractAllowlist?.includes(`${event.network}:${event.contractId}`) && !factoryHash) throw Errors.unavailable('CONTRACT_NOT_ALLOWED','contract is not configured for authorization');
   const abi=factoryHash ? 'candidate-v1' : config.accessContractAbis[`${event.network}:${event.contractId}`];
-  if (!['candidate-v1','legacy-v6','multievent-v1'].includes(abi ?? '')) throw Errors.unavailable('CONTRACT_ABI_NOT_CONFIGURED','contract ABI is not configured for authorization');
+  if (!['candidate-v1','legacy-v6','multievent-v1','shared-yield-v2'].includes(abi ?? '')) throw Errors.unavailable('CONTRACT_ABI_NOT_CONFIGURED','contract ABI is not configured for authorization');
   const url=config.rpcUrls[event.network as keyof Config['rpcUrls']];
   if (!url) throw Errors.unavailable('CHAIN_UNAVAILABLE','final chain state unavailable');
   try {
@@ -37,7 +38,7 @@ async function chainSnapshot(config:Config,event:Event,chainPassId?:string):Prom
     const block=await post({jsonrpc:'2.0',id:'block',method:'block',params:{finality:'final'}}) as {result?:{header?:{hash?:string;timestamp_nanosec?:string}};error?:unknown};
     const header=block.result?.header; if(block.error || !header?.hash || typeof header.timestamp_nanosec!=='string' || !/^\d+$/.test(header.timestamp_nanosec)) throw new Error('invalid block');
     const blockMs=Number(BigInt(header.timestamp_nanosec)/1000000n); if(!Number.isSafeInteger(blockMs) || blockMs>Date.now()+5000 || Date.now()-blockMs>30000) throw new Error('stale block');
-    if (abi === 'multievent-v1') {
+    if (abi === 'multievent-v1' || abi === 'shared-yield-v2') {
       const pinned = config.accessContractCodeHashes[`${event.network}:${event.contractId}`];
       if (!pinned) throw new Error('multi-event code hash not pinned');
       const identity=await post({jsonrpc:'2.0',id:'identity',method:'query',params:{request_type:'view_account',block_id:header.hash,account_id:event.contractId}}) as {result?:{code_hash?:string;block_hash?:string};error?:unknown};
@@ -53,9 +54,14 @@ async function chainSnapshot(config:Config,event:Event,chainPassId?:string):Prom
       const body=result.result; if(result.error || !body || body.block_hash!==header.hash || !Array.isArray(body.result) || Date.now()-blockMs>30000) throw new Error('invalid result');
       const value:unknown=JSON.parse(Buffer.from(body.result).toString()); if(!value || typeof value!=='object' || Array.isArray(value)) throw new Error('invalid view'); return value as Record<string,unknown>;
     };
-    if (abi === 'multievent-v1') {
+    if (abi === 'multievent-v1' || abi === 'shared-yield-v2') {
       const cfg=await view('get_config',{});
-      if(cfg.policy_version!=='showstake-native-usdc-multievent/1' || cfg.network!==event.network) throw new Error('multi-event config mismatch');
+      if(cfg.network!==event.network) throw new Error('multi-event config mismatch');
+      if(abi==='multievent-v1' && cfg.policy_version!=='showstake-native-usdc-multievent/1') throw new Error('multi-event policy mismatch');
+      if(abi==='shared-yield-v2') {
+        const profile=config.accessSharedYieldProfiles?.[`${event.network}:${event.contractId}`];
+        if(!profile || cfg.policy_version!=='showstake-native-usdc-shared-yield/2' || cfg.schema_version!==2 || cfg.canonical_ft!==profile.canonicalFt || cfg.canonical_ft!==event.assetContract || cfg.provider_account!==profile.providerAccount || cfg.provider_kind!==(event.network==='mainnet'?'RHEA_MAINNET':'MOCK_TESTNET') || cfg.token_symbol!=='USDC' || cfg.token_decimals!==6)throw new Error('shared yield config mismatch');
+      }
     }
     let factoryOrganizer:string|null=null;
     if(factoryHash) {
@@ -80,9 +86,9 @@ async function authorize(config:Config,event:Event,chainPassId:string,owner:stri
   const snapshot=await chainSnapshot(config,event,chainPassId); const e=snapshot.event, p=snapshot.pass!;
   if(e.event_id!==event.chainEventId || p.event_id!==event.chainEventId || p.pass_id!==chainPassId || p.owner!==owner || p.registration_status!=='Active') throw Errors.forbidden('PASS_NOT_ELIGIBLE','active on-chain pass ownership required');
   if(organizer && e.organizer!==organizer) throw Errors.forbidden('ORGANIZER_REQUIRED','on-chain organizer required');
-  const checkinPhase=['candidate-v1','multievent-v1'].includes(snapshot.abi) ? e.phase==='RegistrationClosed' : e.state==='Published';
-  const unmarked=['candidate-v1','multievent-v1'].includes(snapshot.abi) ? p.attendance_status==='Unmarked' : p.attendance_status==='NotMarked';
-  const settled=['candidate-v1','multievent-v1'].includes(snapshot.abi) ? e.phase==='Settled' : e.state==='Settled';
+  const checkinPhase=['candidate-v1','multievent-v1','shared-yield-v2'].includes(snapshot.abi) ? e.phase==='RegistrationClosed' : e.state==='Published';
+  const unmarked=['candidate-v1','multievent-v1','shared-yield-v2'].includes(snapshot.abi) ? p.attendance_status==='Unmarked' : p.attendance_status==='NotMarked';
+  const settled=['candidate-v1','multievent-v1','shared-yield-v2'].includes(snapshot.abi) ? e.phase==='Settled' : e.state==='Settled';
   if(mode==='checkin' && (!checkinPhase || !unmarked || !Number.isSafeInteger(e.checkin_open) || !Number.isSafeInteger(e.checkin_close) || snapshot.blockMs<(e.checkin_open as number) || snapshot.blockMs>=(e.checkin_close as number))) throw Errors.forbidden('CHECKIN_NOT_ELIGIBLE','check-in requires an active unmarked pass');
   if(mode==='content' && (!settled || p.attendance_status!=='Attended')) throw Errors.forbidden('CONTENT_NOT_ELIGIBLE','settled event and attended pass required');
 }
@@ -147,7 +153,7 @@ export function registerPrivate(app: FastifyInstance, store: Store, config: Conf
     const a=account(req); const items=await store.getAttendance(req.params.eventId,a.accountId,a.network);
     if (items===null) throw Errors.forbidden('ORGANIZER_REQUIRED','authenticated account is not the event organizer');
     const event=await store.getEvent(req.params.eventId); if(!event || event.network!==a.network) throw Errors.forbidden('ORGANIZER_REQUIRED','event unavailable');
-    const chain=await chainSnapshot(config,event); const validPhase=['candidate-v1','multievent-v1'].includes(chain.abi) ? ['RegistrationOpen','RegistrationClosed','Cancelled','RefundOnly','AttendanceFinalized','Settled'].includes(String(chain.event.phase)) : ['Published','Cancelled','RefundOnly','AttendanceFinalized','Settling','Settled'].includes(String(chain.event.state)); if(chain.event.event_id!==event.chainEventId || chain.event.organizer!==a.accountId || !validPhase) throw Errors.forbidden('ORGANIZER_REQUIRED','valid on-chain event and organizer required');
+    const chain=await chainSnapshot(config,event); const validPhase=['candidate-v1','multievent-v1','shared-yield-v2'].includes(chain.abi) ? ['RegistrationOpen','RegistrationClosed','Cancelled','RefundOnly','AttendanceFinalized','Settled'].includes(String(chain.event.phase)) : ['Published','Cancelled','RefundOnly','AttendanceFinalized','Settling','Settled'].includes(String(chain.event.state)); if(chain.event.event_id!==event.chainEventId || chain.event.organizer!==a.accountId || !validPhase) throw Errors.forbidden('ORGANIZER_REQUIRED','valid on-chain event and organizer required');
     const stale=items.some(x=>staleAt(x.observedAt,Date.now(),config.projectionFreshnessMs));
     if (stale) throw Errors.unavailable('PROJECTION_STALE','attendance projection is stale or unavailable');
     return reply.send(okEnvelope({items},meta(req,a.network,false)));

@@ -1,0 +1,8 @@
+{
+    "account":  "ss-shared-s1114144616.testnet",
+    "receipt":  "NOT_AVAILABLE",
+    "block_hash":  "GLXfD82TeF1d72okU51qW16m6bokfZua81Kgi1CqbMXK",
+    "public_key":  "ed25519:BSSfbiZAjVmgeGTh3JDjZtZQJxSFetXBPyQ8tmq1XQZj",
+    "code_hash":  "11111111111111111111111111111111",
+    "status":  "FINAL_ACCOUNT_OBSERVED"
+}

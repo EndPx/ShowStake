@@ -1,0 +1,50 @@
+{
+  "contract": "usdc.testnet",
+  "deposit": "10000000000000000000000",
+  "method": "storage_deposit",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "AKnUdkyXSwgMM2LHCLpy3TpfLYdBWdLe5fu6or3LXay5",
+        "8m6MDLD5Y3MoN279iNUsXwfwPXw94DDNUaP2jFkU2tWf"
+      ],
+      "executor": "usdc.testnet",
+      "failure": false,
+      "gas_burnt": 1866798247665,
+      "id": "HWtDETE4wENrNZy67uKpV9TUVaGpbjWWFa98Ma7Bzdw1",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "3yycbwabxj9UGiyGHnnogtcdDgDPGyZ8gbtuYrcyT6y1"
+      ],
+      "executor": "owner.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "AKnUdkyXSwgMM2LHCLpy3TpfLYdBWdLe5fu6or3LXay5",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "owner.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "3yycbwabxj9UGiyGHnnogtcdDgDPGyZ8gbtuYrcyT6y1",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "owner.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "8m6MDLD5Y3MoN279iNUsXwfwPXw94DDNUaP2jFkU2tWf",
+      "success": true
+    }
+  ],
+  "signer": "owner.testnet",
+  "success": true
+}

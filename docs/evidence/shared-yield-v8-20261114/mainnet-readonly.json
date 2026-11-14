@@ -1,0 +1,122 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "Read-only pinned mainnet state; no signing/broadcast/provider acceptance",
+  "observedAt": "2026-11-14T08:27:54.781Z",
+  "network": "mainnet",
+  "block": {
+    "height": 224488590,
+    "hash": "Ak5rMzt5y3rkabN7QMK1FLJ7AxdedvWofeqqXwzZjunZ"
+  },
+  "root": "showstake-mainnet-escrow-endpx-2026.near",
+  "ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+  "provider": "contract.main.burrow.near",
+  "rootAccount": {
+    "amount": "2296370729841206400000000",
+    "block_hash": "Ak5rMzt5y3rkabN7QMK1FLJ7AxdedvWofeqqXwzZjunZ",
+    "block_height": 224488590,
+    "code_hash": "EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY",
+    "locked": "0",
+    "storage_paid_at": 0,
+    "storage_usage": 226189
+  },
+  "config": {
+    "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+    "provider_account": "contract.main.burrow.near",
+    "provider_kind": "RHEA_MAINNET",
+    "network": "mainnet",
+    "policy_version": "showstake-native-usdc-multievent/1",
+    "token_symbol": "USDC",
+    "token_name": "USDC",
+    "token_decimals": 6,
+    "provider_enabled": false,
+    "provider_unavailable_reason": "RHEA_SHARE_ABI_NOT_VERIFIED"
+  },
+  "events": [],
+  "accounting": {
+    "accepted_principal": "0",
+    "realized_yield": "0",
+    "allocated_yield": "0",
+    "paid": "0",
+    "pending": "0",
+    "liability": "0",
+    "reserved_cash": "0",
+    "global_operation": null
+  },
+  "rootUsdc": "0",
+  "rootStorage": null,
+  "providerAccount": {
+    "amount": "11023583142260863927307955086",
+    "block_hash": "Ak5rMzt5y3rkabN7QMK1FLJ7AxdedvWofeqqXwzZjunZ",
+    "block_height": 224488590,
+    "code_hash": "6Nek1MZ8cwJJ2xMQAUWup9V5AToYS9rkTxJfwo6BCpFa",
+    "locked": "0",
+    "storage_paid_at": 0,
+    "storage_usage": 53711847
+  },
+  "position": null,
+  "asset": {
+    "token_id": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+    "supplied": {
+      "shares": "10603178047353450274725332",
+      "balance": "12287618882220220811434425"
+    },
+    "borrowed": {
+      "shares": "8466921939637004657299081",
+      "balance": "10673960192097443145995645"
+    },
+    "margin_debt": {
+      "shares": "0",
+      "balance": "0"
+    },
+    "margin_pending_debt": "0",
+    "margin_position": "0",
+    "reserved": "200002388111842272668747",
+    "prot_fee": "672994604193599068728",
+    "beneficiary_fees": {
+      "pf.rhealab.near": "18555743941847749811943"
+    },
+    "uahpi": "42948783399248463",
+    "last_update_timestamp": "1794644841632118778",
+    "config": {
+      "reserve_ratio": 2500,
+      "beneficiaries": {
+        "pf.rhealab.near": 10000
+      },
+      "target_utilization": 8000,
+      "target_utilization_rate": "1000000000001847694955734069",
+      "max_utilization_rate": "1000000000012857214234867166",
+      "holding_position_fee_rate": "1000000000000000000000000000",
+      "volatility_ratio": 9500,
+      "extra_decimals": 12,
+      "can_deposit": true,
+      "can_withdraw": true,
+      "can_use_as_collateral": true,
+      "can_borrow": true,
+      "net_tvl_multiplier": 10000,
+      "max_change_rate": null,
+      "supplied_limit": "60000000000000000000000000",
+      "borrowed_limit": "25000000000000000000000000",
+      "min_borrowed_amount": "1000000000"
+    },
+    "lostfound_shares": "0",
+    "supply_apr": "0.107905505975960915265726394",
+    "borrow_apr": "0.165624467878052958446520264",
+    "farms": [
+      {
+        "farm_id": {
+          "TokenNetBalance": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1"
+        },
+        "rewards": {}
+      }
+    ]
+  },
+  "publicAccessKeys": [
+    {
+      "access_key": {
+        "nonce": 224273797000002,
+        "permission": "FullAccess"
+      },
+      "public_key": "ed25519:FQJ3SrmLBtQU7xjigLN9NW2aMu2PUTT6Tper1CvnYe2X"
+    }
+  ]
+}

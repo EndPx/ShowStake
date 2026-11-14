@@ -1,0 +1,281 @@
+{
+  "contract": "shared.testnet",
+  "deposit": "0",
+  "method": "trigger_earn_supply",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "8tTyNxvFs3ME31Zm4U6iCWvAAFPWji9UCDn9SKp1oCtM",
+        "BQ6iAY3SfzgGZmHg2eQQmvcCCzu7JNysLFxztseGaxf1",
+        "EFDqVRHd96WzuWgyRjBx2ehPCWL7G91MQKBMpSW75XyN",
+        "5EMZEcX2kzagFqGnkj3TSqji2bVuyVxprUbWJ57U93mQ",
+        "9ZnAHSWj3ppzbC7eiKe6uJPzGJwaRu7GJY1VqRTaqMm9"
+      ],
+      "executor": "shared.testnet",
+      "failure": false,
+      "gas_burnt": 3410774516569,
+      "id": "5uBHUCsexnfHXf79ResNkwLZ4t4JRv3w3aJKsRyKfSRm",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "3yot4ox8yKJEpduNYou39PraNxBJJZmhpBFeDx2cF9LK"
+      ],
+      "executor": "usdc.testnet",
+      "failure": false,
+      "gas_burnt": 1363806801535,
+      "id": "8tTyNxvFs3ME31Zm4U6iCWvAAFPWji9UCDn9SKp1oCtM",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "owner.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "3yot4ox8yKJEpduNYou39PraNxBJJZmhpBFeDx2cF9LK",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "DHSNJeHrvQuiyuMjh76bxTHtL34zQrzxyQCGhqeKkwfA"
+      ],
+      "executor": "provider.testnet",
+      "failure": false,
+      "gas_burnt": 1189352353284,
+      "id": "BQ6iAY3SfzgGZmHg2eQQmvcCCzu7JNysLFxztseGaxf1",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "owner.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "DHSNJeHrvQuiyuMjh76bxTHtL34zQrzxyQCGhqeKkwfA",
+      "success": true
+    },
+    {
+      "bool": true,
+      "children": [
+        "B8edC5ty2sWCmdryWU7G8oei66U1hqxbWMykEVGkq4AF"
+      ],
+      "executor": "shared.testnet",
+      "failure": false,
+      "gas_burnt": 1322351089146,
+      "id": "EFDqVRHd96WzuWgyRjBx2ehPCWL7G91MQKBMpSW75XyN",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "owner.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "B8edC5ty2sWCmdryWU7G8oei66U1hqxbWMykEVGkq4AF",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "FRkGCYbYd1mQZ6WLSDT3HTMw7aNWW6EAKrdzDkNT7up7",
+        "EyiAcu7N6ciduB4c5AjPC5LhXrE6MJ7LpgqvsnMHqCxT",
+        "FvMRJc2RVguNjSEKBdVNgvBh9HeUjejBe9n3KRdVVztd"
+      ],
+      "executor": "shared.testnet",
+      "failure": false,
+      "gas_burnt": 2370799422417,
+      "id": "5EMZEcX2kzagFqGnkj3TSqji2bVuyVxprUbWJ57U93mQ",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "3NWkw6BeVzppcFVeePqGfnXTDA4NhJAbP3FQLP32YVL4",
+        "9A4L7MU6D8PkTG6PpkBdXU9wwAYd4hsd7cQ95QBx4Sfh",
+        "5upbW2AV8cqrgDd7n7YinCcPXzpfox8RLoWkyjvqV1pt"
+      ],
+      "executor": "usdc.testnet",
+      "failure": false,
+      "gas_burnt": 2619732109179,
+      "id": "FRkGCYbYd1mQZ6WLSDT3HTMw7aNWW6EAKrdzDkNT7up7",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "CA95JmqDGUHpUMA5PRN8M7pCmU8br49QZvarPoLCwrhC"
+      ],
+      "executor": "provider.testnet",
+      "failure": false,
+      "gas_burnt": 1388184417378,
+      "id": "3NWkw6BeVzppcFVeePqGfnXTDA4NhJAbP3FQLP32YVL4",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "owner.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "CA95JmqDGUHpUMA5PRN8M7pCmU8br49QZvarPoLCwrhC",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "8LCpbJY9cpiY6hYFej1iQdn5ETDMgu6F3UFYjKRcJhN7"
+      ],
+      "executor": "usdc.testnet",
+      "failure": false,
+      "gas_burnt": 1431616599439,
+      "id": "9A4L7MU6D8PkTG6PpkBdXU9wwAYd4hsd7cQ95QBx4Sfh",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "owner.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "8LCpbJY9cpiY6hYFej1iQdn5ETDMgu6F3UFYjKRcJhN7",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "owner.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "5upbW2AV8cqrgDd7n7YinCcPXzpfox8RLoWkyjvqV1pt",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "rgTUYL48t1zea36hsvR1MrRm3STsvJ2RywtNmvSnwkj",
+        "J76uesggjiVW5W79U88x7HprDHmYkctTTbY7bm7ur1bk",
+        "9wJiRhMSyrSAoSTmSfUmFMs6FTWRUhBFuqp3EFKSXR3c",
+        "wfhkRGB48xt2HKcs5kG58DQELtpSZZeGco7m3HAYSpK",
+        "4R1ZqQvkwtwytv5c9CYv6MN5Up4CFFUe9zdJ4ZBuxvGF"
+      ],
+      "executor": "shared.testnet",
+      "failure": false,
+      "gas_burnt": 3078926405538,
+      "id": "EyiAcu7N6ciduB4c5AjPC5LhXrE6MJ7LpgqvsnMHqCxT",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "GVcyYn4aiGa1mHnWy5BqDiLHeHM7XZBdY6kMkcGQxUMR"
+      ],
+      "executor": "usdc.testnet",
+      "failure": false,
+      "gas_burnt": 1363806801535,
+      "id": "rgTUYL48t1zea36hsvR1MrRm3STsvJ2RywtNmvSnwkj",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "owner.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "GVcyYn4aiGa1mHnWy5BqDiLHeHM7XZBdY6kMkcGQxUMR",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "9XYUPaNgfHN8fsNXosDYubK1AdeNiC84Q8yXDSNsnXE7"
+      ],
+      "executor": "provider.testnet",
+      "failure": false,
+      "gas_burnt": 1201389261424,
+      "id": "J76uesggjiVW5W79U88x7HprDHmYkctTTbY7bm7ur1bk",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "owner.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "9XYUPaNgfHN8fsNXosDYubK1AdeNiC84Q8yXDSNsnXE7",
+      "success": true
+    },
+    {
+      "bool": true,
+      "children": [
+        "3MFaiEgZC1sHqYWVQCY1uiMMQy4YWWxpZbNUWa2BmJdP"
+      ],
+      "executor": "shared.testnet",
+      "failure": false,
+      "gas_burnt": 1322351089146,
+      "id": "9wJiRhMSyrSAoSTmSfUmFMs6FTWRUhBFuqp3EFKSXR3c",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "owner.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "3MFaiEgZC1sHqYWVQCY1uiMMQy4YWWxpZbNUWa2BmJdP",
+      "success": true
+    },
+    {
+      "bool": true,
+      "children": [
+        "FQD3eJvKzcekGpTr55NtPu2152Pc1rxPo611M8EdutJn"
+      ],
+      "executor": "shared.testnet",
+      "failure": false,
+      "gas_burnt": 1973462478871,
+      "id": "wfhkRGB48xt2HKcs5kG58DQELtpSZZeGco7m3HAYSpK",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "owner.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "FQD3eJvKzcekGpTr55NtPu2152Pc1rxPo611M8EdutJn",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "owner.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "4R1ZqQvkwtwytv5c9CYv6MN5Up4CFFUe9zdJ4ZBuxvGF",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "owner.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "FvMRJc2RVguNjSEKBdVNgvBh9HeUjejBe9n3KRdVVztd",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "owner.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "9ZnAHSWj3ppzbC7eiKe6uJPzGJwaRu7GJY1VqRTaqMm9",
+      "success": true
+    }
+  ],
+  "signer": "owner.testnet",
+  "success": true
+}

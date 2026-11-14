@@ -1,5 +1,5 @@
 {
-  "$note": "Explicit reviewed route inventory for /v1. Derived 1:1 from the packet architecture (docs/planning/showstake-v2/02-ARCHITECTURE.md 'API contract' table), normalized to OpenAPI parameter style (`:id` -> `{eventId}` / `{attemptId}` / `{passId}`). Includes the reviewed baseline PLUS the previously-omitted organizer routes (/events/drafts, /events/{eventId}/publish-intent) and the social-auth provider boundary (/auth/privy, candidate adapter route). NEAR-first providers remain provisional; Privy is an alternative only. scripts/verify-openapi.mjs enforces this inventory against packages/api-contract/openapi.yaml so a missing/extra route fails the check (never a hardcoded count that matches an incomplete spec). Codex API integration adds authenticated logout and current-session reads; these are implemented-session lifecycle surfaces. Implemented mainnet funding journal routes are listed separately from older provisional planning routes; a swap does not authorize registration.",
+  "$note": "Explicit reviewed route inventory for /v1. Derived 1:1 from the packet architecture (docs/planning/showstake-v2/02-ARCHITECTURE.md 'API contract' table), normalized to OpenAPI parameter style (`:id` -> `{eventId}` / `{attemptId}` / `{passId}`). Includes the reviewed baseline PLUS the previously-omitted organizer routes (/events/drafts, /events/{eventId}/publish-intent) and the social-auth provider boundary (/auth/privy, candidate adapter route). NEAR-first providers remain provisional; Privy is an alternative only. scripts/verify-openapi.mjs enforces this inventory against packages/api-contract/openapi.yaml so a missing/extra route fails the check (never a hardcoded count that matches an incomplete spec). Codex API integration adds authenticated logout and current-session reads; these are implemented-session lifecycle surfaces. Implemented mainnet funding journal routes are listed separately from older provisional planning routes; a swap does not authorize registration. Direct-chain routes are independently authenticated fallback reads and application proposals; they do not prove indexer coverage or authorize financial execution.",
   "source": "docs/planning/showstake-v2/02-ARCHITECTURE.md API contract table",
   "public": [
     "/events",
@@ -13,7 +13,8 @@
   "host_only": [
     "/events/{eventId}/checkin-requests",
     "/events/{eventId}/attendance",
-    "/events/{eventId}/checkin/scan"
+    "/events/{eventId}/checkin/scan",
+    "/direct/events/{eventId}/checkin"
   ],
   "routes": [
     {
@@ -161,6 +162,26 @@
     {
       "path": "/funding/{id}/reconcile",
       "method": "post"
+    },
+    {
+      "path": "/direct/events/{eventId}/qr",
+      "method": "post"
+    },
+    {
+      "path": "/direct/events/{eventId}/checkin",
+      "method": "post"
+    },
+    {
+      "path": "/direct/events/{eventId}/content",
+      "method": "post"
+    },
+    {
+      "path": "/direct/events/{eventId}/content",
+      "method": "get"
+    },
+    {
+      "path": "/direct/events/{eventId}/content/{resourceId}",
+      "method": "get"
     }
   ]
 }
