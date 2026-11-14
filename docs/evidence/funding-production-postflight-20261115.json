@@ -1,0 +1,64 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "Production software hosting/catalog/dry quote only; funded transfer and wallet execution NOT_RUN",
+  "observedAt": "2026-11-14T23:09:58.419Z",
+  "deployment": "dpl_7YuWoWE11pmZVCZBCxHk3hWNdYYn",
+  "commit": "88c0317b3f125aefa635f132dad3e8a2799fd20e",
+  "network": "mainnet",
+  "catalogStatus": 200,
+  "selected": [
+    {
+      "assetId": "nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near",
+      "decimals": 6,
+      "blockchain": "base",
+      "symbol": "USDC",
+      "price": 0.999672,
+      "priceUpdatedAt": "2026-11-14T23:09:00.887Z",
+      "contractAddress": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "coingeckoId": "usd-coin"
+    }
+  ],
+  "quotes": [
+    {
+      "requestedDestinationAtomic": "100000",
+      "httpStatus": 503,
+      "result": {
+        "error": "Provider quote HTTP 400. Minimum USDC to receive for this quote: 0.146294. The event deposit remains separate."
+      }
+    },
+    {
+      "requestedDestinationAtomic": "1000000",
+      "httpStatus": 200,
+      "result": {
+        "data": {
+          "dry": true,
+          "originAsset": "nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near",
+          "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+          "recipient": "endpx.near",
+          "refundTo": "0xc82f469aa95a2f7792300c8d11230e9023a98600",
+          "amountIn": "1008838",
+          "amountOut": "1000000",
+          "minAmountOut": "1000000",
+          "deadline": "2026-11-14T23:29:57.537Z",
+          "observedAt": "2026-11-14T23:09:57.585Z"
+        }
+      }
+    }
+  ],
+  "browser": {
+    "url": "https://showstake.vercel.app/events/new",
+    "viewport": 390,
+    "documentVisible": "visible",
+    "horizontalOverflow": false,
+    "walletButton": {
+      "text": "Connect NEAR",
+      "disabled": false
+    },
+    "cancelMessage": [
+      "Wallet selection or connection was cancelled. Connect NEAR to choose a wallet again."
+    ],
+    "picker": "Opened twice; cancelled with Escape; button re-enabled and explicit picker retry worked. No wallet selected, no sign-in or financial request made.",
+    "externalMetaMaskNearLogin": "NOT_RUN",
+    "fundingDialog": "NOT_RUN without an actual connected user wallet"
+  }
+}
