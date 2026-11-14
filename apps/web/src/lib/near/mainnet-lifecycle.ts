@@ -1,3 +1,4 @@
+import {decodeUtf8Base64} from './rpc.ts';
 export const isLinkedPolicy = (policy:unknown):boolean => policy === "showstake-native-usdc-rhea-linked-withdraw-review/2" || policy === "showstake-native-usdc-factory-rhea/3";
 export const publicRecoveryPhase = (event:MainnetEvent):boolean => ["Cancelled","RefundOnly"].includes(event.phase) || (event.policy_version === "showstake-native-usdc-factory-rhea/3" && event.phase === "AttendanceFinalized");
 import { anchoredReceiptGraph } from "./receipt-graph.ts";
@@ -26,11 +27,24 @@ export function actionAllowed(method: string, event: MainnetEvent, now: number, 
   }
 }
 export interface MainnetAttempt { account: string; child: string; eventId: string; actions: ConnectorAction[]; hash: string | null; rheaEvidence?: {attempt:number;amount:string|null;redeemed:string}; claimEvidence?: { registrationId:string;amount:string;attempt:number } }
+/** Only a complete FINAL create failure can unlock retry of a known hash. */
+export function finalFailedCreateReceipt(raw:unknown,attempt:MainnetAttempt):boolean {
+  if(!raw||typeof raw!=='object'||!attempt.hash||attempt.actions.length!==1)return false;
+  const outer=raw as Record<string,any>,o=outer.final_execution_outcome??outer,t=o.transaction,a=attempt.actions[0];
+  if((outer.final_execution_status??o.final_execution_status)!=='FINAL'||!o.status?.Failure||a?.type!=='FunctionCall'||a.params.methodName!=='create_event'||t?.hash!==attempt.hash||t.signer_id!==attempt.account||t.receiver_id!==attempt.child||!Array.isArray(t.actions)||t.actions.length!==1)return false;
+  const call=t.actions[0]?.FunctionCall;
+  try {if(call?.method_name!==a.params.methodName||String(call.gas)!==a.params.gas||String(call.deposit)!==a.params.deposit||!same(JSON.parse(decodeUtf8Base64(call.args)),a.params.args))return false;}catch{return false;}
+  if(!Array.isArray(o.receipts_outcome))return false;
+  const failures=o.receipts_outcome.filter((r:any)=>r.outcome?.status?.Failure);
+  if(failures.length!==1||failures[0].outcome.executor_id!==attempt.child)return false;
+  const failed=o.receipts?.find((r:any)=>r.receipt_id===failures[0].id);
+  return failed?.predecessor_id===attempt.account&&failed.receiver_id===attempt.child&&JSON.stringify(failed.receipt?.Action?.actions)===JSON.stringify(t.actions)&&anchoredReceiptGraph(raw,failures[0].id);
+}
 function same(a: unknown,b: unknown): boolean { if(a===b)return true; if(!a||!b||typeof a!=="object"||typeof b!=="object")return false; const x=a as Record<string,unknown>,y=b as Record<string,unknown>; const keys=Object.keys(x); return keys.length===Object.keys(y).length && keys.every(k=>Object.hasOwn(y,k)&&same(x[k],y[k])); }
 export function mainnetReceipt(raw: unknown, attempt: MainnetAttempt): "success" | "failed" | "pending" {
   if(!raw || typeof raw!=="object" || !attempt.hash)return "pending"; const outer=raw as Record<string,any>; const o=outer.final_execution_outcome??outer; const tx=o.transaction;
   if((outer.final_execution_status??o.final_execution_status)!=="FINAL" || tx?.hash!==attempt.hash || tx?.signer_id!==attempt.account || tx?.receiver_id!==attempt.child || !Array.isArray(tx.actions) || tx.actions.length!==attempt.actions.length) return "pending";
-  for(let i=0;i<attempt.actions.length;i++) { const a=attempt.actions[i]!; if(a.type==="Transfer") { if(String(tx.actions[i]?.Transfer?.deposit)!==a.params.deposit)return "pending"; continue; } const c=tx.actions[i]?.FunctionCall; try { if(c?.method_name!==a.params.methodName || String(c.deposit)!==a.params.deposit || String(c.gas)!==a.params.gas || !same(JSON.parse(atob(c.args)),a.params.args)) return "pending"; } catch { return "pending"; } }
+  for(let i=0;i<attempt.actions.length;i++) { const a=attempt.actions[i]!; if(a.type==="Transfer") { if(String(tx.actions[i]?.Transfer?.deposit)!==a.params.deposit)return "pending"; continue; } const c=tx.actions[i]?.FunctionCall; try { if(c?.method_name!==a.params.methodName || String(c.deposit)!==a.params.deposit || String(c.gas)!==a.params.gas || !same(JSON.parse(decodeUtf8Base64(c.args)),a.params.args)) return "pending"; } catch { return "pending"; } }
   if(o.status?.Failure || (Array.isArray(o.receipts_outcome) && o.receipts_outcome.some((r:any)=>r.outcome?.status?.Failure)))return "pending";
   if(!o.status || typeof o.status!=="object" || !("SuccessValue" in o.status || "SuccessReceiptId" in o.status) || !Array.isArray(o.receipts_outcome)) return "pending";
   if(!anchoredReceiptGraph(raw))return "pending";

@@ -1,0 +1,43 @@
+{
+  "classification": "PASS_LOCAL",
+  "observedAt": "2026-11-14T21:28:52.719Z",
+  "problem": "Hash-less create recovery hid retry while funding was insufficient and locked all draft fields",
+  "changes": [
+    "Explicit Edit & try again unlocks fields regardless of funding",
+    "Edited retry keeps original event ID; journal history retained",
+    "No checkbox and no automatic wallet request",
+    "Known-hash editing requires exact FINAL failed-create receipt graph",
+    "Unicode arguments decoded before success comparison"
+  ],
+  "checks": [
+    {
+      "command": "pnpm --filter @showstake/web typecheck",
+      "result": "PASS_LOCAL"
+    },
+    {
+      "command": "node --experimental-strip-types --test create-failure/create-recovery/create-funding/multi-create/wallet-request tests",
+      "files": 5,
+      "result": "PASS_LOCAL"
+    },
+    {
+      "command": "pnpm verify:frontend-slice",
+      "checks": 100,
+      "result": "PASS_LOCAL"
+    },
+    {
+      "command": "pnpm verify:t08-frontend",
+      "checks": 69,
+      "result": "PASS_LOCAL"
+    }
+  ],
+  "mainnetReadOnly": {
+    "account": "endpx.near",
+    "accountBlock": 224570703,
+    "amountAtomic": "1",
+    "events": 0,
+    "eventBlock": 224570704
+  },
+  "hostedBuild": "PENDING GitHub/Vercel; local host previously memory-exhausted",
+  "contractChanges": "NONE",
+  "agentTransactions": "NONE"
+}

@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {finalFailedCreateReceipt,mainnetReceipt,type MainnetAttempt} from './mainnet-lifecycle.ts';
+const attempt:MainnetAttempt={account:'host.near',child:'shared.near',eventId:'one',hash:'h',actions:[{type:'FunctionCall',params:{methodName:'create_event',args:{rules:{event_id:'one',title:'Meetup \u{1F39F}'}},gas:'300000000000000',deposit:'123'}}]};
+const a=attempt.actions[0]!;if(a.type!=='FunctionCall')throw Error('fixture');
+const actions=[{FunctionCall:{method_name:'create_event',args:Buffer.from(JSON.stringify(a.params.args)).toString('base64'),gas:a.params.gas,deposit:a.params.deposit}}];
+const failure={ActionError:{index:0,kind:{FunctionCallError:{ExecutionError:'event exists'}}}};
+const graph={final_execution_status:'FINAL',status:{Failure:failure},transaction:{hash:'h',signer_id:'host.near',receiver_id:'shared.near',actions},transaction_outcome:{id:'h',outcome:{executor_id:'host.near',receipt_ids:['call'],status:{SuccessReceiptId:'call'}}},receipts:[{receipt_id:'call',predecessor_id:'host.near',receiver_id:'shared.near',receipt:{Action:{actions}}},{receipt_id:'refund',predecessor_id:'system',receiver_id:'host.near',receipt:{Action:{actions:[{Transfer:{deposit:'123'}}]}}}],receipts_outcome:[{id:'call',outcome:{executor_id:'shared.near',receipt_ids:['refund'],status:{Failure:failure}}},{id:'refund',outcome:{executor_id:'host.near',receipt_ids:[],status:{SuccessValue:''}}}]};
+assert.equal(finalFailedCreateReceipt(graph,attempt),true);
+for(const mutate of [(g:any)=>g.final_execution_status='EXECUTED',(g:any)=>g.transaction.signer_id='other.near',(g:any)=>g.transaction.receiver_id='other.near',(g:any)=>g.transaction.hash='other',(g:any)=>g.transaction.actions[0].FunctionCall.deposit='999',(g:any)=>g.receipts.pop(),(g:any)=>g.receipts_outcome[1].outcome.status={Failure:failure}]){const g=structuredClone(graph);mutate(g);assert.equal(finalFailedCreateReceipt(g,attempt),false);}
+const success:any=structuredClone(graph);success.status={SuccessValue:''};success.receipts_outcome[0].outcome.status={SuccessValue:''};assert.equal(finalFailedCreateReceipt(success,attempt),false);assert.equal(mainnetReceipt(success,attempt),'success');
+console.log('PASS_LOCAL exact final create failure unlock, pending/foreign/missing-graph rejection, unchanged Unicode success proof');
