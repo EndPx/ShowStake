@@ -71,8 +71,8 @@ export class MemoryStore implements Store {
     const matches=this.events.filter(e=>e.chainEventId===id && (!network || e.network===network) && (!contractId || e.contractId===contractId));return matches.length===1?matches[0]!:null;
   }
   async getEventResults(id: string): Promise<EventResultsRead | null> {
-    const event = this.events.find((e) => e.id === id) ?? this.events.find((e) => e.chainEventId === id);
-    if (!event) return null;
+    const direct=this.events.find((e) => e.id === id);const matches=direct?[direct]:this.events.filter((e)=>e.chainEventId===id);
+    if (matches.length!==1) return null;const event=matches[0]!;
     const rows = this.claims.filter((c) => c.eventId === event.id);
     const attendees = this.attendance.get(event.id) ?? [];
     const withdrawn = this.passes.filter((p) => p.eventId === event.id && p.registrationStatus === 'WITHDRAWN').length;

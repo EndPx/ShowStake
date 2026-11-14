@@ -4,7 +4,8 @@
 use std::sync::Arc;
 use base64::Engine;
 use anyhow::{ensure,Result};
-use near_api::{AccountId,Contract,NearGas,NearToken,NetworkConfig,Signer};
+use near_api::{AccountId,Contract,NearGas,NearToken,NetworkConfig,Signer,Transaction};
+use near_api::types::transaction::actions::{Action,TransferAction};
 use near_api::types::transaction::result::{ExecutionFinalResult,ValueOrReceiptId};
 use serde_json::{json,Value};
 fn evidence_dir() -> Option<&'static str> {
@@ -77,7 +78,10 @@ async fn capture_pre_tx(label:&str, id:&AccountId, rpc:&str)->Result<()> {
  let signer=Signer::from_secret_key(near_sandbox::config::DEFAULT_GENESIS_ACCOUNT_PRIVATE_KEY.parse()?)?;
  let empty:AccountId="showstake-mainnet-escrow-endpx-2026.near".parse()?;
  let nonempty:AccountId="nonempty.near".parse()?; let org:AccountId="host.near".parse()?;
- for id in [&empty,&nonempty,&org] { sb.create_account(id.as_str().parse()?).initial_balance(if id==&empty {NearToken::from_yoctonear(2_896_370_729_841_206_400_000_000)} else {NearToken::from_near(30)}).send().await?; }
+ let topup=std::env::var("SHARED_MIGRATION_TOPUP").unwrap_or_else(|_|"600000000000000000000000".into()).parse::<u128>()?;
+ ensure!(topup==500_000_000_000_000_000_000_000 || topup==600_000_000_000_000_000_000_000,"unsupported synthetic topup");
+ let starting=2_296_370_729_841_206_400_000_000u128.checked_add(topup).ok_or_else(||anyhow::anyhow!("starting balance overflow"))?;
+ for id in [&empty,&nonempty,&org] { sb.create_account(id.as_str().parse()?).initial_balance(if id==&empty {NearToken::from_yoctonear(starting)} else {NearToken::from_near(30)}).send().await?; }
  for id in [&empty,&nonempty] {
   // Fixture bootstrap uses the 10 Tgas initialization budget already exercised
   // by multi_create_smoke, avoiding a misleading 300 Tgas advance reservation.
@@ -94,7 +98,19 @@ async fn capture_pre_tx(label:&str, id:&AccountId, rpc:&str)->Result<()> {
  let quote=view(&non,"quote_create_event",json!({"rules":rules,"organizer":org}),&n).await?;
  capture_pre_tx("nonempty-create",&org,&sb.rpc_addr).await?;
  must(&non,"create_event",json!({"rules":rules}),&org,signer.clone(),&n,quote.as_str().ok_or_else(||anyhow::anyhow!("bad quote"))?.parse()?).await?;
+ // Fixture-only compensation: C81 bootstrap burns gas in this Sandbox, while
+ // the observed mainnet starting balance already reflects that historical cost.
+ // Set the pre-upgrade balance to the requested observed baseline plus topup.
+ let bootstrap_account=near_api::Account(empty.clone()).view().fetch_from(&n).await?;
+ let bootstrap_json=json!(bootstrap_account.data);
+ let bootstrap_amount=bootstrap_json["amount"].as_str().ok_or_else(||anyhow::anyhow!("missing bootstrap balance"))?.parse::<u128>()?;
+ let fixture_compensation=starting.checked_sub(bootstrap_amount).ok_or_else(||anyhow::anyhow!("bootstrap balance exceeds target"))?;
+ if fixture_compensation>0 {
+  let compensated=Transaction::construct(org.clone(),empty.clone()).add_action(Action::Transfer(TransferAction{deposit:NearToken::from_yoctonear(fixture_compensation)})).with_signer(signer.clone()).send_to(&n).await?.into_full().ok_or_else(||anyhow::anyhow!("nonfinal fixture compensation"))?;
+  ensure!(compensated.is_success()&&compensated.receipt_failures().is_empty(),"fixture compensation failed");
+ }
  let before_empty=near_api::Account(empty.clone()).view().fetch_from(&n).await?;
+ ensure!(json!(before_empty.data)["amount"]==starting.to_string(),"pre-upgrade balance differs from baseline plus topup");
  let before_non=near_api::Account(nonempty.clone()).view().fetch_from(&n).await?;
  capture_pre_tx("empty-upgrade",&empty,&sb.rpc_addr).await?;
  let result=Contract::deploy(empty.clone()).use_code(factory.clone()).with_init_call("migrate_empty_create",json!({}))?.gas(NearGas::from_tgas(10)).with_signer(signer.clone()).send_to(&n).await?.into_full().ok_or_else(||anyhow::anyhow!("nonfinal"))?;
@@ -112,7 +128,7 @@ async fn capture_pre_tx(label:&str, id:&AccountId, rpc:&str)->Result<()> {
  if let Some(dir)=evidence_dir() {
   save(&dir,"empty-upgrade-graph.json",&graph(&sb.rpc_addr,&result,&empty).await?)?;
   save(&dir,"nonempty-upgrade-graph.json",&graph(&sb.rpc_addr,&rejected,&nonempty).await?)?;
-  save(&dir,"migration-state.json",&json!({"before_empty":before_empty.data,"after_empty":after_empty.data,"before_nonempty":before_non.data,"after_nonempty":after_non.data,"config":config,"retained_event":retained}))?;
+  save(&dir,"migration-state.json",&json!({"synthetic_baseline_yocto":"2296370729841206400000000","synthetic_extra_funding_yocto":topup.to_string(),"fixture_bootstrap_compensation_yocto":fixture_compensation.to_string(),"pre_upgrade_target_yocto":starting.to_string(),"attached_gas_tgas":10,"gas_burnt":result.total_gas_burnt.as_gas(),"before_empty":before_empty.data,"after_empty":after_empty.data,"before_nonempty":before_non.data,"after_nonempty":after_non.data,"config":config,"retained_event":retained}))?;
  }
- println!("{}",json!({"status":"PASS_LOCAL","scope":"actual old C81 Wasm root migrated into shared-yield in local Sandbox with synthetic 0.6 NEAR pre-funding; nonempty upgrade rejected","empty":"migrated","nonempty":"rejected","schema":2,"synthetic_extra_funding_yocto":"600000000000000000000000"}));Ok(())
+ println!("{}",json!({"status":"PASS_LOCAL","scope":"actual old C81 Wasm root migrated into shared-yield in local Sandbox with synthetic pre-funding; nonempty upgrade rejected","empty":"migrated","nonempty":"rejected","schema":2,"synthetic_extra_funding_yocto":topup.to_string(),"initial_account_yocto":starting.to_string(),"attached_gas_tgas":10,"gas_burnt":result.total_gas_burnt.as_gas()}));Ok(())
 }

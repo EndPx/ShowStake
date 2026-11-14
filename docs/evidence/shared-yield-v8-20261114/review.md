@@ -11,6 +11,10 @@ This candidate follows D052: one ShowStake contract, independent event records a
 - **PASS_LOCAL:** API and worker builds/typechecks, 90 worker fixtures, shared refund/pending/legacy regressions, OpenAPI, direct authorization and private access, and real disposable PostgreSQL role/FK/concurrency tests. API role cannot write financial projections. Four direct-access application tables use real PK/FK constraints; deployed isolated testnet schema has 29 PK and 47 validated FK constraints.
 - **PASS_TESTNET:** the earlier V7 API witness records real NEP-413 sessions, final-chain QR issuance, organizer `PENDING_SIGNATURE`, and replay denial. It does not prove the V8 browser widgets or historical indexer coverage.
 - **PASS_LOCAL:** final testnet frontend build and 13 focused test groups, including exact refund yield rounding, final callback proofs, failed claim recovery, direct redemption, shortfall rejection, cross-tab journal locking, storage approval, wallet focus identity, and bounded direct-chain dashboard discovery. Mainnet C81 release remains separate.
+- **PASS_LOCAL:** a capacity-200 Sandbox fixture finalized 200 no-shows in 96.623525106289 Tgas and settled 200 recipients in 68.102761097519 Tgas, each with 300 Tgas attached. Only one registration used a real transfer; other sender calls were synthetic and backed by mock FT bulk transfers. Other-event reserves stayed isolated. This is not evidence of 200 real testnet deposits.
+- **PASS_LIVE (hosting only):** the production API/worker release and database schema 11 were deployed with backups. Schema has 29 PK and 47 validated FK constraints. The prior C81 deployment UUID and both cursor rows were unchanged; no V8 mainnet deployment was inserted. Active blockchain profile remains C81.
+- **PASS_LIVE (read-only/DRY only):** official 1Click catalog and two `dry:true` EXACT_OUTPUT quotes, ETH on Base/Ethereum to 5 native NEAR USDC, returned HTTP 201 and passed identity validation. No wet quote, deposit address, source transfer or delivery is claimed.
+- **PASS_TESTNET (partial browser):** a wallet-connected organizer signed create_event on V8 from the GitHub-built preview, transaction `HqbFBxYmwTszSRtjSN5ApUBYv4gjQkaoFj19ijzHqHd1`; the UI independently verified the final receipt and matching event. A delayed wallet deposit `FEkNqahKo1ubR4fYUi42E5sZxBWYMrXNtJj56ZN49Wsf` after close was refunded in full with zero registrations. Browser testing found session reload and refund-journal recovery defects; patches use the actual graph and require fresh state at or after all receipt blocks. The new preview recovery retest remains separate from these local checks.
 
 ## Review disposition
 
@@ -18,7 +22,7 @@ Codex read the contract migration, receiver, vault callbacks, accounting and cla
 
 ## Open acceptance gates
 
-- V8 browser flow through the GitHub-built preview is pending at this commit; no screenshot or CLI result is substituted for that flow.
+- The complete positive V8 browser flow is not accepted yet; the partial create/refund evidence above does not replace participant pass/QR/claim browser acceptance.
 - Raw historical block ingestion remains externally limited by HTTP 429. `FINAL_CHAIN` fallback does not advance the worker cursor or claim complete projection coverage.
 - Real 24-hour timeout and maximum-capacity tests have distinct evidence; shortened local schedules do not prove a real day elapsed.
 - Rhea mainnet supply/partial/full redemption and returned-USDC liquidity are not proven. Rhea is `SELECTED_FOR_HACKATHON`, not `TECHNICALLY_ACCEPTED`.

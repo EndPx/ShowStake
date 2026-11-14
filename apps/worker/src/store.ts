@@ -91,6 +91,7 @@ function assertDeploymentRow(row: DeploymentRow, d: DeploymentAllowlist): number
   if (row.code_hash !== d.codeHash) throw new Error('deployment code_hash mismatch');
   const startBlock = Number(row.start_block);
   if (!Number.isSafeInteger(startBlock) || startBlock < 0) throw new Error('deployment start_block invalid');
+  if (startBlock !== d.startHeight) throw new Error('deployment start_block mismatch');
   return startBlock;
 }
 
@@ -230,11 +231,11 @@ export class WorkerStore {
   async resolveDeployment(): Promise<{ id: string; startBlock: number }> {
     const res = await this.pool.query<DeploymentRow>(
       `SELECT id, environment, network, contract_id, ft_contract_id, ft_decimals, start_block::text, code_hash
-         FROM deployments WHERE network = $1 AND contract_id = $2`,
-      [this.allowlist.network, this.allowlist.contractId],
+         FROM deployments WHERE network = $1 AND contract_id = $2 AND code_hash = $3 AND start_block = $4`,
+      [this.allowlist.network, this.allowlist.contractId, this.allowlist.codeHash, this.allowlist.startHeight],
     );
     const row = res.rows[0];
-    if (!row) throw new Error(`no deployment row for ${this.allowlist.network}/${this.allowlist.contractId}`);
+    if (!row) throw new Error(`no deployment row or code_hash mismatch for ${this.allowlist.network}/${this.allowlist.contractId}`);
     const startBlock = assertDeploymentRow(row, this.allowlist);
     if (this.allowlist.startHeight < startBlock) {
       throw new Error(`start height ${this.allowlist.startHeight} precedes deployment start_block ${startBlock}`);

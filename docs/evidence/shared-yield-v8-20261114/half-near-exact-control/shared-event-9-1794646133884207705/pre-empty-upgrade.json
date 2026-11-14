@@ -1,0 +1,27 @@
+{
+  "account": {
+    "amount": "2796370729841206400000000",
+    "block_hash": "98efZk311eciKT1EXM7KaCSwnRneQqviUgfyNL5yECEP",
+    "block_height": 34,
+    "code_hash": "EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY",
+    "locked": "0",
+    "storage_paid_at": 0,
+    "storage_usage": 226189
+  },
+  "gas_price": {
+    "gas_price": "100000000"
+  },
+  "public_access_keys": {
+    "block_hash": "98efZk311eciKT1EXM7KaCSwnRneQqviUgfyNL5yECEP",
+    "block_height": 34,
+    "keys": [
+      {
+        "access_key": {
+          "nonce": 1,
+          "permission": "FullAccess"
+        },
+        "public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB"
+      }
+    ]
+  }
+}

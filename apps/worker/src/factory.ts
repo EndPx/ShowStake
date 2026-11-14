@@ -72,7 +72,7 @@ export async function adoptFactoryChild(pool:Pool, child:AdoptedChild):Promise<v
     const t=trusted.rows[0];if(!t || t.factory_code_hash!==child.factoryCodeHash || t.leaf_code_hash!==child.leafHash || t.leaf_wasm_sha256!==child.leafSha || t.leaf_policy_version!==child.leafPolicy || t.canonical_ft!==child.canonicalFt || t.ft_decimals!==6 || t.provider_account!==child.providerAccount || t.provider_kind!==child.providerKind) throw new Error('factory database trust mismatch');
     await client.query(`SELECT public.register_factory_child($1,$2,$3,$4,$5)`,[child.id,child.network,child.factoryId,child.contractId,child.startHeight]);
     const res=await client.query<{environment:string;ft_contract_id:string;ft_decimals:number;start_block:string;code_hash:string}>(`SELECT environment,ft_contract_id,ft_decimals,start_block::text,code_hash FROM deployments WHERE network=$1 AND contract_id=$2`,[child.network,child.contractId]);
-    const row=res.rows[0]; if(!row || row.environment!==child.network || row.ft_contract_id!==child.canonicalFt || row.ft_decimals!==6 || row.start_block!==String(child.startHeight) || row.code_hash!==child.leafHash) throw new Error('existing deployment mismatch');
+    const row=res.rows[0]; if(res.rows.length!==1 || !row || row.environment!==child.network || row.ft_contract_id!==child.canonicalFt || row.ft_decimals!==6 || row.start_block!==String(child.startHeight) || row.code_hash!==child.leafHash) throw new Error('existing deployment mismatch');
     await client.query('COMMIT');adoptedChildren.add(child);
   } catch(e) {await client.query('ROLLBACK');throw e;} finally {client.release();}
 }

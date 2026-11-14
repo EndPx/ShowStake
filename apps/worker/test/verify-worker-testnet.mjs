@@ -104,7 +104,7 @@ async function run() {
     await client.query(`
       INSERT INTO deployments (id, environment, network, contract_id, ft_contract_id, ft_decimals, start_block, code_hash)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      ON CONFLICT (network, contract_id) DO UPDATE SET code_hash = EXCLUDED.code_hash, start_block = EXCLUDED.start_block`,
+      ON CONFLICT (network, contract_id, code_hash) DO UPDATE SET start_block = EXCLUDED.start_block`,
       [DEPLOYMENT_ID, COMMITTED_DEPLOYMENT.environment, COMMITTED_DEPLOYMENT.network, COMMITTED_DEPLOYMENT.contractId,
         COMMITTED_DEPLOYMENT.ftContractId, COMMITTED_DEPLOYMENT.ftDecimals, COMMITTED_DEPLOYMENT.startHeight, COMMITTED_DEPLOYMENT.codeHash]);
     await client.query('CREATE ROLE showstake_worker_service LOGIN NOINHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS');

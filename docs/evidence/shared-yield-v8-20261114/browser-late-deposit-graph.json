@@ -1,0 +1,425 @@
+{
+  "final_execution_status": "FINAL",
+  "receipts": [
+    {
+      "predecessor_id": "showstake-participant-endpx.testnet",
+      "priority": 0,
+      "receipt": {
+        "Action": {
+          "actions": [
+            {
+              "FunctionCall": {
+                "args": "eyJyZWNlaXZlcl9pZCI6InNzLXNoYXJlZC1zMTExNDE1MTc0My50ZXN0bmV0IiwiYW1vdW50IjoiMjAwMDAwMCIsIm1zZyI6IntcInZlcnNpb25cIjoxLFwiZXZlbnRfaWRcIjpcImV2ZW50LTFkMzgxMDQxODZkZjQyNmFiMWE1ZTlhYjNjMDJjZDgyXCIsXCJjb21taXRtZW50X2lkXCI6XCJicm93c2VyLW93bmVyLXY4XCJ9In0=",
+                "deposit": "1",
+                "gas": 300000000000000,
+                "method_name": "ft_transfer_call"
+              }
+            }
+          ],
+          "gas_price": "1000000000",
+          "input_data_ids": [],
+          "is_promise_yield": false,
+          "output_data_receivers": [],
+          "signer_id": "showstake-participant-endpx.testnet",
+          "signer_public_key": "ed25519:2oWNjLUBKMyKfGT3Ch7JcqUMVucxTnqcNDGGEM4zzf8K"
+        }
+      },
+      "receipt_id": "HLTBvGnDd7FFaCem5vVysADVoVfoWnhbCBww8xQXit6D",
+      "receiver_id": "mockusdc.testnet"
+    },
+    {
+      "predecessor_id": "mockusdc.testnet",
+      "priority": 0,
+      "receipt": {
+        "Action": {
+          "actions": [
+            {
+              "FunctionCall": {
+                "args": "eyJzZW5kZXJfaWQiOiJzaG93c3Rha2UtcGFydGljaXBhbnQtZW5kcHgudGVzdG5ldCIsImFtb3VudCI6IjIwMDAwMDAiLCJtc2ciOiJ7XCJ2ZXJzaW9uXCI6MSxcImV2ZW50X2lkXCI6XCJldmVudC0xZDM4MTA0MTg2ZGY0MjZhYjFhNWU5YWIzYzAyY2Q4MlwiLFwiY29tbWl0bWVudF9pZFwiOlwiYnJvd3Nlci1vd25lci12OFwifSJ9",
+                "deposit": "0",
+                "gas": 291357361723043,
+                "method_name": "ft_on_transfer"
+              }
+            }
+          ],
+          "gas_price": "1000000000",
+          "input_data_ids": [],
+          "is_promise_yield": false,
+          "output_data_receivers": [
+            {
+              "data_id": "5gJuoWr3eq9qaVkikNgyySd5h3xN1nA71YkRfr9JiAUu",
+              "receiver_id": "mockusdc.testnet"
+            }
+          ],
+          "signer_id": "showstake-participant-endpx.testnet",
+          "signer_public_key": "ed25519:2oWNjLUBKMyKfGT3Ch7JcqUMVucxTnqcNDGGEM4zzf8K"
+        }
+      },
+      "receipt_id": "2VVj9n2BYUgPBAXwQPL3sTDVtpoPG56AsENJ73ukmWKp",
+      "receiver_id": "ss-shared-s1114151743.testnet"
+    },
+    {
+      "predecessor_id": "system",
+      "priority": 0,
+      "receipt": {
+        "Action": {
+          "actions": [
+            {
+              "Transfer": {
+                "deposit": "292086005474631200000000"
+              }
+            }
+          ],
+          "gas_price": "0",
+          "input_data_ids": [],
+          "is_promise_yield": false,
+          "output_data_receivers": [],
+          "signer_id": "showstake-participant-endpx.testnet",
+          "signer_public_key": "ed25519:2oWNjLUBKMyKfGT3Ch7JcqUMVucxTnqcNDGGEM4zzf8K"
+        }
+      },
+      "receipt_id": "GMTsjkHVdfc7KKhihW2n56qMVMbMpwBpoqiDh82495q8",
+      "receiver_id": "showstake-participant-endpx.testnet"
+    },
+    {
+      "predecessor_id": "mockusdc.testnet",
+      "priority": 0,
+      "receipt": {
+        "Action": {
+          "actions": [
+            {
+              "FunctionCall": {
+                "args": "eyJzZW5kZXJfaWQiOiJzaG93c3Rha2UtcGFydGljaXBhbnQtZW5kcHgudGVzdG5ldCIsInJlY2VpdmVyX2lkIjoic3Mtc2hhcmVkLXMxMTE0MTUxNzQzLnRlc3RuZXQiLCJhbW91bnQiOiIyMDAwMDAwIn0=",
+                "deposit": "0",
+                "gas": 5000000000000,
+                "method_name": "ft_resolve_transfer"
+              }
+            }
+          ],
+          "gas_price": "1000000000",
+          "input_data_ids": [
+            "5gJuoWr3eq9qaVkikNgyySd5h3xN1nA71YkRfr9JiAUu"
+          ],
+          "is_promise_yield": false,
+          "output_data_receivers": [],
+          "signer_id": "showstake-participant-endpx.testnet",
+          "signer_public_key": "ed25519:2oWNjLUBKMyKfGT3Ch7JcqUMVucxTnqcNDGGEM4zzf8K"
+        }
+      },
+      "receipt_id": "8gtpVzx8Hh4oUhTd4izA4D9EtWjJi6wVkp7UoWjmyDgX",
+      "receiver_id": "mockusdc.testnet"
+    },
+    {
+      "predecessor_id": "system",
+      "priority": 0,
+      "receipt": {
+        "Action": {
+          "actions": [
+            {
+              "Transfer": {
+                "deposit": "5689436025906200000000"
+              }
+            }
+          ],
+          "gas_price": "0",
+          "input_data_ids": [],
+          "is_promise_yield": false,
+          "output_data_receivers": [],
+          "signer_id": "showstake-participant-endpx.testnet",
+          "signer_public_key": "ed25519:2oWNjLUBKMyKfGT3Ch7JcqUMVucxTnqcNDGGEM4zzf8K"
+        }
+      },
+      "receipt_id": "FJHvoouD8zFY8mThW6DTvmUnH32sJ6byjYRCmcwiRrMV",
+      "receiver_id": "showstake-participant-endpx.testnet"
+    },
+    {
+      "predecessor_id": "system",
+      "priority": 0,
+      "receipt": {
+        "Action": {
+          "actions": [
+            {
+              "Transfer": {
+                "deposit": "2478845208599100000000"
+              }
+            }
+          ],
+          "gas_price": "0",
+          "input_data_ids": [],
+          "is_promise_yield": false,
+          "output_data_receivers": [],
+          "signer_id": "showstake-participant-endpx.testnet",
+          "signer_public_key": "ed25519:2oWNjLUBKMyKfGT3Ch7JcqUMVucxTnqcNDGGEM4zzf8K"
+        }
+      },
+      "receipt_id": "4jo5SQ3x1yiPTuYMJt5CwMs31xNUCSAtLZ7VsMkHCkU9",
+      "receiver_id": "showstake-participant-endpx.testnet"
+    }
+  ],
+  "receipts_outcome": [
+    {
+      "block_hash": "7fNeNA7oJZBMrC2e7PYrxRvhBahXcyHDbAsrZVf24qrr",
+      "id": "HLTBvGnDd7FFaCem5vVysADVoVfoWnhbCBww8xQXit6D",
+      "outcome": {
+        "executor_id": "mockusdc.testnet",
+        "gas_burnt": 2754272453999,
+        "logs": [
+          "EVENT_JSON:{\"standard\":\"nep141\",\"version\":\"1.0.0\",\"event\":\"ft_transfer\",\"data\":[{\"old_owner_id\":\"showstake-participant-endpx.testnet\",\"new_owner_id\":\"ss-shared-s1114151743.testnet\",\"amount\":\"2000000\"}]}"
+        ],
+        "metadata": {
+          "contracts": [
+            {
+              "local": "2beWuFPAgHn9XWRWjaRziB9wkSoeMCUkZRbyrQ9hDSJE"
+            }
+          ],
+          "version": 4
+        },
+        "receipt_ids": [
+          "2VVj9n2BYUgPBAXwQPL3sTDVtpoPG56AsENJ73ukmWKp",
+          "8gtpVzx8Hh4oUhTd4izA4D9EtWjJi6wVkp7UoWjmyDgX",
+          "4jo5SQ3x1yiPTuYMJt5CwMs31xNUCSAtLZ7VsMkHCkU9"
+        ],
+        "status": {
+          "SuccessReceiptId": "8gtpVzx8Hh4oUhTd4izA4D9EtWjJi6wVkp7UoWjmyDgX"
+        },
+        "tokens_burnt": "275427245399900000000"
+      },
+      "proof": [
+        {
+          "direction": "Left",
+          "hash": "BcXKDuojJMYPj6R6xFGSaTW1gNQ2i6reQqgjFXnKiFc2"
+        },
+        {
+          "direction": "Left",
+          "hash": "6RZaXa7D1vmrTw8oXTvYAE35LpbGHJ57gFHj3dbb4J1p"
+        },
+        {
+          "direction": "Right",
+          "hash": "3JrxQdss9d4U2HJpunbzyNwmocwRHuNRh9skCqyLfP3U"
+        }
+      ]
+    },
+    {
+      "block_hash": "LyYL6DKfQu4p19KChvMcNAUsD4wmoF4dBYLd2b7X3pE",
+      "id": "2VVj9n2BYUgPBAXwQPL3sTDVtpoPG56AsENJ73ukmWKp",
+      "outcome": {
+        "executor_id": "ss-shared-s1114151743.testnet",
+        "gas_burnt": 1598696430138,
+        "logs": [],
+        "metadata": {
+          "contracts": [
+            {
+              "local": "4Dq4uEH2PE9FEB7n67d3r3fvHPUy5KAvjhgZ8q5sX4PU"
+            }
+          ],
+          "version": 4
+        },
+        "receipt_ids": [
+          "GMTsjkHVdfc7KKhihW2n56qMVMbMpwBpoqiDh82495q8"
+        ],
+        "status": {
+          "SuccessValue": "IjIwMDAwMDAi"
+        },
+        "tokens_burnt": "159869643013800000000"
+      },
+      "proof": [
+        {
+          "direction": "Left",
+          "hash": "HW5KFjRAyaJ7Y9ejrUNYfVkMXCm7prKYdPYSdMYxpKcM"
+        },
+        {
+          "direction": "Right",
+          "hash": "7cZUkMCBVDTEc7f6Kpe1LLWzAwhYQqMCpWMUeV58NDWY"
+        },
+        {
+          "direction": "Left",
+          "hash": "HyGE7yAWFZ9mFQ6oN1Fcs794h8KjdrhskXVdCN6YhFB8"
+        }
+      ]
+    },
+    {
+      "block_hash": "DHN1UB6T8uKWJf3pVDxQhQAWDyeJWFKuZy3yMMi4pcxN",
+      "id": "GMTsjkHVdfc7KKhihW2n56qMVMbMpwBpoqiDh82495q8",
+      "outcome": {
+        "executor_id": "showstake-participant-endpx.testnet",
+        "gas_burnt": 223182562500,
+        "logs": [],
+        "metadata": {
+          "contracts": [
+            null
+          ],
+          "version": 4
+        },
+        "receipt_ids": [],
+        "status": {
+          "SuccessValue": ""
+        },
+        "tokens_burnt": "0"
+      },
+      "proof": [
+        {
+          "direction": "Left",
+          "hash": "4pjcLFftyKoRaBTEaZebt7uYi3ndYtFQeMqAXv1HDPbi"
+        },
+        {
+          "direction": "Left",
+          "hash": "2nhpFz1qkHwoBMbxZm2ufr4dsD5CceiqQgFjHfWSzykm"
+        },
+        {
+          "direction": "Left",
+          "hash": "4DMnVLAUnX1bG3MccdQBjX1ZjmmTyoWyYgKMm7eRuD3W"
+        },
+        {
+          "direction": "Right",
+          "hash": "2gWcDVzRNCQEbszUu79AP2UdqLi2xLDeDZLZNcNoQE7J"
+        }
+      ]
+    },
+    {
+      "block_hash": "DHN1UB6T8uKWJf3pVDxQhQAWDyeJWFKuZy3yMMi4pcxN",
+      "id": "8gtpVzx8Hh4oUhTd4izA4D9EtWjJi6wVkp7UoWjmyDgX",
+      "outcome": {
+        "executor_id": "mockusdc.testnet",
+        "gas_burnt": 1989253251838,
+        "logs": [
+          "EVENT_JSON:{\"standard\":\"nep141\",\"version\":\"1.0.0\",\"event\":\"ft_transfer\",\"data\":[{\"old_owner_id\":\"ss-shared-s1114151743.testnet\",\"new_owner_id\":\"showstake-participant-endpx.testnet\",\"amount\":\"2000000\",\"memo\":\"refund\"}]}"
+        ],
+        "metadata": {
+          "contracts": [
+            {
+              "local": "2beWuFPAgHn9XWRWjaRziB9wkSoeMCUkZRbyrQ9hDSJE"
+            }
+          ],
+          "version": 4
+        },
+        "receipt_ids": [
+          "FJHvoouD8zFY8mThW6DTvmUnH32sJ6byjYRCmcwiRrMV"
+        ],
+        "status": {
+          "SuccessValue": "IjAi"
+        },
+        "tokens_burnt": "198925325183800000000"
+      },
+      "proof": [
+        {
+          "direction": "Left",
+          "hash": "94nSSVYswT1CtERYbmmhaTUocZaX39yzUq4k2P7sVurj"
+        }
+      ]
+    },
+    {
+      "block_hash": "CE4RBxyFpPnAuppRLmNPZLkYJUQHFTFS96gQsuYZubQT",
+      "id": "FJHvoouD8zFY8mThW6DTvmUnH32sJ6byjYRCmcwiRrMV",
+      "outcome": {
+        "executor_id": "showstake-participant-endpx.testnet",
+        "gas_burnt": 223182562500,
+        "logs": [],
+        "metadata": {
+          "contracts": [
+            null
+          ],
+          "version": 4
+        },
+        "receipt_ids": [],
+        "status": {
+          "SuccessValue": ""
+        },
+        "tokens_burnt": "0"
+      },
+      "proof": [
+        {
+          "direction": "Right",
+          "hash": "3HaS58vRUXLL1cHBnwbjEiVUSma8j7rJ4jk5grjEQsGC"
+        },
+        {
+          "direction": "Right",
+          "hash": "Gt2QUp8k69ReaT7HuXu1UAaGyHiDoLKBPmxzMNCtfiG"
+        },
+        {
+          "direction": "Left",
+          "hash": "7rCfgkVH6sToDW3QFqBinfkRQr5zvMi6rPY8MUCUrnAw"
+        }
+      ]
+    },
+    {
+      "block_hash": "LyYL6DKfQu4p19KChvMcNAUsD4wmoF4dBYLd2b7X3pE",
+      "id": "4jo5SQ3x1yiPTuYMJt5CwMs31xNUCSAtLZ7VsMkHCkU9",
+      "outcome": {
+        "executor_id": "showstake-participant-endpx.testnet",
+        "gas_burnt": 223182562500,
+        "logs": [],
+        "metadata": {
+          "contracts": [
+            null
+          ],
+          "version": 4
+        },
+        "receipt_ids": [],
+        "status": {
+          "SuccessValue": ""
+        },
+        "tokens_burnt": "0"
+      },
+      "proof": [
+        {
+          "direction": "Left",
+          "hash": "3oH89VQea7JQ92fPVL3zqNL8aGrsun1fMG7kyWJgU2nU"
+        },
+        {
+          "direction": "Left",
+          "hash": "HyGE7yAWFZ9mFQ6oN1Fcs794h8KjdrhskXVdCN6YhFB8"
+        }
+      ]
+    }
+  ],
+  "status": {
+    "SuccessValue": "IjAi"
+  },
+  "transaction": {
+    "actions": [
+      {
+        "FunctionCall": {
+          "args": "eyJyZWNlaXZlcl9pZCI6InNzLXNoYXJlZC1zMTExNDE1MTc0My50ZXN0bmV0IiwiYW1vdW50IjoiMjAwMDAwMCIsIm1zZyI6IntcInZlcnNpb25cIjoxLFwiZXZlbnRfaWRcIjpcImV2ZW50LTFkMzgxMDQxODZkZjQyNmFiMWE1ZTlhYjNjMDJjZDgyXCIsXCJjb21taXRtZW50X2lkXCI6XCJicm93c2VyLW93bmVyLXY4XCJ9In0=",
+          "deposit": "1",
+          "gas": 300000000000000,
+          "method_name": "ft_transfer_call"
+        }
+      }
+    ],
+    "hash": "FEkNqahKo1ubR4fYUi42E5sZxBWYMrXNtJj56ZN49Wsf",
+    "nonce": 276608224000156,
+    "priority_fee": 0,
+    "public_key": "ed25519:2oWNjLUBKMyKfGT3Ch7JcqUMVucxTnqcNDGGEM4zzf8K",
+    "receiver_id": "mockusdc.testnet",
+    "signer_id": "showstake-participant-endpx.testnet"
+  },
+  "transaction_outcome": {
+    "block_hash": "33sgoL8pKTkdyfdr6y8WWnnH6hqmAFXzEtsLBufTpQoV",
+    "id": "FEkNqahKo1ubR4fYUi42E5sZxBWYMrXNtJj56ZN49Wsf",
+    "outcome": {
+      "executor_id": "showstake-participant-endpx.testnet",
+      "gas_burnt": 317643926715,
+      "logs": [],
+      "metadata": {
+        "version": 1
+      },
+      "receipt_ids": [
+        "HLTBvGnDd7FFaCem5vVysADVoVfoWnhbCBww8xQXit6D"
+      ],
+      "status": {
+        "SuccessReceiptId": "HLTBvGnDd7FFaCem5vVysADVoVfoWnhbCBww8xQXit6D"
+      },
+      "tokens_burnt": "31764392671500000000"
+    },
+    "proof": [
+      {
+        "direction": "Left",
+        "hash": "95qSDwkYTC6sFAM9uNTs9EimLSvjZ8qEkgrd1Br1M6f3"
+      },
+      {
+        "direction": "Right",
+        "hash": "54bkS1z46cHpAUjLVPL8B3YdL43XHuDhY4NdFntUubsc"
+      }
+    ]
+  }
+}

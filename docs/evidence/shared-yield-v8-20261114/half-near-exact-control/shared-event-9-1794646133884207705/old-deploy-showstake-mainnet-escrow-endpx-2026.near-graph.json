@@ -1,0 +1,135 @@
+{
+  "final_execution_status": "FINAL",
+  "receipts": [
+    {
+      "predecessor_id": "system",
+      "priority": 0,
+      "receipt": {
+        "Action": {
+          "actions": [
+            {
+              "Transfer": {
+                "deposit": "24035880681629700000000"
+              }
+            }
+          ],
+          "gas_price": "0",
+          "input_data_ids": [],
+          "is_promise_yield": false,
+          "output_data_receivers": [],
+          "signer_id": "showstake-mainnet-escrow-endpx-2026.near",
+          "signer_public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB"
+        }
+      },
+      "receipt_id": "4LiCXMnxgFB2pFxQ9q9ntcqDkckMMM3GmBRDmrhBX2fY",
+      "receiver_id": "showstake-mainnet-escrow-endpx-2026.near"
+    }
+  ],
+  "receipts_outcome": [
+    {
+      "block_hash": "FWfFDdBY1jGVT8Xeso8BoWyoVWhH3qF8EbCJ8orbvMk7",
+      "id": "4hPtVZ2qkd2mYcepzmEycaoLJD14raW8km512Ffumagb",
+      "outcome": {
+        "executor_id": "showstake-mainnet-escrow-endpx-2026.near",
+        "gas_burnt": 16094749258483,
+        "logs": [],
+        "metadata": {
+          "contracts": [
+            null,
+            {
+              "local": "EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY"
+            }
+          ],
+          "version": 4
+        },
+        "receipt_ids": [
+          "4LiCXMnxgFB2pFxQ9q9ntcqDkckMMM3GmBRDmrhBX2fY"
+        ],
+        "status": {
+          "SuccessValue": ""
+        },
+        "tokens_burnt": "1609474925848300000000"
+      },
+      "proof": [
+        {
+          "direction": "Left",
+          "hash": "Be8fauPKdRMpbNTG4SpDLazJ7sdQzjNZceBME9gbrpmm"
+        }
+      ]
+    },
+    {
+      "block_hash": "FHb8Ee2ewiYddV9o7ucMMSCVB8DsxQ8gGWwkQP8hAhFf",
+      "id": "4LiCXMnxgFB2pFxQ9q9ntcqDkckMMM3GmBRDmrhBX2fY",
+      "outcome": {
+        "executor_id": "showstake-mainnet-escrow-endpx-2026.near",
+        "gas_burnt": 223182562500,
+        "logs": [],
+        "metadata": {
+          "contracts": [
+            {
+              "local": "EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY"
+            }
+          ],
+          "version": 4
+        },
+        "receipt_ids": [],
+        "status": {
+          "SuccessValue": ""
+        },
+        "tokens_burnt": "0"
+      },
+      "proof": []
+    }
+  ],
+  "status": {
+    "SuccessValue": ""
+  },
+  "transaction": {
+    "actions": [
+      {
+        "DeployContract": {
+          "code": "yBzz1yk8ER/CnJMKwZ+U08iM3PTX3PcKc/c5Ech5mec="
+        }
+      },
+      {
+        "FunctionCall": {
+          "args": "eyJjYW5vbmljYWxfZnQiOiIxNzIwODYyOGY4NGY1ZDZhZDMzZjBkYTNiYmJlYjI3ZmZjYjM5OGVhYzUwMWEzMWJkNmFkMjAxMWUzNjEzM2ExIiwibmV0d29yayI6Im1haW5uZXQiLCJwcm92aWRlcl9hY2NvdW50IjoiY29udHJhY3QubWFpbi5idXJyb3cubmVhciIsInByb3ZpZGVyX2tpbmQiOiJSSEVBX01BSU5ORVQiLCJ0b2tlbl9kZWNpbWFscyI6NiwidG9rZW5fbmFtZSI6IlVTREMiLCJ0b2tlbl9zeW1ib2wiOiJVU0RDIn0=",
+          "deposit": "0",
+          "gas": 10000000000000,
+          "method_name": "new"
+        }
+      }
+    ],
+    "hash": "6iNiqct1vFRZ4qJV6QArMWVyE811EoPBbgzj43GXQXj4",
+    "nonce": 1,
+    "priority_fee": 0,
+    "public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB",
+    "receiver_id": "showstake-mainnet-escrow-endpx-2026.near",
+    "signer_id": "showstake-mainnet-escrow-endpx-2026.near"
+  },
+  "transaction_outcome": {
+    "block_hash": "FWfFDdBY1jGVT8Xeso8BoWyoVWhH3qF8EbCJ8orbvMk7",
+    "id": "6iNiqct1vFRZ4qJV6QArMWVyE811EoPBbgzj43GXQXj4",
+    "outcome": {
+      "executor_id": "showstake-mainnet-escrow-endpx-2026.near",
+      "gas_burnt": 2030842099163,
+      "logs": [],
+      "metadata": {
+        "version": 1
+      },
+      "receipt_ids": [
+        "4hPtVZ2qkd2mYcepzmEycaoLJD14raW8km512Ffumagb"
+      ],
+      "status": {
+        "SuccessReceiptId": "4hPtVZ2qkd2mYcepzmEycaoLJD14raW8km512Ffumagb"
+      },
+      "tokens_burnt": "203084209916300000000"
+    },
+    "proof": [
+      {
+        "direction": "Right",
+        "hash": "FsDYdXXV4gYkksUozPUqfsQ69v28krdAJk5tn1VwHrxu"
+      }
+    ]
+  }
+}

@@ -18,8 +18,23 @@ export const SHARED_YIELD_RELEASE: MultiEventRelease | null = Object.freeze({
   schema:2,
   maxStorageYocto:'12000000000000000000000000',
 });
+/** Review candidate only; its code hash is not a claim about the deployed account. */
+export const MAINNET_SHARED_YIELD_CANDIDATE: MultiEventRelease = Object.freeze({
+  network:'mainnet',
+  contract:'showstake-mainnet-escrow-endpx-2026.near',
+  codeHash:'4Dq4uEH2PE9FEB7n67d3r3fvHPUy5KAvjhgZ8q5sX4PU',
+  canonicalFt:'17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1',
+  policy:'showstake-native-usdc-shared-yield/2',
+  provider:'contract.main.burrow.near',
+  providerKind:'RHEA_MAINNET',
+  schema:2,
+  maxStorageYocto:'10000000000000000000000000',
+});
+/** Activated only after the mainnet account code and config are reviewed on chain. */
+export const MAINNET_SHARED_YIELD_RELEASE = null as MultiEventRelease | null;
 export function sharedReleaseForNetwork(network:string): MultiEventRelease | null {
-  return reviewedSharedYieldRelease(SHARED_YIELD_RELEASE) && SHARED_YIELD_RELEASE.network === network ? SHARED_YIELD_RELEASE : MULTI_EVENT_RELEASE?.network === network ? MULTI_EVENT_RELEASE : null;
+  const candidate=network==='mainnet'?MAINNET_SHARED_YIELD_RELEASE:SHARED_YIELD_RELEASE;
+  return reviewedSharedYieldRelease(candidate) && candidate.network === network ? candidate : MULTI_EVENT_RELEASE?.network === network ? MULTI_EVENT_RELEASE : null;
 }
 export function reviewedSharedYieldRelease(r:MultiEventRelease|null): r is MultiEventRelease {
  return !!r && r.policy==='showstake-native-usdc-shared-yield/2' && r.schema===2 && !!r.contract && !!r.codeHash && !!r.canonicalFt && !!r.provider && /^(0|[1-9][0-9]*)$/.test(r.maxStorageYocto??'') && (r.network==='testnet' ? r.providerKind==='MOCK_TESTNET' && [r.contract,r.canonicalFt,r.provider].every(x=>x.endsWith('.testnet')) : r.providerKind==='RHEA_MAINNET' && r.provider==='contract.main.burrow.near' && r.canonicalFt==='17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1');
