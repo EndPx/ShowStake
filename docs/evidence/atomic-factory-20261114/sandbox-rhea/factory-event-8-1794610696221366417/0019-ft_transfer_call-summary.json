@@ -1,0 +1,71 @@
+{
+  "contract": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+  "deposit": "1",
+  "method": "ft_transfer_call",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "FHdQPFkRkrgeYEZWsHk6gud9w4uLE8qQNhmrMPpAgGxG",
+        "mHJoaVraLD7bZz8gSJ9p5t4SqTD7ikaVt9onPPrU7au",
+        "uC78TzWMm4LJeAPKdaExL41b44hViZvVK6CN8yA76v4"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": false,
+      "gas_burnt": 2679156364787,
+      "id": "Fu7mACU7dsVTzjR1U3pADh36fMkWLB4uNsyBQNHbmKUE",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "HbLE9k9gHLL4MgQinmmVCFuUFpKMpxAVL16Q3mxeWehH"
+      ],
+      "executor": "017e20cf6a9babb5.factory.sandbox",
+      "failure": false,
+      "gas_burnt": 2193623288689,
+      "id": "FHdQPFkRkrgeYEZWsHk6gud9w4uLE8qQNhmrMPpAgGxG",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "user0.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "HbLE9k9gHLL4MgQinmmVCFuUFpKMpxAVL16Q3mxeWehH",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "5Yg7W5yJUZZiM2uAnHpxHR23pg7zDEbTHxJKS5AtQWRh"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": false,
+      "gas_burnt": 1438022561926,
+      "id": "mHJoaVraLD7bZz8gSJ9p5t4SqTD7ikaVt9onPPrU7au",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "user0.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "5Yg7W5yJUZZiM2uAnHpxHR23pg7zDEbTHxJKS5AtQWRh",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "user0.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "uC78TzWMm4LJeAPKdaExL41b44hViZvVK6CN8yA76v4",
+      "success": true
+    }
+  ],
+  "signer": "user0.testnet",
+  "success": true
+}

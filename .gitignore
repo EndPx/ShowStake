@@ -12,3 +12,4 @@ __pycache__/
 
 # Per-run local database test output; reviewed evidence is in docs/evidence.
 migrations/artifacts/
+.vercel

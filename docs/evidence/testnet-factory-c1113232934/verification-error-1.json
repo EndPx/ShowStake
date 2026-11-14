@@ -1,0 +1,6 @@
+{
+  "classification": "FAILED",
+  "scope": "Read-only validator; no transaction replay",
+  "cause": "list_all_children limit=100 exceeded supported page bound and nested query error was not surfaced",
+  "fix": "Use the same bounded page size20 as production worker; surface nested query errors; rerun only read-only validation"
+}

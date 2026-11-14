@@ -1,0 +1,818 @@
+{
+  "algorithm": "SHA-256",
+  "scope": "public/sanitized local sandbox evidence, not mainnet or funded Rhea verification",
+  "remote_source_files_verified": 160,
+  "files": [
+    {
+      "path": "capacity/factory-event-capacity.json",
+      "bytes": 20885,
+      "sha256": "423dba51dbfdfcee966d048c139badc21914755bb44d17c5c525d5e4f0e8b3bd"
+    },
+    {
+      "path": "capacity/runtime.log",
+      "bytes": 2204,
+      "sha256": "c68b1e7be72572bd52fa5bd1088fa19bb4e9ab5e5481580b4f7eacbbace872b1"
+    },
+    {
+      "path": "migration/factory-event-9-1794611993731377829/empty-upgrade-attempt-account.json",
+      "bytes": 239,
+      "sha256": "2d154e4f29197e6abb241dd8e976fc45231104260898fadb08d4736c7b443e12"
+    },
+    {
+      "path": "migration/factory-event-9-1794611993731377829/empty-upgrade-attempt-graph.json",
+      "bytes": 3745,
+      "sha256": "4652f04d4459cd3bb02bb2d54c4c038ef4eede9e91d8c1160f37d35b71896165"
+    },
+    {
+      "path": "migration/factory-event-9-1794611993731377829/empty-upgrade-graph.json",
+      "bytes": 3745,
+      "sha256": "4652f04d4459cd3bb02bb2d54c4c038ef4eede9e91d8c1160f37d35b71896165"
+    },
+    {
+      "path": "migration/factory-event-9-1794611993731377829/migration-state.json",
+      "bytes": 2891,
+      "sha256": "1b618ab52d8d2e3964e175058f715865376a4bd7980d41d987d6b4d86fe34239"
+    },
+    {
+      "path": "migration/factory-event-9-1794611993731377829/nonempty-upgrade-graph.json",
+      "bytes": 4034,
+      "sha256": "6b0e323aa387172a7352735b43cb3f2eaf43a0fbf089bbc3a01d96d1a31c0d5e"
+    },
+    {
+      "path": "migration/factory-event-9-1794611993731377829/old-deploy-nonempty.near-account.json",
+      "bytes": 240,
+      "sha256": "310ef12d0d4a64b310102b957426a76465daf555f4dada244005f805f4251343"
+    },
+    {
+      "path": "migration/factory-event-9-1794611993731377829/old-deploy-nonempty.near-graph.json",
+      "bytes": 3774,
+      "sha256": "38936becb70b2205787134cb6cc1adaaa78a212906d3cab59a454aaeb026437b"
+    },
+    {
+      "path": "migration/factory-event-9-1794611993731377829/old-deploy-showstake-mainnet-escrow-endpx-2026.near-account.json",
+      "bytes": 239,
+      "sha256": "77abc0521987104da68930cd87da8cf79db1749067adcc30cf7031843c4903a5"
+    },
+    {
+      "path": "migration/factory-event-9-1794611993731377829/old-deploy-showstake-mainnet-escrow-endpx-2026.near-graph.json",
+      "bytes": 3960,
+      "sha256": "6aacd5308165dea522e0a6f29e716a30cda2a5376644e4081dc9f80aa83748e0"
+    },
+    {
+      "path": "migration/factory-event-9-1794611993731377829/pre-empty-upgrade.json",
+      "bytes": 672,
+      "sha256": "319dd7fed9f32dcc6c85cf54268c5548474f9caca5c1c6dd4ff498e8da60cd79"
+    },
+    {
+      "path": "migration/factory-event-9-1794611993731377829/pre-nonempty-create.json",
+      "bytes": 658,
+      "sha256": "a11b0dd16aa33fe0c5824318784fcfd2d8ea8bfbccfad497654f2b9c53b94c76"
+    },
+    {
+      "path": "migration/factory-event-9-1794611993731377829/pre-nonempty-upgrade.json",
+      "bytes": 673,
+      "sha256": "fce777bb167c122a15fa11e4317df93fc727e30e57afa7a9dd2e5f750d05c20b"
+    },
+    {
+      "path": "migration/factory-event-9-1794611993731377829/pre-old-empty-bootstrap.json",
+      "bytes": 655,
+      "sha256": "e0bd151eb79c1ce65cfd4eb10e5399bbb194b6c422255ed69fde1a75d60b7d20"
+    },
+    {
+      "path": "migration/factory-event-9-1794611993731377829/pre-old-nonempty-bootstrap.json",
+      "bytes": 658,
+      "sha256": "023d56c1d8d95813d27448cad42bd84316c9c92d04e2cffe60a6d734608aabf1"
+    },
+    {
+      "path": "migration/factory-event-9-1794611993731377829/sandbox-gas-price.json",
+      "bytes": 30,
+      "sha256": "7e2ebc5f62409b14fe8e8dc2860ac3a5851613f96898de39d241fea192a90b8b"
+    },
+    {
+      "path": "migration/factory-event-9-1794611993731377829/sandbox-protocol-config.json",
+      "bytes": 12624,
+      "sha256": "13515ec10462938d5c8186a101f739121d4dcfc71d3700ebf39c962e996000c0"
+    },
+    {
+      "path": "migration/runtime.log",
+      "bytes": 401,
+      "sha256": "b0ae66673572076bd88e7ac40000dbadfe75a91990e626dcc0f1f9ff0b5a16c5"
+    },
+    {
+      "path": "sandbox-mock/mock-runtime.log",
+      "bytes": 338,
+      "sha256": "6d38d321ebdad6b33076c82b1a26a37adfaf0dfb0c9126221de6b96b15b98712"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0000-add_asset-graph.json",
+      "bytes": 5414,
+      "sha256": "fcdc39b315e6ff6b45b72068223fb6d279bac6be2aaf7feb878fd822b7ca094a"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0000-add_asset-summary.json",
+      "bytes": 689,
+      "sha256": "0421f084bb0d8fb892c5e120b3661c8a77809bc67dfe89c6b5e2b3fe8b988bb6"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0001-storage_deposit-graph.json",
+      "bytes": 6997,
+      "sha256": "4765302383bef1c82b6e2f9656dbe84565464db56642fde947243f21679c7d6d"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0001-storage_deposit-summary.json",
+      "bytes": 1371,
+      "sha256": "701703e8801ffd3ba40e44a453116a0d364d688760b48fc926091ab8a318b1c5"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0002-storage_deposit-graph.json",
+      "bytes": 6965,
+      "sha256": "3e5276d15c5f0c6ac838425b8cd86a39e4e38b9ace08cd133e7ad63460bcf278"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0002-storage_deposit-summary.json",
+      "bytes": 1371,
+      "sha256": "7d7ada0629ac469705b381bd9e313153dd6ccb4a90a1b333818fe0fb8ee2addd"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0003-storage_deposit-graph.json",
+      "bytes": 6965,
+      "sha256": "c427d2cd3c94778124535e5b737ac78680caf65930d138642ff0fa3f26e2b121"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0003-storage_deposit-summary.json",
+      "bytes": 1371,
+      "sha256": "bb7218d23d9c99b25041f4548ff593f340b820d26d9483e282c25094e826e22f"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0004-storage_deposit-graph.json",
+      "bytes": 6965,
+      "sha256": "35328d09f4e31cb16a22e0eac6eb5623a82a13e63e83cea4b355fdb5caca3a1c"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0004-storage_deposit-summary.json",
+      "bytes": 1371,
+      "sha256": "62921e0071d03411ff57357960b7a53ca1b94fa700f03589f8f29a888087ee74"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0005-storage_deposit-graph.json",
+      "bytes": 6965,
+      "sha256": "58b27f0f6243ad48e3f61f796fe7a86e0c63e7c14063d6a2f82e16488c3c19df"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0005-storage_deposit-summary.json",
+      "bytes": 1371,
+      "sha256": "f31835a75b9f19f7e7cffb983238b248525b8dbfd336dfb22f5eda239b8bb867"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0006-storage_deposit-graph.json",
+      "bytes": 6965,
+      "sha256": "cccb6647b337f560c4fb9a856f080b786e9abf48dacc33c96f66cf6beb91eb19"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0006-storage_deposit-summary.json",
+      "bytes": 1371,
+      "sha256": "b41819cf40e08d5f0572261267274940a4757358ae640b0c3be2ed275c03cf82"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0007-storage_deposit-graph.json",
+      "bytes": 6965,
+      "sha256": "40e93e8752d4c8575c5ce1da4b8647576dd706e2dc46dfb1731ea32eea74701a"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0007-storage_deposit-summary.json",
+      "bytes": 1371,
+      "sha256": "3d56280db61bbb78a462f73922a62f631c0172685c5a33de75ee4075685a3fa7"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0008-storage_deposit-graph.json",
+      "bytes": 6965,
+      "sha256": "443a7606b259afbd18a7c09adc057bf48ea8f5fb3fd893303810a536c293b081"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0008-storage_deposit-summary.json",
+      "bytes": 1371,
+      "sha256": "2274c63440e998f4eef4b82324a1ab195c0ee3d051614ca675ffc3f1b912412d"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0009-storage_deposit-graph.json",
+      "bytes": 6966,
+      "sha256": "eb197003a004dd1d4b07b4fd2b3ea23dd7d5503bd49bb69aeef696859063712e"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0009-storage_deposit-summary.json",
+      "bytes": 1371,
+      "sha256": "9510b18c9e1338240cfeafb21c66bd0f5e0d6f07c5034ffae3c14b8f4d5fe282"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0010-storage_deposit-graph.json",
+      "bytes": 6966,
+      "sha256": "6ac4c4297c84ad98ccd1f07fd4493a3bf733ad45a7134cbb8b1faa30c24ac9fa"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0010-storage_deposit-summary.json",
+      "bytes": 1371,
+      "sha256": "05f68951d97044e9acfe551384377818deaf972c9b7630c538dcb96a71d767de"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0011-storage_deposit-graph.json",
+      "bytes": 6966,
+      "sha256": "3566235efc53cb24acd790dcf547d4ce51bf7e600fc9523c43e02aa4d2bd00e3"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0011-storage_deposit-summary.json",
+      "bytes": 1371,
+      "sha256": "777e44dfbdfadf0419997232ee9c032b1d6122081e480cb69b973779729887cd"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0012-provision_event-graph.json",
+      "bytes": 872495,
+      "sha256": "5e0f17d7393317b89fe2faaf3b533f1ea97b75166d6c5bd2872efc352b56161c"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0012-provision_event-summary.json",
+      "bytes": 1876,
+      "sha256": "56d2c106bbef9ae0fe590ca30c44da0bafee7bc0a6dbefa95b5c017db12f952e"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0013-rhea_storage_deposit-graph.json",
+      "bytes": 10127,
+      "sha256": "0d2c4f5cf3f4459e02144123b7a88361d62d419cca0d6653c3b0dd6206472be3"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0013-rhea_storage_deposit-summary.json",
+      "bytes": 1959,
+      "sha256": "348bbaf23ad3d9c079fe3d3b063bbaa54a6656d1415f0cc9c12062e1e481c634"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0014-rhea_storage_deposit-graph.json",
+      "bytes": 7181,
+      "sha256": "efd5a511490d9358f3c5eddfdc318cd0ebbcf65eb20a4fca6bfbae41e15b8286"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0014-rhea_storage_deposit-summary.json",
+      "bytes": 1326,
+      "sha256": "19aff875587612ac9c07e202a6f15f889aec8a4263998e2ea3a7594587cee3be"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0015-provision_event-graph.json",
+      "bytes": 872516,
+      "sha256": "19dbc110d783b0fd3ddb737b71f521a0588610aed609569b2d3c79997d36565d"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0015-provision_event-summary.json",
+      "bytes": 1880,
+      "sha256": "77feabb102cad718dc1bcca97798e8aa6079fbb2e08fe45a3b11a924cb48283a"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0016-rhea_storage_deposit-graph.json",
+      "bytes": 10137,
+      "sha256": "6563c118dc1da1c4d049b2bc19988aca02a4380b396110a82de3ed271acb8654"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0016-rhea_storage_deposit-summary.json",
+      "bytes": 1961,
+      "sha256": "3a5391008fbd893e7e41a7afe484766096edf81bcd855b79055c4cf758037b93"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0017-rhea_storage_deposit-graph.json",
+      "bytes": 7192,
+      "sha256": "55e8c95ed50295936ebe1a33a2643285cd1cbc1e6c49b847aa6000718313bbb7"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0017-rhea_storage_deposit-summary.json",
+      "bytes": 1329,
+      "sha256": "adce403dfd53f82aca2c2c1263b60cd6a15a12dbde54c4b6705726efc9a25e19"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0018-ft_transfer-graph.json",
+      "bytes": 4267,
+      "sha256": "61741ca34b2ae94162cecfa3b1da7578718bf8af4d0dc7e3fd3da334c6c74ac7"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0018-ft_transfer-summary.json",
+      "bytes": 769,
+      "sha256": "cf62ac0359b1ee7d664dfd72a21591427a5bcfa057a1da6768cd232e2db52fdc"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0019-ft_transfer_call-graph.json",
+      "bytes": 11633,
+      "sha256": "db77cd3f87ed7f6d6c7a1811999378e26dd9cb1f0f72e17ab0df6627d06a45ce"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0019-ft_transfer_call-summary.json",
+      "bytes": 1994,
+      "sha256": "66b9f18322e766cdbbc2e09ef7a8075b227b67466c1642853695bb23b24d1083"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0020-ft_transfer-graph.json",
+      "bytes": 4268,
+      "sha256": "4795dce4567cda2bf1544377de7bb8c66d209c004b6224a39d0dfea0af799d3e"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0020-ft_transfer-summary.json",
+      "bytes": 769,
+      "sha256": "c3b12c4ecb87cb8c621387de40c04eb704f7678606c47c60d57a50ca6cd0f490"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0021-ft_transfer_call-graph.json",
+      "bytes": 11638,
+      "sha256": "918346a091da4715f34d7d047ef4c3e1e87dbc4815a2fddd33e8504d66cab8fd"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0021-ft_transfer_call-summary.json",
+      "bytes": 1998,
+      "sha256": "573cfd097c928098d78918fa9dc4c6ef4f74f89e09dbdcfb6cfd9d0843a5f88e"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0022-ft_transfer-graph.json",
+      "bytes": 4265,
+      "sha256": "1701433d9e3ac11bd24af4ab9a4e44a40db85eb6eb496a7a7d9a3febb0cf025d"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0022-ft_transfer-summary.json",
+      "bytes": 767,
+      "sha256": "bf59c942de72ed786a73c70940946bc01864036816839ede65a1d10e1f4dd4f1"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0023-ft_transfer_call-graph.json",
+      "bytes": 11641,
+      "sha256": "e874e44124275d58423b15fe74ccc62b012204d9e8c16513380c69604f28f768"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0023-ft_transfer_call-summary.json",
+      "bytes": 1998,
+      "sha256": "2cb099b3ebe36a303d13606095372f32e8b10bcb1b8320b21cf552c6409bb54e"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0024-ft_transfer-graph.json",
+      "bytes": 4268,
+      "sha256": "287c776f35097fb485896f97686539e7b6244d66c844c752739c274cb455ad69"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0024-ft_transfer-summary.json",
+      "bytes": 769,
+      "sha256": "8de51c0778d96d2e059890a62831a67505d5693e9533018b64519d57c203c0eb"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0025-ft_transfer_call-graph.json",
+      "bytes": 11636,
+      "sha256": "5d6451d306c6acbdd80519d8df3deb50b80c8d54bbae8f31c14f3b84e7964ec4"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0025-ft_transfer_call-summary.json",
+      "bytes": 1998,
+      "sha256": "cd3d5c4a4b88250d695e43c9ab0f59d671bff35a9d4f26717810aa7912bc8e89"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0026-ft_transfer-graph.json",
+      "bytes": 4268,
+      "sha256": "1703e25260b5b9fb1de6b64b881dd5d319512ba4cab856c78193fced09bf9d07"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0026-ft_transfer-summary.json",
+      "bytes": 769,
+      "sha256": "dc0240b25858b93e8a6c1c29ee4178c21dab1f471164124356f9b6baf72135e5"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0027-ft_transfer_call-graph.json",
+      "bytes": 11636,
+      "sha256": "0984d8d9561e409431c00d38e70b4fad28c9600cf597e11bd1ac500fa525634b"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0027-ft_transfer_call-summary.json",
+      "bytes": 1996,
+      "sha256": "0b4e2c3afbde5e9811feab906befe2fd11d78da02836d57d0f100c4675a05e76"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0028-ft_transfer-graph.json",
+      "bytes": 4268,
+      "sha256": "dbae8381493419fd4e5d33df12be22975b56c3414165aa081b32bb8a76cb3e5e"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0028-ft_transfer-summary.json",
+      "bytes": 769,
+      "sha256": "22577998e940035dc51014cfe0991bc6f34a8f74a94be4944a802246177215b1"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0029-ft_transfer_call-graph.json",
+      "bytes": 11639,
+      "sha256": "bb2bcbb36bfbfd6920432b76c9a06b406c6cca5c322ae5337e5269fceceb0c5a"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0029-ft_transfer_call-summary.json",
+      "bytes": 1998,
+      "sha256": "4bd2cd27b186e39f489273c058ed6ffeb47649a363893d5d34087d41b45cd9ed"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0030-ft_transfer-graph.json",
+      "bytes": 4264,
+      "sha256": "ed2a7f45252e7fa1fc6538e7885f29abcd9f723c45efc6adb06745c03df8a13f"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0030-ft_transfer-summary.json",
+      "bytes": 768,
+      "sha256": "21a80be415d3bf6cab089581ce41b25b08f58116baded9a453f0233e490b395b"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0031-ft_transfer_call-graph.json",
+      "bytes": 11641,
+      "sha256": "1adb7f0ab74356e50972a6adae9b9d3f9768d7e6807c7d4a7ea19de55e31e024"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0031-ft_transfer_call-summary.json",
+      "bytes": 1998,
+      "sha256": "76743af45bf06cad71fba94499b0a53b2af02b92ba71fcad8f8b6e83180b429a"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0032-ft_transfer-graph.json",
+      "bytes": 4265,
+      "sha256": "2809658cb6088016d0506e7527ba7906f0c28572d1d3d2f113e6f01462db343f"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0032-ft_transfer-summary.json",
+      "bytes": 767,
+      "sha256": "aaef3e6acdd0cb1358ec0ad68cc564ba5c5cdcebbc495f6a1318be9305c1620b"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0033-ft_transfer_call-graph.json",
+      "bytes": 11641,
+      "sha256": "f8b3093dd043533eba2ac00ecfbd03549fb27062350498dde3fcd4863018ad9d"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0033-ft_transfer_call-summary.json",
+      "bytes": 1998,
+      "sha256": "d9e8f204fd17523569238f457e6fce1e5b3b97c0d6181d400306c5caedb6b1c2"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0034-ft_transfer-graph.json",
+      "bytes": 4268,
+      "sha256": "d059f4da2950504d5e0f1c838036ce2160f295a469707ee69703dc7643ad7ce1"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0034-ft_transfer-summary.json",
+      "bytes": 769,
+      "sha256": "32ebfc484f7bd69af318d27ac6c8682fa5716da9c66e04533ac7b03059db5060"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0035-ft_transfer_call-graph.json",
+      "bytes": 11641,
+      "sha256": "8dd5bad54bea17ab23083eb6dfb045382743b440ea5a9e05b015d37b2a9e2e81"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0035-ft_transfer_call-summary.json",
+      "bytes": 1998,
+      "sha256": "7a75022ce31bc15082c74c4d8df17f698a3257f5687fef532d3a13ac1741cb88"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0036-ft_transfer-graph.json",
+      "bytes": 4266,
+      "sha256": "7363f81c5faa51a668ac7e6de74cbd892275d5c581405ebb0f6cdafaff0a9155"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0036-ft_transfer-summary.json",
+      "bytes": 769,
+      "sha256": "64b3b9d2bc00fd8ba8476ccb02b782b4012056fe82b93a90c0fd0dacfce8629f"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0037-ft_transfer_call-graph.json",
+      "bytes": 11635,
+      "sha256": "fccef458cd96dcde12563c30d5fb358722b1622707a1136835d442e83ff8429b"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0037-ft_transfer_call-summary.json",
+      "bytes": 1994,
+      "sha256": "e796355395a55093b3629493f205f7ac3b30eac17ab9257c1c10c2bc56933fb6"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0038-ft_transfer-graph.json",
+      "bytes": 4267,
+      "sha256": "295a6213c78921be893e04f5d2ce0e25784e3f6fa176ab1ec301b3d1f448df2b"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0038-ft_transfer-summary.json",
+      "bytes": 769,
+      "sha256": "5a4bbabe0fe694e8b3631e84e14e142462761f49ac318736f9bb7f72dfa58914"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0039-ft_transfer_call-graph.json",
+      "bytes": 11504,
+      "sha256": "a13fc214f0313fe2e41fef59c270d30a73d0f6121e54fc12e03e1c141f835b91"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0039-ft_transfer_call-summary.json",
+      "bytes": 1998,
+      "sha256": "901add8a9282d118b7690e857519ebe7e42fe0c1d0291ba964a342a1b85d378d"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0040-ft_transfer_call-graph.json",
+      "bytes": 11503,
+      "sha256": "db806932b0d7333ac95957060e281773b9bc2aa452b459c0f6208ff06dcc2852"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0040-ft_transfer_call-summary.json",
+      "bytes": 1998,
+      "sha256": "f893bfca61a384e809eb0420fc7589b5a054d367d8bd9397c6426457139bca57"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0041-ft_on_transfer-graph.json",
+      "bytes": 4014,
+      "sha256": "7c830d6583349861bd8408cc89e06ec06e09ca37cf0be983e31f4976140f4d3e"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0041-ft_on_transfer-summary.json",
+      "bytes": 708,
+      "sha256": "0990a29eaad1e3c172b67f59589b5819f6896355cc6af147851f3f2cb6cd5673"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0042-close_registration-graph.json",
+      "bytes": 3845,
+      "sha256": "aee7d2f4c6e4454caad07eb245e3901c48b9fa517c517cf85becc549ac7436e5"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0042-close_registration-summary.json",
+      "bytes": 712,
+      "sha256": "674f3d5e1dc42b9d517c2b5d9293744aee08f14cc6dda5d085f003c4dad3dc41"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0043-trigger_earn_supply-graph.json",
+      "bytes": 49252,
+      "sha256": "57a1aaf8642e59237e2339063a2b37a2a44a69b1e28517a4951472db1fd4e4c4"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0043-trigger_earn_supply-summary.json",
+      "bytes": 7956,
+      "sha256": "48a804f07a5ca8de00131c69689503c190d961979783d3043816a1f8baed459e"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0044-close_registration-graph.json",
+      "bytes": 3852,
+      "sha256": "b61b4b313c296241ec802161cd21d1d155be854c39cdce9e8e767d1cfb83f1a8"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0044-close_registration-summary.json",
+      "bytes": 714,
+      "sha256": "d2baba657ad6736d70e41c997a1d607f021294bf932ba3ef0902d4d61e5ca258"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0045-trigger_earn_supply-graph.json",
+      "bytes": 49371,
+      "sha256": "0c8995f0d0a0163a2020eb6194192e78649ca01375c511419d598f5900bde40b"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0045-trigger_earn_supply-summary.json",
+      "bytes": 7970,
+      "sha256": "358d5e779e19c06fec0187a1a8f0bfcdb9030155723694346de62de12b00c4dc"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0046-mark_attendance-graph.json",
+      "bytes": 3967,
+      "sha256": "5d7996cf9dc9bd242691e849ade4b21fcf6b513672f2f8aaf4d1790cc5057236"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0046-mark_attendance-summary.json",
+      "bytes": 709,
+      "sha256": "4421bc997d26d28e40a11afdc9ea8f02107f19220c0aa7d360bf4c9fa59e3432"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0047-mark_attendance-graph.json",
+      "bytes": 3967,
+      "sha256": "497af25466c99c1fa12ec399705ce75df20242d8b8ea28b426085b8e32593281"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0047-mark_attendance-summary.json",
+      "bytes": 709,
+      "sha256": "52e3d854857c011aa29853a47183c54f6e215e0cb822060620c2082c5e578d61"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0048-cancel_event-graph.json",
+      "bytes": 4035,
+      "sha256": "9f93c897aa4eb4a9b1901cb1e2a517cd12f7c7b1f39a79a90f9f56d582023842"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0048-cancel_event-summary.json",
+      "bytes": 708,
+      "sha256": "a588478eb60aa4bc769f5b97b778084d8c93795691b5a1112735a6fae8d7b3a1"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0049-finalize_attendance-graph.json",
+      "bytes": 3847,
+      "sha256": "1889a330d24796d5e358dce69b7333923bc01665bd4ee24187df2e776495ffa8"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0049-finalize_attendance-summary.json",
+      "bytes": 713,
+      "sha256": "2c1eae6e320378a2560ee576c45ed199544e9b6550e557baa9149efde11f2e7a"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0050-trigger_earn_redeem-graph.json",
+      "bytes": 49583,
+      "sha256": "94d20cc27ac27e82e612b37b1217a0b9e1b2590884a038c9c55f5a208d60b931"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0050-trigger_earn_redeem-summary.json",
+      "bytes": 7917,
+      "sha256": "ec1687b5da109c05a44c098fa71500d3955438e96e49f042820f0b4b3fc23fc3"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0051-settle-graph.json",
+      "bytes": 3821,
+      "sha256": "5ced6bf5ff7a5a6225bb89958bf3f4aa8970d1d4d5716ceb66830e794421af8f"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0051-settle-summary.json",
+      "bytes": 700,
+      "sha256": "59d0142dc40367a5b2c1e4816da840bed83eed0ab7e1cacd9f3f9c14e87e6fe9"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0052-storage_unregister-graph.json",
+      "bytes": 6763,
+      "sha256": "0a89c08b1518944cbf5229e428bfac210a830c11f22a115a22b8bed9e14a9afc"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0052-storage_unregister-summary.json",
+      "bytes": 1350,
+      "sha256": "f0031327941db22a7215e64e49edb9151b7b9da59265f771674f27ad03ae5549"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0053-claim-graph.json",
+      "bytes": 12283,
+      "sha256": "b81f2e7b3ef897ca00f56ff0d139fa7836b74a9bd0d48cdbd1d82a3a16f42bd6"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0053-claim-summary.json",
+      "bytes": 2225,
+      "sha256": "7c990c63ce3ce5ddcb0e7fc4ff26ce0c3d8ae9c644cdbdb9aae09203a020dfc4"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0054-storage_deposit-graph.json",
+      "bytes": 6965,
+      "sha256": "91851496da7f19f63d7d4b1859bbc86cad673b4f7e5efaf9bb4c01e61ff9c3d9"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0054-storage_deposit-summary.json",
+      "bytes": 1371,
+      "sha256": "f3d204c87abafbea69840209b4fb0fce4a2bccc8237bab2af2b310c0e8a68a0d"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0055-claim-graph.json",
+      "bytes": 10621,
+      "sha256": "6d6980a0d261fc9a9f234231ea91ad0cf1d1fb82f1ada6523fa8a3fe1c48cf2c"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0055-claim-summary.json",
+      "bytes": 1923,
+      "sha256": "1ab95ff58e1329babff133e99c3c07fd540826d6f62ede49b0cf6febd0ce13b5"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0056-claim-graph.json",
+      "bytes": 10618,
+      "sha256": "4c811a50ab5c48e05884136a438f57ba40c3530d032f74d02e9b44ba0d090018"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0056-claim-summary.json",
+      "bytes": 1921,
+      "sha256": "b9731b84e86f734da9839d91fdba24493f51aa4809fa7ced9acf795c4779526a"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0057-trigger_earn_redeem-graph.json",
+      "bytes": 49587,
+      "sha256": "d718fec822db030e4f6b1dad7723887a2ee1e418fc45ee1e51f836e24aadec7e"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0057-trigger_earn_redeem-summary.json",
+      "bytes": 7931,
+      "sha256": "5d7373320a292966315fbd3528b76947e5c30830cc51c1ecc097f060016bf03d"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0058-claim-graph.json",
+      "bytes": 10619,
+      "sha256": "97c177610328b8b659418bb26ce4c00343b27a011b8ca1234b6fd8bf645f9c4b"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0058-claim-summary.json",
+      "bytes": 1921,
+      "sha256": "df445a308e31e8fc728b4ac5b641ab6a209b0f0837a987a981854eae0ba02656"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0059-claim-graph.json",
+      "bytes": 10622,
+      "sha256": "873b82b81fd2d9e20bc7871a2390ebdce1f576eaae70883f99d47d5ef9a4fc4e"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0059-claim-summary.json",
+      "bytes": 1923,
+      "sha256": "cef1bdad5d56a1499b70f39186f56a0c39c4a5055462edd1d0d8e5ac4dfd705d"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0060-claim-graph.json",
+      "bytes": 10622,
+      "sha256": "0ea709ffc4f6296ef67de212fd714848616571f5613347ebcb393105b3d1efb5"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0060-claim-summary.json",
+      "bytes": 1923,
+      "sha256": "016b67c03a127b3850f824e724f5b5a0967281775a60cf0d4b539f720c8e1f49"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0061-claim-graph.json",
+      "bytes": 10621,
+      "sha256": "4d51543f5ec98427d3fb23b8470b4d77ada5fb30679e1f7c17054e13013711d4"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0061-claim-summary.json",
+      "bytes": 1923,
+      "sha256": "cce7aaeda178d241fbf0f65ebc5fd1159f5648eba4053dd5f2cd8e345af14d09"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0062-claim-graph.json",
+      "bytes": 10621,
+      "sha256": "a1bff35351ba7f0f529164418cc16d674e9eddc1c319dfccf4597d5a58cef16b"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/0062-claim-summary.json",
+      "bytes": 1923,
+      "sha256": "0fcf5800fbb590a88b7493a09fd83dcbd1f47f4e21e46ab5e5148ea2dce9260d"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/balances-after-claims.json",
+      "bytes": 203,
+      "sha256": "04ebeb4a3fe003aac2903bbc8828709da407a13a0e70ad5a57dbf8cb70265ce4"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/balances-before-claims.json",
+      "bytes": 111,
+      "sha256": "c17669a6db593c1bb832492ff2564375e68cf5e4be6aea27730428b571fd4c28"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/snapshot-0-after-redeem.json",
+      "bytes": 1716,
+      "sha256": "1fcb9d4806e1c7ab9aac0365b4be71fc4fae054d7adeb072fc4629ac89c7c771"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/snapshot-0-after-supply.json",
+      "bytes": 1947,
+      "sha256": "8516739661899bd7f4811df34f644953339e1160efbf5cf38b08f8a84dc7d6f3"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/snapshot-0-before-redeem.json",
+      "bytes": 1949,
+      "sha256": "d3627562d841b25dbd4527c8202a74269d799831bf069b1744821f317b3cc9a2"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/snapshot-0-before-supply.json",
+      "bytes": 1690,
+      "sha256": "dcac29ae9e062198c065482182883303fd1fedb8bb9847ac087076cbc02fed20"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/snapshot-1-after-redeem.json",
+      "bytes": 1700,
+      "sha256": "9713948b916eb66131dd27c47312b7f0ce07ffbe8e7cbbf9a9f901ee74248df0"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/snapshot-1-after-supply.json",
+      "bytes": 1948,
+      "sha256": "c4615b6d946b0669a0f910e3da0f003351b22ad585c942ec01882158f1929f5f"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/snapshot-1-before-redeem.json",
+      "bytes": 1940,
+      "sha256": "0453d56bc3cc740cc882755df5552f88c1f051d0c3a11323cb2c96d6e287dc6e"
+    },
+    {
+      "path": "sandbox-rhea/factory-event-8-1794610696221366417/snapshot-1-before-supply.json",
+      "bytes": 1698,
+      "sha256": "de4ee90f431c6707b7103613038206b2c9107f708b8c7394fa03ff403d29495f"
+    },
+    {
+      "path": "sandbox-rhea/rhea-runtime.log",
+      "bytes": 427,
+      "sha256": "8d41e83204d61173ac5bf6a8f3a6cc3338694567d89bc6bd9d1a4b5900c33a8e"
+    },
+    {
+      "path": "units/factory-legacy-unit.log",
+      "bytes": 9579,
+      "sha256": "08ad367a0c06533338581894ae1faafb1d3a91d6f858cf013ff4d89899944a34"
+    },
+    {
+      "path": "units/factory-unit.log",
+      "bytes": 1274,
+      "sha256": "cb7be0e382e152a5d2a27491d3e852af0053010901d36d590b838d10059aeac4"
+    },
+    {
+      "path": "units/leaf-unit.log",
+      "bytes": 2973,
+      "sha256": "971c8f7d650993c27fdb703a438bd0d438816ad0f7ec56e36cafe64717cc5652"
+    },
+    {
+      "path": "units/source-input-v4.json",
+      "bytes": 4297,
+      "sha256": "9790f366e32e17fdc7c0c9e87bf23a79176ab15f28261ff364721df343a8b921"
+    }
+  ],
+  "total_bytes": 2588018,
+  "notes": [
+    "Mock evidence directory was empty; mock runtime log is retained.",
+    "Migration-v6 runner source differs from atomic-v4 input manifest; see source-input-v4.json.",
+    "Manifest excludes itself."
+  ]
+}

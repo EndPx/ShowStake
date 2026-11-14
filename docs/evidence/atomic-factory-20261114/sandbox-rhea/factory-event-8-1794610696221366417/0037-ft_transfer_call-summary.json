@@ -1,0 +1,71 @@
+{
+  "contract": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+  "deposit": "1",
+  "method": "ft_transfer_call",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "jokguVNAJzBkajHeBnyNHYbiQkZdEuc6CQVeHatEfL7",
+        "DTzyZ5oRaPNahxxeeK4MD9TzG3FymKYaAfV16FH23Vz3",
+        "CypERMKRDyCEPrT1fbhVHz3YRLvXJjqMGaXMv4XAFw3Y"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": false,
+      "gas_burnt": 2679156364787,
+      "id": "57xjsCyozbbFtWDKoGrtcNTVZrBuSxLzizPbrKjro26J",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "Hs1428fCDWxPjMk7spkZ143pU9Qztfx2fDsmaExTTub1"
+      ],
+      "executor": "32794ddf25ba1e6f.factory.sandbox",
+      "failure": false,
+      "gas_burnt": 2266858662527,
+      "id": "jokguVNAJzBkajHeBnyNHYbiQkZdEuc6CQVeHatEfL7",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "user9.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "Hs1428fCDWxPjMk7spkZ143pU9Qztfx2fDsmaExTTub1",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "N2poYA6n4BRsVcxbiN6hcMASer7VkKcWzSosoXXmY8o"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": false,
+      "gas_burnt": 1438022561926,
+      "id": "DTzyZ5oRaPNahxxeeK4MD9TzG3FymKYaAfV16FH23Vz3",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "user9.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "N2poYA6n4BRsVcxbiN6hcMASer7VkKcWzSosoXXmY8o",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "user9.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "CypERMKRDyCEPrT1fbhVHz3YRLvXJjqMGaXMv4XAFw3Y",
+      "success": true
+    }
+  ],
+  "signer": "user9.testnet",
+  "success": true
+}

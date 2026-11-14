@@ -8,6 +8,7 @@ import { signParams, type FunctionCallAction } from "@/lib/near/actions";
 import { parseUnits, formatUnits } from "@/lib/money";
 import { Amount } from "@/components/ui/amount";
 import { OrganizerContentUpload } from "./organizer-content-upload";
+import { FACTORY_EVENT_RELEASE } from "@/lib/near/factory-event";
 import { MainnetCreatePreview } from "./mainnet-create-preview";
 import { finalLifecycleReceipt, type LifecycleAttempt as Attempt } from "@/lib/near/lifecycle-receipt";
 
@@ -44,7 +45,7 @@ function ActionDesk({ eventId, creation = false, participant = false }: { eventI
   <h3>Check-in request</h3><p>API projection data can lag the chain; check-in may be unavailable while it catches up.</p>{!t?.apiEventId && <p>Check-in is unavailable while the API projection catches up.</p>}<label>API pass ID<input value={passId} onChange={e => setPassId(e.target.value)} /></label><button className="button" disabled={!available || !t?.apiEventId || !wallet.proof || !passId} onClick={() => void api("challenge", { passId }).then(d => { setToken(d.token); setNotice(`Challenge expires ${d.expiresAt}.`); }).catch(e => setNotice(String(e)))}>Create check-in token</button><label>Token<input value={token} onChange={e => setToken(e.target.value)} /></label><button className="button" disabled={!available || !t?.apiEventId || !wallet.proof || !token} onClick={() => void api("scan", { token }).then(d => { setRequest(d); setNotice("Request proposed only; organizer must sign attendance on chain."); }).catch(e => setNotice(String(e)))}>Submit check-in request</button>{request && <p>Request {request.requestId} · pass {request.passId} · owner {request.ownerAccount} · {request.state}</p>}</>}
   {pending && <div><p>Pending {pending.method}. No automatic resend.</p><label>Transaction hash<input value={hash} onChange={e => setHash(e.target.value)} /></label><button className="button" onClick={() => void reconcile()}>Reconcile final receipt</button></div>}{notice && <p role="status">{notice}</p>}</section>;
 }
-export function CreateEventShell() { return NETWORK === "mainnet" ? <MainnetCreatePreview /> : <ActionDesk creation />; }
+export function CreateEventShell() { return NETWORK === "mainnet" || FACTORY_EVENT_RELEASE?.network === NETWORK ? <MainnetCreatePreview /> : <ActionDesk creation />; }
 export function OrganizerPanel({ eventId }: { eventId: string }) { return <main className="workspace-content lifecycle-workspace"><h1>Attendance desk</h1><ActionDesk eventId={eventId} /><OrganizerContentUpload apiEventId={target()?.eventId === eventId ? target()!.apiEventId : null} /></main>; }
 type ResultRow = { registration_id: string; participant: string; amount: string; attendance: string; claim_amount: string; claim: string };
 type ResultEvent = { event_id: string; phase: string; earn_state: string; accepted_principal: string; realized_yield: string; total_registrations: number };

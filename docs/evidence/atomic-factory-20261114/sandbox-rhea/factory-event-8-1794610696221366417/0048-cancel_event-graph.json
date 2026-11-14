@@ -1,0 +1,145 @@
+{
+  "final_execution_status": "FINAL",
+  "receipts": [
+    {
+      "predecessor_id": "second.sandbox",
+      "priority": 0,
+      "receipt": {
+        "Action": {
+          "actions": [
+            {
+              "FunctionCall": {
+                "args": "eyJldmVudF9pZCI6ImV2ZW50MSJ9",
+                "deposit": "0",
+                "gas": 300000000000000,
+                "method_name": "cancel_event"
+              }
+            }
+          ],
+          "gas_price": "1000000000",
+          "input_data_ids": [],
+          "is_promise_yield": false,
+          "output_data_receivers": [],
+          "signer_id": "second.sandbox",
+          "signer_public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB"
+        }
+      },
+      "receipt_id": "4P2Fj3EFAth3fRJhubWcyMDpptpnvyT6ByQTKGWmgE3V",
+      "receiver_id": "32794ddf25ba1e6f.factory.sandbox"
+    },
+    {
+      "predecessor_id": "system",
+      "priority": 0,
+      "receipt": {
+        "Action": {
+          "actions": [
+            {
+              "Transfer": {
+                "deposit": "300740430826656900000000"
+              }
+            }
+          ],
+          "gas_price": "0",
+          "input_data_ids": [],
+          "is_promise_yield": false,
+          "output_data_receivers": [],
+          "signer_id": "second.sandbox",
+          "signer_public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB"
+        }
+      },
+      "receipt_id": "8fzYQzV4KRK47AU3SZkZAcLtgfCkj9MzA8W7JyyqsH7R",
+      "receiver_id": "second.sandbox"
+    }
+  ],
+  "receipts_outcome": [
+    {
+      "block_hash": "2uzcrLviZbFqGr2cXjLDPSeRAZRyU4zGz3vPQqQCMV8P",
+      "id": "4P2Fj3EFAth3fRJhubWcyMDpptpnvyT6ByQTKGWmgE3V",
+      "outcome": {
+        "executor_id": "32794ddf25ba1e6f.factory.sandbox",
+        "gas_burnt": 1477024591651,
+        "logs": [
+          "EVENT_JSON:{\"standard\":\"showstake\",\"version\":\"1.0.0\",\"event\":\"EventCancelled\",\"data\":{\"event_id\":\"event1\"}}"
+        ],
+        "metadata": {
+          "contracts": [
+            {
+              "local": "CNuCzGqyU6Ypoz8qFtUvHKBESsEmppu4MW93WiZk6Au7"
+            }
+          ],
+          "version": 4
+        },
+        "receipt_ids": [
+          "8fzYQzV4KRK47AU3SZkZAcLtgfCkj9MzA8W7JyyqsH7R"
+        ],
+        "status": {
+          "SuccessValue": ""
+        },
+        "tokens_burnt": "147702459165100000000"
+      },
+      "proof": []
+    },
+    {
+      "block_hash": "F3Dw7Vq735JrTwozenEEUimjqdzwLYVML4TepEdYkdDQ",
+      "id": "8fzYQzV4KRK47AU3SZkZAcLtgfCkj9MzA8W7JyyqsH7R",
+      "outcome": {
+        "executor_id": "second.sandbox",
+        "gas_burnt": 223182562500,
+        "logs": [],
+        "metadata": {
+          "contracts": [
+            null
+          ],
+          "version": 4
+        },
+        "receipt_ids": [],
+        "status": {
+          "SuccessValue": ""
+        },
+        "tokens_burnt": "0"
+      },
+      "proof": []
+    }
+  ],
+  "status": {
+    "SuccessValue": ""
+  },
+  "transaction": {
+    "actions": [
+      {
+        "FunctionCall": {
+          "args": "eyJldmVudF9pZCI6ImV2ZW50MSJ9",
+          "deposit": "0",
+          "gas": 300000000000000,
+          "method_name": "cancel_event"
+        }
+      }
+    ],
+    "hash": "8TXkwU7N9FHp6FSDi6rchxKMesVDgUFB7Z8iZfpF4AJW",
+    "nonce": 6,
+    "priority_fee": 0,
+    "public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB",
+    "receiver_id": "32794ddf25ba1e6f.factory.sandbox",
+    "signer_id": "second.sandbox"
+  },
+  "transaction_outcome": {
+    "block_hash": "6mL22DdzDqvzQMBNKYZMnBGGWGaijVQedXwSRXCatTgC",
+    "id": "8TXkwU7N9FHp6FSDi6rchxKMesVDgUFB7Z8iZfpF4AJW",
+    "outcome": {
+      "executor_id": "second.sandbox",
+      "gas_burnt": 309633062595,
+      "logs": [],
+      "metadata": {
+        "version": 1
+      },
+      "receipt_ids": [
+        "4P2Fj3EFAth3fRJhubWcyMDpptpnvyT6ByQTKGWmgE3V"
+      ],
+      "status": {
+        "SuccessReceiptId": "4P2Fj3EFAth3fRJhubWcyMDpptpnvyT6ByQTKGWmgE3V"
+      },
+      "tokens_burnt": "30963306259500000000"
+    },
+    "proof": []
+  }
+}

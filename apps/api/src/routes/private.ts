@@ -11,6 +11,7 @@ import { Errors } from '../errors.js';
 import { requireSession } from '../auth/middleware.js';
 import type { Store } from '../store/types.js';
 import { isUuid } from '../lib/util.js';
+import { factoryAccessProfile } from '../lib/factory-profile.js';
 
 const meta = (req: FastifyRequest, network: string | null, stale: boolean) => ({ requestId:req.id, observedAt:new Date().toISOString(), network, stale });
 const staleAt = (iso: string, now: number, max: number) => { const t=Date.parse(iso); return !Number.isFinite(t) || now-t>max; };
@@ -24,8 +25,8 @@ type Token = {id:string; eventId:string; passId:string; chainPassId:string; owne
 type Event = NonNullable<Awaited<ReturnType<Store['getEvent']>>>;
 type Snapshot = {event:Record<string,unknown>; pass:Record<string,unknown>|null; blockMs:number; abi:string};
 async function chainSnapshot(config:Config,event:Event,chainPassId?:string):Promise<Snapshot> {
-  const factoryId = event.network==='mainnet' && /^[a-f0-9]{16}\./.test(event.contractId) ? event.contractId.slice(17) : '';
-  const factoryHash = factoryId ? config.accessFactoryCodeHashes[`mainnet:${factoryId}`] : undefined;
+  const factoryId = ['mainnet','testnet'].includes(event.network) && /^[a-f0-9]{16}\./.test(event.contractId) ? event.contractId.slice(17) : '';
+  const factoryHash = factoryId ? config.accessFactoryCodeHashes[`${event.network}:${factoryId}`] : undefined;
   if (!config.accessContractAllowlist?.includes(`${event.network}:${event.contractId}`) && !factoryHash) throw Errors.unavailable('CONTRACT_NOT_ALLOWED','contract is not configured for authorization');
   const abi=factoryHash ? 'candidate-v1' : config.accessContractAbis[`${event.network}:${event.contractId}`];
   if (!['candidate-v1','legacy-v6','multievent-v1'].includes(abi ?? '')) throw Errors.unavailable('CONTRACT_ABI_NOT_CONFIGURED','contract ABI is not configured for authorization');
@@ -41,7 +42,7 @@ async function chainSnapshot(config:Config,event:Event,chainPassId?:string):Prom
       if (!pinned) throw new Error('multi-event code hash not pinned');
       const identity=await post({jsonrpc:'2.0',id:'identity',method:'query',params:{request_type:'view_account',block_id:header.hash,account_id:event.contractId}}) as {result?:{code_hash?:string;block_hash?:string};error?:unknown};
       if(identity.error || identity.result?.block_hash!==header.hash || identity.result.code_hash!==pinned) throw new Error('unreviewed multi-event code');
-    } else if (event.network === 'mainnet') {
+    } else if (event.network === 'mainnet' && !factoryHash) {
       const pinned = 'CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os';
       if ((!factoryHash && event.contractId !== 'showstake-mainnet-escrow-endpx-2026.near' && config.accessContractCodeHashes[`mainnet:${event.contractId}`] !== pinned) || abi !== 'candidate-v1') throw new Error('unreviewed mainnet deployment');
       const identity=await post({jsonrpc:'2.0',id:'identity',method:'query',params:{request_type:'view_account',block_id:header.hash,account_id:event.contractId}}) as {result?:{code_hash?:string;block_hash?:string};error?:unknown};
@@ -61,8 +62,13 @@ async function chainSnapshot(config:Config,event:Event,chainPassId?:string):Prom
       const query=async(accountId:string,params:object)=>{const r=await post({jsonrpc:'2.0',id:'factory',method:'query',params:{...params,block_id:header.hash,account_id:accountId}}) as {result?:Record<string,unknown>;error?:unknown};if(r.error || !r.result || r.result.block_hash!==header.hash) throw new Error('invalid factory query');return r.result;};
       const factoryView=async(method_name:string,args:object)=>{const r=await query(factoryId,{request_type:'call_function',method_name,args_base64:Buffer.from(JSON.stringify(args)).toString('base64')});if(!Array.isArray(r.result)) throw new Error('factory view');const v:unknown=JSON.parse(Buffer.from(r.result as number[]).toString());if(!v || typeof v!=='object' || Array.isArray(v)) throw new Error('factory view');return v as Record<string,unknown>;};
       const [factoryAccount,keys,factoryConfig,child,leaf]=await Promise.all([query(factoryId,{request_type:'view_account'}),query(event.contractId,{request_type:'view_access_key_list'}),factoryView('get_config',{}),factoryView('get_child',{child_id:event.contractId}),view('get_config',{})]);
-      const ft='17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1', policy='showstake-native-usdc-rhea-review/1', sha='03076c4a9496e8ae1e6af68c791752d4a7220597942effd0c3a1839a252be9d2';
-      if(factoryAccount.code_hash!==factoryHash || !Array.isArray(keys.keys) || keys.keys.length!==0 || factoryConfig.factory_account!==factoryId || factoryConfig.network!=='mainnet' || factoryConfig.factory_policy_identity!=='showstake-factory-d039/1' || factoryConfig.schema_version!==1 || factoryConfig.canonical_ft!==ft || factoryConfig.provider_account!=='contract.main.burrow.near' || factoryConfig.provider_kind!=='RHEA_MAINNET' || factoryConfig.leaf_code_sha256!==sha || factoryConfig.leaf_policy_version!==policy || child.state!=='Ready' || child.child_id!==event.contractId || typeof child.organizer!=='string' || child.network!=='mainnet' || child.canonical_ft!==ft || child.leaf_code_sha256!==sha || child.leaf_policy_version!==policy || leaf.organizer!==child.organizer || leaf.network!=='mainnet' || leaf.canonical_ft!==ft || leaf.provider_account!=='contract.main.burrow.near' || leaf.provider_kind!=='RHEA_MAINNET' || leaf.policy_version!==policy) throw new Error('untrusted factory child');
+      const profile=factoryAccessProfile(factoryConfig,`${event.network}:${factoryId}`,config.accessFactoryProfiles);
+      const ft=profile.canonicalFt??'17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1';
+      const provider=profile.providerAccount??'contract.main.burrow.near',kind=profile.providerKind??'RHEA_MAINNET';
+      const policy=profile.leafPolicy, sha=profile.leafSha256;
+      const leafAccount=await query(event.contractId,{request_type:'view_account'});
+      if(leafAccount.code_hash!==profile.leafCodeHash)throw Error('factory leaf code mismatch');
+      if(factoryAccount.code_hash!==factoryHash || !Array.isArray(keys.keys) || keys.keys.length!==0 || factoryConfig.factory_account!==factoryId || factoryConfig.network!==event.network || factoryConfig.factory_policy_identity!==profile.factoryPolicy || factoryConfig.schema_version!==profile.schema || factoryConfig.canonical_ft!==ft || factoryConfig.provider_account!==provider || factoryConfig.provider_kind!==kind || factoryConfig.leaf_code_sha256!==sha || factoryConfig.leaf_policy_version!==policy || child.state!=='Ready' || child.child_id!==event.contractId || typeof child.organizer!=='string' || child.network!==event.network || child.canonical_ft!==ft || child.leaf_code_sha256!==sha || child.leaf_policy_version!==policy || leaf.organizer!==child.organizer || leaf.network!==event.network || leaf.canonical_ft!==ft || leaf.provider_account!==provider || leaf.provider_kind!==kind || leaf.policy_version!==policy) throw new Error('untrusted factory child');
       factoryOrganizer=child.organizer;
     }
     const [e,p]=await Promise.all([view('get_event',abi==='candidate-v1'?{}:{event_id:event.chainEventId}),chainPassId?view('get_pass',{pass_id:chainPassId}):Promise.resolve(null)]);

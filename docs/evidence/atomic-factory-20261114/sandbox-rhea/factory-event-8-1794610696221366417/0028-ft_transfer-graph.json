@@ -1,0 +1,145 @@
+{
+  "final_execution_status": "FINAL",
+  "receipts": [
+    {
+      "predecessor_id": "owner.testnet",
+      "priority": 0,
+      "receipt": {
+        "Action": {
+          "actions": [
+            {
+              "FunctionCall": {
+                "args": "eyJhbW91bnQiOiIyMDAwMDAwIiwicmVjZWl2ZXJfaWQiOiJ1c2VyNS50ZXN0bmV0In0=",
+                "deposit": "1",
+                "gas": 300000000000000,
+                "method_name": "ft_transfer"
+              }
+            }
+          ],
+          "gas_price": "1000000000",
+          "input_data_ids": [],
+          "is_promise_yield": false,
+          "output_data_receivers": [],
+          "signer_id": "owner.testnet",
+          "signer_public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB"
+        }
+      },
+      "receipt_id": "Co3jgPJKMX3gkH69NkAQkaVQxdCZugpRTJKvbn3DYeEz",
+      "receiver_id": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1"
+    },
+    {
+      "predecessor_id": "system",
+      "priority": 0,
+      "receipt": {
+        "Action": {
+          "actions": [
+            {
+              "Transfer": {
+                "deposit": "300702449833147800000000"
+              }
+            }
+          ],
+          "gas_price": "0",
+          "input_data_ids": [],
+          "is_promise_yield": false,
+          "output_data_receivers": [],
+          "signer_id": "owner.testnet",
+          "signer_public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB"
+        }
+      },
+      "receipt_id": "BqzS9zqcTd7TFK32r96NxfdzJhPyVj7nLQwz8hVAgZEe",
+      "receiver_id": "owner.testnet"
+    }
+  ],
+  "receipts_outcome": [
+    {
+      "block_hash": "J1apNuaz7A7EuKMD4nfidABpJWcVu3H6cGHkSsNjNJjQ",
+      "id": "Co3jgPJKMX3gkH69NkAQkaVQxdCZugpRTJKvbn3DYeEz",
+      "outcome": {
+        "executor_id": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "gas_burnt": 1857460588262,
+        "logs": [
+          "EVENT_JSON:{\"standard\":\"nep141\",\"version\":\"1.0.0\",\"event\":\"ft_transfer\",\"data\":[{\"old_owner_id\":\"owner.testnet\",\"new_owner_id\":\"user5.testnet\",\"amount\":\"2000000\"}]}"
+        ],
+        "metadata": {
+          "contracts": [
+            {
+              "local": "F7tvbqmUHnqGDT45ZHj3zon74uNqcddmyCML2X7ceV9W"
+            }
+          ],
+          "version": 4
+        },
+        "receipt_ids": [
+          "BqzS9zqcTd7TFK32r96NxfdzJhPyVj7nLQwz8hVAgZEe"
+        ],
+        "status": {
+          "SuccessValue": ""
+        },
+        "tokens_burnt": "185746058826200000000"
+      },
+      "proof": []
+    },
+    {
+      "block_hash": "2kjrfebsPmk7EW9ewaTD5Tfo8Ycc9GtADGakGor1oJhC",
+      "id": "BqzS9zqcTd7TFK32r96NxfdzJhPyVj7nLQwz8hVAgZEe",
+      "outcome": {
+        "executor_id": "owner.testnet",
+        "gas_burnt": 223182562500,
+        "logs": [],
+        "metadata": {
+          "contracts": [
+            null
+          ],
+          "version": 4
+        },
+        "receipt_ids": [],
+        "status": {
+          "SuccessValue": ""
+        },
+        "tokens_burnt": "0"
+      },
+      "proof": []
+    }
+  ],
+  "status": {
+    "SuccessValue": ""
+  },
+  "transaction": {
+    "actions": [
+      {
+        "FunctionCall": {
+          "args": "eyJhbW91bnQiOiIyMDAwMDAwIiwicmVjZWl2ZXJfaWQiOiJ1c2VyNS50ZXN0bmV0In0=",
+          "deposit": "1",
+          "gas": 300000000000000,
+          "method_name": "ft_transfer"
+        }
+      }
+    ],
+    "hash": "E8NqDvCxP95cMqDd6Vn4HktC9k3EeL7Hf8uUWQdm9KGP",
+    "nonce": 18,
+    "priority_fee": 0,
+    "public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB",
+    "receiver_id": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+    "signer_id": "owner.testnet"
+  },
+  "transaction_outcome": {
+    "block_hash": "E6NDgE9EfGCHxD6QbUDEze2fiAthRyJqcm6gqpf87grv",
+    "id": "E8NqDvCxP95cMqDd6Vn4HktC9k3EeL7Hf8uUWQdm9KGP",
+    "outcome": {
+      "executor_id": "owner.testnet",
+      "gas_burnt": 310968206615,
+      "logs": [],
+      "metadata": {
+        "version": 1
+      },
+      "receipt_ids": [
+        "Co3jgPJKMX3gkH69NkAQkaVQxdCZugpRTJKvbn3DYeEz"
+      ],
+      "status": {
+        "SuccessReceiptId": "Co3jgPJKMX3gkH69NkAQkaVQxdCZugpRTJKvbn3DYeEz"
+      },
+      "tokens_burnt": "31096820661500000000"
+    },
+    "proof": []
+  }
+}

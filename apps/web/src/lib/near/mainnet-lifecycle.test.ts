@@ -6,6 +6,9 @@ const attempt={account:"alice.near",child:"child.factory.near",eventId:"event",a
 const tx={final_execution_status:"FINAL",status:{SuccessValue:""},transaction:{hash:"hash",signer_id:attempt.account,receiver_id:attempt.child,actions:actions.map(a=>a.type==="FunctionCall"?({FunctionCall:{method_name:a.params.methodName,args:btoa(JSON.stringify(a.params.args)),gas:a.params.gas,deposit:a.params.deposit}}):({Transfer:{deposit:a.params.deposit}}))},receipts_outcome:[{outcome:{executor_id:attempt.child,status:{SuccessValue:""}}}]};
 const linked={...tx,transaction_outcome:{id:"hash",outcome:{executor_id:attempt.account,status:{SuccessReceiptId:"r1"},receipt_ids:["r1"]}},receipts:[{receipt_id:"r1",predecessor_id:attempt.account,receiver_id:attempt.child,receipt:{Action:{actions:tx.transaction.actions}}}],receipts_outcome:[{id:"r1",outcome:{executor_id:attempt.child,status:{SuccessValue:""},receipt_ids:[]}}]};
 assert.equal(mainnetReceipt(linked,attempt),"success"); assert.equal(mainnetReceipt({...linked,final_execution_status:"EXECUTED"},attempt),"pending"); assert.equal(mainnetReceipt(linked,{...attempt,account:"other.near"}),"pending"); assert.equal(mainnetReceipt({...linked,receipts_outcome:[{outcome:{executor_id:attempt.child,status:{Failure:{}}}}]},attempt),"pending");
+assert.equal(mainnetReceipt({final_execution_outcome:linked},attempt),"success");
+assert.equal(mainnetReceipt({final_execution_status:"EXECUTED",final_execution_outcome:linked},attempt),"pending");
+assert.equal(mainnetReceipt({...linked,receipts:undefined},attempt),"pending");
 const event={...rules,organizer:attempt.account,canonical_ft:"usdc.near",policy_version:"policy",phase:"RegistrationClosed",earn_state:"Supplied",accepted_principal:"20",reg_close:100,checkin_open:100,checkin_close:200,finalize_deadline:300};
 assert.equal(publishMatches(event,rules,attempt.account,"usdc.near","policy"),true); assert.equal(publishMatches({...event,deposit:"11"},rules,attempt.account,"usdc.near","policy"),false);
 assert.equal(actionAllowed("mark_attendance",event,150,true),true);assert.equal(actionAllowed("mark_attendance",event,200,true),false);assert.equal(actionAllowed("finalize_attendance",event,200,true),true);assert.equal(actionAllowed("finalize_attendance",event,200,false),false);
@@ -20,3 +23,17 @@ const topupAttempt={...attempt,actions:withTopup};const topupActions=withTopup.m
 const topupTx={...linked,transaction:{...linked.transaction,actions:topupActions},receipts:[{...linked.receipts[0]!,receipt:{Action:{actions:topupActions}}}]};
 assert.equal(mainnetReceipt(topupTx,topupAttempt),"success");assert.equal(mainnetReceipt({...topupTx,receipts:[{...topupTx.receipts[0]!,predecessor_id:"other"}]},topupAttempt),"pending");
 const cancelled={...event,phase:"Cancelled",earn_state:"NotStarted"};const refundReg={beneficiary:"alice.near",claim:"None",claim_amount:"0",amount:"10"};assert.equal(actionAllowed("claim",cancelled,300,false,refundReg,"alice.near"),true);assert.equal(actionAllowed("claim",{...cancelled,earn_state:"Supplied"},300,false,refundReg,"alice.near"),false);assert.equal(actionAllowed("activate_timeout_refund",{...event,phase:"RegistrationClosed"},300,false),true);assert.equal(actionAllowed("cancel_event",event,150,false),false);assert.equal(actionAllowed("cancel_event",event,150,true),true);
+assert.equal(actionAllowed("claim",event,150,false,refundReg,"alice.near"),false);
+const settled={...event,phase:"Settled",earn_state:"Redeemed"};
+assert.equal(actionAllowed("claim",settled,300,false,{...refundReg,claim:"Claimable",claim_amount:"10"},"alice.near"),true);
+assert.equal(actionAllowed("claim",settled,300,false,{...refundReg,claim:"None",claim_amount:"0"},"alice.near"),false);
+assert.equal(actionAllowed("claim",settled,300,false,{...refundReg,claim:"Claimable",claim_amount:"10"},"other.near"),false);
+const finalCandidate={...event,policy_version:"showstake-native-usdc-factory-rhea/3",phase:"AttendanceFinalized",earn_state:"Supplied",earn_action_completed:false};
+assert.equal(actionAllowed("trigger_earn_redeem",finalCandidate,199,false,undefined,"bob.near",{stage:"Idle"}),false);
+assert.equal(actionAllowed("trigger_earn_redeem",finalCandidate,200,false,undefined,"bob.near",{stage:"Idle"}),true);
+assert.equal(actionAllowed("trigger_earn_redeem",{...finalCandidate,policy_version:"showstake-native-usdc-rhea-linked-withdraw-review/2"},200,false,undefined,"bob.near",{stage:"Idle"}),false);
+const pendingCandidate={...finalCandidate,earn_state:"RedeemPending"};
+for(const [method,stage] of [["reconcile_earn","Preparing"],["recover_rhea_ambiguous","Ambiguous"]] as const){assert.equal(actionAllowed(method,pendingCandidate,200,false,undefined,"bob.near",{stage,retry_after_block:120},undefined,119),false);assert.equal(actionAllowed(method,pendingCandidate,200,false,undefined,"bob.near",{stage,retry_after_block:120},undefined,120),true);}
+assert.equal(actionAllowed("recover_rhea_ambiguous",pendingCandidate,200,false,undefined,"bob.near",{stage:"Dispatched",retry_after_block:120},undefined,120),false);
+assert.equal(actionAllowed("settle",{...finalCandidate,earn_state:"Redeemed"},200,false),true);assert.equal(actionAllowed("settle",finalCandidate,200,false),false);
+for(const method of ["mark_attendance","finalize_attendance","cancel_event","trigger_rhea_redeem_partial"])assert.equal(actionAllowed(method,finalCandidate,200,false),false);

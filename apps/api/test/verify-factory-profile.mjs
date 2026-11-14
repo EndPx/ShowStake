@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {parseFactoryAccessProfiles,factoryAccessProfile} from '../dist/lib/factory-profile.js';
+const key='mainnet:showstake-mainnet-escrow-endpx-2026.near';
+const p={schema:3,factoryPolicy:'showstake-factory-atomic-event/3',leafPolicy:'showstake-native-usdc-factory-rhea/3',leafSha256:'a'.repeat(64),leafCodeHash:'EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY',canonicalFt:'17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1',providerAccount:'contract.main.burrow.near',providerKind:'RHEA_MAINNET'};
+const cfg={schema_version:3,factory_policy_identity:p.factoryPolicy,leaf_policy_version:p.leafPolicy,leaf_code_sha256:p.leafSha256,atomic_event_initialization:true};
+assert.throws(()=>factoryAccessProfile(cfg,key),/not pinned/);
+const pins=parseFactoryAccessProfiles(JSON.stringify({[key]:p}));
+assert.equal(factoryAccessProfile(cfg,key,pins).leafCodeHash,p.leafCodeHash);
+for(const patch of [{schema_version:2},{leaf_code_sha256:'b'.repeat(64)},{leaf_policy_version:'foreign/1'},{atomic_event_initialization:false}])assert.throws(()=>factoryAccessProfile({...cfg,...patch},key,pins));
+for(const patch of [{schema:2},{leafSha256:'not-a-hash'},{leafCodeHash:'11111111111111111111111111111111111111111111111111'},{extra:'caller controlled'}])assert.throws(()=>parseFactoryAccessProfiles(JSON.stringify({[key]:{...p,...patch}})));
+assert.throws(()=>parseFactoryAccessProfiles(JSON.stringify({'testnet:evil.testnet':p})));
+const testnet={...p,leafPolicy:'showstake-native-usdc-event/1',canonicalFt:'mockusdc.testnet',providerAccount:'mock-earn.testnet',providerKind:'MOCK_TESTNET'};
+assert.ok(parseFactoryAccessProfiles(JSON.stringify({'testnet:factory.testnet':testnet})));
+assert.throws(()=>factoryAccessProfile(cfg,'mainnet:foreign.near',pins));
+console.log('PASS_LOCAL factory access profile: unconfigured/foreign/schema/hash/atomic-init denied; exact operator pin accepted');

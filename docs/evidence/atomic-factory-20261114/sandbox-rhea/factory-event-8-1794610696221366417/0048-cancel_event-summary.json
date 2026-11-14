@@ -1,0 +1,29 @@
+{
+  "contract": "32794ddf25ba1e6f.factory.sandbox",
+  "deposit": "0",
+  "method": "cancel_event",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "8fzYQzV4KRK47AU3SZkZAcLtgfCkj9MzA8W7JyyqsH7R"
+      ],
+      "executor": "32794ddf25ba1e6f.factory.sandbox",
+      "failure": false,
+      "gas_burnt": 1477024591651,
+      "id": "4P2Fj3EFAth3fRJhubWcyMDpptpnvyT6ByQTKGWmgE3V",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "second.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "8fzYQzV4KRK47AU3SZkZAcLtgfCkj9MzA8W7JyyqsH7R",
+      "success": true
+    }
+  ],
+  "signer": "second.sandbox",
+  "success": true
+}

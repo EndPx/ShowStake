@@ -1,0 +1,81 @@
+{
+  "contract": "017e20cf6a9babb5.factory.sandbox",
+  "deposit": "1",
+  "method": "claim",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "4gMvM5WyPy9XPh9WyGKJecYAhg16UaaH65wiwq7GUPpv",
+        "A5y55gXU63EiE5zkmJmmALKNiY8J2FmK8bzaw5cAGmX3",
+        "8gzNYa8QZ3fYmEy8uDVUy7eRanWpQy1eQZwYy7StycWY"
+      ],
+      "executor": "017e20cf6a9babb5.factory.sandbox",
+      "failure": false,
+      "gas_burnt": 2460490338457,
+      "id": "6FboaXwJXkRGY1FSbL2EfMbYgW97fE1Rq1eDqXZmEFh6",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "3MxH4hHKisQNXq2uuUao5BBVTrgzw54Do68RKvGUgLiW",
+        "aDCd257qZyPTWNFh6GPVB3N54eTNF7dAm1LA3ahkDPd"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": true,
+      "gas_burnt": 1562543566788,
+      "id": "4gMvM5WyPy9XPh9WyGKJecYAhg16UaaH65wiwq7GUPpv",
+      "success": false
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "017e20cf6a9babb5.factory.sandbox",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "3MxH4hHKisQNXq2uuUao5BBVTrgzw54Do68RKvGUgLiW",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "user1.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "aDCd257qZyPTWNFh6GPVB3N54eTNF7dAm1LA3ahkDPd",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "8G8hUZ1dofP8cmxdAFckaF1k2ycLCZoU2xa1E7QPw8jy"
+      ],
+      "executor": "017e20cf6a9babb5.factory.sandbox",
+      "failure": false,
+      "gas_burnt": 1663643592761,
+      "id": "A5y55gXU63EiE5zkmJmmALKNiY8J2FmK8bzaw5cAGmX3",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "user1.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "8G8hUZ1dofP8cmxdAFckaF1k2ycLCZoU2xa1E7QPw8jy",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "user1.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "8gzNYa8QZ3fYmEy8uDVUy7eRanWpQy1eQZwYy7StycWY",
+      "success": true
+    }
+  ],
+  "signer": "user1.testnet",
+  "success": true
+}

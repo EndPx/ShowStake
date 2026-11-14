@@ -1,0 +1,168 @@
+{
+  "classification": "PASS_TESTNET",
+  "scope": "Pinned final onchain browser-run snapshot; Mock USDC / MockEarn only",
+  "stage": "after-claim-c",
+  "observedAt": "2026-11-14T03:19:39.135Z",
+  "network": "testnet",
+  "block": {
+    "height": 277601045,
+    "hash": "B3N1UXvPwTqnn5jENXZwGkJhveUCVE73FrC2p8viyfaN",
+    "timestampNanosec": "1794626376438580773"
+  },
+  "child": "77a5e2b3a93df516.ss-fac-c1113232934.testnet",
+  "ft": "mockusdc.testnet",
+  "provider": "ss-prov-b1113232402.testnet",
+  "account": {
+    "amount": "2635039999999999999999999",
+    "block_hash": "B3N1UXvPwTqnn5jENXZwGkJhveUCVE73FrC2p8viyfaN",
+    "block_height": 277601045,
+    "code_hash": "CNuCzGqyU6Ypoz8qFtUvHKBESsEmppu4MW93WiZk6Au7",
+    "locked": "0",
+    "storage_paid_at": 0,
+    "storage_usage": 247201
+  },
+  "keys": {
+    "block_hash": "B3N1UXvPwTqnn5jENXZwGkJhveUCVE73FrC2p8viyfaN",
+    "block_height": 277601045,
+    "keys": []
+  },
+  "config": {
+    "organizer": "showstake-participant-endpx.testnet",
+    "canonical_ft": "mockusdc.testnet",
+    "network": "testnet",
+    "policy_version": "showstake-native-usdc-event/1",
+    "provider_account": "ss-prov-b1113232402.testnet",
+    "provider_kind": "MOCK_TESTNET"
+  },
+  "event": {
+    "event_id": "event-a1a1186ab3f448438aac847234371f1e",
+    "title": "ShowStake browser five by two",
+    "location": "Jakarta / testnet acceptance",
+    "rules_text": "Five participants commit 2 Mock USDC. Two attendees split the 10 Mock USDC pool. No real funds. Zero-yield MockEarn.",
+    "phase": "Settled",
+    "earn_state": "Redeemed",
+    "earn_attempt": 2,
+    "earn_action_completed": false,
+    "organizer": "showstake-participant-endpx.testnet",
+    "canonical_ft": "mockusdc.testnet",
+    "policy_version": "showstake-native-usdc-event/1",
+    "deposit": "2000000",
+    "capacity": 5,
+    "reg_open": 1794622920000,
+    "reg_close": 1794623640000,
+    "checkin_open": 1794623640000,
+    "checkin_close": 1794624060000,
+    "cancel_cutoff": 1794623640000,
+    "finalize_deadline": 1794710460000,
+    "active_registrations": 5,
+    "total_registrations": 5,
+    "withdrawn_registrations": 0,
+    "rules_hash": "",
+    "created_at": 1794623207255,
+    "accepted_principal": "10000000",
+    "redeemed_amount": "10000000",
+    "realized_yield": "0",
+    "yield_distributed": "0"
+  },
+  "registrations": [
+    {
+      "registration_id": "event-a1a1186ab3f448438aac847234371f1e-reg-0",
+      "pass_id": "event-a1a1186ab3f448438aac847234371f1e-pass-0",
+      "participant": "showstake-attendee-a-endpx.testnet",
+      "beneficiary": "showstake-attendee-a-endpx.testnet",
+      "commitment_id": "browser-support-a",
+      "amount": "2000000",
+      "sequence": 0,
+      "attendance": "Attended",
+      "registration_status": "Active",
+      "attendance_status": "Attended",
+      "claim": "Paid",
+      "claim_amount": "5000000",
+      "claim_attempt": 1
+    },
+    {
+      "registration_id": "event-a1a1186ab3f448438aac847234371f1e-reg-1",
+      "pass_id": "event-a1a1186ab3f448438aac847234371f1e-pass-1",
+      "participant": "showstake-attendee-b-endpx.testnet",
+      "beneficiary": "showstake-attendee-b-endpx.testnet",
+      "commitment_id": "browser-support-b",
+      "amount": "2000000",
+      "sequence": 1,
+      "attendance": "NoShow",
+      "registration_status": "Active",
+      "attendance_status": "NoShow",
+      "claim": "Claimable",
+      "claim_amount": "0",
+      "claim_attempt": 0
+    },
+    {
+      "registration_id": "event-a1a1186ab3f448438aac847234371f1e-reg-2",
+      "pass_id": "event-a1a1186ab3f448438aac847234371f1e-pass-2",
+      "participant": "showstake-attendee-c-endpx.testnet",
+      "beneficiary": "showstake-attendee-c-endpx.testnet",
+      "commitment_id": "browser-support-c",
+      "amount": "2000000",
+      "sequence": 2,
+      "attendance": "Attended",
+      "registration_status": "Active",
+      "attendance_status": "Attended",
+      "claim": "Paid",
+      "claim_amount": "5000000",
+      "claim_attempt": 1
+    },
+    {
+      "registration_id": "event-a1a1186ab3f448438aac847234371f1e-reg-3",
+      "pass_id": "event-a1a1186ab3f448438aac847234371f1e-pass-3",
+      "participant": "showstake-attendee-d-endpx.testnet",
+      "beneficiary": "showstake-attendee-d-endpx.testnet",
+      "commitment_id": "browser-support-d",
+      "amount": "2000000",
+      "sequence": 3,
+      "attendance": "NoShow",
+      "registration_status": "Active",
+      "attendance_status": "NoShow",
+      "claim": "Claimable",
+      "claim_amount": "0",
+      "claim_attempt": 0
+    },
+    {
+      "registration_id": "event-a1a1186ab3f448438aac847234371f1e-reg-4",
+      "pass_id": "event-a1a1186ab3f448438aac847234371f1e-pass-4",
+      "participant": "showstake-participant-endpx.testnet",
+      "beneficiary": "showstake-participant-endpx.testnet",
+      "commitment_id": "commit-f4318562-4cf3-4b63-839b-2ca803de9b9d",
+      "amount": "2000000",
+      "sequence": 4,
+      "attendance": "NoShow",
+      "registration_status": "Active",
+      "attendance_status": "NoShow",
+      "claim": "Claimable",
+      "claim_amount": "0",
+      "claim_attempt": 0
+    }
+  ],
+  "escrowBalance": "0",
+  "providerPosition": "0",
+  "balances": [
+    {
+      "account": "showstake-participant-endpx.testnet",
+      "atomic": "999950000000"
+    },
+    {
+      "account": "showstake-attendee-a-endpx.testnet",
+      "atomic": "20000000"
+    },
+    {
+      "account": "showstake-attendee-b-endpx.testnet",
+      "atomic": "0"
+    },
+    {
+      "account": "showstake-attendee-c-endpx.testnet",
+      "atomic": "20000000"
+    },
+    {
+      "account": "showstake-attendee-d-endpx.testnet",
+      "atomic": "0"
+    }
+  ]
+}

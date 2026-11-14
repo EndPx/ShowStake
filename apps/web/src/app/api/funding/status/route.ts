@@ -1,0 +1,2 @@
+import { quoteStatus } from "@/lib/funding-server";
+export async function POST(req:Request){try{const raw=await req.text();if(raw.length>4096)return Response.json({error:"Request too large"},{status:413});return Response.json({data:await quoteStatus(JSON.parse(raw))},{headers:{"Cache-Control":"no-store"}});}catch(e){return Response.json({error:String((e as Error).message)},{status:503,headers:{"Cache-Control":"no-store"}});}}

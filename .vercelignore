@@ -1,0 +1,24 @@
+# Deploy the web workspace and its source dependencies, never local operations.
+.git
+.local
+.env*
+**/.env*
+**/node_modules
+**/.next*
+**/target
+**/dist
+**/*.log
+**/*.tsbuildinfo
+/contracts
+/test-support
+/docs
+/migrations
+/ops
+/scripts
+/apps/api
+/apps/worker
+/apps/relayer
+debug-*.mjs
+*.zip
+*.tar
+*.tgz
