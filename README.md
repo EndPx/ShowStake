@@ -244,6 +244,8 @@ Disposable PostgreSQL, canonical testnet scans and checkpoint suites have their 
 
 ## Hackathon scope and attribution
 
+**Two-project submission disclosure:** Albary is entering **ShowStake** and **[ProofBill](https://github.com/EndPx/proofbill)** as two independent projects in the NEAR HACKATHON. ShowStake focuses on event commitments and attendance settlement; ProofBill focuses on agent purchasing, private AI delivery, and payment receipts. Their contracts, financial state, and budgets are separate. ProofBill replaces the earlier planned Keyfolio entry; Keyfolio is not part of the final submission pair.
+
 ShowStake reuses the team's existing CommitPass frontend foundation with explicit owner authorization. The editor, event layouts and selected cover artwork are adapted; the ShowStake logo and branding are its own. The source reference, file hashes, asset provenance and license boundaries are documented in [frontend provenance](docs/frontend-provenance.json). Dependency licenses remain separate.
 
 The NEAR-specific work includes the Rust escrow/pass and shared-yield accounting, native wallet/session boundary, canonical receipt projection, direct-chain frontend verification, exact USDC funding/deposit separation, and current integration/recovery work. CommitPass's Monad contracts, Privy, CRE execution, vault policy and financial results are not presented as ShowStake's NEAR proof.
