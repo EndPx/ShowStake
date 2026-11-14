@@ -1,0 +1,67 @@
+{
+  "observedAt": "2026-11-14T16:19:27.669Z",
+  "sourceCommit": "fa427e8b0c63cdbffafdb2519cdc1e5c7419bb0a",
+  "production": {
+    "classification": "PASS_LIVE",
+    "scope": "Public frontend and Theme open/cancel only; no wallet signature or chain transaction",
+    "deployment": "dpl_GyebCawaSXsexDBWvrpu8vBjcKEq",
+    "target": "production",
+    "state": "READY",
+    "url": "https://showstake.vercel.app/events/new",
+    "http": 200,
+    "mainnetLabel": true,
+    "testnetNotice": false,
+    "newEditor": true,
+    "brandNavy": true,
+    "brandCyan": true,
+    "checkedAt": "2026-11-14T16:18:22.012Z",
+    "themeControls": [
+      "Minimal",
+      "Aurora",
+      "Confetti",
+      "Grid",
+      "Custom accent color",
+      "Default/Editorial/Mono",
+      "Light/Dark"
+    ],
+    "cover": "/event-covers/together.webp",
+    "viewport": 1440,
+    "overflow": false
+  },
+  "hostedPreview": {
+    "classification": "PASS_TESTNET",
+    "scope": "Browser presentation interactions only, not an onchain event creation or funds proof",
+    "deployment": "dpl_4xYD1bvdUUtEeH6UiF3wQ4zFgDBS",
+    "checks": [
+      {
+        "action": "Preview Aurora + Editorial + Dark, then Cancel",
+        "result": "Restored Minimal + Default + Light"
+      },
+      {
+        "action": "Save Grid + Mono + Dark and reload",
+        "result": "Grid, ui-monospace and dark mode restored from draft"
+      },
+      {
+        "action": "Choose Good plans cover and confirm",
+        "result": "/event-covers/good-plans.webp"
+      },
+      {
+        "action": "Open theme picker at390x844",
+        "result": "Two-column presets, readable dark dialog, no horizontal overflow"
+      },
+      {
+        "action": "Shuffle",
+        "result": "Cover and style changed"
+      },
+      {
+        "action": "Navigate to Discover",
+        "result": "Event-specific theme cleared"
+      }
+    ]
+  },
+  "timingEditor": "UNCHANGED; user cancelled proposed change",
+  "mainnetContractUpgrade": "NONE",
+  "agentSignedAssetTransactions": "NONE",
+  "publishedMetadataRoundTrip": "PASS_LOCAL encode/create-proposal/decode; new onchain event with appearance NOT_RUN",
+  "remaining": "Custom cover upload service absent; HTTPS links and local templates work"
+}

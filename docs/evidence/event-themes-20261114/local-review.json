@@ -31,7 +31,7 @@
     "Dark/light font and accessible foreground variables",
     "Existing create-event financial/timing ABI"
   ],
-  "browser": "PENDING hosted candidate review",
+  "browser": "Accepted presentation scope in browser-production-review.json; no funded transaction claim",
   "contractUpgrade": "NONE",
   "mainnetAssetAction": "NONE",
   "coverUploadService": "NOT_IMPLEMENTED; templates and HTTPS links available"
