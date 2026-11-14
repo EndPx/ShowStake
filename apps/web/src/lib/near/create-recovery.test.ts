@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {inspectSavedCreate,savedCreateRules} from './create-recovery.ts';
+const release={network:'mainnet' as const,contract:'shared.near',codeHash:'hash',canonicalFt:'17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1',policy:'test'},rules={event_id:'one',title:'Meetup'};
+const attempt={account:'host.near',child:'shared.near',eventId:'one',hash:null,actions:[{type:'FunctionCall' as const,params:{methodName:'create_event',args:{rules},gas:'300000000000000',deposit:'123'}}]};
+let event:any=null,code='hash';
+const fake=async(_:unknown,init?:RequestInit)=>{const q=JSON.parse(String(init?.body));let result:any;if(q.method==='block')result={header:{hash:'B',height:7,timestamp_nanosec:String(BigInt(Date.now())*1000000n)}};else{assert.equal(q.method,'query');assert.equal(q.params.block_id,'B');if(q.params.request_type==='view_account')result={block_hash:'B',block_height:7,code_hash:code};else{const value=q.params.method_name==='get_config'?{network:'mainnet',canonical_ft:'17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1',policy_version:'test'}:event;result={block_hash:'B',block_height:7,result:[...new TextEncoder().encode(JSON.stringify(value))]};}}return new Response(JSON.stringify({result}));};
+assert.deepEqual(savedCreateRules(attempt,release,'host.near'),rules);
+assert.equal((await inspectSavedCreate(attempt,release,'host.near','rpc',fake as typeof fetch)).found,false);
+event={...rules,organizer:'host.near',canonical_ft:'17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1',policy_version:'test'};assert.equal((await inspectSavedCreate(attempt,release,'host.near','rpc',fake as typeof fetch)).found,true);
+event={...event,title:'Different rules'};await assert.rejects(()=>inspectSavedCreate(attempt,release,'host.near','rpc',fake as typeof fetch),/different details/);
+event=null;code='wrong';await assert.rejects(()=>inspectSavedCreate(attempt,release,'host.near','rpc',fake as typeof fetch),/identity/);
+assert.throws(()=>savedCreateRules({...attempt,eventId:'new-id'},release,'host.near'),/identity/);
+assert.throws(()=>savedCreateRules(attempt,release,'other.near'),/identity/);
+assert.throws(()=>savedCreateRules({...attempt,child:'foreign.near'},release,'host.near'),/identity/);
+assert.throws(()=>savedCreateRules({...attempt,actions:[{...attempt.actions[0]!,params:{...attempt.actions[0]!.params,methodName:'transfer'}}]},release,'host.near'),/identity/);
+console.log('PASS_LOCAL same-event recovery: absent/found/collision/code/signer/contract/action checks, read-only RPC only');

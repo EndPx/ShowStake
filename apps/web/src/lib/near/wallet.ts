@@ -17,6 +17,7 @@ import type { SharedActionContext } from "./shared-event";
 import type { MultiCreateContext } from "./multi-create";
 import { walletBoundary, invalidateWalletBoundary } from "./wallet-boundary";
 import { checkedWalletCall, snapshotWalletRequest } from "./wallet-request";
+import {walletOutcomeHash} from './wallet-outcome';
 import type { FactoryRecoveryContext } from "./factory-recovery-context";
 import type { PublicChildEmpty } from "./public-child";
 import type { VerifiedFactoryContext } from "./factory-context";
@@ -51,7 +52,7 @@ export interface TxResult {
 
 export type WalletResult<T = WalletAccount> =
   | { ok: true; code: string; value: T }
-  | { ok: false; code: string; detail: string };
+  | { ok: false; code: string; detail: string; submission?: 'not_requested' | 'unknown' };
 
 // The connector is created lazily so the CJS SDK is never evaluated during SSR
 // or static page generation (only inside a browser event handler/effect).
@@ -209,29 +210,30 @@ export function walletRequestAvailable(params: SignAndSendParams, factoryContext
 export async function signAndSendTransaction(params: SignAndSendParams, factoryContext?: VerifiedFactoryContext,eventContext?:PublicChildEmpty,recoveryContext?:FactoryRecoveryContext,multiContext?:MultiCreateContext | SharedActionContext,candidateContext?:import("./factory-event").EventContext,candidateRecovery?:import("./factory-event").EventRecoveryContext): Promise<WalletResult<TxResult>> {
   const boundary=walletBoundary();
   let request: SignAndSendParams;
-  try { request=snapshotWalletRequest(params); } catch { return { ok:false,code:"INVALID_REQUEST",detail:"Transaction request could not be safely copied." }; }
-  if (!walletRequestAvailable(request,factoryContext,eventContext,recoveryContext,multiContext,candidateContext,candidateRecovery)) return { ok: false, code: "NETWORK_UNAVAILABLE", detail: "Transactions are unavailable for this network configuration." };
-  const c = await getConnector();
+  try { request=snapshotWalletRequest(params); } catch { return { ok:false,code:"INVALID_REQUEST",detail:"Transaction request could not be safely copied.",submission:'not_requested' }; }
+  if (!walletRequestAvailable(request,factoryContext,eventContext,recoveryContext,multiContext,candidateContext,candidateRecovery)) return { ok: false, code: "NETWORK_UNAVAILABLE", detail: "Transactions are unavailable for this network configuration.",submission:'not_requested' };
+  let c:ConnectorShape;try{c=await getConnector();}catch(error){return {ok:false,code:"NOT_CONNECTED",detail:String((error as Error)?.message??"Reconnect your wallet."),submission:"not_requested"};}
   let wallet: { getAccounts: () => Promise<Array<{ accountId: string }>>; signAndSendTransaction?: (p: SignAndSendParams) => Promise<MaybeOutcome> };
   try {
     wallet = await c.wallet();
   } catch (error) {
-    return { ok: false, code: "NOT_CONNECTED", detail: String((error as Error)?.message ?? "Connect a wallet first.") };
+    return { ok: false, code: "NOT_CONNECTED", detail: String((error as Error)?.message ?? "Connect a wallet first."),submission:'not_requested' };
   }
   if (typeof wallet.signAndSendTransaction !== "function") {
-    return { ok: false, code: "TX_SIGNING_UNSUPPORTED", detail: "The selected wallet does not expose signAndSendTransaction." };
+    return { ok: false, code: "TX_SIGNING_UNSUPPORTED", detail: "The selected wallet does not expose signAndSendTransaction.",submission:'not_requested' };
   }
+  let requested=false;
   try {
-    const outcome = await checkedWalletCall(request, p => walletBoundary()===boundary && walletRequestAvailable(p,factoryContext,eventContext,recoveryContext,multiContext,candidateContext,candidateRecovery), () => wallet.getAccounts(), p => wallet.signAndSendTransaction!(p));
+    const outcome = await checkedWalletCall(request, p => walletBoundary()===boundary && walletRequestAvailable(p,factoryContext,eventContext,recoveryContext,multiContext,candidateContext,candidateRecovery), () => wallet.getAccounts(), p => {requested=true;return wallet.signAndSendTransaction!(p);});
     return {
       ok: true,
       code: "TRANSACTION_PROPOSED",
       value: {
-        transactionHash: outcome?.transaction?.hash ?? null,
+        transactionHash: walletOutcomeHash(outcome),
         status: typeof outcome?.status === "string" ? (outcome.status as string) : JSON.stringify(outcome?.status ?? null),
       },
     };
   } catch (error) {
-    return { ok: false, code: "TRANSACTION_DENIED", detail: String((error as Error)?.message ?? error) };
+    return { ok: false, code: "TRANSACTION_DENIED", detail: String((error as Error)?.message ?? error),submission:requested?'unknown':'not_requested' };
   }
 }

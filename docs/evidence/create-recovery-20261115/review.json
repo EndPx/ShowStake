@@ -1,0 +1,62 @@
+{
+  "observedAt": "2026-11-14T18:08:08.021Z",
+  "classification": "PASS_LOCAL",
+  "problem": "Hash-less saved create attempt displayed perpetual Confirming; no native funding preflight",
+  "observations": {
+    "network": "mainnet",
+    "account": "endpx.near",
+    "accountBlock": 224548570,
+    "amountAtomic": "1",
+    "lockedAtomic": "0",
+    "contract": "showstake-mainnet-escrow-endpx-2026.near",
+    "eventScanBlock": 224548408,
+    "events": 0,
+    "userReported": "HOT Wallet; no transaction/hash appeared"
+  },
+  "changes": [
+    "Pinned exact native balance/storage/gas-budget preflight",
+    "Read-only recovery for hash-less attempts",
+    "Explicit retry retains same event ID/action and archives prior unknown attempt",
+    "Before-wallet failures classified separately from ambiguous wallet dispatch",
+    "Wallet hash normalization; final receipts still required",
+    "Dark account-menu contrast"
+  ],
+  "checks": [
+    {
+      "command": "pnpm --filter @showstake/web typecheck",
+      "result": "PASS_LOCAL"
+    },
+    {
+      "command": "node --experimental-strip-types --test create-funding/create-recovery/wallet-outcome/wallet-request/multi-create tests",
+      "result": "PASS_LOCAL",
+      "files": 5
+    },
+    {
+      "command": "pnpm verify:t08-frontend",
+      "result": "PASS_LOCAL",
+      "checks": 69
+    },
+    {
+      "command": "pnpm verify:frontend-slice",
+      "result": "PASS_LOCAL",
+      "checks": 100
+    },
+    {
+      "command": "pnpm --filter @showstake/web build",
+      "result": "BLOCKED_EXTERNAL",
+      "reason": "Host exhausted memory (0.5GB free); compile succeeded before type worker OOM. Hosted GitHub build required."
+    }
+  ],
+  "providerMethods": [
+    "query view_account",
+    "gas_price",
+    "EXPERIMENTAL_protocol_config"
+  ],
+  "sources": [
+    "https://docs.near.org/api/rpc/gas",
+    "https://docs.near.org/api/rpc/protocol"
+  ],
+  "mainnetTransactions": "NONE",
+  "contractChanges": "NONE",
+  "userAction": "Top up native NEAR in endpx.near per live event quote, then explicit same-event retry"
+}
