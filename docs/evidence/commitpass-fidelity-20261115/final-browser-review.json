@@ -1,0 +1,42 @@
+{
+  "date": "2026-11-15",
+  "target": "https://showstake.vercel.app",
+  "sourceRevision": "155d8fa4e454120b224042f895de357dbc39ca65",
+  "browser": "Orca embedded browser, existing page",
+  "liveReadOnly": {
+    "status": "PASS_LIVE",
+    "scope": "Observed rendering and non-transactional controls only; not a claim of event creation, payment, authentication or settlement.",
+    "desktop1904": [
+      "Discover header 64px, content 944px, calendar 340px, results 524px; search opens and Escape restores focus to Search events.",
+      "Calendar next month, date selection and clear selection update visible state.",
+      "Events role and period controls respond while signed out and retain the sign-in empty state.",
+      "Create content 1024px, cover 340px, column gap 32px, fields 588px, title 44px; description, theme and schedule dialogs open."
+    ],
+    "mobile390": [
+      "Events and Discover have clientWidth and scrollWidth 375px; wallet button appears and opens the NEAR wallet selector without choosing a wallet or signing.",
+      "Discover format filter selects Online, displays filtered empty state and resets; list view control responds. With zero events, card and list contents cannot be compared."
+    ]
+  },
+  "productionDefect": {
+    "status": "FAILED",
+    "scope": "Create at viewport 390px before the local patch: document clientWidth 375px, scrollWidth 383px; timezone text overflows and a horizontal scrollbar appears.",
+    "screenshot": "create-mobile-live-overflow.png"
+  },
+  "localPatchSimulation": {
+    "status": "PASS_LOCAL",
+    "scope": "Equivalent CSS injected temporarily into the live document: clientWidth and scrollWidth both 375px; schedule and timezone stack. This is not a deployed build.",
+    "screenshot": "create-mobile-css-simulation.png",
+    "desktopLiveScreenshot": "create-desktop-live.png"
+  },
+  "localChecks": {
+    "pnpm --filter @showstake/web typecheck": "PASS_LOCAL",
+    "pnpm --filter @showstake/web build": "PASS_LOCAL on final patch",
+    "git diff --check": "PASS_LOCAL"
+  },
+  "notRun": [
+    "Signed-in session restoration and sign-in approval",
+    "Mainnet transaction or signature",
+    "Populated cards and event lists, authenticated loading/error states",
+    "Deployed validation of the local CSS patch"
+  ]
+}
