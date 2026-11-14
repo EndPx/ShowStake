@@ -1,0 +1,174 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "Read-only live DOM geometry; source0eb14d0 before follow-up CSS correction",
+  "reference": {
+    "url": "https://commitpass-event.vercel.app/discover",
+    "viewport": 1904,
+    "overflow": false,
+    "visible": "visible",
+    "values": {
+      ".workspace-header": {
+        "x": 0,
+        "y": 0,
+        "width": 1889,
+        "height": 64,
+        "fontSize": "16px",
+        "fontFamily": "\"DM Sans\", \"DM Sans Fallback\", sans-serif",
+        "padding": "0px 20px",
+        "columnGap": "24px"
+      },
+      ".workspace-header .brand": {
+        "x": 20,
+        "y": 10,
+        "width": 44,
+        "height": 44,
+        "fontSize": "25px",
+        "fontFamily": "\"DM Sans\", \"DM Sans Fallback\", sans-serif",
+        "padding": "0px",
+        "columnGap": "8px"
+      },
+      ".workspace-header nav": {
+        "x": 497,
+        "y": 10,
+        "width": 1187,
+        "height": 44,
+        "fontSize": "16px",
+        "fontFamily": "\"DM Sans\", \"DM Sans Fallback\", sans-serif",
+        "padding": "0px",
+        "columnGap": "28px"
+      },
+      ".workspace-content": {
+        "x": 473,
+        "y": 64,
+        "width": 944,
+        "height": 754,
+        "fontSize": "16px",
+        "fontFamily": "\"DM Sans\", \"DM Sans Fallback\", sans-serif",
+        "padding": "40px 24px 48px",
+        "columnGap": "normal"
+      },
+      ".discovery-heading h1": {
+        "x": 497,
+        "y": 108,
+        "width": 298,
+        "height": 42,
+        "fontSize": "32px",
+        "fontFamily": "\"DM Sans\", \"DM Sans Fallback\", sans-serif",
+        "padding": "0px",
+        "columnGap": "normal"
+      },
+      ".discovery-calendar": {
+        "x": 1053,
+        "y": 178,
+        "width": 340,
+        "height": 453,
+        "fontSize": "16px",
+        "fontFamily": "\"DM Sans\", \"DM Sans Fallback\", sans-serif",
+        "padding": "16px",
+        "columnGap": "normal"
+      },
+      ".discovery-results": {
+        "x": 497,
+        "y": 178,
+        "width": 524,
+        "height": 307,
+        "fontSize": "16px",
+        "fontFamily": "\"DM Sans\", \"DM Sans Fallback\", sans-serif",
+        "padding": "0px",
+        "columnGap": "normal"
+      }
+    }
+  },
+  "showstake": {
+    "url": "https://showstake.vercel.app/discover",
+    "viewport": 1904,
+    "overflow": false,
+    "visible": "visible",
+    "values": {
+      ".workspace-header": {
+        "x": 0,
+        "y": 0,
+        "width": 1889,
+        "height": 64,
+        "fontSize": "16px",
+        "fontFamily": "\"DM Sans\", \"DM Sans Fallback\", ui-sans-serif, system-ui, sans-serif",
+        "padding": "0px 20px",
+        "columnGap": "24px"
+      },
+      ".workspace-header .brand": {
+        "x": 20,
+        "y": 10,
+        "width": 44,
+        "height": 44,
+        "fontSize": "25px",
+        "fontFamily": "\"DM Sans\", \"DM Sans Fallback\", ui-sans-serif, system-ui, sans-serif",
+        "padding": "0px",
+        "columnGap": "8px"
+      },
+      ".workspace-header nav": {
+        "x": 497,
+        "y": 10,
+        "width": 1103,
+        "height": 44,
+        "fontSize": "16px",
+        "fontFamily": "\"DM Sans\", \"DM Sans Fallback\", ui-sans-serif, system-ui, sans-serif",
+        "padding": "0px",
+        "columnGap": "28px"
+      },
+      ".workspace-content": {
+        "x": 473,
+        "y": 64,
+        "width": 944,
+        "height": 714,
+        "fontSize": "16px",
+        "fontFamily": "\"DM Sans\", \"DM Sans Fallback\", ui-sans-serif, system-ui, sans-serif",
+        "padding": "40px 24px 48px",
+        "columnGap": "normal"
+      },
+      ".discovery-heading h1": {
+        "x": 497,
+        "y": 108,
+        "width": 298,
+        "height": 42,
+        "fontSize": "32px",
+        "fontFamily": "\"DM Sans\", \"DM Sans Fallback\", ui-sans-serif, system-ui, sans-serif",
+        "padding": "0px",
+        "columnGap": "normal"
+      },
+      ".discovery-calendar": {
+        "x": 1053,
+        "y": 178,
+        "width": 340,
+        "height": 435,
+        "fontSize": "16px",
+        "fontFamily": "\"DM Sans\", \"DM Sans Fallback\", ui-sans-serif, system-ui, sans-serif",
+        "padding": "16px",
+        "columnGap": "normal"
+      },
+      ".discovery-results": {
+        "x": 497,
+        "y": 178,
+        "width": 524,
+        "height": 418,
+        "fontSize": "16px",
+        "fontFamily": "\"DM Sans\", \"DM Sans Fallback\", ui-sans-serif, system-ui, sans-serif",
+        "padding": "0px",
+        "columnGap": "normal"
+      }
+    }
+  },
+  "verifiedMatching": [
+    "header64px",
+    "content944px x473px",
+    "heading32px x497px",
+    "calendar340px x1053px",
+    "results524px x497px"
+  ],
+  "corrections": [
+    "Restore missing WalletMenu in header",
+    "Import editor calendar gap2px/bottom margin20px and vault period-tab rules for exact453px calendar",
+    "Match compact create text line-height and44px footer brand",
+    "Hide secondary header items on narrow viewports with correct selector specificity"
+  ],
+  "createReference": "Unauthenticated CommitPass /events/new redirects to Discover; create dimensions matched to read-only source and supplied screenshot instead"
+}

@@ -58,6 +58,7 @@ export function PlatformShell({ children }: { children: ReactNode }) {
             <Plus className="workspace-create-icon" size={16} aria-hidden="true" />
             <span className="workspace-create-label">Create event</span>
           </Link>
+          <WalletMenu />
         </div>
       </header>
       {NETWORK === "testnet" && <div className="workspace-network-note" role="note">NEAR testnet · Mock USDC · Zero-yield MockEarn · No real funds</div>}

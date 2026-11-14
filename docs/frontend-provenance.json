@@ -350,6 +350,10 @@
       {
         "path": "src/app/(platform)/editor.css",
         "sha256": "aed157d7031194b0ea03210fb2d45d12f4377802611b5de8acf51adde573f900"
+      },
+      {
+        "path": "src/app/(platform)/vault.css",
+        "sha256": "d4f1b8cfb26e13f867fcccf1d266578bb0a293035b9b61387540720d88553ddb"
       }
     ],
     "geometry": {
@@ -373,6 +377,7 @@
       "Own ShowStake logo/palette; existing gradient geometry retained",
       "Existing NEAR create/receipt/retry flow retained"
     ],
-    "referenceWorkspaceModified": false
+    "referenceWorkspaceModified": false,
+    "browserEvidence": "docs/evidence/commitpass-fidelity-20261115/initial-browser-comparison.json"
   }
 }
