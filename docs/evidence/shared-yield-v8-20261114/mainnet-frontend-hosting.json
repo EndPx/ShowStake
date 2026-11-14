@@ -1,0 +1,31 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "Production frontend HTTP/mainnet configuration and API authentication boundary only; full mainnet contract cycle remains inactive",
+  "observedAt": "2026-11-14T09:33:40.919Z",
+  "url": "https://showstake.vercel.app",
+  "network": "mainnet",
+  "sourceCommit": "df5e2ce720ce7ac88148ec5b4f35dc63a7aa438d",
+  "deploymentId": "dpl_4Xm4jQoLS6LJWomqzRwC7uLEhoho",
+  "gitHubSource": true,
+  "checks": [
+    {
+      "path": "/events/new",
+      "http": 200
+    },
+    {
+      "path": "/funding",
+      "http": 200
+    },
+    {
+      "path": "/earn",
+      "http": 200
+    },
+    {
+      "path": "/api/v1/me",
+      "http": 401
+    }
+  ],
+  "activeContractPolicy": "showstake-native-usdc-multievent/1",
+  "sharedYieldActive": false,
+  "mainnetTransactionsByAgent": 0
+}

@@ -1,0 +1,25 @@
+{
+  "classification": "PASS_TESTNET",
+  "scope": "Real browser organizer upload and attended owner authenticated download; no historical projection seed; no-show denied after real wallet/account switch",
+  "network": "testnet",
+  "contract": "ss-shared-s1114151743.testnet",
+  "eventId": "attendee",
+  "organizer": "showstake-participant-endpx.testnet",
+  "attendee": "showstake-attendee-a-endpx.testnet",
+  "passId": "pass-1",
+  "sourceCommit": "df5e2ce720ce7ac88148ec5b4f35dc63a7aa438d",
+  "observedAt": "2026-11-14T09:34:32.999Z",
+  "http": 200,
+  "bytes": 41,
+  "sha256": "07ade8c05015e03ddc2f29dfd79df294e3666aca706ec3b5f343ba7f3e6e882a",
+  "source": "FINAL_CHAIN",
+  "authority": "FINAL_CHAIN",
+  "noShow": {
+    "account": "showstake-participant-endpx.testnet",
+    "passId": "pass-0",
+    "http": 403,
+    "error": "CONTENT_NOT_ELIGIBLE",
+    "denialVisible": true,
+    "oldMaterialLinkCleared": true
+  }
+}
