@@ -1,6 +1,6 @@
 # Test the atomic factory on NEAR testnet
 
-Open https://showstake-testnet.vercel.app. The stable alias currently points to review deployment `dpl_6HRf5s7xFGpJTgdJ7sQj4HboegCm`. The preview uses **NEAR testnet, Mock USDC and zero-yield MockEarn**; it is a review deployment and its currently displayed features are not proof of mainnet availability. You need a supported NEAR testnet wallet with testnet NEAR for fees and sufficient Mock USDC. The app must show its testnet network label. Use only testnet tokens.
+Open https://showstake-testnet.vercel.app. The reviewed application source is GitHub commit `d453626063c074cf7c5cf568035f5c19daf4d4df`; its GitHub-built deployment identity is recorded in `docs/evidence/atomic-factory-20261114/website-deployment.json`. The preview uses **NEAR testnet, Mock USDC and zero-yield MockEarn**; displayed features do not establish mainnet availability. You need a supported NEAR testnet wallet with testnet NEAR for fees and sufficient Mock USDC. Check the testnet network label and use only testnet tokens.
 
 1. Connect the testnet wallet and, if prompted for check-in, sign the NEP-413 sign-in request. A wallet connection alone is not a check-in session.
 2. Open **Create event**. Enter the title, location, rules, registration and check-in times, capacity and a fixed deposit. Review the factory quote and storage cost. Approve the wallet request only after checking the displayed network, contract and amount. A final receipt and child/event readback should confirm creation; a wallet return alone is not success.
