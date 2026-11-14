@@ -96,7 +96,7 @@ async function getConnector(): Promise<ConnectorShape> {
       NearConnector: new (options: unknown) => ConnectorShape;
     };
     if(epoch!==connectorGeneration)throw Error('Wallet connection changed');
-    connector = new NearConnector({ network: NETWORK, autoConnect:false, features: { testnet: NETWORK === "testnet" } });
+    connector = new NearConnector({ network: NETWORK, autoConnect:false, features: { signMessage:true, testnet: NETWORK === "testnet" } });
     const created=connector;
     for (const event of ["wallet:signIn", "wallet:signOut", "wallet:signInAndSignMessage"]) connector.on(event, () => { if(connector!==created||epoch!==connectorGeneration)return;invalidateWalletBoundary(); for (const listener of connectorListeners) listener(); });
     return connector;

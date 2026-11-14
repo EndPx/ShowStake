@@ -1,0 +1,50 @@
+{
+  "classification": "PASS_LOCAL",
+  "scope": "Native wallet capability compatibility review; external MetaMask wait cause not established",
+  "observedAt": "2026-11-14T23:29:22.794Z",
+  "observation": {
+    "page": "https://evm-on-near.dev/",
+    "state": "Waiting for wallet; MetaMask shows connected site; no final NEAR account or NEP-413 proof observed",
+    "externalWaitCause": "UNKNOWN",
+    "concurrency": "Two Ethereum Wallets approval tabs were visible; shared-lock contention is a hypothesis, not a confirmed error"
+  },
+  "sources": {
+    "manifest": "https://raw.githubusercontent.com/hot-dao/near-selector/refs/heads/main/repository/manifest.json",
+    "httpStatus": 200,
+    "manifestSha256": "a90e85a75a154025297db2bbe06de940f3bbdcac4782e3f59eb01f8ed7fae580",
+    "providerDocs": "https://github.com/gagdiez/eth-wallet#supported-scope",
+    "approvalSource": "https://github.com/gagdiez/eth-wallet/blob/main/wallet/wallet-page.ts"
+  },
+  "adapter": {
+    "id": "ethereum-wallets",
+    "version": "0.1.4",
+    "executor": "https://evm-on-near.dev/executor.js",
+    "features": {
+      "signMessage": false,
+      "signTransaction": false,
+      "signAndSendTransaction": true,
+      "signAndSendTransactions": true,
+      "signInWithoutAddKey": true,
+      "signInAndSignMessage": false,
+      "signInWithFunctionCallKey": false,
+      "signDelegateActions": false,
+      "mainnet": true,
+      "testnet": true
+    }
+  },
+  "verifiedGap": "Adapter declares signMessage:false and implements the NEP-413 operation as unsupported. ShowStake requires NEP-413 for a wallet-bound API session.",
+  "fix": "Require signMessage:true in native NEAR Connect feature selection; retain existing testnet filter and all financial/auth checks. Direct injected EVM source-wallet funding is unchanged.",
+  "remaining": {
+    "EVMtoNEARLogin": "NOT_ACCEPTED; original onboarding requirement remains open",
+    "actualExternalMetaMaskConnection": "NOT_RUN",
+    "realUserNEP413Signin": "NOT_RUN",
+    "fundedTransactions": "NOT_RUN"
+  },
+  "checks": {
+    "installedSDKCapabilityFilter": "PASS_LOCAL; coordinator independently ran installed SDK getter against supported/unsupported/undeclared and mainnet-only capabilities",
+    "webBuildAndSerialTypecheck": "PASS_LOCAL; executor final build then typecheck",
+    "productionPicker": "PENDING",
+    "walletConnectAndLogin": "PASS_LOCAL; coordinator reran both tests"
+  },
+  "contractChange": "NONE"
+}
