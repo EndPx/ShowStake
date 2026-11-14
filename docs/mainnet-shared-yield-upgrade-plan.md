@@ -1,6 +1,6 @@
 # One-account shared-yield mainnet activation
 
-Status: **PREPARED; NOT EXECUTED; NEW AUTHORIZATION REQUIRED**. The previous 0.01 NEAR approval was consumed by the C81 CREATE-only upgrade. It is not reused here.
+Status: **EXECUTED_PASS_LIVE**, after the user funded the exact 0.60NEAR top-up and explicitly said "sudah nih, lanjut gass". New transaction `5nL4htVAQREWW3e7UniPoE5n8bCbD9cJ72REMWjcqiZb` finalized at block224507548; actual fee0.002184618005035NEAR. No new account, event, USDC transfer or provider supply/redeem was performed. [Final receipt and before/after](evidence/shared-mainnet-upgrade-v8-20261114/). The old C81 approval and transaction remain separate historical evidence. Never resend this upgrade; the submission marker is FINALIZED.
 
 The user's selected product is one ShowStake contract with many event records. Every organizer connects their own wallet, pays the event's quoted native-NEAR storage/gas, and creates an event on the existing account. There is no organizer allowlist and no per-event Wasm deployment.
 

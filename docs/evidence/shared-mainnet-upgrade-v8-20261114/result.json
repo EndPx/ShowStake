@@ -1,0 +1,28 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "Approved shared-yield code migration only; no event, USDC or provider asset action by agent",
+  "network": "mainnet",
+  "account": "showstake-mainnet-escrow-endpx-2026.near",
+  "transactionHash": "5nL4htVAQREWW3e7UniPoE5n8bCbD9cJ72REMWjcqiZb",
+  "sha256": "2fdc615b6427858b8a351b03343385052353ef1b466caad47d16a19c49e24c53",
+  "codeHash": "4Dq4uEH2PE9FEB7n67d3r3fvHPUy5KAvjhgZ8q5sX4PU",
+  "artifact": {
+    "sha256": "2fdc615b6427858b8a351b03343385052353ef1b466caad47d16a19c49e24c53",
+    "codeHash": "4Dq4uEH2PE9FEB7n67d3r3fvHPUy5KAvjhgZ8q5sX4PU",
+    "bytes": 276035
+  },
+  "upgradeBlock": {
+    "height": 224507548,
+    "hash": "RPxTQZrTUxQJeV8zAw6bieKTx8UFF2fprMgokquX4kY"
+  },
+  "fees": {
+    "maximumAtomic": "10000000000000000000000",
+    "tokensBurntAtomic": "2184618005035000000000",
+    "netAccountDebitAtomic": "2184618005035000000000"
+  },
+  "accountBalance": "2894186111836171400000000",
+  "storageBytes": 276695,
+  "events": 0,
+  "usdcAtomic": "0",
+  "providerPosition": null
+}

@@ -1,0 +1,15 @@
+{
+    "classification":  "FAILED",
+    "scope":  "Explorer verifier request only; badge not inferred",
+    "observedAt":  "2026-11-14T11:35:51.408Z",
+    "endpoint":  "https://api-v2.sourcescan.dev/api/verify/rust",
+    "request":  {
+                    "accountId":  "showstake-mainnet-escrow-endpx-2026.near",
+                    "networkId":  "mainnet"
+                },
+    "http":  400,
+    "response":  {
+                     "message":  "No source metadata found for showstake-mainnet-escrow-endpx-2026.near"
+                 },
+    "reason":  "NEP330_BUILD_INFO_MISSING"
+}

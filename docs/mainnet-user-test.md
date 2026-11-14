@@ -1,8 +1,50 @@
-# Mainnet CREATE user test
+# Mainnet shared-event user test
 
 Updated 2026-11-14 Asia/Jakarta. Website: https://showstake.vercel.app/events/new.
-Backend: https://srv1330754.hstgr.cloud. This release enables **event creation only**.
-It does not accept mainnet USDC registrations or execute Rhea Earn.
+Backend: https://srv1330754.hstgr.cloud. The activated V8 release implements the complete event lifecycle. The user signs their own event, USDC and Rhea transactions. Mainnet funded lifecycle acceptance is separate from code activation.
+
+## Current V8 deployment
+
+- Account: `showstake-mainnet-escrow-endpx-2026.near`.
+- Policy/schema: `showstake-native-usdc-shared-yield/2`, schema2.
+- Canonical USDC on NEAR: `17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1`, 6 decimals.
+- Rhea: `contract.main.burrow.near`, internal supplied-share position.
+- Wasm SHA-256: `2fdc615b6427858b8a351b03343385052353ef1b466caad47d16a19c49e24c53`.
+- Code hash: `4Dq4uEH2PE9FEB7n67d3r3fvHPUy5KAvjhgZ8q5sX4PU`.
+- [Upgrade receipt](https://nearblocks.io/txns/5nL4htVAQREWW3e7UniPoE5n8bCbD9cJ72REMWjcqiZb), block224507548, fee0.002184618005035NEAR.
+- [Final before/after and receipt evidence](evidence/shared-mainnet-upgrade-v8-20261114/).
+
+One account hosts multiple events. Event creation pays its quoted storage reservation and gas; it does not deploy another Wasm. Native storage is not automatically refunded when an event finishes. Each wallet needs native NEAR for gas/storage; the amount reserved upfront may exceed the eventual burnt fee.
+
+## Current website cycle — do X, see Y
+
+1. Connect a NEAR mainnet wallet and sign its offchain NEP-413 login message. The organizer is the connected account; no nominated account or allowlist is required. Do not share private keys/seed phrases.
+2. Fill event title/location/rules, USDC deposit, capacity and ordered registration/check-in windows. Allow enough time for all wallet approvals; avoid a check-in window of only a few minutes. Registration close is the shown cancellation cutoff; finalization deadline is24h after check-in closes. A valid commitment is final under D036: no voluntary withdrawal/rejoin.
+3. Review rules, request the exact storage quote, sign **Publish event**, and **Verify receipt**. See the matching final event and follow its event link.
+4. On **Organizer**, quote and approve shared-contract storage at canonical USDC and Rhea if missing. Review each native amount; these approvals are separate from participant token storage.
+5. Each participant connects/signs in, opens **Registration actions**, and approves **Register my token storage** if needed. Enter a unique commitment ID and sign **Deposit and register**. This calls canonical USDC `ft_transfer_call` for the exact amount. Do not transfer USDC directly to the contract as a registration substitute.
+6. **Verify final receipt**. See the final registration and onchain non-transferable pass. Pending, refunded or rejected deposits grant no seat. Record event/registration/pass IDs, account and hash.
+7. After registration closes, organizer signs **Close registration**. Once check-in opens, sign **Supply provider**, verify its callbacks and see `Supplied`. The event's principal is now attributed to its own Rhea strategy shares.
+8. Participant creates a short-lived check-in QR/token. Organizer submits it at **Check-in desk**, which produces only `PENDING_SIGNATURE`. Review the registration and separately sign **Mark attended** before check-in closes.
+9. After check-in closes, sign **Finalize attendance** and verify `AttendanceFinalized`. Earn must already be `Supplied`; unmarked participants become no-shows.
+10. Sign **Redeem provider**. Require final callbacks, `Redeemed`, actual returned USDC and the reconciled position. A displayed position or submitted hash is not redemption evidence.
+11. Sign **Settle** and verify `Settled`. For five deposits of2USDC and two attendees, a zero-yield10USDC pool allocates5USDC to each attendee and0 to each no-show. Realized yield follows the contract's exact integer rounding. Zero-attendee settlement uses the refund allocation.
+12. Each entitled beneficiary signs **Claim or refund**. Verify final payout/callback, `Paid`, wallet balance change, and remaining event liability. Failed FT transfers must restore the exact claim before a separate retry.
+13. Organizer uploads materials; an authenticated attended pass can load/download them after settlement/redemption. A no-show or foreign pass is denied even if the resource URL is known.
+
+For cancellation, sign **Cancel event** under its contract gate, redeem any supplied principal, then beneficiaries claim their refunds. Timeout refund uses the actual finalization deadline. Preserve saved attempts and known hashes after RPC timeouts; never blind-retry a deposit/provider action. Unknown/dispatched provider outcomes and shortfalls fail closed. Historical indexer429 is disclosed; direct FINAL_CHAIN reads do not claim cursor catch-up.
+
+## Funding and verification status
+
+**Funding** supports ETH on Base/Ethereum to canonical USDC in the connected participant's NEAR account. Review a fresh quote and its recipient/refund/fee details, then sign the source transfer once. Require final delivery before depositing into the event separately. Catalog/dry quote success is not funded delivery.
+
+Code upgrade and byte equality are PASS_LIVE. The user's real mainnet cycle, returned-USDC liquidity and funded Intents delivery remain NOT_RUN until their receipts and balances are recorded. Rhea remains SELECTED_FOR_HACKATHON rather than TECHNICALLY_ACCEPTED solely from code activation.
+
+Explorer source badge is separate from byte equality. The deployed NEP-330 view links the public repository but has `build_info:null`; the verifier request returned HTTP400 `No source metadata found`. No additional bytecode deployment is inferred solely to change that badge.
+
+## Historical C81 CREATE-only guide
+
+The sections below preserve the prior release and are superseded by the V8 guide above.
 
 ## Frozen contract
 

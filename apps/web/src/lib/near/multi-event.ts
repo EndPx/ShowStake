@@ -30,8 +30,8 @@ export const MAINNET_SHARED_YIELD_CANDIDATE: MultiEventRelease = Object.freeze({
   schema:2,
   maxStorageYocto:'10000000000000000000000000',
 });
-/** Activated only after the mainnet account code and config are reviewed on chain. */
-export const MAINNET_SHARED_YIELD_RELEASE = null as MultiEventRelease | null;
+/** Final upgrade 5nL4htVAQREWW3e7UniPoE5n8bCbD9cJ72REMWjcqiZb, block 224507548. */
+export const MAINNET_SHARED_YIELD_RELEASE: MultiEventRelease | null = MAINNET_SHARED_YIELD_CANDIDATE;
 export function sharedReleaseForNetwork(network:string): MultiEventRelease | null {
   const candidate=network==='mainnet'?MAINNET_SHARED_YIELD_RELEASE:SHARED_YIELD_RELEASE;
   return reviewedSharedYieldRelease(candidate) && candidate.network === network ? candidate : MULTI_EVENT_RELEASE?.network === network ? MULTI_EVENT_RELEASE : null;

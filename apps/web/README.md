@@ -1,5 +1,13 @@
 # apps/web — ShowStake web application (Next.js)
 
+## Current release
+
+The CommitPass-derived application now includes NEAR Connect/session login, shared-contract event creation, exact USDC deposits, onchain pass discovery, organizer check-in proposals and signed attendance, provider storage approvals, supply/redeem, settlement/claims, private attendee materials and supported cross-chain funding. See the [current repository checkpoint](../../README.md#current-release-checkpoint--one-shared-contract).
+
+Production https://showstake.vercel.app is built for NEAR mainnet. The contract was upgraded to V8 at block224507548, transaction `5nL4htVAQREWW3e7UniPoE5n8bCbD9cJ72REMWjcqiZb`; `MAINNET_SHARED_YIELD_RELEASE` now pins the verified live code. See the [activation evidence](../../docs/evidence/shared-mainnet-upgrade-v8-20261114/result.json). The testnet preview https://showstake-testnet.vercel.app uses its separate V8 shared contract and explicitly labelled Mock USDC/MockEarn. Network labels and evidence must stay separate.
+
+The current scope and evidence supersede the historical sliced notes below. The user signs the actual mainnet cycle; funded Rhea withdrawal and cross-chain delivery are not claimed merely by activating the code. [Current status](../../docs/status.md) records remaining gates.
+
 Next App Router application reusing the CommitPass frontend shell (read-only
 baseline `542273df306a7e5887f1dfcabf1383e78930f579`), adapted to ShowStake tokens
 and copy. See `../../DESIGN.md` and `../../docs/frontend-provenance.json`.

@@ -1,0 +1,22 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "Read-only byte equality and NEP-330 metadata inspection; not explorer verification badge",
+  "account": "showstake-mainnet-escrow-endpx-2026.near",
+  "block": {
+    "height": 224508102,
+    "hash": "7LzV9vgmXa8wKwdaUuq6bzhk7y6oVHhXFqsVZFiFnTtt"
+  },
+  "bytes": 276035,
+  "sha256": "2fdc615b6427858b8a351b03343385052353ef1b466caad47d16a19c49e24c53",
+  "metadata": {
+    "version": "0.1.0",
+    "link": "https://github.com/EndPx/ShowStake",
+    "standards": [
+      {
+        "standard": "nep330",
+        "version": "1.3.0"
+      }
+    ],
+    "build_info": null
+  }
+}

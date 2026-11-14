@@ -1,5 +1,33 @@
 # ShowStake
 
+## Current release checkpoint — one shared contract
+
+ShowStake is a NEAR event commitment application: participants deposit an exact amount of native USDC on NEAR, receive a non-transferable account-bound pass, and eligible attendees claim the settled pool after organizer-attested attendance and final Rhea redemption. Multiple events share one contract account with separate principal, strategy ownership and claim accounting. Event creation does not deploy another Wasm.
+
+- **Mainnet website:** https://showstake.vercel.app. The CommitPass-derived frontend, NEAR wallet/session integration and VPS backend are deployed.
+- **Current mainnet contract:** [`showstake-mainnet-escrow-endpx-2026.near`](https://nearblocks.io/address/showstake-mainnet-escrow-endpx-2026.near), upgraded to **shared-yield V8**, schema2, at block224507548. [Final upgrade receipt](https://nearblocks.io/txns/5nL4htVAQREWW3e7UniPoE5n8bCbD9cJ72REMWjcqiZb).
+- **Mainnet artifact:** Wasm276035B, SHA-256 `2fdc615b6427858b8a351b03343385052353ef1b466caad47d16a19c49e24c53`, code hash `4Dq4uEH2PE9FEB7n67d3r3fvHPUy5KAvjhgZ8q5sX4PU`. See the [deployment result](docs/evidence/shared-mainnet-upgrade-v8-20261114/result.json). The existing account and upgrade key were retained; actual upgrade fee0.002184618005035NEAR. No user event, USDC supply or redemption was performed by the agent.
+- **Shared testnet contract:** `ss-shared-s1114151743.testnet`, with `mockusdc.testnet` and the explicitly labelled zero-yield MockEarn provider. [Website guide](docs/shared-yield-testnet-guide.md), [42 final lifecycle receipt graphs](docs/evidence/testnet-shared-s1114151743/result.json), [current integration review](docs/evidence/shared-yield-v8-20261114/review.md).
+- **Backend:** PostgreSQL schema 11 with 29 primary keys and 47 validated foreign keys. [ERD](docs/backend-erd.md). Old deployment identities and cursors are retained across code revisions.
+
+### Release acceptance flow
+
+The user signs the complete website flow: create event and verify its final receipt; participants deposit exact USDC and read their onchain pass; close registration and supply Rhea; propose QR check-in and separately sign attendance; finalize attendance after check-in closes; redeem Rhea, settle and claim; reconcile USDC and event liability; verify attendee-only materials. A submitted transaction, QR proposal, timer or database row does not prove a completed financial operation. Mainnet user cycle and real Rhea returned-USDC liquidity acceptance remain open.
+
+The required five-participant scenario is five deposits of 2 USDC, two attendees and three no-shows. With zero realized yield, each attendee receives 5 USDC; realized yield is allocated according to the contract's exact rounding rules. The full scenario is proven on testnet with mock assets. Mainnet user acceptance remains open.
+
+NEAR Intents funding is a separate preceding step: supported source asset to the participant's NEAR USDC balance, then an explicit escrow deposit. The currently integrated source routes are ETH on Base and Ethereum. Current catalog and dry quotes passed; funded delivery has not been claimed. Rhea remains `SELECTED_FOR_HACKATHON`, not `TECHNICALLY_ACCEPTED`, until its live technical and returned-USDC withdrawal gates pass.
+
+### Build and review
+
+Use Node 24.18.x and pnpm 10.21.x, then run `pnpm install --frozen-lockfile`, `pnpm typecheck:web`, `pnpm build:web`, `pnpm verify:api` and `pnpm verify:worker`. These local checks do not establish deployment or funded acceptance. Backend setup is documented in [apps/api](apps/api/README.md); the hosted website supplies the reviewed public deployment configuration.
+
+Evidence is classified separately as local, testnet, live hosting/read-only, funded live, blocked or not run. The [current status](docs/status.md) and [decisions](docs/decisions.md) take precedence over dated checkpoints below. Historical raw-block HTTP429 is not relabelled as indexer catch-up; direct `FINAL_CHAIN` reads retain onchain authority.
+
+## Historical checkpoints
+
+The sections below preserve prior deployments and acceptance history. References to a frozen release, current instance or open scope in these dated sections do not replace the current checkpoint above.
+
 Backend data model: [ERD with primary/foreign keys and multi-event boundaries](docs/backend-erd.md). Additive migration `0008` binds wallet ownership, event/deployment/token identity, pass ownership, payout beneficiaries and QR/check-in registrations. One contract deployment holds many events. Multi-event CREATE is live; pooled Earn and the full mainnet financial lifecycle remain unaccepted.
 
 Public frontend: **https://showstake.vercel.app/events/new**. VPS API: **https://srv1330754.hstgr.cloud**. Any connected organizer can create an event directly on the shared mainnet contract after sign-in, an exact storage quote and wallet approval. There is no factory step. USDC registration and Rhea Earn are disabled in this frozen CREATE-only release.
