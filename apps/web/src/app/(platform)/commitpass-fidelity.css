@@ -1,0 +1,604 @@
+/* Literal CommitPass workspace/editor measurements, adapted only through existing ShowStake variables. */
+
+.platform--commitpass .workspace-header {
+  min-height: 64px;
+  display: grid;
+  grid-template-columns:
+    max(44px, calc((100% - 944px) / 2)) minmax(0, 1fr)
+    auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 0 20px;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    backdrop-filter 180ms ease;
+}
+.platform--commitpass .workspace-header.is-scrolled {
+  background: rgb(250 249 246 / 55%);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-bottom-color: rgb(37 38 34 / 9%);
+}
+.platform--commitpass .workspace-header > .brand {
+  justify-self: start;
+  min-width: 44px;
+  min-height: 44px;
+  justify-content: center;
+}
+.platform--commitpass .workspace-header .brand--mark-only > span {
+  display: none;
+}
+.platform--commitpass .workspace-header .brand--mark-only > .brand-mark {
+  width: 36px;
+  height: 36px;
+  margin: 0;
+}
+.platform--commitpass .workspace-header .account-menu summary > span {
+  width: 28px;
+  height: 28px;
+  font-size: 12px;
+}
+.platform--commitpass .workspace-header .workspace-create-link > svg {
+  display: none;
+}
+.platform--commitpass .workspace-header .account-popover {
+  top: 46px;
+}
+.platform--commitpass .workspace-header nav {
+  display: flex;
+  gap: 28px;
+  margin: 0;
+}
+.platform--commitpass .workspace-header nav a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.platform--commitpass .workspace-header nav a:hover,.platform--commitpass .workspace-header nav a.active {
+  color: var(--ink);
+}
+.platform--commitpass .workspace-header nav a.active {
+  font-weight: 550;
+}
+.platform--commitpass .workspace-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  justify-self: end;
+}
+.platform--commitpass .workspace-footer {
+  max-width: 1160px;
+  margin: 72px auto 0;
+  border-top: 1px solid var(--line);
+  padding: 28px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.platform--commitpass .workspace-footer-meta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.platform--commitpass .workspace-footer-meta > span {
+  color: var(--muted);
+  font-size: 11px;
+}
+.platform--commitpass .workspace-footer-meta > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.platform--commitpass .workspace-footer-meta > a:hover {
+  color: var(--ink);
+}
+.platform--commitpass .create-workspace,.platform--commitpass .detail-workspace {
+  padding-top: 24px;
+}
+@media (max-width: 899px) {
+  .platform--commitpass .workspace-header {
+    gap: 16px;
+    padding-inline: 16px;
+  }
+  .platform--commitpass .workspace-header .brand {
+    font-size: 21px;
+  }
+  .platform--commitpass .workspace-header nav {
+    margin-left: 0;
+    gap: 20px;
+  }
+  .platform--commitpass .workspace-header-actions {
+    gap: 12px;
+  }
+}
+@media (max-width: 649px) {
+  .platform--commitpass .workspace-header {
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 0 12px;
+    min-height: 56px;
+  }
+  .platform--commitpass .workspace-header > .brand {
+    font-size: 20px;
+  }
+  .platform--commitpass .workspace-header nav {
+    justify-content: center;
+    gap: 16px;
+  }
+  .platform--commitpass .workspace-header nav a {
+    min-height: 44px;
+    font-size: 12px;
+  }
+  .platform--commitpass .workspace-header-actions {
+    margin: 0;
+    gap: 4px;
+  }
+  .platform--commitpass .workspace-header .workspace-create-link > svg {
+    display: block;
+  }
+  .platform--commitpass .workspace-header-actions > .button {
+    padding-inline: 12px;
+    font-size: 12px;
+  }
+  .platform--commitpass .workspace-footer {
+    margin-top: 40px;
+    padding: 24px 20px;
+    gap: 12px;
+  }
+  .platform--commitpass .workspace-footer-meta {
+    gap: 12px;
+    margin-left: auto;
+  }
+  .platform--commitpass .workspace-footer-meta > span {
+    font-size: 9px;
+  }
+}
+@media (max-width: 380px) {
+  .platform--commitpass .workspace-header nav a > svg {
+    display: none;
+  }
+  .platform--commitpass .workspace-header nav {
+    gap: 12px;
+  }
+}
+@media (max-width: 420px) {
+  .platform--commitpass .workspace-header-actions {
+    flex-wrap: wrap;
+    max-width: 96px;
+    row-gap: 0;
+  }
+}
+.platform--commitpass .create-workspace {
+  max-width: 1024px;
+  padding-top: 40px;
+}
+.platform--commitpass .create-workspace .create-grid {
+  grid-template-columns: 340px minmax(0, 1fr);
+  gap: 32px;
+}
+.platform--commitpass .create-workspace .create-fields {
+  min-width: 0;
+}
+.platform--commitpass .create-context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 28px;
+  margin-bottom: 16px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.platform--commitpass .create-context > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.platform--commitpass .create-workspace .event-name-input {
+  font-size: 44px;
+  font-weight: 550;
+  padding-bottom: 24px;
+  line-height: 1.2;
+}
+.platform--commitpass .create-schedule {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 106px;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.platform--commitpass .create-date-rows {
+  padding: 8px 12px;
+  background: #ecece66b;
+  border-radius: 10px;
+  position: relative;
+}
+.platform--commitpass .create-date-rows::before {
+  content: "";
+  position: absolute;
+  left: 16px;
+  top: 26px;
+  height: 30px;
+  border-left: 1px dashed #c9c9c0;
+}
+.platform--commitpass .create-date-row {
+  display: grid;
+  grid-template-columns: 8px minmax(36px, 1fr) minmax(0, 132px) 98px;
+  gap: 8px;
+  align-items: center;
+  min-height: 40px;
+  font-size: 13px;
+}
+.platform--commitpass .schedule-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #c8c8bf;
+  position: relative;
+  z-index: 1;
+}
+.platform--commitpass .create-date-row:last-child .schedule-dot {
+  background: var(--canvas);
+  border: 1px solid #b8b9af;
+}
+.platform--commitpass .create-date-row input {
+  min-width: 0;
+  width: 100%;
+  height: 36px;
+  border: 0;
+  border-radius: 6px;
+  background: #e8e8e15e;
+  padding: 6px;
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+}
+.platform--commitpass .create-date-row input:hover {
+  background: #e6e6dc;
+}
+.platform--commitpass .create-timezone {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #ecece66b;
+  color: var(--muted);
+  font-size: 11px;
+}
+.platform--commitpass .create-timezone strong {
+  font-size: 12px;
+  color: var(--ink);
+  font-weight: 450;
+  margin-top: 4px;
+}
+.platform--commitpass .create-timezone span {
+  overflow-wrap: anywhere;
+}
+.platform--commitpass .create-location {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #ecece66b;
+  padding: 12px 14px;
+  border-radius: 10px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.platform--commitpass .create-location > svg {
+  width: 17px;
+  height: 17px;
+  margin-top: 6px;
+}
+.platform--commitpass .create-location > span {
+  flex: 1;
+  min-width: 0;
+}
+.platform--commitpass .create-location input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  min-height: 28px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+}
+.platform--commitpass .create-location input::placeholder {
+  color: var(--muted);
+}
+.platform--commitpass .create-location small {
+  display: block;
+  font-size: 11px;
+  margin-top: 3px;
+}
+.platform--commitpass .create-workspace .create-fields h2 {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 450;
+  letter-spacing: 0;
+  margin-bottom: 10px;
+}
+.platform--commitpass .create-options {
+  border: 0;
+  background: #ecece66b;
+  border-radius: 10px;
+}
+.platform--commitpass .create-options > label {
+  min-height: 48px;
+  padding: 8px 14px;
+  gap: 10px;
+}
+.platform--commitpass .create-options > label > span {
+  font-size: 13px;
+}
+.platform--commitpass .create-options > label > div {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+.platform--commitpass .create-options input {
+  min-height: 32px;
+  width: 72px;
+  border: 0;
+  background: transparent;
+  padding: 4px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.platform--commitpass .create-options input:hover {
+  background: #e6e6dc;
+}
+.platform--commitpass .create-options input:focus {
+  color: var(--ink);
+  background: var(--white);
+}
+.platform--commitpass .create-options .deadline-input {
+  width: 204px;
+  max-width: 64%;
+  font-size: 11px;
+  text-align: right;
+}
+.platform--commitpass .create-options small {
+  margin: 0;
+  font-size: 11px;
+}
+.platform--commitpass .create-workspace .create-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+.platform--commitpass .create-workspace .create-actions .button {
+  width: 100%;
+  border-radius: 10px;
+  min-height: 48px;
+}
+.platform--commitpass .create-workspace .create-actions .button--dark {
+  order: -1;
+  font-size: 14px;
+}
+.platform--commitpass .create-workspace .create-actions > .button:not(.button--dark) {
+  border: 0;
+  background: transparent;
+  min-height: 40px;
+  color: var(--muted);
+}
+.platform--commitpass .create-workspace .publish-notice {
+  padding: 12px 14px;
+  margin-top: 20px;
+  font-size: 12px;
+  background: transparent;
+  border-color: var(--line);
+}
+.platform--commitpass .create-workspace .publish-notice strong {
+  font-size: 12px;
+}
+.platform--commitpass .create-workspace .publish-notice p {
+  font-size: 11px;
+}
+.platform--commitpass .create-workspace .publish-notice button {
+  min-height: 32px;
+  padding: 6px 0 0;
+}
+.platform--commitpass .create-workspace .create-fields > .field-note {
+  margin-top: 6px;
+  text-align: center;
+  font-size: 10px;
+}
+@media (max-width: 1000px) and (min-width: 650px) {
+  .platform--commitpass .create-workspace .create-grid {
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 28px;
+  }
+  .platform--commitpass .create-schedule {
+    grid-template-columns: 1fr;
+  }
+  .platform--commitpass .create-timezone {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+  .platform--commitpass .create-timezone strong {
+    margin: 0;
+  }
+}
+@media (max-width: 649px) {
+  .platform--commitpass .create-workspace {
+    padding-top: 24px;
+  }
+  .platform--commitpass .create-workspace .create-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .platform--commitpass .create-workspace .event-name-input {
+    font-size: 36px;
+  }
+  .platform--commitpass .create-schedule {
+    grid-template-columns: 1fr;
+  }
+  .platform--commitpass .create-date-row {
+    grid-template-columns: 8px minmax(30px, 1fr) minmax(0, 130px) 100px;
+    gap: 6px;
+  }
+  .platform--commitpass .create-timezone {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+  .platform--commitpass .create-timezone strong {
+    margin: 0;
+  }
+}
+.platform--commitpass .create-date-row > button {
+  min-width: 0;
+  min-height: 36px;
+  padding: 6px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--editor-input);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.platform--commitpass .create-date-row > button:hover {
+  background: var(--accent-soft);
+}
+.platform--commitpass .create-timezone {
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+}
+.platform--commitpass .create-timezone:hover {
+  outline: 1px solid var(--line);
+}
+.platform--commitpass .editor-row-trigger {
+  width: 100%;
+  text-align: left;
+  min-height: 48px;
+}
+.platform--commitpass .create-location > span > strong {
+  display: block;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+.platform--commitpass .create-location > svg {
+  margin-top: 0;
+}
+.platform--commitpass .create-location > span > small {
+  margin-top: 5px;
+}
+.platform--commitpass .create-description-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  color: var(--muted);
+  margin-bottom: 24px;
+  font-size: 13px;
+}
+.platform--commitpass .create-description-trigger > span {
+  flex: 1;
+  min-width: 0;
+}
+.platform--commitpass .create-description-trigger small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  margin-top: 5px;
+}
+.platform--commitpass .editor-row-trigger:hover {
+  border-color: var(--line);
+}
+.platform--commitpass .popup-options {
+  border-radius: 10px;
+  overflow: hidden;
+}
+.platform--commitpass .popup-options > button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 13px;
+}
+.platform--commitpass .popup-options > button + button {
+  border-top: 1px solid var(--line);
+}
+.platform--commitpass .popup-options > button:hover {
+  background: var(--editor-input);
+}
+.platform--commitpass .popup-options > button > span {
+  flex: 1;
+  color: var(--ink);
+}
+.platform--commitpass .popup-options > button > strong {
+  font-size: 12px;
+  font-weight: 400;
+  max-width: 58%;
+  text-align: right;
+}
+.platform--commitpass .popup-options small {
+  font-size: 10px;
+}
+.platform--commitpass .workspace-header{min-height:64px;padding:0 20px;gap:24px}
+.platform--commitpass .workspace-header>.brand{justify-content:flex-start}.platform--commitpass .workspace-header .brand-wordmark{display:none}.platform--commitpass .workspace-header .brand-symbol{display:block;width:36px;height:36px;margin:0}
+.platform--commitpass[data-event-mode="dark"] .workspace-header .brand-symbol{filter:brightness(0) invert(1)}
+.platform--commitpass .workspace-content.events-page,.platform--commitpass .workspace-content.discover-page{width:min(100%,944px);max-width:944px;padding:40px 24px 48px;margin:0 auto;min-height:calc(100svh - 240px)}
+.platform--commitpass .workspace-create-page{width:min(100%,1024px);max-width:1024px;padding:40px 32px 32px;min-height:calc(100svh - 240px)}
+.platform--commitpass .workspace-create-page>.commitpass-create{padding:0;margin:0;max-width:none}
+.platform--commitpass .commitpass-create .create-schedule{display:grid;grid-template-columns:minmax(0,1fr) 106px;gap:8px;border:0;padding:0;border-radius:0;margin-bottom:12px}
+.platform--commitpass .commitpass-create .create-date-rows{display:block;padding:8px 12px;background:var(--editor-panel);border-radius:10px}
+.platform--commitpass .commitpass-create .create-date-row{display:grid;grid-template-columns:8px minmax(36px,1fr) minmax(0,132px) 98px;min-height:40px;gap:8px;font-size:13px}
+.platform--commitpass .commitpass-create .create-timezone{background:var(--editor-panel)}
+.platform--commitpass .commitpass-create .create-location{padding:12px 14px;background:var(--editor-panel);border:0;min-height:60px;align-items:flex-start;gap:12px;margin-bottom:12px}
+.platform--commitpass .commitpass-create .create-location>span{display:block}.platform--commitpass .commitpass-create .create-location small{font-size:11px;line-height:1.6}
+.platform--commitpass .commitpass-create .create-description-trigger{padding:12px 14px;background:var(--editor-panel);border:0;min-height:48px;align-items:center;gap:10px;margin-bottom:24px;font-size:13px}
+.platform--commitpass .commitpass-create .create-description-trigger>span{display:block;flex:1;font-size:13px}.platform--commitpass .commitpass-create .create-description-trigger small{font-size:11px;line-height:1.6}
+.platform--commitpass .commitpass-create .create-fields h2{font-size:13px;line-height:1.5;font-weight:450;color:var(--muted);margin:0 0 10px}
+.platform--commitpass .commitpass-create .create-options{background:var(--editor-panel);border:0;border-radius:10px}
+.platform--commitpass .commitpass-create .create-publish-panel{margin-top:24px;padding-top:0;border:0}.platform--commitpass .commitpass-create .create-publish-panel>.button--dark{min-height:48px;border-radius:10px}
+.platform--commitpass .personal-return{margin:8px 0 0;font-size:12px;color:var(--muted)}
+@media(max-width:900px){.platform--commitpass .workspace-header{grid-template-columns:auto minmax(0,1fr) auto;padding:0 20px;gap:16px}.platform--commitpass .workspace-header nav{justify-content:flex-start;gap:20px}}
+@media(max-width:760px){.platform--commitpass .workspace-create-page{padding:28px 20px 32px}.platform--commitpass .commitpass-create .create-grid{grid-template-columns:minmax(0,1fr);gap:24px}.platform--commitpass .commitpass-create .create-cover-column{max-width:340px;width:100%;margin:0 auto}}
+@media(max-width:600px){.platform--commitpass .workspace-content.events-page,.platform--commitpass .workspace-content.discover-page{padding:28px 20px 32px}.platform--commitpass .workspace-header{padding:0 16px;gap:12px}.platform--commitpass .workspace-header nav{gap:16px}.platform--commitpass .workspace-header nav a{font-size:13px}.platform--commitpass .workspace-header-actions{gap:12px}}
+@media(max-width:420px){.platform--commitpass .commitpass-create .create-schedule{grid-template-columns:minmax(0,1fr) 88px}.platform--commitpass .commitpass-create .create-date-row{grid-template-columns:8px 1fr minmax(0,110px)}.platform--commitpass .commitpass-create .create-date-row>button:last-child{grid-column:3}.platform--commitpass .commitpass-create .event-name-input{font-size:36px}}
+.platform--commitpass .workspace-header-actions .workspace-docs-link{display:inline-flex;align-items:center;min-height:44px;gap:8px;font-size:13px;color:var(--muted)}
+.platform--commitpass .workspace-header-actions .workspace-clock{font-size:12px;white-space:nowrap;color:var(--muted)}
+.platform--commitpass .ss-theme-picker,.platform--commitpass .ss-cover-shuffle{border:0;border-radius:10px}
+.platform--commitpass .ss-cover-choice-icon{width:40px;height:40px;border:2px solid white;background:#ffffffef}
+@media(max-width:1100px){.platform--commitpass .workspace-clock{display:none}}
+@media(max-width:600px){.platform--commitpass .workspace-docs-link{display:none}}

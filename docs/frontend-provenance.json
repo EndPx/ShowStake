@@ -317,5 +317,62 @@
     "persistence": "Versioned public metadata envelope in rules_text; legacy text remains compatible",
     "mainnetContractChange": false,
     "customCover": "Public HTTPS image link; no upload service claimed"
+  },
+  "commitpassLayoutFidelity": {
+    "date": "2026-11-15",
+    "reference": "User screenshots and read-only CommitPass source",
+    "sourceHead": "542273df306a7e5887f1dfcabf1383e78930f579",
+    "sourceFiles": [
+      {
+        "path": "src/components/events/discover-events.tsx",
+        "sha256": "f2c85bc8469996ac1616aa24fd42c470d2dd5ff3eedcae2d69028998e109bc25"
+      },
+      {
+        "path": "src/components/events/event-list.tsx",
+        "sha256": "087ff3befe3403e2a6020006390c692c38fc3d357ab1a993d0d3ee5fa9c49811"
+      },
+      {
+        "path": "src/components/events/create-event.tsx",
+        "sha256": "fe7802a73d9e242dd348b7092aba8724d3f58d2d8261d051fb0e0b58edd1e51f"
+      },
+      {
+        "path": "src/app/(platform)/workspace.css",
+        "sha256": "15926f81336c63460c749e65f54142cc087946ee623abbd252a6058a40f43398"
+      },
+      {
+        "path": "src/app/(platform)/discovery.css",
+        "sha256": "230fda1f057cd50fd9a7a169506ed9867ab779b8e67da90d99f9b2e9f7a82349"
+      },
+      {
+        "path": "src/app/(platform)/lists.css",
+        "sha256": "3d2b9a5de18af5045af406579b280461c7e5671a1b24da76607cbce2cde74446"
+      },
+      {
+        "path": "src/app/(platform)/editor.css",
+        "sha256": "aed157d7031194b0ea03210fb2d45d12f4377802611b5de8acf51adde573f900"
+      }
+    ],
+    "geometry": {
+      "eventsDiscoverOuter": 944,
+      "pageSidePadding": 24,
+      "heading": 32,
+      "mobileHeading": 28,
+      "calendarRail": 340,
+      "columnGap": 32,
+      "createOuter": 1024,
+      "createSidePadding": 32,
+      "cover": 340,
+      "createTitle": 44,
+      "optionRow": 48,
+      "header": 64
+    },
+    "adaptations": [
+      "NEAR catalog loader replaces CommitPass/EVM API",
+      "Wallet-bound final-chain personal rows replace Privy account model",
+      "Exact atomic USDC formatting and chain-event tuple links",
+      "Own ShowStake logo/palette; existing gradient geometry retained",
+      "Existing NEAR create/receipt/retry flow retained"
+    ],
+    "referenceWorkspaceModified": false
   }
 }

@@ -12,6 +12,10 @@ Next App Router application reusing the CommitPass frontend shell (read-only
 baseline `542273df306a7e5887f1dfcabf1383e78930f579`), adapted to ShowStake tokens
 and copy. See `../../DESIGN.md` and `../../docs/frontend-provenance.json`.
 
+## CommitPass layout fidelity (2026-11-15)
+
+Discover now reuses the actual CommitPass calendar, search dialog, filters and two-column agenda composition. Events reuses the32px heading, Upcoming/Past placement, All events/Hosting/Going controls and date-grouped original cards. Both pages use the source944px container. Create uses the source1024px page,340px cover,32px gap,44px title and compact date/time/timezone rows. Header/footer geometry is drawn from the source CSS; ShowStake branding and NEAR data/transaction authority remain in place. Source hashes are in docs/frontend-provenance.json.
+
 ## Event-centric UX (2026-11-14)
 
 Connect wallet continues to a server-verified NEP-413 sign-in when required. Existing verified sessions restore only for the matching connected account and network. Navigation preserves the wallet boundary; message rejection offers explicit retry.

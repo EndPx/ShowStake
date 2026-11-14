@@ -9,6 +9,9 @@ import "./commitpass-events.css";
 import "./commitpass-shell.css";
 import './event-experience.css';
 import './event-appearance.css';
+import './commitpass-lists.css';
+import './commitpass-discovery.css';
+import './commitpass-fidelity.css';
 
 // Match the user's CommitPass app typography without changing the landing page.
 const sans = DM_Sans({ subsets: ["latin"], variable: "--font-commitpass-sans", display: "swap" });

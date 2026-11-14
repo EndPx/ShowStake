@@ -1,0 +1,680 @@
+/* Reused read-only CommitPass lists.css for original Events/cards typography and spacing. */
+.workspace-content.events-page,
+.workspace-content.discover-page {
+  width: min(100%, 944px);
+  padding: 40px 24px 48px;
+}
+.plans-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.plans-heading h1 {
+  font-size: 32px;
+  letter-spacing: -0.04em;
+  font-weight: 600;
+}
+.plans-heading .segmented {
+  background: rgb(37 38 34 / 4%);
+  padding: 3px;
+}
+.plans-heading .segmented button {
+  min-height: 40px;
+  padding-inline: 16px;
+  font-size: 14px;
+}
+.plans-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 18px 0 24px;
+}
+.plans-controls > span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.plans-role-filter {
+  display: flex;
+  gap: 4px;
+}
+.plans-role-filter button {
+  min-height: 44px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 12px;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--muted);
+}
+.plans-role-filter button.selected {
+  color: var(--ink);
+  background: rgb(37 38 34 / 4%);
+  font-weight: 550;
+}
+.plans-date-group {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 48px;
+  margin-bottom: 40px;
+}
+.plans-date {
+  padding-top: 4px;
+}
+.plans-date strong {
+  display: block;
+  font-size: 16px;
+  font-weight: 550;
+}
+.plans-date > span {
+  display: block;
+  margin-top: 4px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.plans-day-cards {
+  display: grid;
+  gap: 16px;
+  position: relative;
+  min-width: 0;
+}
+.plans-day-cards::before {
+  content: "";
+  position: absolute;
+  top: 12px;
+  bottom: -52px;
+  left: -25px;
+  border-left: 2px dashed var(--line);
+}
+.plans-day-cards::after {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #c7c9c3;
+  left: -28px;
+  top: 8px;
+}
+.plans-date-group:last-child .plans-day-cards::before {
+  bottom: 12px;
+}
+.plan-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  background: var(--white);
+  border-radius: 18px;
+  padding: 16px;
+  min-width: 0;
+  outline: 1px solid transparent;
+  transition:
+    outline-color 180ms ease,
+    background-color 180ms ease;
+}
+.plan-card:hover {
+  outline-color: var(--line);
+  background: var(--white);
+}
+.plan-card-info {
+  min-width: 0;
+  flex: 1;
+}
+.plan-time {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+.plan-card-info h2 {
+  font-size: 20px;
+  font-weight: 550;
+  letter-spacing: -0.025em;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  margin-bottom: 10px;
+}
+.plan-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--accent);
+  font-weight: 550;
+}
+.plan-live i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.plan-host,
+.plan-location {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.plan-location {
+  align-items: flex-start;
+  margin-top: 5px;
+}
+.plan-location svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.plan-location > span {
+  overflow-wrap: anywhere;
+}
+.host-avatar {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--green-soft);
+  color: var(--green);
+  font-size: 10px;
+  font-weight: 600;
+}
+.plan-card > .event-cover--small {
+  width: 112px;
+  border-radius: 10px;
+}
+.plan-card-bottom {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin-top: 16px;
+  min-height: 24px;
+}
+.plan-badge {
+  display: inline-flex;
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: var(--green-soft);
+  color: var(--green);
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 550;
+}
+.plan-badge--host {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.plan-badge--quiet {
+  background: rgb(37 38 34 / 5%);
+  color: var(--muted);
+}
+.plan-guests {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+.plan-detail-warning {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  margin-top: 8px;
+}
+.plans-empty-icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  color: var(--muted);
+  margin-bottom: 20px;
+  background: var(--white);
+}
+.workspace-empty.plans-empty {
+  padding: 56px 20px 64px;
+}
+.plans-empty h2 {
+  font-size: 22px;
+  font-weight: 500;
+}
+.plans-empty p {
+  max-width: 340px;
+}
+.plans-empty .button {
+  background: var(--white);
+}
+.plans-no-results {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding: 64px 20px;
+  text-align: center;
+}
+.plans-no-results > svg {
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+.plans-no-results h2 {
+  font-size: 22px;
+  letter-spacing: -0.025em;
+  font-weight: 500;
+}
+.plans-no-results p {
+  max-width: 360px;
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 10px 0 24px;
+}
+.plans-pagination {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 32px;
+}
+.plans-pagination > small {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+}
+.discover-toolbar {
+  gap: 12px;
+}
+.discover-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(360px, 100%);
+  min-width: 0;
+  border: 1px solid var(--line);
+  background: var(--white);
+  border-radius: 9px;
+  min-height: 44px;
+  padding: 0 12px;
+  color: var(--muted);
+}
+.discover-search > input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  min-height: 42px;
+}
+.discover-search > input::-webkit-search-cancel-button {
+  display: none;
+}
+.discover-search > input:focus-visible {
+  outline: none;
+}
+.discover-search > svg {
+  flex-shrink: 0;
+}
+.discover-search > button {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  min-height: 44px;
+  background: transparent;
+  color: var(--muted);
+  border: 0;
+  border-radius: 8px;
+}
+.discover-search:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.discover-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+.event-list-count {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.discover-filter-menu {
+  position: relative;
+}
+.discover-filter-menu > summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  list-style: none;
+  font-size: 13px;
+  cursor: pointer;
+}
+.discover-filter-menu > summary::-webkit-details-marker {
+  display: none;
+}
+.discover-filter-menu > summary.selected {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+.discover-filter-menu > summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.filter-count {
+  font-size: 11px;
+  font-weight: 600;
+}
+.discover-filters {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 45;
+  width: 240px;
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgb(37 38 34 / 8%);
+}
+.discover-filters > strong {
+  font-size: 13px;
+  font-weight: 550;
+  margin-bottom: 4px;
+}
+.discover-filters > label,
+.discover-filters > button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  padding: 0 10px;
+  font: inherit;
+  font-size: 13px;
+}
+.discover-filters select {
+  min-height: 42px;
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  color: var(--ink);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+.discover-filters > button.selected {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.discover-filters > button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.discover-filters > button.filter-reset {
+  border: 0;
+  justify-content: center;
+}
+.discover-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 36px 28px;
+}
+.discover-card {
+  min-width: 0;
+  display: block;
+}
+.discover-card-poster {
+  position: relative;
+  margin-bottom: 16px;
+}
+.discover-card-poster .event-cover {
+  border-radius: 16px;
+  outline: 1px solid rgb(37 38 34 / 5%);
+}
+.discover-card-poster .event-cover > img {
+  transition: transform 200ms ease;
+}
+.discover-card:hover .event-cover > img {
+  transform: scale(1.025);
+}
+.discover-date {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px;
+  border-radius: 9px;
+  background: var(--white);
+  color: var(--ink);
+  line-height: 1.4;
+}
+.discover-date strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.discover-date span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.discover-card .plan-card-info h2 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+.discover-card .plan-time {
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+.discover-card .plan-host,
+.discover-card .plan-location {
+  font-size: 13px;
+}
+.discover-card .plan-card-bottom {
+  justify-content: space-between;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 14px;
+  gap: 8px;
+}
+.discover-commitment {
+  font-size: 13px;
+  font-weight: 550;
+}
+.discover-commitment > span {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 12px;
+}
+.plans-skeletons {
+  display: grid;
+  gap: 18px;
+  padding-left: 160px;
+}
+.plans-skeletons > div {
+  min-height: 166px;
+  background: var(--white);
+  border-radius: 18px;
+  padding: 20px;
+}
+.plans-skeletons span,
+.discover-skeletons span {
+  display: block;
+  width: 70%;
+  height: 16px;
+  background: var(--line);
+  border-radius: 4px;
+  margin: 12px 0;
+}
+.plans-skeletons span:last-child,
+.discover-skeletons span:last-child {
+  width: 45%;
+}
+.discover-skeletons > div > div {
+  aspect-ratio: 1;
+  border-radius: 16px;
+  background: var(--line);
+}
+.plans-skeletons,
+.discover-skeletons {
+  animation: plans-loading 1.5s ease-in-out infinite alternate;
+}
+@keyframes plans-loading {
+  to {
+    opacity: 0.5;
+  }
+}
+@media (max-width: 900px) {
+  .discover-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px 24px;
+  }
+  .plans-date-group {
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 36px;
+  }
+  .plans-skeletons {
+    padding-left: 132px;
+  }
+  .plan-card {
+    gap: 16px;
+  }
+  .plan-card > .event-cover--small {
+    width: 104px;
+  }
+}
+@media (max-width: 600px) {
+  .workspace-content.events-page,
+  .workspace-content.discover-page {
+    padding: 28px 20px 32px;
+  }
+  .plans-heading {
+    gap: 12px;
+  }
+  .plans-heading h1 {
+    font-size: 28px;
+  }
+  .plans-heading .segmented button {
+    padding: 0 12px;
+    font-size: 13px;
+  }
+  .plans-controls {
+    align-items: flex-start;
+    margin: 14px 0 24px;
+  }
+  .plans-controls > span {
+    display: none;
+  }
+  .plans-role-filter {
+    margin-left: -8px;
+  }
+  .plans-date-group {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .plans-date {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 0;
+  }
+  .plans-date strong {
+    font-size: 14px;
+  }
+  .plans-date > span {
+    font-size: 12px;
+    margin: 0;
+  }
+  .plans-day-cards::before,
+  .plans-day-cards::after {
+    display: none;
+  }
+  .plan-card {
+    padding: 14px;
+    gap: 12px;
+    border-radius: 14px;
+  }
+  .plan-card > .event-cover--small {
+    width: 84px;
+  }
+  .plan-card-info h2 {
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+  .plan-time,
+  .plan-host,
+  .plan-location {
+    font-size: 12px;
+  }
+  .plan-card-bottom {
+    margin-top: 12px;
+  }
+  .plan-guests {
+    font-size: 11px;
+  }
+  .plan-badge {
+    font-size: 11px;
+  }
+  .plans-skeletons {
+    padding-left: 0;
+  }
+  .discover-toolbar-actions {
+    gap: 8px;
+  }
+  .event-list-count {
+    display: none;
+  }
+  .discover-search {
+    flex: 1;
+    padding-inline: 10px;
+  }
+  .discover-search > input {
+    font-size: 13px;
+  }
+  .discover-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+  .discover-card .plan-card-info h2 {
+    font-size: 20px;
+  }
+  .workspace-empty.plans-empty {
+    padding: 44px 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .plans-skeletons,
+  .discover-skeletons {
+    animation: none;
+  }
+  .discover-card-poster .event-cover > img {
+    transition: none;
+  }
+  .discover-card:hover .event-cover > img {
+    transform: none;
+  }
+}

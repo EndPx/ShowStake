@@ -1,0 +1,40 @@
+{
+  "classification": "PASS_LOCAL",
+  "observedAt": "2026-11-14T21:44:53.956Z",
+  "scope": "Source-faithful CommitPass Discover/Events/header and compact-create geometry; NEAR data and signing retained",
+  "checks": [
+    {
+      "command": "pnpm --filter @showstake/web typecheck",
+      "result": "PASS_LOCAL"
+    },
+    {
+      "command": "pnpm --filter @showstake/web build",
+      "result": "PASS_LOCAL"
+    },
+    {
+      "command": "node --experimental-strip-types --test shared-personal/event-experience/create-failure/create-recovery",
+      "files": 4,
+      "result": "PASS_LOCAL"
+    },
+    {
+      "command": "pnpm verify:t08-frontend",
+      "checks": 69,
+      "result": "PASS_LOCAL"
+    },
+    {
+      "command": "pnpm verify:frontend-slice",
+      "checks": 100,
+      "result": "PASS_LOCAL"
+    }
+  ],
+  "reference": "docs/frontend-provenance.json#commitpassLayoutFidelity",
+  "changes": [
+    "Source calendar, search modal, filter popover and original event card CSS",
+    "Original Events role and period controls, date groups, empty/error states",
+    "Header aligned to source content grid and viewport edge branding",
+    "Original compact date/time rows, timezone card, option order and sizing",
+    "Pinned onchain times/atomic amounts added to personal presentation only"
+  ],
+  "contractChanges": "NONE",
+  "browser": "PENDING hosted rendered comparison"
+}

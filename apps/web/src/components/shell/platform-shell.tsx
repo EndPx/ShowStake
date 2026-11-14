@@ -12,6 +12,8 @@ import { WalletMenu } from "@/components/wallet/wallet-menu";
 import {useWallet} from '@/components/wallet/wallet-context';
 import { NETWORK } from "@/lib/config";
 import {useActiveEventAppearance} from '@/components/event/page-theme';
+import {browserTimezone} from '@/lib/timezone';
+import {displayTime,utcOffset} from '@/lib/display-time';
 import {eventThemeVariables} from '@/lib/event-appearance';
 
 export function PlatformShell({ children }: { children: ReactNode }) {
@@ -19,6 +21,7 @@ export function PlatformShell({ children }: { children: ReactNode }) {
   const [scrolled, setScrolled] = useState(false);
   const wallet=useWallet();
   const appearance=useActiveEventAppearance();
+  const [clock,setClock]=useState<string>('');useEffect(()=>{const update=()=>{const now=new Date(),zone=browserTimezone();setClock(displayTime(now,zone)+' '+utcOffset(now,zone));};update();const timer=setInterval(update,60000);return()=>clearInterval(timer);},[]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -33,23 +36,24 @@ export function PlatformShell({ children }: { children: ReactNode }) {
       <header className={`workspace-header${scrolled ? " is-scrolled" : ""}`}>
         <Brand href="/discover" />
         <nav aria-label="Primary">
-          <Link
-            href="/discover"
-            className={pathname === "/discover" ? "active" : undefined}
-            aria-current={pathname === "/discover" ? "page" : undefined}
-          >
-            <Compass size={17} aria-hidden="true" /><span>Discover</span>
-          </Link>
-          <Link
+<Link
             href="/events"
             className={pathname?.startsWith("/events") ? "active" : undefined}
             aria-current={pathname?.startsWith("/events") ? "page" : undefined}
           >
             <CalendarDays size={17} aria-hidden="true" /><span>Events</span>
           </Link>
-        </nav>
+<Link
+            href="/discover"
+            className={pathname === "/discover" ? "active" : undefined}
+            aria-current={pathname === "/discover" ? "page" : undefined}
+          >
+            <Compass size={17} aria-hidden="true" /><span>Discover</span>
+          </Link>
+</nav>
         <div className="workspace-header-actions">
-          <WalletMenu />
+          <a className="workspace-docs-link" href="https://github.com/EndPx/ShowStake#readme" target="_blank" rel="noreferrer">Docs</a>
+          <span className="workspace-clock">{clock}</span>
           <Link className="workspace-create-link" href="/events/new" aria-label="Create event">
             <Plus className="workspace-create-icon" size={16} aria-hidden="true" />
             <span className="workspace-create-label">Create event</span>
