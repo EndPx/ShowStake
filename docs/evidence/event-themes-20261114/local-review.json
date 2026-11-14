@@ -1,0 +1,38 @@
+{
+  "classification": "PASS_LOCAL",
+  "observedAt": "2026-11-14T16:12:57.184Z",
+  "scope": "CommitPass theme/cover/shuffle, published metadata decode and draft persistence; timing changes explicitly cancelled by user",
+  "checks": [
+    {
+      "command": "pnpm --filter @showstake/web build",
+      "result": "PASS_LOCAL"
+    },
+    {
+      "command": "node --experimental-strip-types --test apps/web/src/lib/event-appearance.test.ts apps/web/src/lib/near/shared-personal.test.ts apps/web/src/lib/near/multi-create.test.ts apps/web/src/lib/near/shared-route-state.test.ts apps/web/src/lib/mainnet-event-preview.test.ts",
+      "files": 5,
+      "result": "PASS_LOCAL"
+    },
+    {
+      "command": "pnpm verify:t08-frontend",
+      "checks": 69,
+      "result": "PASS_LOCAL"
+    },
+    {
+      "command": "pnpm verify:frontend-slice",
+      "checks": 100,
+      "result": "PASS_LOCAL"
+    }
+  ],
+  "coverage": [
+    "Versioned metadata round-trip and legacy fallback",
+    "Script/data/http/private image path denial",
+    "UTF8 total8192 bound",
+    "Shuffle changes cover and style",
+    "Dark/light font and accessible foreground variables",
+    "Existing create-event financial/timing ABI"
+  ],
+  "browser": "PENDING hosted candidate review",
+  "contractUpgrade": "NONE",
+  "mainnetAssetAction": "NONE",
+  "coverUploadService": "NOT_IMPLEMENTED; templates and HTTPS links available"
+}

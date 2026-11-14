@@ -5,17 +5,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode, type CSSProperties } from "react";
 import { CalendarDays, Compass, Plus } from "lucide-react";
 import { Brand } from "@/components/landing/brand";
 import { WalletMenu } from "@/components/wallet/wallet-menu";
 import {useWallet} from '@/components/wallet/wallet-context';
 import { NETWORK } from "@/lib/config";
+import {useActiveEventAppearance} from '@/components/event/page-theme';
+import {eventThemeVariables} from '@/lib/event-appearance';
 
 export function PlatformShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const wallet=useWallet();
+  const appearance=useActiveEventAppearance();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -25,7 +28,7 @@ export function PlatformShell({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <div className="platform platform--commitpass">
+    <div className={`platform platform--commitpass${appearance?` ss-event-theme ss-theme-${appearance.style}`:''}`} data-event-mode={appearance?.mode} style={appearance?eventThemeVariables(appearance) as CSSProperties:undefined}>
       <a className="skip-link" href="#workspace-main">Skip to content</a>
       <header className={`workspace-header${scrolled ? " is-scrolled" : ""}`}>
         <Brand href="/discover" />

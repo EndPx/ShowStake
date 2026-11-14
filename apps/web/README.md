@@ -16,6 +16,8 @@ and copy. See `../../DESIGN.md` and `../../docs/frontend-provenance.json`.
 
 Connect wallet continues to a server-verified NEP-413 sign-in when required. Existing verified sessions restore only for the matching connected account and network. Navigation preserves the wallet boundary; message rejection offers explicit retry.
 
+The create editor includes Theme (Minimal, Aurora, Confetti, Grid), accent/custom color, Default/Editorial/Mono title fonts and Light/Dark. Changes preview immediately; Cancel/Escape restores the saved look. Choose a local CommitPass cover template or a public HTTPS image link, or shuffle cover/theme. These choices persist in the draft and published event metadata, and covers appear in Discover/My Events. Existing events with plain rules retain their original fallback appearance.
+
 Create an event at /events/new: edit the title, schedule, location, rules, USDC commitment and guest limit. Create event reads the exact native storage reservation, then Approve and publish opens the actual wallet transaction. The organizer page opens after the final receipt and matching event view are verified. Drafts and unknown transaction attempts are durable.
 
 Open an event to reserve a spot, approve required token storage, deposit exact USDC and view the onchain pass. Add USDC from another chain is an optional inline payment step. The supported source routes are native ETH on Base and Ethereum; funding never creates a registration. /funding redirects to event payment recovery and /earn redirects to hosted events.

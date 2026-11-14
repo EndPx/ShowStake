@@ -90,7 +90,7 @@ export function EventListCard({
           </span>
         </div>
       </div>
-      {(personal || layout === "cards") && <EventCover small title={title} />}
+      {(personal || layout === "cards") && <EventCover small title={title} cover={event.cover} />}
     </>
   );
 

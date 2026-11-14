@@ -302,5 +302,20 @@
         "purpose": "Local QR decoding fallback only, loaded on camera use"
       }
     ]
+  },
+  "eventAppearance": {
+    "date": "2026-11-14",
+    "referenceCommit": "542273df306a7e5887f1dfcabf1383e78930f579",
+    "components": [
+      "components/events/create-event.tsx",
+      "components/events/appearance-editors.tsx",
+      "components/events/page-theme.tsx",
+      "lib/event-editor.ts"
+    ],
+    "reused": "Theme/cover/shuffle control anatomy, preset/style/font/mode interactions, color mixing and accessible foreground selection; adapted to ShowStake context and existing rules ABI",
+    "assets": "docs/evidence/event-themes-20261114/cover-provenance.json",
+    "persistence": "Versioned public metadata envelope in rules_text; legacy text remains compatible",
+    "mainnetContractChange": false,
+    "customCover": "Public HTTPS image link; no upload service claimed"
   }
 }

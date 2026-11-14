@@ -1,0 +1,33 @@
+{
+  "reference": "CommitPass Monad",
+  "authorization": "User explicitly requests reuse of own CommitPass frontend and cover/theme controls",
+  "assets": [
+    {
+      "id": "together",
+      "name": "Together",
+      "source": "https://res.cloudinary.com/dnzjmihyx/image/upload/v1790590557/commitpass/templates/together.png",
+      "rendition": "https://res.cloudinary.com/dnzjmihyx/image/upload/f_webp,q_85,w_800,h_800,c_fill/v1790590557/commitpass/templates/together.png",
+      "path": "apps/web/public/event-covers/together.webp",
+      "bytes": 33168,
+      "sha256": "c1f9d1ed5a2078b8fbeea2601f751150212988fc8d426ec891b2d6c7b50d7595"
+    },
+    {
+      "id": "good-plans",
+      "name": "Good plans",
+      "source": "https://res.cloudinary.com/dnzjmihyx/image/upload/v1790590560/commitpass/templates/good-plans.png",
+      "rendition": "https://res.cloudinary.com/dnzjmihyx/image/upload/f_webp,q_85,w_800,h_800,c_fill/v1790590560/commitpass/templates/good-plans.png",
+      "path": "apps/web/public/event-covers/good-plans.webp",
+      "bytes": 43736,
+      "sha256": "f7162a5ffa9c327aa76c4e38f461665a210573783f10d3fe0304863278df73cd"
+    },
+    {
+      "id": "workshop",
+      "name": "Workshop",
+      "source": "https://res.cloudinary.com/dnzjmihyx/image/upload/v1790587558/commitpass/brand/community-workshop.png",
+      "rendition": "https://res.cloudinary.com/dnzjmihyx/image/upload/f_webp,q_85,w_800,h_800,c_fill/v1790587558/commitpass/brand/community-workshop.png",
+      "path": "apps/web/public/event-covers/workshop.webp",
+      "bytes": 68310,
+      "sha256": "625aa3ed32089a49c45581f5ef280f3847c63c0e649b81c30e05d4d406cdee3e"
+    }
+  ]
+}

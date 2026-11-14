@@ -47,6 +47,7 @@ export interface EventSummary {
 
   // ---- presentation projection (populated by ShowStake API when wired) -----
   title?: string;
+  cover?: string | null;
   description?: string;
   venue?: string;
   /** IANA timezone the organizer declared for the venue. */
