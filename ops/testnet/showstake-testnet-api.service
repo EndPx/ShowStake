@@ -1,0 +1,21 @@
+[Unit]
+Description=ShowStake isolated TESTNET preview API
+After=network-online.target docker.service
+Wants=network-online.target
+[Service]
+Type=simple
+User=showstake-testnet-api
+Group=showstake-testnet-api
+WorkingDirectory=/opt/showstake-testnet/release
+EnvironmentFile=/etc/showstake-testnet/api.env
+ExecStart=/opt/showstake/tools/node-v24.18.0-linux-x64/bin/node /opt/showstake-testnet/release/apps/api/dist/index.js
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/showstake-testnet/private
+UMask=0077
+[Install]
+WantedBy=multi-user.target

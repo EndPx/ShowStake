@@ -34,16 +34,39 @@ use serde::Deserialize;
 
 /// Factory policy identity. Distinct from the leaf identity; a factory built
 /// from this source must never be labelled with another rule set.
+#[cfg(not(feature = "factory-event"))]
 pub const FACTORY_POLICY_IDENTITY: &str = "showstake-factory-d039-global-ready/2";
+#[cfg(feature = "factory-event")]
+pub const FACTORY_POLICY_IDENTITY: &str = "showstake-factory-atomic-event/3";
 
 /// The only leaf policy identity accepted by this factory generation.
 pub const LEAF_POLICY_IDENTITY: &str = "showstake-native-usdc-event/1";
-pub const MAINNET_LEAF_POLICY_IDENTITY: &str =
-    "showstake-native-usdc-rhea-linked-withdraw-review/2";
+#[cfg(not(feature = "factory-event"))]
+pub const MAINNET_LEAF_POLICY_IDENTITY: &str = "showstake-native-usdc-rhea-linked-withdraw-review/2";
+#[cfg(feature = "factory-event")]
+pub const MAINNET_LEAF_POLICY_IDENTITY: &str = "showstake-native-usdc-factory-rhea/3";
+
+// Exact root Borsh layout of the deployed multi-event CREATE-only generation.
+// Collection value types are phantom parameters and are not serialized in the root.
+#[cfg(feature = "factory-event")]
+#[near(serializers = [borsh])]
+struct EmptyMultiEventState {
+    canonical_ft: AccountId, provider_account: AccountId, provider_kind: String,
+    network: String, token_symbol: String, token_name: String, token_decimals: u8,
+    events: LookupMap<String, ()>, event_ids: Vector<String>,
+    registrations: LookupMap<String, ()>, passes: LookupMap<String, ()>,
+    active: LookupMap<String, ()>, commitments: LookupMap<String, ()>,
+    registration_event: LookupMap<String, ()>, next_registration: u64,
+    accepted: u128, paid: u128, pending: u128, liability: u128, reserved_cash: u128,
+    global_operation: Option<String>,
+}
 
 /// Factory state/schema version. No migration exists; a new layout is a new
 /// factory deployment.
+#[cfg(not(feature = "factory-event"))]
 pub const SCHEMA_VERSION: u32 = 2;
+#[cfg(feature = "factory-event")]
+pub const SCHEMA_VERSION: u32 = 3;
 
 /// Child ID = 8 digest bytes (16 lowercase hex chars) + "." + parent.
 pub const CHILD_ID_HEX_LEN: usize = 16;
@@ -102,6 +125,47 @@ pub const LEAF_SHA256: [u8; 32] = [
     0x49, 0xa5, 0x91, 0xba, 0x26, 0xa4, 0xa2, 0x3d, 0x05, 0xc0, 0x1c, 0xc3, 0x43, 0x77, 0x9f, 0x1c,
     0x66, 0xaa, 0x5d, 0xa0, 0x38, 0x4e, 0x3a, 0x66, 0x3a, 0x37, 0xf4, 0xe5, 0xed, 0xb5, 0x9b, 0x70,
 ];
+#[cfg(feature = "factory-event")]
+#[near(serializers = [borsh, json])]
+#[derive(Clone, Debug)]
+pub struct EventRules {
+    pub event_id: String, pub title: String, pub location: String, pub rules_text: String,
+    pub finalize_deadline: u64, pub deposit: U128, pub capacity: u32,
+    pub reg_open: u64, pub reg_close: u64, pub checkin_open: u64, pub checkin_close: u64,
+}
+
+#[cfg(feature = "factory-event")]
+#[near(serializers = [json])]
+pub struct EventQuoteView {
+    pub organizer: AccountId, pub request_nonce: u64, pub child_id: AccountId,
+    pub code_config_funding: U128, pub rules_funding: U128, pub participant_reserve: U128,
+    pub child_funding: U128, pub registry_fee: U128, pub total: U128,
+    pub attached_gas_tgas: u64, pub pending_timeout_blocks: u64,
+    pub canonical_ft: AccountId, pub network: String, pub provider_account: AccountId,
+    pub provider_kind: String, pub leaf_policy_version: String, pub leaf_code_sha256: String,
+}
+
+// These values must be fixed at build time after building the factory-event leaf.
+#[cfg(feature = "factory-event")]
+fn pinned_leaf() -> (usize, [u8; 32]) {
+    let length = env!("SHOWSTAKE_LEAF_WASM_LEN").parse::<usize>().expect("invalid leaf length");
+    let hash = env!("SHOWSTAKE_LEAF_SHA256").as_bytes();
+    assert_eq!(hash.len(), 64, "invalid leaf hash");
+    let mut out = [0u8; 32];
+    for i in 0..32 {
+        let nibble = |c: u8| -> u8 { match c { b'0'..=b'9' => c-b'0', b'a'..=b'f' => c-b'a'+10, _ => panic!("invalid lowercase leaf hash") } };
+        out[i] = nibble(hash[2*i]) * 16 + nibble(hash[2*i+1]);
+    }
+    (length, out)
+}
+#[cfg(not(feature = "factory-event"))]
+fn pinned_leaf() -> (usize, [u8; 32]) { (LEAF_WASM_LEN, LEAF_SHA256) }
+
+#[cfg(feature = "factory-event")]
+type EventRulesCompat = EventRules;
+#[cfg(not(feature = "factory-event"))]
+type EventRulesCompat = ();
+
 const MAIN_USDC: &str = "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1";
 const MAIN_PROVIDER: &str = "contract.main.burrow.near";
 
@@ -189,6 +253,8 @@ pub struct FactoryConfigView {
     pub min_resolve_gas_tgas: u64,
     pub child_storage_margin_bytes: U128,
     pub storage_byte_cost: U128,
+    #[cfg(feature = "factory-event")]
+    pub atomic_event_initialization: bool,
 }
 
 #[near(serializers = [json])]
@@ -344,7 +410,7 @@ impl Contract {
             canonical_ft != provider_account && provider_account != factory_account,
             "invalid provider"
         );
-        let leaf_code_sha256 = LEAF_SHA256;
+        let leaf_code_sha256 = pinned_leaf().1;
         Self {
             config: Config {
                 canonical_ft,
@@ -365,6 +431,19 @@ impl Contract {
             funding_refunded: 0,
             total_requests: 0,
         }
+    }
+
+    /// Upgrade-only migration. External FT balance and provider position must
+    /// also be freshly checked before deployment; this synchronous method cannot
+    /// inspect another account. It accepts only the exact empty root layout.
+    #[cfg(feature = "factory-event")]
+    #[private]
+    #[init(ignore_state)]
+    pub fn migrate_empty_multievent() -> Self {
+        let old: EmptyMultiEventState = env::state_read().expect("missing or incompatible multi-event state");
+        require!(old.event_ids.is_empty() && old.next_registration == 0 && old.accepted == 0 && old.paid == 0 && old.pending == 0 && old.liability == 0 && old.reserved_cash == 0 && old.global_operation.is_none(), "multi-event state not empty");
+        require!(old.network == "mainnet" && old.provider_kind == "RHEA_MAINNET" && old.canonical_ft.as_str() == MAIN_USDC && old.provider_account.as_str() == MAIN_PROVIDER && old.token_symbol == "USDC" && old.token_name == "USDC" && old.token_decimals == 6, "unexpected old identity");
+        Self::new(old.canonical_ft, old.network, MAINNET_LEAF_POLICY_IDENTITY.to_string(), old.provider_account, old.provider_kind)
     }
 
     // --------------------------------------------------------------- views
@@ -389,6 +468,7 @@ impl Contract {
     /// plus the serialized registry-row growth at the current storage price.
     /// The fee combines measured immediate growth and a future index reserve.
     /// This view mirrors the row sizes so a call can attach exactly `total`.
+    #[cfg(not(feature = "factory-event"))]
     pub fn quote_provision(&self, organizer: AccountId) -> QuoteView {
         let index = self.counts.get(&organizer).unwrap_or(0);
         let child_id = self.child_id_for(&organizer, 0);
@@ -402,6 +482,32 @@ impl Contract {
             attached_gas_tgas: MIN_PROVISION_GAS_TGAS,
             pending_timeout_blocks: PENDING_TIMEOUT_BLOCKS,
         }
+    }
+
+    #[cfg(feature = "factory-event")]
+    pub fn quote_provision_event(&self, organizer: AccountId, request_nonce: u64, rules: EventRules) -> EventQuoteView {
+        require!(request_nonce <= MAX_SAFE_REQUEST_NONCE, "request nonce exceeds safe JSON integer");
+        require!(self.requests.get(&(organizer.clone(), request_nonce)).is_none(), "request nonce already used");
+        let child_id = self.child_id_for(&organizer, request_nonce);
+        let code_config = self.child_funding(&organizer, &child_id);
+        let (rules_cost, participant_cost) = self.event_storage_costs(&rules);
+        let child_funding = code_config.checked_add(rules_cost).and_then(|v| v.checked_add(participant_cost)).expect("child funding overflow");
+        let registry_fee = self.registry_growth_quote(&organizer, &child_id, self.counts.get(&organizer).unwrap_or(0));
+        let total = child_funding.checked_add(registry_fee).expect("quote overflow");
+        EventQuoteView { organizer, request_nonce, child_id, code_config_funding: U128(code_config), rules_funding: U128(rules_cost), participant_reserve: U128(participant_cost), child_funding: U128(child_funding), registry_fee: U128(registry_fee), total: U128(total), attached_gas_tgas: MIN_PROVISION_GAS_TGAS, pending_timeout_blocks: PENDING_TIMEOUT_BLOCKS, canonical_ft: self.config.canonical_ft.clone(), network: self.config.network.clone(), provider_account: self.config.provider_account.clone(), provider_kind: self.config.provider_kind.clone(), leaf_policy_version: self.config.leaf_policy_version.clone(), leaf_code_sha256: to_hex(&self.config.leaf_code_sha256) }
+    }
+
+    #[cfg(feature = "factory-event")]
+    fn event_storage_costs(&self, rules: &EventRules) -> (u128, u128) {
+        require!(rules.capacity > 0 && rules.capacity <= 200 && rules.deposit.0 > 0, "invalid event economics");
+        require!(!rules.event_id.is_empty() && rules.event_id.len() <= 128 && !rules.title.is_empty() && rules.title.len() <= 256 && !rules.location.is_empty() && rules.location.len() <= 512 && !rules.rules_text.is_empty() && rules.rules_text.len() <= 8192, "event metadata bounds");
+        require!(rules.reg_open < rules.reg_close && rules.reg_close <= rules.checkin_open && rules.checkin_open < rules.checkin_close && rules.checkin_close < rules.finalize_deadline, "invalid event times");
+        if self.config.network == "mainnet" { require!(rules.checkin_close.checked_add(86_400_000) == Some(rules.finalize_deadline), "mainnet requires 24h finalization deadline"); }
+        rules.deposit.0.checked_mul(rules.capacity as u128).expect("cap overflow");
+        let price = env::storage_byte_cost().as_yoctonear();
+        let rules_bytes = borsh_len(rules).checked_add(256).expect("rules reserve overflow");
+        let participant_bytes = (rules.capacity as u128).checked_mul(4096).expect("participant reserve overflow");
+        (rules_bytes.checked_mul(price).expect("rules cost overflow"), participant_bytes.checked_mul(price).expect("participant cost overflow"))
     }
 
     pub fn get_request(&self, organizer: AccountId, request_nonce: u64) -> RequestView {
@@ -520,12 +626,25 @@ impl Contract {
     /// Replaying an existing `(organizer, nonce)` never creates or charges a
     /// second child; attached native is returned in full. A replay of a
     /// `Pending` row traps; use `resolve_request` after the pending timeout.
+    #[cfg(not(feature = "factory-event"))]
     #[payable]
     pub fn provision(
         &mut self,
         request_nonce: u64,
         code: Base64VecU8,
     ) -> PromiseOrValue<RequestView> {
+        self.provision_inner(request_nonce, code, None)
+    }
+
+    #[cfg(feature = "factory-event")]
+    #[payable]
+    pub fn provision_event(&mut self, request_nonce: u64, rules: EventRules, code: Base64VecU8) -> PromiseOrValue<RequestView> {
+        self.provision_inner(request_nonce, code, Some(rules))
+    }
+
+    fn provision_inner(&mut self, request_nonce: u64, code: Base64VecU8, rules: Option<EventRulesCompat>) -> PromiseOrValue<RequestView> {
+        #[cfg(feature = "factory-event")]
+        require!(rules.is_some(), "event rules required");
         require!(
             request_nonce <= MAX_SAFE_REQUEST_NONCE,
             "request nonce exceeds safe JSON integer"
@@ -543,7 +662,7 @@ impl Contract {
         }
 
         require!(
-            code.0.len() == LEAF_WASM_LEN && env::sha256(&code.0).as_slice() == LEAF_SHA256,
+            code.0.len() == pinned_leaf().0 && env::sha256(&code.0).as_slice() == self.config.leaf_code_sha256,
             "invalid leaf code"
         );
         require!(
@@ -552,7 +671,12 @@ impl Contract {
         );
 
         let child_id = self.child_id_for(&organizer, request_nonce);
-        let child_funding = self.child_funding(&organizer, &child_id);
+        let mut child_funding = self.child_funding(&organizer, &child_id);
+        #[cfg(feature = "factory-event")]
+        {
+            let (rules_cost, participant_cost) = self.event_storage_costs(rules.as_ref().unwrap());
+            child_funding = child_funding.checked_add(rules_cost).and_then(|v| v.checked_add(participant_cost)).expect("child funding overflow");
+        }
         require!(child_funding > 0, "child funding must be positive");
         let index = self.counts.get(&organizer).unwrap_or(0);
         let quoted = self
@@ -637,7 +761,7 @@ impl Contract {
             .checked_add(1)
             .unwrap_or_else(|| env::panic_str("request counter overflow"));
 
-        let init_args = near_sdk::serde_json::json!({
+        let mut init_args = near_sdk::serde_json::json!({
             "organizer": organizer,
             "canonical_ft": self.config.canonical_ft,
             "provider_account": self.config.provider_account,
@@ -645,9 +769,10 @@ impl Contract {
             "token_name": "USDC",
             "token_decimals": 6,
             "provider_kind": self.config.provider_kind,
-        })
-        .to_string()
-        .into_bytes();
+        });
+        #[cfg(feature = "factory-event")]
+        { init_args["rules"] = near_sdk::serde_json::to_value(rules.expect("event rules required")).expect("rules encoding failed"); }
+        let init_args = init_args.to_string().into_bytes();
         let callback_args = near_sdk::serde_json::json!({
             "organizer": organizer,
             "request_nonce": request_nonce,
@@ -682,7 +807,7 @@ impl Contract {
             .transfer(NearToken::from_yoctonear(child_funding))
             .deploy_contract(code.0)
             .function_call(
-                "new".to_string(),
+                if cfg!(feature = "factory-event") { "new_with_event" } else { "new" }.to_string(),
                 init_args,
                 NearToken::from_yoctonear(0),
                 Gas::from_tgas(CHILD_RECEIPT_GAS_TGAS),
@@ -1026,7 +1151,7 @@ impl Contract {
     /// the measured account/state overhead, every config string stored by the
     /// leaf, and the pinned margin. Quoted in yocto at the live storage price.
     fn child_funding(&self, organizer: &AccountId, child_id: &AccountId) -> u128 {
-        let bytes = (LEAF_WASM_LEN as u128)
+        let bytes = (pinned_leaf().0 as u128)
             .saturating_add(CHILD_ACCOUNT_BASE_BYTES)
             .saturating_add(child_id.as_str().len() as u128)
             .saturating_add(organizer.as_str().len() as u128)
@@ -1120,7 +1245,7 @@ impl Contract {
             network: self.config.network.clone(),
             provider_account: self.config.provider_account.clone(),
             provider_kind: self.config.provider_kind.clone(),
-            leaf_code_len: LEAF_WASM_LEN as u64,
+            leaf_code_len: pinned_leaf().0 as u64,
             leaf_policy_version: self.config.leaf_policy_version.clone(),
             leaf_code_sha256: to_hex(&self.config.leaf_code_sha256),
             factory_policy_identity: FACTORY_POLICY_IDENTITY.to_string(),
@@ -1131,6 +1256,8 @@ impl Contract {
             min_resolve_gas_tgas: MIN_RESOLVE_GAS_TGAS,
             child_storage_margin_bytes: U128(CHILD_STORAGE_MARGIN_BYTES),
             storage_byte_cost: U128(env::storage_byte_cost().as_yoctonear()),
+            #[cfg(feature = "factory-event")]
+            atomic_event_initialization: true,
         }
     }
 
@@ -1211,4 +1338,83 @@ fn log_event(name: &str, data: near_sdk::serde_json::Value) {
         "data": [data],
     });
     env::log_str(&format!("EVENT_JSON:{event}"));
+}
+
+
+#[cfg(all(test, feature = "factory-event"))]
+mod event_candidate_tests {
+    use super::*;
+    use near_sdk::{testing_env, test_utils::VMContextBuilder};
+    fn id(s: &str) -> AccountId { s.parse().unwrap() }
+    fn context() { testing_env!(VMContextBuilder::new().current_account_id(id("factory.near")).predecessor_account_id(id("factory.near")).build()); }
+    fn empty() -> EmptyMultiEventState {
+        EmptyMultiEventState { canonical_ft: id(MAIN_USDC), provider_account: id(MAIN_PROVIDER), provider_kind: "RHEA_MAINNET".into(), network: "mainnet".into(), token_symbol: "USDC".into(), token_name: "USDC".into(), token_decimals: 6, events: LookupMap::new(b"me-e".to_vec()), event_ids: Vector::new(b"me-i".to_vec()), registrations: LookupMap::new(b"me-r".to_vec()), passes: LookupMap::new(b"me-p".to_vec()), active: LookupMap::new(b"me-a".to_vec()), commitments: LookupMap::new(b"me-c".to_vec()), registration_event: LookupMap::new(b"me-re".to_vec()), next_registration: 0, accepted: 0, paid: 0, pending: 0, liability: 0, reserved_cash: 0, global_operation: None }
+    }
+    fn rules(capacity: u32) -> EventRules { EventRules { event_id: "e".into(), title: "t".into(), location: "l".into(), rules_text: "r".into(), finalize_deadline: 86_400_040, deposit: U128(2_000_000), capacity, reg_open: 10, reg_close: 20, checkin_open: 20, checkin_close: 40 } }
+    #[test]
+    fn quote_itemizes_full_capacity_reserve() {
+        context(); let c = Contract::new(id(MAIN_USDC), "mainnet".into(), MAINNET_LEAF_POLICY_IDENTITY.into(), id(MAIN_PROVIDER), "RHEA_MAINNET".into());
+        let q = c.quote_provision_event(id("host.near"), 7, rules(200));
+        assert_eq!(q.participant_reserve.0, 200 * 4096 * env::storage_byte_cost().as_yoctonear());
+        assert_eq!(q.total.0, q.code_config_funding.0 + q.rules_funding.0 + q.participant_reserve.0 + q.registry_fee.0);
+        assert_eq!(q.child_id, c.get_child_id(id("host.near"), 7));
+    }
+    #[test]
+    fn testnet_identity_and_quote_are_network_bound() {
+        testing_env!(VMContextBuilder::new().current_account_id(id("factory.testnet")).predecessor_account_id(id("factory.testnet")).build());
+        let c = Contract::new(id("usdc.testnet"), "testnet".into(), LEAF_POLICY_IDENTITY.into(), id("mock.testnet"), "MOCK_TESTNET".into());
+        let q = c.quote_provision_event(id("host.testnet"), 1, rules(5));
+        assert_eq!(q.network, "testnet"); assert_eq!(q.canonical_ft, id("usdc.testnet"));
+        assert_eq!(q.provider_account, id("mock.testnet")); assert_eq!(q.leaf_policy_version, LEAF_POLICY_IDENTITY);
+    }
+    #[test]
+    fn mismatched_network_token_and_provider_fail_closed() {
+        for kind in 0..4 {
+            testing_env!(VMContextBuilder::new().current_account_id(id("factory.testnet")).predecessor_account_id(id("factory.testnet")).build());
+            let (ft, network, policy, provider, provider_kind) = match kind {
+                0 => ("usdc.near", "testnet", LEAF_POLICY_IDENTITY, "mock.testnet", "MOCK_TESTNET"),
+                1 => ("usdc.testnet", "testnet", LEAF_POLICY_IDENTITY, "mock.near", "MOCK_TESTNET"),
+                2 => ("usdc.testnet", "testnet", LEAF_POLICY_IDENTITY, "mock.testnet", "RHEA_MAINNET"),
+                _ => (MAIN_USDC, "mainnet", MAINNET_LEAF_POLICY_IDENTITY, MAIN_PROVIDER, "RHEA_MAINNET"),
+            };
+            assert!(std::panic::catch_unwind(|| Contract::new(id(ft), network.into(), policy.into(), id(provider), provider_kind.into())).is_err());
+        }
+        context();
+        assert!(std::panic::catch_unwind(|| Contract::new(id("wrong.near"), "mainnet".into(), MAINNET_LEAF_POLICY_IDENTITY.into(), id(MAIN_PROVIDER), "RHEA_MAINNET".into())).is_err());
+        assert!(std::panic::catch_unwind(|| Contract::new(id(MAIN_USDC), "mainnet".into(), MAINNET_LEAF_POLICY_IDENTITY.into(), id("wrong.near"), "RHEA_MAINNET".into())).is_err());
+    }
+    #[test]
+    fn exact_empty_root_migrates() {
+        context(); env::state_write(&empty()); let c = Contract::migrate_empty_multievent();
+        assert_eq!(c.get_native_accounting().total_requests, 0);
+        assert_eq!(c.get_config().canonical_ft, id(MAIN_USDC));
+    }
+    #[test]
+    fn nonempty_accounting_is_rejected() {
+        for kind in 0..5 {
+            context(); let mut old = empty();
+            match kind { 0 => old.accepted = 1, 1 => old.paid = 1, 2 => old.pending = 1, 3 => old.liability = 1, _ => old.reserved_cash = 1 }
+            env::state_write(&old);
+            assert!(std::panic::catch_unwind(Contract::migrate_empty_multievent).is_err());
+        }
+    }
+    #[test]
+    fn nonempty_event_or_registration_counters_are_rejected() {
+        for kind in 0..2 {
+            context(); let mut old = empty();
+            if kind == 0 { old.event_ids.push(&"event".into()); } else { old.next_registration = 1; }
+            env::state_write(&old);
+            assert!(std::panic::catch_unwind(Contract::migrate_empty_multievent).is_err());
+        }
+    }
+    #[test]
+    fn wrong_provider_identity_is_rejected() {
+        context(); let mut old = empty(); old.provider_account = id("other.near"); env::state_write(&old);
+        assert!(std::panic::catch_unwind(Contract::migrate_empty_multievent).is_err());
+    }
+    #[test]
+    fn in_flight_operation_is_rejected() {
+        context(); let mut old = empty(); old.global_operation = Some("pending".into()); env::state_write(&old);
+        assert!(std::panic::catch_unwind(Contract::migrate_empty_multievent).is_err());
+    }
 }

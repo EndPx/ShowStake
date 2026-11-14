@@ -1,0 +1,68 @@
+{
+  "recorded_at_utc": "2026-11-14T02:11:31.547403+00:00",
+  "network": "testnet",
+  "checks": [
+    {
+      "command": "$env:NEXT_PUBLIC_SHOWSTAKE_NETWORK='testnet'; pnpm --filter @showstake/web exec tsc --noEmit --incremental false",
+      "status": "PASS_LOCAL",
+      "exit_code": 0
+    },
+    {
+      "command": "$env:NEXT_PUBLIC_SHOWSTAKE_NETWORK='testnet'; $files = @(rg --files apps/web/src -g '*.test.ts' | Where-Object { $_ -notmatch 'factory-event-live\\.test\\.ts$' }); node --experimental-strip-types --test $files",
+      "status": "PASS_LOCAL",
+      "exit_code": 0,
+      "test_files_passed": 37,
+      "test_files_failed": 0
+    },
+    {
+      "command": "$env:NEXT_PUBLIC_SHOWSTAKE_NETWORK='testnet'; node --experimental-strip-types apps/web/src/lib/near/factory-event-live.test.ts",
+      "status": "PASS_TESTNET",
+      "exit_code": 0,
+      "scope": "Read-only existing testnet factory provision receipt and child identity; no signing or broadcast"
+    },
+    {
+      "command": "$env:NEXT_PUBLIC_SHOWSTAKE_NETWORK='testnet'; pnpm --filter @showstake/web build",
+      "status": "PASS_LOCAL",
+      "exit_code": 0,
+      "next_version": "15.5.26",
+      "static_pages_generated": 13
+    },
+    {
+      "recorded_at_utc": "2026-11-14T02:55:34.495604+00:00",
+      "command": "$env:NEXT_PUBLIC_SHOWSTAKE_NETWORK='testnet'; $files = @(rg --files apps/web/src -g '*.test.ts' | Where-Object { $_ -notmatch 'factory-event-live\\.test\\.ts$' }); node --experimental-strip-types --test $files",
+      "status": "PASS_LOCAL",
+      "exit_code": 0,
+      "test_files_passed": 37,
+      "test_files_failed": 0,
+      "scope": "After participant count, claim button and wallet error fixes"
+    },
+    {
+      "recorded_at_utc": "2026-11-14T02:55:34.495604+00:00",
+      "command": "$env:NEXT_PUBLIC_SHOWSTAKE_NETWORK='mainnet'; $env:SHOWSTAKE_NEXT_DIST_DIR='.next-atomic-mainnet-review'; pnpm --filter @showstake/web build",
+      "status": "PASS_LOCAL",
+      "exit_code": 0,
+      "next_version": "15.5.26",
+      "static_pages_generated": 13,
+      "output": "apps/web/.next-atomic-mainnet-review",
+      "scope": "Mainnet production build; build alone does not prove live readiness or deployed behavior"
+    },
+    {
+      "command": "node --experimental-strip-types --test <38 current web TS test files>",
+      "status": "PASS_LOCAL",
+      "test_files_passed": 38,
+      "scope": "Coordinator final checks after wallet-switch regression fix"
+    },
+    {
+      "command": "NEXT_PUBLIC_SHOWSTAKE_NETWORK=mainnet SHOWSTAKE_NEXT_DIST_DIR=.next-atomic-mainnet-final pnpm --filter @showstake/web build",
+      "status": "PASS_LOCAL",
+      "exit_code": 0
+    }
+  ],
+  "not_run": [
+    "browser UI and QR scan",
+    "wallet signing and transaction broadcast",
+    "deployment",
+    "mainnet provider acceptance"
+  ],
+  "updated_at_utc": "2026-11-14T02:55:34.495604+00:00"
+}

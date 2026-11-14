@@ -1,0 +1,124 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "Read-only public mainnet deployment/provider preflight only; no transaction or funded withdrawal",
+  "observedAt": "2026-11-14T02:55:34.504Z",
+  "block": {
+    "height": 224454143,
+    "hash": "DfE3EB4TP4w9g7x7Pr892th7gQCKVG6tUwLqC5o7tyDT",
+    "timestampNanosec": "1794624931709964568"
+  },
+  "root": {
+    "id": "showstake-mainnet-escrow-endpx-2026.near",
+    "account": {
+      "amount": "2296370729841206400000000",
+      "block_hash": "DfE3EB4TP4w9g7x7Pr892th7gQCKVG6tUwLqC5o7tyDT",
+      "block_height": 224454143,
+      "code_hash": "EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY",
+      "locked": "0",
+      "storage_paid_at": 0,
+      "storage_usage": 226189
+    },
+    "keys": {
+      "block_hash": "DfE3EB4TP4w9g7x7Pr892th7gQCKVG6tUwLqC5o7tyDT",
+      "block_height": 224454143,
+      "keys": [
+        {
+          "access_key": {
+            "nonce": 224273797000002,
+            "permission": "FullAccess"
+          },
+          "public_key": "ed25519:FQJ3SrmLBtQU7xjigLN9NW2aMu2PUTT6Tper1CvnYe2X"
+        }
+      ]
+    },
+    "config": {
+      "canonical_ft": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "provider_account": "contract.main.burrow.near",
+      "provider_kind": "RHEA_MAINNET",
+      "network": "mainnet",
+      "policy_version": "showstake-native-usdc-multievent/1",
+      "token_symbol": "USDC",
+      "token_name": "USDC",
+      "token_decimals": 6,
+      "provider_enabled": false,
+      "provider_unavailable_reason": "RHEA_SHARE_ABI_NOT_VERIFIED"
+    },
+    "events": [],
+    "usdcAtomic": "0",
+    "providerPosition": null
+  },
+  "proposedTreasury": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5",
+  "treasuryNotYetDesignated": true,
+  "rhea": {
+    "status": "BLOCKED",
+    "acceptance": "TECH_NOT_ACCEPTED",
+    "blockHash": "DfE3EB4TP4w9g7x7Pr892th7gQCKVG6tUwLqC5o7tyDT",
+    "blockHeight": 224454143,
+    "blockTimestampMs": 1794624931709,
+    "historical": false,
+    "isolatedPositionsStatus": "ABSENT_ACCOUNT",
+    "treasury": "dc634c505ee6b86a9b615ed7ebef7fff6a235c3406163d35d4f0e60c576a27b5",
+    "providerCodeHash": "6Nek1MZ8cwJJ2xMQAUWup9V5AToYS9rkTxJfwo6BCpFa",
+    "tokenCodeHash": "DVJx7F3dHEHJYwpYPwXHu8K9Uo7h4kXFcALucY5oNX8q",
+    "treasuryCodeHash": "11111111111111111111111111111111",
+    "metadata": {
+      "spec": "ft-1.0.0",
+      "name": "USDC",
+      "symbol": "USDC",
+      "icon": "data:image/svg+xml,%3C%3Fxml version=%221.0%22 encoding=%22utf-8%22%3F%3E%3C!-- Generator: Adobe Illustrator 22.0.1, SVG Export Plug-In . SVG Version: 6.00 Build 0) --%3E%3Csvg version=%221.1%22 id=%22Layer_1%22 xmlns=%22http://www.w3.org/2000/svg%22 xmlns:xlink=%22http://www.w3.org/1999/xlink%22 x=%220px%22 y=%220px%22 viewBox=%220 0 256 256%22 style=%22enable-background:new 0 0 256 256;%22 xml:space=%22preserve%22%3E%3Cstyle type=%22text/css%22%3E .st0%7Bfill:%232775CA;%7D .st1%7Bfill:%23FFFFFF;%7D%0A%3C/style%3E%3Ccircle class=%22st0%22 cx=%22128%22 cy=%22128%22 r=%22128%22/%3E%3Cpath class=%22st1%22 d=%22M104,217c0,3-2.4,4.7-5.2,3.8C60,208.4,32,172.2,32,129.3c0-42.8,28-79.1,66.8-91.5c2.9-0.9,5.2,0.8,5.2,3.8 v7.5c0,2-1.5,4.3-3.4,5C69.9,65.4,48,94.9,48,129.3c0,34.5,21.9,63.9,52.6,75.1c1.9,0.7,3.4,3,3.4,5V217z%22/%3E%3Cpath class=%22st1%22 d=%22M136,189.3c0,2.2-1.8,4-4,4h-8c-2.2,0-4-1.8-4-4v-12.6c-17.5-2.4-26-12.1-28.3-25.5c-0.4-2.3,1.4-4.3,3.7-4.3 h9.1c1.9,0,3.5,1.4,3.9,3.2c1.7,7.9,6.3,14,20.3,14c10.3,0,17.7-5.8,17.7-14.4c0-8.6-4.3-11.9-19.5-14.4c-22.4-3-33-9.8-33-27.3 c0-13.5,10.3-24.1,26.1-26.3V69.3c0-2.2,1.8-4,4-4h8c2.2,0,4,1.8,4,4v12.7c12.9,2.3,21.1,9.6,23.8,21.8c0.5,2.3-1.3,4.4-3.7,4.4 h-8.4c-1.8,0-3.3-1.2-3.8-2.9c-2.3-7.7-7.8-11.1-17.4-11.1c-10.6,0-16.1,5.1-16.1,12.3c0,7.6,3.1,11.4,19.4,13.7 c22,3,33.4,9.3,33.4,28c0,14.2-10.6,25.7-27.1,28.3V189.3z%22/%3E%3Cpath class=%22st1%22 d=%22M157.2,220.8c-2.9,0.9-5.2-0.8-5.2-3.8v-7.5c0-2.2,1.3-4.3,3.4-5c30.6-11.2,52.6-40.7,52.6-75.1 c0-34.5-21.9-63.9-52.6-75.1c-1.9-0.7-3.4-3-3.4-5v-7.5c0-3,2.4-4.7,5.2-3.8C196,50.2,224,86.5,224,129.3 C224,172.2,196,208.4,157.2,220.8z%22/%3E%3C/svg%3E%0A",
+      "reference": null,
+      "reference_hash": null,
+      "decimals": 6
+    },
+    "asset": {
+      "extraDecimals": 12,
+      "canDeposit": true,
+      "canWithdraw": true,
+      "suppliedShares": "10606914292954831177702232",
+      "suppliedBalance": "12291174555589759410637060",
+      "borrowedBalance": "10682023764093926544472287"
+    },
+    "position": null,
+    "providerStorage": null,
+    "ftStorage": null,
+    "storageBounds": {
+      "min": "100000000000000000000000",
+      "max": null
+    },
+    "ftStorageBounds": {
+      "min": "1250000000000000000000",
+      "max": "1250000000000000000000"
+    },
+    "providerConfig": {
+      "oracle_account_id": "priceoracle.near",
+      "pyth_oracle_account_id": "aggregate-oracle.near",
+      "ref_exchange_id": "v2.ref-finance.near",
+      "owner_id": "burrow.sputnik-dao.near",
+      "booster_token_id": "token.burrow.near",
+      "booster_decimals": 18,
+      "max_num_assets": 20,
+      "maximum_recency_duration_sec": 90,
+      "maximum_staleness_duration_sec": 90,
+      "lp_tokens_info_valid_duration_sec": 600,
+      "pyth_price_valid_duration_sec": 60,
+      "minimum_staking_duration_sec": 2592000,
+      "maximum_staking_duration_sec": 7776000,
+      "x_booster_multiplier_at_maximum_staking_duration": 30000,
+      "force_closing_enabled": true,
+      "enable_price_oracle": false,
+      "enable_pyth_oracle": true,
+      "contract_mode": "Running",
+      "boost_suppress_factor": 1000,
+      "dcl_id": "dclv2.ref-labs.near",
+      "pause_operator_id": null
+    },
+    "nativeBalance": "303054317868679672426612",
+    "usdcBalance": "0",
+    "gates": [
+      "PROVIDER_ACCOUNT_NOT_REGISTERED",
+      "PROVIDER_STORAGE_MISSING",
+      "FT_STORAGE_MISSING",
+      "ISOLATED_POSITIONS_UNREVIEWED"
+    ]
+  }
+}

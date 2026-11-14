@@ -1,4 +1,5 @@
 import { isKnownNetwork } from '@showstake/domain';
+import { parseFactoryAccessProfiles, type FactoryAccessProfile } from './lib/factory-profile.js';
 
 /** Fixed, server-side configuration. No secrets live here (only non-secret policy). */
 export interface Config {
@@ -8,6 +9,7 @@ export interface Config {
   accessContractAbis: Record<string, string>;
   accessContractCodeHashes: Record<string, string>;
   accessFactoryCodeHashes: Record<string, string>;
+  accessFactoryProfiles?: Record<string, FactoryAccessProfile>;
   qrHmacKey?: string;
   privateContentDir?: string;
   rheaMicrotestApprovalFile?: string;
@@ -61,6 +63,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   if (!authPurpose) throw new Error('AUTH_PURPOSE must not be empty');
 
   return {
+    accessFactoryProfiles: parseFactoryAccessProfiles(env.ACCESS_FACTORY_PROFILES),
     accessContractAllowlist: (env.ACCESS_CONTRACT_ALLOWLIST ?? '').split(',').map(x=>x.trim()).filter(Boolean),
     accessContractAbis: Object.fromEntries((env.ACCESS_CONTRACT_ABIS ?? '').split(',').map(x=>x.trim()).filter(Boolean).map(x=>{ const parts=x.split('='); if(parts.length!==2 || !parts[0] || !['candidate-v1','legacy-v6','multievent-v1'].includes(parts[1]!)) throw new Error('invalid ACCESS_CONTRACT_ABIS'); return [parts[0]!,parts[1]!]; })),
     accessContractCodeHashes: Object.fromEntries((env.ACCESS_CONTRACT_CODE_HASHES ?? '').split(',').map(x=>x.trim()).filter(Boolean).map(x=>{const parts=x.split('='); if(parts.length!==2 || !/^(?:mainnet|testnet):[a-z0-9._-]+$/.test(parts[0]!) || !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(parts[1]!)) throw new Error('invalid ACCESS_CONTRACT_CODE_HASHES'); return [parts[0]!,parts[1]!];})),

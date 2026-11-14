@@ -1,0 +1,13 @@
+import assert from "node:assert/strict";
+import { activeCheckinChallenge } from "./checkin-qr-state.ts";
+import { checkinProposal } from "../../lib/checkin-session.ts";
+import QRCode from "qrcode";
+const binding=JSON.stringify(["testnet","alice.testnet","event.testnet","event-1","pass-1"]),challenge={token:"opaque.server.token",binding,expiresAt:new Date(2000).toISOString()};
+assert.equal(activeCheckinChallenge(challenge,binding,1999),true);
+assert.equal(activeCheckinChallenge(challenge,binding,2000),false);
+for(const other of [["testnet","bob.testnet","event.testnet","event-1","pass-1"],["testnet","alice.testnet","other.testnet","event-1","pass-1"],["testnet","alice.testnet","event.testnet","event-1","pass-2"]])assert.equal(activeCheckinChallenge(challenge,JSON.stringify(other),1000),false);
+assert.equal(activeCheckinChallenge(null,binding,1000),false);
+assert.equal(checkinProposal({data:{state:"PROPOSED",requestId:"request"}}),"request");
+assert.equal(checkinProposal({data:{state:"ATTENDED",requestId:"request"}}),null);
+const png=await QRCode.toDataURL(challenge.token,{width:512,margin:4,errorCorrectionLevel:"M"});assert.match(png,/^data:image\/png;base64,/);
+console.log("PASS_LOCAL expiring bound QR and pending check-in");

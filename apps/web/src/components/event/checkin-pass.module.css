@@ -1,0 +1,12 @@
+.pass { margin-top: 24px; padding: 22px; border: 1px solid var(--line); border-radius: 16px; background: var(--white); }
+.header { display: flex; align-items: center; justify-content: space-between; font-size: 18px; }
+.body { display: flex; gap: 24px; justify-content: space-between; align-items: center; }
+.info { min-width: 0; flex: 1; }
+.info p { color: var(--muted); line-height: 1.55; }
+.pass details { margin-top: 16px; }
+.pass summary { cursor: pointer; }
+.pass label { display: grid; gap: 7px; margin: 12px 0; }
+.pass input, .pass textarea { max-width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 8px; }
+.qr { flex: 0 0 180px; text-align: center; }
+.qr img { display: block; width: 100%; height: auto; }
+@media (max-width: 700px) { .body { flex-direction: column; align-items: stretch; } .qr { flex: auto; width: 180px; max-width: 100%; } }

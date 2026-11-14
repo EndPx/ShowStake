@@ -17,13 +17,15 @@ const nextConfig: NextConfig = {
       return [{ source: "/api/v1/:path*", destination: "/api/backend-unavailable" }];
     }
     const upstream = configured || "http://127.0.0.1:3001";
+    const prefix = process.env.SHOWSTAKE_API_PREFIX || "";
+    if (prefix !== "" && prefix !== "/testnet") throw new Error("SHOWSTAKE_API_PREFIX must be empty or /testnet");
     const url = new URL(upstream);
     if (url.username || url.password || url.search || url.hash || url.pathname !== "/" || !["http:", "https:"].includes(url.protocol)) throw new Error("SHOWSTAKE_API_UPSTREAM_URL must be a plain API origin");
     if (process.env.VERCEL === "1" && (url.protocol !== "https:" || ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname))) throw new Error("Vercel requires a public HTTPS API origin");
     return [
       {
         source: "/api/v1/:path*",
-        destination: `${url.origin}/v1/:path*`,
+        destination: `${url.origin}${prefix}/v1/:path*`,
       },
     ];
   },

@@ -1,5 +1,5 @@
 {
-  "$note": "Explicit reviewed route inventory for /v1. Derived 1:1 from the packet architecture (docs/planning/showstake-v2/02-ARCHITECTURE.md 'API contract' table), normalized to OpenAPI parameter style (`:id` -> `{eventId}` / `{attemptId}` / `{passId}`). Includes the reviewed baseline PLUS the previously-omitted organizer routes (/events/drafts, /events/{eventId}/publish-intent) and the social-auth provider boundary (/auth/privy, candidate adapter route). NEAR-first providers remain provisional; Privy is an alternative only. scripts/verify-openapi.mjs enforces this inventory against packages/api-contract/openapi.yaml so a missing/extra route fails the check (never a hardcoded count that matches an incomplete spec). Codex API integration adds authenticated logout and current-session reads; these are implemented-session lifecycle surfaces.",
+  "$note": "Explicit reviewed route inventory for /v1. Derived 1:1 from the packet architecture (docs/planning/showstake-v2/02-ARCHITECTURE.md 'API contract' table), normalized to OpenAPI parameter style (`:id` -> `{eventId}` / `{attemptId}` / `{passId}`). Includes the reviewed baseline PLUS the previously-omitted organizer routes (/events/drafts, /events/{eventId}/publish-intent) and the social-auth provider boundary (/auth/privy, candidate adapter route). NEAR-first providers remain provisional; Privy is an alternative only. scripts/verify-openapi.mjs enforces this inventory against packages/api-contract/openapi.yaml so a missing/extra route fails the check (never a hardcoded count that matches an incomplete spec). Codex API integration adds authenticated logout and current-session reads; these are implemented-session lifecycle surfaces. Implemented mainnet funding journal routes are listed separately from older provisional planning routes; a swap does not authorize registration.",
   "source": "docs/planning/showstake-v2/02-ARCHITECTURE.md API contract table",
   "public": [
     "/events",
@@ -57,15 +57,18 @@
     },
     {
       "path": "/funding/attempts",
-      "method": "post"
+      "method": "post",
+      "note": "Provisional planning route; not implemented by the current API."
     },
     {
       "path": "/funding/{attemptId}/quote",
-      "method": "post"
+      "method": "post",
+      "note": "Provisional planning route; not implemented by the current API."
     },
     {
       "path": "/funding/{attemptId}",
-      "method": "get"
+      "method": "get",
+      "note": "Provisional planning route; not implemented by the current API."
     },
     {
       "path": "/me/passes",
@@ -137,6 +140,26 @@
     },
     {
       "path": "/rhea/microtest/reconcile",
+      "method": "post"
+    },
+    {
+      "path": "/funding",
+      "method": "get"
+    },
+    {
+      "path": "/funding/quotes",
+      "method": "post"
+    },
+    {
+      "path": "/funding/{id}/reserve",
+      "method": "post"
+    },
+    {
+      "path": "/funding/{id}/submitted",
+      "method": "post"
+    },
+    {
+      "path": "/funding/{id}/reconcile",
       "method": "post"
     }
   ]

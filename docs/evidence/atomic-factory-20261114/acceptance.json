@@ -1,0 +1,180 @@
+{
+  "checkpoint": "2026-11-14",
+  "classification": "TESTNET_CANDIDATE_PARTIAL_BROWSER",
+  "scope": "Atomic per-event factory with Mock USDC and MockEarn on NEAR testnet; mainnet funded Rhea remains unaccepted.",
+  "artifacts": {
+    "event-atomic.wasm": {
+      "bytes": 241187,
+      "sha256": "a90cc890fbda1d8e7166697551693de684a264b1a3bc86ff098f59371033514a",
+      "codeHash": "CNuCzGqyU6Ypoz8qFtUvHKBESsEmppu4MW93WiZk6Au7"
+    },
+    "factory-atomic.wasm": {
+      "bytes": 219832,
+      "sha256": "c6c5a8daa5dcb0ab020b910299e2df9c4d5a6f262a46203f37b4759624e4f391",
+      "codeHash": "ENvY3jqpnMWnmQEBRjcvQkuJvELYMLkkqTC9wRBPjZ9J"
+    },
+    "mock-earn.wasm": {
+      "bytes": 133224,
+      "sha256": "36a10ff79b4de25c74cde17777742894c6a3d7c3b815e064d49287b682ca2f87",
+      "codeHash": "4gFTgdhu254ASe4WYh7onHAYZGfj9PvWJ4LiopZKTocr"
+    }
+  },
+  "unit_local": {
+    "status": "PASS_LOCAL",
+    "leaf_factory_feature": 30,
+    "factory_feature": 8,
+    "factory_historical": 29,
+    "evidence": "units/"
+  },
+  "sandbox_rhea": {
+    "status": "PASS_LOCAL",
+    "scope": "actual public Rhea Wasm in synthetic Sandbox, mock USDC",
+    "outcome": "5 x 2 USDC -> 2 x 5 USDC; separate cancelled event 5 x 2 refunded; independent position unchanged; payout failure restored and retried",
+    "evidence": "sandbox-rhea/"
+  },
+  "sandbox_mock": {
+    "status": "PASS_LOCAL",
+    "scope": "synthetic Sandbox with testnet-shaped mock USDC and mock Earn",
+    "outcome": "same two-child settlement, cancellation, isolation and payout retry scenario",
+    "evidence": "sandbox-mock/"
+  },
+  "capacity": {
+    "status": "PASS_LOCAL",
+    "registrations": 200,
+    "passes": 200,
+    "attendees": 100,
+    "attendee_allocation_atomic": "4000000",
+    "claim_liability_atomic": "400000000",
+    "escrow_ft_balance_atomic": "400000000",
+    "limitation": "Allocation and coverage checked; 100 claim executions not established.",
+    "evidence": "capacity/factory-event-capacity.json"
+  },
+  "migration": {
+    "status": "PASS_LOCAL",
+    "empty": "migrated",
+    "nonempty": "rejected; old code and event retained",
+    "scope": "Synthetic Sandbox with actual prior multi-event Wasm; bootstrap fees precede migration; external FT and provider position not checked by migration.",
+    "evidence": "migration/"
+  },
+  "testnet_receipts": {
+    "status": "PASS_TESTNET",
+    "network": "testnet",
+    "provider": "MOCK_TESTNET",
+    "factory": "ss-fac-c1113232934.testnet",
+    "result": "../testnet-factory-c1113232934/result.json",
+    "receipt_entries": 42,
+    "organizers": "same organizer for both children",
+    "factory_creation_receipt": "NOT_AVAILABLE",
+    "settlement": "five deposits of 2000000 atomic; two paid claims of 5000000 atomic",
+    "cancellation": "five refunds of 2000000 atomic; failed payout restored and retried"
+  },
+  "browser_mixed_run": {
+    "status": "PASS_TESTNET",
+    "source": "browser/result.json",
+    "create_tx": "7wBgq2775DkWkivzfePSRBM2LQRJUunFLS8fEwv5kz9n",
+    "child": "77a5e2b3a93df516.ss-fac-c1113232934.testnet",
+    "event_id": "event-a1a1186ab3f448438aac847234371f1e",
+    "browser_deposit_tx": "8jTkkM335GYtRnFHNEtgRwVWUBYPnqQYPHiYhnrnnhj7",
+    "deposits": "four CLI, one browser; each 2000000 atomic",
+    "pass": "observed",
+    "close_supply_attendance": "CLI",
+    "finalize_browser_tx": "5jS8Wvf1bCjVF3ftFfdmFcDhAXyp9SdXiNfx7jcVFioT",
+    "finalize_ui_reconciliation": "PASS_TESTNET: final receipt and state reconciled after reload/reconnect",
+    "qr_checkin": "BLOCKED_EXTERNAL: raw-block source 429; not accepted",
+    "browser_claim": "PASS_TESTNET: two final Paid claims",
+    "redeem_browser_tx": "6nxMA3LQgHWB8aYxAZnqxSmKijnB9R3Dw4BJqQxf5Gqf",
+    "redeem_final_state": "Redeemed",
+    "settle_browser_tx": "9kEWfq3eK9Bz72VUPPsMBs8zUjYBJ1guGfhgQZVDtrHL",
+    "settle_final_state": "Settled",
+    "receipt_graphs": 17,
+    "expected_failed_storage_tx": {
+      "hash": "2AQwgQqnZFDWCCF2QNWiYpZDpJ6TLmxnPAcaWeFv6vkm",
+      "reason": "Test support used 0.00125 NEAR below actual quoted 0.00126 NEAR; finalized failure inspected, separate quoted transaction succeeded"
+    },
+    "claim_transactions": [
+      {
+        "tx": "ALE5JiXBrvbk7ixpfsZTEaVQmpJQm8UENrgY829GvJvm",
+        "participant": "attendee A",
+        "balance_before_atomic": "15000000",
+        "balance_after_atomic": "20000000",
+        "state": "Paid"
+      },
+      {
+        "tx": "DRyeeP8mmCdxur4SGX3KcUwCg3MpLDEVXe9Chzs4FL61",
+        "participant": "attendee C",
+        "balance_before_atomic": "15000000",
+        "balance_after_atomic": "20000000",
+        "state": "Paid"
+      }
+    ],
+    "escrow_balance_sequence_atomic": [
+      "10000000",
+      "5000000",
+      "0"
+    ],
+    "provider_final_atomic": "0",
+    "visual_acceptance": "NOT_RUN: hidden-page screenshots blank"
+  },
+  "service_and_checks": {
+    "preview": "https://showstake-testnet.vercel.app",
+    "api": "https://srv1330754.hstgr.cloud/testnet",
+    "proxy": "Nginx /testnet to isolated 3913",
+    "database": "isolated PostgreSQL 18 on localhost:55442",
+    "mainnet_service_port": 3912,
+    "reported_checks": {
+      "api": 37,
+      "funding_postgresql": 16,
+      "worker_postgresql": 96,
+      "web_typescript": 38,
+      "web_build": "PASS_LOCAL"
+    },
+    "worker": "active, three children adopted; CATCHING_UP/BLOCKED_EXTERNAL for freshness; HTTP 429 traced to https://testnet.neardata.xyz raw-block source; no cursor jump",
+    "preview_release": "Vercel CLI deployment dpl_6HRf5s7xFGpJTgdJ7sQj4HboegCm at stable alias; reviewed commit/push pending",
+    "bounded_final_block_reads": "dRPC and FASTNEAR HTTP 200 in approximately 0.3 seconds; sustained capacity not established"
+  },
+  "limitations": [
+    "Mainnet is the existing C81 CREATE-only deployment; candidate C6/A90 is not deployed on mainnet.",
+    "The previous maximum 0.01 NEAR mainnet upgrade authorization was consumed; any new mainnet upgrade needs new exact scoped authorization.",
+    "Funded mainnet Rhea return, real-USDC financial lifecycle, QR and gated content remain unaccepted; two testnet browser claims passed.",
+    "Lost Dispatched callback requires manual reconciliation; no blind retry.",
+    "Clean image-based reproducible build and SourceScan automatic verification remain unproven; public image tag/digest was matched separately.",
+    "Existing SHA256-MANIFEST.json covers packaged proof files and was generated before this acceptance record and report."
+  ],
+  "mainnet_read_only": {
+    "block_height": 224454143,
+    "code": "C81 CREATE-only",
+    "events": 0,
+    "usdc_balance_atomic": "0",
+    "rhea_position": null,
+    "native_balance_near": "2.2963707298412064",
+    "classification": "PASS_LIVE",
+    "scope": "read-only observation; no upgrade or financial action"
+  },
+  "production_api_rollout": {
+    "status": "PASS_LIVE",
+    "release": "funding-api-20261114",
+    "schema_version": 9,
+    "primary_keys": 25,
+    "foreign_keys": 40,
+    "health_http": 200,
+    "unauthenticated_funding_http": 401,
+    "worker_pid_unchanged": true,
+    "initial_activation": "EACCES compiled JS mode 600; old API restored healthy; source/build permissions corrected and service-user import preflight passed before activation",
+    "scope": "API release only; no funded route or onchain execution implied",
+    "evidence": "funding-production.json"
+  },
+  "next_mainnet_plan": {
+    "path": "../../mainnet-atomic-factory-plan.md",
+    "status": "NOT_RUN",
+    "method": "migrate_empty_multievent({})",
+    "authorization": "new exact scoped authorization required"
+  },
+  "local_checks": {
+    "frontendTestFiles": 38,
+    "frontendMainnetBuild": "PASS_LOCAL",
+    "apiPg": 37,
+    "fundingPg": 16,
+    "workerPg": 96,
+    "scope": "Current source checks; provider and complete browser gates remain separate"
+  }
+}

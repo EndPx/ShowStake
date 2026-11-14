@@ -38,6 +38,171 @@ tags:
   - name: content
 
 paths:
+  /funding:
+    get:
+      tags: [funding]
+      summary: List the verified wallet's funding journal
+      description: >-
+        Requires a verified mainnet NEAR session. Returns up to 50 attempts for the immutable
+        session wallet binding, newest first. Provider status is observational and does not
+        register a participant or grant a pass.
+      responses:
+        '200':
+          description: Funding attempts for this session owner and binding
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [attempts]
+                        properties:
+                          attempts:
+                            type: array
+                            maxItems: 50
+                            items:
+                              $ref: '#/components/schemas/FundingJournalAttempt'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /funding/quotes:
+    post:
+      tags: [funding]
+      summary: Persist a provider-verified live quote
+      description: >-
+        Requires an allowed Origin and a verified mainnet NEAR session whose account matches
+        the recipient. This route does not issue a quote: it checks the submitted quote against
+        the provider's current PENDING_DEPOSIT response and stores it. An unresolved attempt
+        for the binding blocks a different quote. No funds are transferred by this route.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FundingJournalQuote' }
+      responses:
+        '200':
+          description: Persisted or matching existing quote
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [attempt]
+                        properties:
+                          attempt: { $ref: '#/components/schemas/FundingJournalAttempt' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /funding/{id}/reserve:
+    post:
+      tags: [funding]
+      summary: Reserve one source-wallet submission
+      description: >-
+        Requires allowed Origin and verified mainnet NEAR owner session. Checks the provider
+        quote before an atomic QUOTED to SOURCE_PENDING transition. Only created=true permits
+        the client to open its wallet; false must never trigger another wallet submission.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Reservation result
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [created]
+                        properties:
+                          created: { type: boolean }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /funding/{id}/submitted:
+    post:
+      tags: [funding]
+      summary: Record an EVM source transaction hash
+      description: >-
+        Requires allowed Origin and the verified mainnet NEAR owner session. Binds the hash to
+        a SOURCE_PENDING attempt; repeating the same hash is accepted, a different hash is rejected.
+        Recording a hash does not prove transaction success.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [hash]
+              properties:
+                hash: { type: string, pattern: '^0x[0-9a-fA-F]{64}$' }
+      responses:
+        '200':
+          description: Hash saved
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [saved]
+                        properties:
+                          saved: { type: boolean, enum: [true] }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /funding/{id}/reconcile:
+    post:
+      tags: [funding]
+      summary: Observe provider status for a stored attempt
+      description: >-
+        Requires allowed Origin and the verified mainnet NEAR owner session. The server checks
+        provider quote identity and persists its observed status; the client cannot supply a
+        status. An unknown or unavailable result fails closed. SUCCESS means provider-reported
+        funding only; participant-signed NEAR registration remains separate.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Provider status observation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [status]
+                        properties:
+                          status: { $ref: '#/components/schemas/FundingProviderStatus' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/Unavailable' }
   /rhea/microtest:
     get:
       tags:
@@ -768,6 +933,7 @@ paths:
   /funding/attempts:
     post:
       summary: Create an immutable funding attempt (idempotent)
+      description: Provisional planning route; not implemented by the current API.
       tags: [funding]
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
@@ -792,6 +958,7 @@ paths:
   /funding/{attemptId}/quote:
     post:
       summary: Return a validated quote (no spend)
+      description: Provisional planning route; not implemented by the current API.
       tags: [funding]
       parameters:
         - $ref: '#/components/parameters/AttemptId'
@@ -814,6 +981,7 @@ paths:
   /funding/{attemptId}:
     get:
       summary: Funding attempt state + next required action
+      description: Provisional planning route; not implemented by the current API.
       tags: [funding]
       parameters:
         - $ref: '#/components/parameters/AttemptId'
@@ -1173,6 +1341,46 @@ components:
           schema: { $ref: '#/components/schemas/ErrorEnvelope' }
 
   schemas:
+    FundingProviderStatus:
+      type: string
+      enum: [PENDING_DEPOSIT, KNOWN_DEPOSIT_TX, PROCESSING, SUCCESS, REFUNDED, FAILED, INCOMPLETE_DEPOSIT]
+    FundingJournalQuote:
+      type: object
+      description: >-
+        A live 1Click quote bound to the session recipient, source ETH asset and EVM refund
+        address. Atomics are positive canonical u128 strings; source ETH uses 18 decimals,
+        destination native NEAR USDC uses 6. Server rechecks provider identity and status.
+      required: [dry, originAsset, destinationAsset, recipient, refundTo, amountIn, amountOut, minAmountOut, deadline, observedAt, depositAddress, correlationId, chainId, slippageTolerance]
+      properties:
+        dry: { type: boolean, enum: [false] }
+        originAsset: { type: string, enum: ['nep141:base.omft.near', 'nep141:eth.omft.near'] }
+        destinationAsset: { type: string, enum: ['nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1'] }
+        recipient: { type: string, description: Must equal the verified NEAR session account }
+        refundTo: { type: string, pattern: '^0x[0-9a-fA-F]{40}$' }
+        amountIn: { allOf: [{ $ref: '#/components/schemas/Money' }], pattern: '^[1-9][0-9]*$' }
+        amountOut: { allOf: [{ $ref: '#/components/schemas/Money' }], pattern: '^[1-9][0-9]*$' }
+        minAmountOut: { allOf: [{ $ref: '#/components/schemas/Money' }], pattern: '^[1-9][0-9]*$' }
+        deadline: { type: string, format: date-time }
+        observedAt: { type: string, format: date-time }
+        depositAddress: { type: string, pattern: '^0x[0-9a-fA-F]{40}$' }
+        correlationId: { type: string, minLength: 1, maxLength: 200 }
+        chainId: { type: string, enum: ['0x2105', '0x1'], description: Must match originAsset }
+        slippageTolerance: { type: integer, enum: [50], description: Basis points }
+    FundingJournalAttempt:
+      type: object
+      required: [id, state, sourceTxHash, providerStatus, providerStatusObservedAt, quote]
+      properties:
+        id: { type: string, format: uuid }
+        state:
+          type: string
+          enum: [CREATED, QUOTED, SOURCE_PENDING, SWAP_SETTLED, READY_TO_COMMIT, COMMIT_PENDING, COMMITTED, EXPIRED, FAILED, PROVIDER_REFUNDED, ACTION_REQUIRED, UNKNOWN]
+          description: Stored journal state; it is not registration authority.
+        sourceTxHash: { type: string, nullable: true, pattern: '^0x[0-9a-fA-F]{64}$' }
+        providerStatus:
+          allOf: [{ $ref: '#/components/schemas/FundingProviderStatus' }]
+          nullable: true
+        providerStatusObservedAt: { type: string, format: date-time, nullable: true }
+        quote: { $ref: '#/components/schemas/FundingJournalQuote' }
     Money:
       type: string
       description: >

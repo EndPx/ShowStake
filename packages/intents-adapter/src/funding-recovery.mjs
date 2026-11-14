@@ -1,0 +1,2 @@
+// A durable reservation is never converted back into a wallet-ready attempt.
+export function recoverFundingAttempt(a){if(!a||typeof a.id!=='string'||!a.quote||!['QUOTED','SOURCE_PENDING','UNKNOWN','ACTION_REQUIRED'].includes(a.state))throw Error('Invalid funding attempt');return {id:a.id,quote:a.quote,phase:a.state==='QUOTED'?'ready':a.sourceTxHash?'submitted':'sending',...(a.sourceTxHash?{hash:a.sourceTxHash}:{})};}

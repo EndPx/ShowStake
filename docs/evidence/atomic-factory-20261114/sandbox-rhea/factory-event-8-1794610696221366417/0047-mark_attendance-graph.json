@@ -1,0 +1,143 @@
+{
+  "final_execution_status": "FINAL",
+  "receipts": [
+    {
+      "predecessor_id": "first.sandbox",
+      "priority": 0,
+      "receipt": {
+        "Action": {
+          "actions": [
+            {
+              "FunctionCall": {
+                "args": "eyJhdHRlbmRlZCI6dHJ1ZSwicmVnaXN0cmF0aW9uX2lkIjoiZXZlbnQwLXJlZy0zIn0=",
+                "deposit": "0",
+                "gas": 300000000000000,
+                "method_name": "mark_attendance"
+              }
+            }
+          ],
+          "gas_price": "1000000000",
+          "input_data_ids": [],
+          "is_promise_yield": false,
+          "output_data_receivers": [],
+          "signer_id": "first.sandbox",
+          "signer_public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB"
+        }
+      },
+      "receipt_id": "6Wa5m1A1oXh8hmpYmmwTKWtmRgJh5wwodA9dYo4ppMPD",
+      "receiver_id": "017e20cf6a9babb5.factory.sandbox"
+    },
+    {
+      "predecessor_id": "system",
+      "priority": 0,
+      "receipt": {
+        "Action": {
+          "actions": [
+            {
+              "Transfer": {
+                "deposit": "300701179078888200000000"
+              }
+            }
+          ],
+          "gas_price": "0",
+          "input_data_ids": [],
+          "is_promise_yield": false,
+          "output_data_receivers": [],
+          "signer_id": "first.sandbox",
+          "signer_public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB"
+        }
+      },
+      "receipt_id": "DbtAiNE6XVxWKqwyR56fJeNo2GBuaKBAHWxJmkuuSPgR",
+      "receiver_id": "first.sandbox"
+    }
+  ],
+  "receipts_outcome": [
+    {
+      "block_hash": "HhZyR9gyphEXnzwirzYKLq73VkbhDr3tVj1YT4VCBWHF",
+      "id": "6Wa5m1A1oXh8hmpYmmwTKWtmRgJh5wwodA9dYo4ppMPD",
+      "outcome": {
+        "executor_id": "017e20cf6a9babb5.factory.sandbox",
+        "gas_burnt": 1870257568218,
+        "logs": [],
+        "metadata": {
+          "contracts": [
+            {
+              "local": "CNuCzGqyU6Ypoz8qFtUvHKBESsEmppu4MW93WiZk6Au7"
+            }
+          ],
+          "version": 4
+        },
+        "receipt_ids": [
+          "DbtAiNE6XVxWKqwyR56fJeNo2GBuaKBAHWxJmkuuSPgR"
+        ],
+        "status": {
+          "SuccessValue": ""
+        },
+        "tokens_burnt": "187025756821800000000"
+      },
+      "proof": []
+    },
+    {
+      "block_hash": "6DvHo4Th5n1ND9q8DghkTaccJRDABeHnwHwLpiQYKV8R",
+      "id": "DbtAiNE6XVxWKqwyR56fJeNo2GBuaKBAHWxJmkuuSPgR",
+      "outcome": {
+        "executor_id": "first.sandbox",
+        "gas_burnt": 223182562500,
+        "logs": [],
+        "metadata": {
+          "contracts": [
+            null
+          ],
+          "version": 4
+        },
+        "receipt_ids": [],
+        "status": {
+          "SuccessValue": ""
+        },
+        "tokens_burnt": "0"
+      },
+      "proof": []
+    }
+  ],
+  "status": {
+    "SuccessValue": ""
+  },
+  "transaction": {
+    "actions": [
+      {
+        "FunctionCall": {
+          "args": "eyJhdHRlbmRlZCI6dHJ1ZSwicmVnaXN0cmF0aW9uX2lkIjoiZXZlbnQwLXJlZy0zIn0=",
+          "deposit": "0",
+          "gas": 300000000000000,
+          "method_name": "mark_attendance"
+        }
+      }
+    ],
+    "hash": "7knJjftbd8TzXfV8t4UJHMeeEr6NG7QGEmUP2woNQX5x",
+    "nonce": 7,
+    "priority_fee": 0,
+    "public_key": "ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB",
+    "receiver_id": "017e20cf6a9babb5.factory.sandbox",
+    "signer_id": "first.sandbox"
+  },
+  "transaction_outcome": {
+    "block_hash": "82MCp8VsG8ZtZ3be5TmAmc2DiSWhdWH9cnuM14i5ugJR",
+    "id": "7knJjftbd8TzXfV8t4UJHMeeEr6NG7QGEmUP2woNQX5x",
+    "outcome": {
+      "executor_id": "first.sandbox",
+      "gas_burnt": 311158941475,
+      "logs": [],
+      "metadata": {
+        "version": 1
+      },
+      "receipt_ids": [
+        "6Wa5m1A1oXh8hmpYmmwTKWtmRgJh5wwodA9dYo4ppMPD"
+      ],
+      "status": {
+        "SuccessReceiptId": "6Wa5m1A1oXh8hmpYmmwTKWtmRgJh5wwodA9dYo4ppMPD"
+      },
+      "tokens_burnt": "31115894147500000000"
+    },
+    "proof": []
+  }
+}

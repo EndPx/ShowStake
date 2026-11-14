@@ -1,4 +1,5 @@
-import type { DeploymentAllowlist } from './config.js';
+import { isReviewedTestnetStatic, type DeploymentAllowlist } from './config.js';
+import { isVerifiedFactoryDeployment } from './factory.js';
 import type { CommitData, PublishRules } from './types.js';
 import { validateAccountIdShape } from '@showstake/domain';
 
@@ -10,9 +11,9 @@ export const LINKED_CANDIDATE_HASH='49a591ba26a4a23d05c01cc343779f1c66aa5da0384e
 export const LINKED_CODE_HASH='5xVC9cyZDeCJXpS8rhD4Hh3tNMBB4MNnvh5eYpW9y5Aw';
 export const LINKED_POLICY='showstake-native-usdc-rhea-linked-withdraw-review/2';
 const isFactoryChild=(d:DeploymentAllowlist)=>!!d.verifiedFactoryId&&/^[a-f0-9]{16}$/.test(d.contractId.slice(0,16))&&d.contractId===d.contractId.slice(0,16)+'.'+d.verifiedFactoryId;
-export const isLinkedCandidate=(d:DeploymentAllowlist):boolean=>d.environment==='mainnet'&&d.network==='mainnet'&&isFactoryChild(d)&&d.ftContractId==='17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1'&&d.ftDecimals===6&&d.codeHash===LINKED_CODE_HASH&&d.wasmSha256===LINKED_CANDIDATE_HASH&&d.policyVersion===LINKED_POLICY&&d.candidateProviderAccount==='contract.main.burrow.near';
+export const isLinkedCandidate=(d:DeploymentAllowlist):boolean=>isVerifiedFactoryDeployment(d)&&d.policyVersion==='showstake-native-usdc-factory-rhea/3'&&d.environment==='mainnet'&&d.network==='mainnet'&&isFactoryChild(d)&&d.ftContractId==='17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1'&&d.ftDecimals===6&&d.candidateProviderAccount==='contract.main.burrow.near'||d.environment==='mainnet'&&d.network==='mainnet'&&isFactoryChild(d)&&d.ftContractId==='17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1'&&d.ftDecimals===6&&d.codeHash===LINKED_CODE_HASH&&d.wasmSha256===LINKED_CANDIDATE_HASH&&d.policyVersion===LINKED_POLICY&&d.candidateProviderAccount==='contract.main.burrow.near';
 export const isMainnetCandidate = (d: DeploymentAllowlist): boolean => isLinkedCandidate(d)||(d.environment === 'mainnet' && d.network === 'mainnet' && (d.contractId === 'showstake-mainnet-escrow-endpx-2026.near' || isFactoryChild(d)) && d.ftContractId === '17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1' && d.ftDecimals === 6 && d.codeHash === 'CpnhymSeF785ZBVTaBZfW8ApsfMVUByNCrys8R2i8os' && d.wasmSha256 === MAINNET_CANDIDATE_HASH && d.policyVersion === 'showstake-native-usdc-rhea-review/1' && d.candidateProviderAccount === 'contract.main.burrow.near');
-export const isCandidate = (d: DeploymentAllowlist): boolean => (d.environment === 'testnet' && d.network === 'testnet' && [CANDIDATE_HASH,MAINNET_CANDIDATE_HASH,LINKED_CANDIDATE_HASH].includes(d.wasmSha256) && d.policyVersion === 'showstake-native-usdc-event/1' && !!d.candidateProviderAccount && d.candidateProviderAccount.endsWith('.testnet') && d.ftContractId.endsWith('.testnet')) || isMainnetCandidate(d);
+export const isCandidate = (d: DeploymentAllowlist): boolean => (d.environment === 'testnet' && d.network === 'testnet' && ([CANDIDATE_HASH,MAINNET_CANDIDATE_HASH,LINKED_CANDIDATE_HASH].includes(d.wasmSha256) || isReviewedTestnetStatic(d) || (isVerifiedFactoryDeployment(d)&&isFactoryChild(d))) && d.policyVersion === 'showstake-native-usdc-event/1' && !!d.candidateProviderAccount && d.candidateProviderAccount.endsWith('.testnet') && d.ftContractId.endsWith('.testnet')) || isMainnetCandidate(d);
 function obj(v: unknown, keys: string[]): Record<string, unknown> {
   if (!v || typeof v !== 'object' || Array.isArray(v)) throw new Error('candidate view must be object');
   const o = v as Record<string, unknown>;
@@ -31,7 +32,7 @@ export function parseCandidateEvent(raw: unknown, d: DeploymentAllowlist): Candi
   if (raw === null) return null;
   const v = obj(raw, eventKeys);
   // Later phases need separate receipt-driven payout reconciliation; stop before stale rights can be exposed.
-  if (!['RegistrationOpen', 'RegistrationClosed', 'AttendanceFinalized', 'Settled', ...(isMainnetCandidate(d) || isMulti(d) ? ['Cancelled','RefundOnly'] : [])].includes(String(v.phase))) throw new Error(`candidate phase not supported: ${String(v.phase)}`);
+  if (!['RegistrationOpen', 'RegistrationClosed', 'AttendanceFinalized', 'Settled', ...(isMainnetCandidate(d) || isMulti(d) || isVerifiedFactoryDeployment(d) || isReviewedTestnetStatic(d) ? ['Cancelled','RefundOnly'] : [])].includes(String(v.phase))) throw new Error(`candidate phase not supported: ${String(v.phase)}`);
   if (!['NotStarted','SupplyPending','Supplied','RedeemPending','Redeemed'].includes(String(v.earn_state))) throw new Error('candidate unknown earn state');
   if(v.phase==='Settled'&&v.earn_state!=='Redeemed')throw new Error('candidate settlement before redemption');
   num(v.earn_attempt); if (typeof v.earn_action_completed !== 'boolean') throw new Error('candidate invalid earn action');
@@ -67,6 +68,10 @@ export function validateCandidatePass(raw: unknown, r: CandidateRegistration, d:
   if (v.pass_id !== r.passId || v.event_id !== r.eventId || v.registration_id !== r.registrationId || v.owner !== r.participant || v.registration_status !== 'Active' || v.attendance_status !== r.attendance || v.policy_version !== d.policyVersion) throw new Error('candidate pass mismatch');
 }
 
+/** Validate every pass against its registration using bounded independent pinned reads. */
+export async function validateCandidatePasses(registrations:CandidateRegistration[],read:(passId:string)=>Promise<unknown>,d:DeploymentAllowlist):Promise<void>{
+ for(let offset=0;offset<registrations.length;offset+=8){const group=registrations.slice(offset,offset+8);const passes=await Promise.all(group.map(r=>read(r.passId)));for(let i=0;i<group.length;i++)validateCandidatePass(passes[i],group[i]!,d);}
+}
 export function validateCandidateConfig(raw: unknown, d: DeploymentAllowlist): string {
   const v = obj(raw, 'organizer canonical_ft network policy_version provider_account provider_kind'.split(' '));
   const provider = account(v.provider_account);

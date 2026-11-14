@@ -1,0 +1,187 @@
+{
+  "classification": "PASS_TESTNET",
+  "scope": "Mixed real browser/CLI event lifecycle; testnet Mock USDC and zero-yield MockEarn, not funded mainnet Rhea",
+  "observedAt": "2026-11-14T03:29:38.776Z",
+  "preview": "https://showstake-testnet.vercel.app",
+  "child": "77a5e2b3a93df516.ss-fac-c1113232934.testnet",
+  "eventId": "event-a1a1186ab3f448438aac847234371f1e",
+  "ft": "mockusdc.testnet",
+  "provider": "ss-prov-b1113232402.testnet",
+  "receipts": [
+    {
+      "label": "create",
+      "hash": "7wBgq2775DkWkivzfePSRBM2LQRJUunFLS8fEwv5kz9n",
+      "signer": "showstake-participant-endpx.testnet",
+      "receiver": "ss-fac-c1113232934.testnet",
+      "classification": "PASS_TESTNET",
+      "expectedFailure": false
+    },
+    {
+      "label": "browser-deposit",
+      "hash": "8jTkkM335GYtRnFHNEtgRwVWUBYPnqQYPHiYhnrnnhj7",
+      "signer": "showstake-participant-endpx.testnet",
+      "receiver": "mockusdc.testnet",
+      "classification": "PASS_TESTNET",
+      "expectedFailure": false
+    },
+    {
+      "label": "attend-a",
+      "hash": "7b8H8MWiYfVMoxiNEvkfVzKyN1UgabtReJWMbr5steu7",
+      "signer": "showstake-participant-endpx.testnet",
+      "receiver": "77a5e2b3a93df516.ss-fac-c1113232934.testnet",
+      "classification": "PASS_TESTNET",
+      "expectedFailure": false
+    },
+    {
+      "label": "attend-c",
+      "hash": "Aa3aWeDiu2KapyBBM46rnGmvfejknEbVhCzCFcsRxTd2",
+      "signer": "showstake-participant-endpx.testnet",
+      "receiver": "77a5e2b3a93df516.ss-fac-c1113232934.testnet",
+      "classification": "PASS_TESTNET",
+      "expectedFailure": false
+    },
+    {
+      "label": "close-registration",
+      "hash": "4vhmjb2xjxcYeZdqojFKLwBV41dKvdMaoTJGGbh2555B",
+      "signer": "showstake-participant-endpx.testnet",
+      "receiver": "77a5e2b3a93df516.ss-fac-c1113232934.testnet",
+      "classification": "PASS_TESTNET",
+      "expectedFailure": false
+    },
+    {
+      "label": "deposit-a",
+      "hash": "6i7Ppq65z2NQkTpms2Rkfc9TVGjzZB7U9RCWnxsfcCtx",
+      "signer": "showstake-attendee-a-endpx.testnet",
+      "receiver": "mockusdc.testnet",
+      "classification": "PASS_TESTNET",
+      "expectedFailure": false
+    },
+    {
+      "label": "deposit-b",
+      "hash": "7CAiSe3eAmm9BuhDLE2YSuKiFvr2pwhjfHYP6RFhvnc9",
+      "signer": "showstake-attendee-b-endpx.testnet",
+      "receiver": "mockusdc.testnet",
+      "classification": "PASS_TESTNET",
+      "expectedFailure": false
+    },
+    {
+      "label": "deposit-c",
+      "hash": "2HeT6RFeDJnVBogxCCoZ8vEqdPSZFip9p9MKJ59mg4f1",
+      "signer": "showstake-attendee-c-endpx.testnet",
+      "receiver": "mockusdc.testnet",
+      "classification": "PASS_TESTNET",
+      "expectedFailure": false
+    },
+    {
+      "label": "deposit-d",
+      "hash": "EiDthBvRrEUi9fWHMjErHHWMocrG31zgYyXSSmbasA53",
+      "signer": "showstake-attendee-d-endpx.testnet",
+      "receiver": "mockusdc.testnet",
+      "classification": "PASS_TESTNET",
+      "expectedFailure": false
+    },
+    {
+      "label": "escrow-ft-storage-quoted",
+      "hash": "D8kTdmfdaX8iGkr5kWGNzx6iJoL6be6JyV1oBpkADsLE",
+      "signer": "showstake-participant-endpx.testnet",
+      "receiver": "mockusdc.testnet",
+      "classification": "PASS_TESTNET",
+      "expectedFailure": false
+    },
+    {
+      "label": "escrow-ft-storage",
+      "hash": "2AQwgQqnZFDWCCF2QNWiYpZDpJ6TLmxnPAcaWeFv6vkm",
+      "signer": "showstake-participant-endpx.testnet",
+      "receiver": "mockusdc.testnet",
+      "classification": "FAILED",
+      "expectedFailure": true
+    },
+    {
+      "label": "supply",
+      "hash": "2TT4agnyqjFnU8HqLNiSUDT83pxtz6sDNzjWe2unPKzJ",
+      "signer": "showstake-participant-endpx.testnet",
+      "receiver": "77a5e2b3a93df516.ss-fac-c1113232934.testnet",
+      "classification": "PASS_TESTNET",
+      "expectedFailure": false
+    },
+    {
+      "label": "ui-claim-0",
+      "hash": "ALE5JiXBrvbk7ixpfsZTEaVQmpJQm8UENrgY829GvJvm",
+      "signer": "showstake-attendee-a-endpx.testnet",
+      "receiver": "77a5e2b3a93df516.ss-fac-c1113232934.testnet",
+      "classification": "PASS_TESTNET",
+      "expectedFailure": false
+    },
+    {
+      "label": "ui-claim-2",
+      "hash": "DRyeeP8mmCdxur4SGX3KcUwCg3MpLDEVXe9Chzs4FL61",
+      "signer": "showstake-attendee-c-endpx.testnet",
+      "receiver": "77a5e2b3a93df516.ss-fac-c1113232934.testnet",
+      "classification": "PASS_TESTNET",
+      "expectedFailure": false
+    },
+    {
+      "label": "ui-finalize_attendance",
+      "hash": "5jS8Wvf1bCjVF3ftFfdmFcDhAXyp9SdXiNfx7jcVFioT",
+      "signer": "showstake-participant-endpx.testnet",
+      "receiver": "77a5e2b3a93df516.ss-fac-c1113232934.testnet",
+      "classification": "PASS_TESTNET",
+      "expectedFailure": false
+    },
+    {
+      "label": "ui-settle",
+      "hash": "9kEWfq3eK9Bz72VUPPsMBs8zUjYBJ1guGfhgQZVDtrHL",
+      "signer": "showstake-participant-endpx.testnet",
+      "receiver": "77a5e2b3a93df516.ss-fac-c1113232934.testnet",
+      "classification": "PASS_TESTNET",
+      "expectedFailure": false
+    },
+    {
+      "label": "ui-trigger_earn_redeem",
+      "hash": "6nxMA3LQgHWB8aYxAZnqxSmKijnB9R3Dw4BJqQxf5Gqf",
+      "signer": "showstake-participant-endpx.testnet",
+      "receiver": "77a5e2b3a93df516.ss-fac-c1113232934.testnet",
+      "classification": "PASS_TESTNET",
+      "expectedFailure": false
+    }
+  ],
+  "uiActions": [
+    "connect and NEP-413 login as organizer and two distinct attendees",
+    "create event",
+    "deposit and verify onchain registration/pass",
+    "finalize attendance",
+    "redeem MockEarn funds",
+    "settle event",
+    "two participant claims with final receipt verification"
+  ],
+  "cliSupport": [
+    "four participant deposits",
+    "token storage registration",
+    "close registration",
+    "supply",
+    "two attendance marks"
+  ],
+  "balanceDeltas": {
+    "attendeeA": "5000000",
+    "attendeeC": "5000000",
+    "escrow": "-10000000",
+    "providerFinal": "0"
+  },
+  "noShowAmounts": [
+    "0",
+    "0",
+    "0"
+  ],
+  "keylessChild": true,
+  "knownFailedStorage": {
+    "hash": "2AQwgQqnZFDWCCF2QNWiYpZDpJ6TLmxnPAcaWeFv6vkm",
+    "reason": "Test support used 0.00125 NEAR below actual quoted 0.00126 NEAR; finalized failure inspected, separate quoted transaction succeeded"
+  },
+  "notAccepted": [
+    "QR/protected-content E2E blocked by raw-block-source HTTP429 and stale projection",
+    "Browser screenshots returned blank while page visibility hidden; no visual screenshot acceptance",
+    "Actual funded cross-chain route",
+    "Mainnet funded Rhea withdrawal and technical acceptance",
+    "Mainnet C6/A90 deployment"
+  ]
+}

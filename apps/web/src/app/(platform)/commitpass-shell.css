@@ -40,6 +40,7 @@
 .platform--commitpass .workspace-footer { margin-top: 80px; }
 .platform--commitpass .workspace-footer-meta { font-size: 12px; gap: 16px; }
 .platform--commitpass .workspace-footer-meta nav { display: flex; align-items: center; gap: 8px; }
+.workspace-network-note { padding: 9px 20px; text-align: center; background: var(--color-warning-bg); color: var(--color-warning); font-size: 12px; line-height: 1.5; }
 .platform--commitpass .account-popover { width: min(300px, calc(100vw - 40px)); line-height: 1.5; }
 .platform--commitpass .account-popover > p { color: var(--muted); margin-block: 12px; font-size: 12px; }
 .platform--commitpass .account-popover > a { display: flex; align-items: center; gap: 8px; min-height: 40px; font-size: 13px; }

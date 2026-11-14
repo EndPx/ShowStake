@@ -12,11 +12,14 @@ import { registerAuth } from './routes/auth.js';
 import { registerPrivate } from './routes/private.js';
 import { registerMainnetReadiness } from './routes/mainnet-readiness.js';
 import { registerRheaMicrotest } from './routes/rhea-microtest.js';
+import { registerFunding } from './routes/funding.js';
+import type { FundingStore } from './store/funding-store.js';
 
 export interface BuildOptions {
   store: Store;
   config: Config;
   accessKeyVerifier: AccessKeyVerifier;
+  fundingStore?: FundingStore;
 }
 
 /**
@@ -55,6 +58,7 @@ export function buildApp(opts: BuildOptions): FastifyInstance {
   registerEvents(app, opts.store, opts.config);
   registerAuth(app, opts.store, opts.config, opts.accessKeyVerifier);
   registerPrivate(app, opts.store, opts.config);
+  registerFunding(app, opts.store, opts.config, opts.fundingStore);
 
   return app;
 }

@@ -1,0 +1,71 @@
+{
+  "contract": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+  "deposit": "1",
+  "method": "ft_transfer_call",
+  "receipts": [
+    {
+      "bool": null,
+      "children": [
+        "Dj4JVvnfYNwJShQWEL8cCo1DNRtyvzfaG2Ei1qBEsF7u",
+        "7pnaUkLeqEqyLdjMdYYEnTuR44tX7Wd3NABwuT1vwbCi",
+        "4bzEZuuZkXYceHgd4qRuEqDSKmkLKxJy5BeeX9ALceZN"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": false,
+      "gas_burnt": 2679156364787,
+      "id": "B3o4Ugncag2rh6wMx9iUkwRV1CEnapubQigzAdVcLXtK",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "6CZ9S1UxSDw2pgRuxJVncX4CHyScQe33DayFcDNZYG31"
+      ],
+      "executor": "32794ddf25ba1e6f.factory.sandbox",
+      "failure": false,
+      "gas_burnt": 2266858662527,
+      "id": "Dj4JVvnfYNwJShQWEL8cCo1DNRtyvzfaG2Ei1qBEsF7u",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "user8.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "6CZ9S1UxSDw2pgRuxJVncX4CHyScQe33DayFcDNZYG31",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [
+        "B8xmbCbXrvbEB8fzYuEydkUFR6DqUqbeAHtywsre884Z"
+      ],
+      "executor": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "failure": false,
+      "gas_burnt": 1438022561926,
+      "id": "7pnaUkLeqEqyLdjMdYYEnTuR44tX7Wd3NABwuT1vwbCi",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "user8.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "B8xmbCbXrvbEB8fzYuEydkUFR6DqUqbeAHtywsre884Z",
+      "success": true
+    },
+    {
+      "bool": null,
+      "children": [],
+      "executor": "user8.testnet",
+      "failure": false,
+      "gas_burnt": 223182562500,
+      "id": "4bzEZuuZkXYceHgd4qRuEqDSKmkLKxJy5BeeX9ALceZN",
+      "success": true
+    }
+  ],
+  "signer": "user8.testnet",
+  "success": true
+}

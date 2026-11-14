@@ -6,6 +6,16 @@ edition = "2024"
 resolver = "3"
 rust-version = "1.95"
 license = "MIT"
+repository = "https://github.com/EndPx/ShowStake"
+
+[features]
+factory-event = []
+
+[package.metadata.near.reproducible_build]
+image = "sourcescan/cargo-near:0.22.0-rust-1.99.1"
+image_digest = "sha256:c9655eaf7436b90c87ea8b25739f91063032c5c30ba24cfeafe72c142943b5bb"
+passed_env = ["SHOWSTAKE_LEAF_WASM_LEN", "SHOWSTAKE_LEAF_SHA256"]
+container_build_command = ["cargo", "near", "build", "non-reproducible-wasm", "--locked", "--features", "factory-event"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]

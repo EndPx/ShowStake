@@ -26,7 +26,7 @@
 // consumer. Canonical hash + official-finality proof happen in the production
 // ingest path itself, not only in tests.
 import { randomUUID } from 'node:crypto';
-import { isMulti, isCandidate, isMainnetCandidate, isLinkedCandidate, LINKED_POLICY, parseCandidateEvent, parseCandidateRegistration, validateCandidatePass, validateCandidateConfig, validateCandidateCoverage, validateLinkedCoverage } from './candidate.js';
+import { isMulti, isCandidate, isMainnetCandidate, isLinkedCandidate, LINKED_POLICY, parseCandidateEvent, parseCandidateRegistration, validateCandidatePasses, validateCandidateConfig, validateCandidateCoverage, validateLinkedCoverage } from './candidate.js';
 import { parseMultiLogs, readMultiSnapshot } from './multievent.js';
 import { Pool, type Client, type PoolConfig } from 'pg';
 import { WORKER_DB_ROLE, type DeploymentAllowlist } from './config.js';
@@ -337,7 +337,7 @@ export class WorkerStore {
       );
     }
 
-    if (['showstake-native-usdc-event/1','showstake-native-usdc-rhea-review/1',LINKED_POLICY].includes(this.allowlist.policyVersion) && !isCandidate(this.allowlist)) throw new Error('candidate code hash is not reviewed');
+    if (['showstake-native-usdc-event/1','showstake-native-usdc-rhea-review/1',LINKED_POLICY,'showstake-native-usdc-factory-rhea/3'].includes(this.allowlist.policyVersion) && !isCandidate(this.allowlist)) throw new Error('candidate code hash is not reviewed');
     const multi = isMulti(this.allowlist);
     const candidate = isCandidate(this.allowlist) || multi;
     const kept = block.receipts.filter((r) => r.executorId === this.allowlist.contractId && r.success);
@@ -370,22 +370,22 @@ export class WorkerStore {
         this.assertPinned(result.blockHeight, result.blockHash, block, method);
         return result.result;
       };
-      const provider = validateCandidateConfig(await read('get_config', {}), this.allowlist);
-      const event = parseCandidateEvent(await read('get_event', {}), this.allowlist);
+      const [rawConfig,rawEvent]=await Promise.all([read('get_config',{}),read('get_event',{})]);
+      const provider = validateCandidateConfig(rawConfig, this.allowlist);
+      const event = parseCandidateEvent(rawEvent, this.allowlist);
       if (event) {
         const registrations: ReturnType<typeof parseCandidateRegistration>[] = [];
         for (let from = 0; from < event.count; from += 50) {
           const raw = await read('list_event_registrations', { event_id: event.rules.eventId, from, limit: 50 });
           if (!Array.isArray(raw) || raw.length !== Math.min(50, event.count - from)) throw new Error('candidate registration page incomplete');
-          for (const item of raw) {
-            const registration = parseCandidateRegistration(item, event, registrations.length);
-            validateCandidatePass(await read('get_pass', { pass_id: registration.passId }), registration, this.allowlist);
-            registrations.push(registration);
-          }
+          const page=raw.map((item,index)=>parseCandidateRegistration(item,event,registrations.length+index));
+          // The read closure checks the exact block hash for every parallel result.
+          await validateCandidatePasses(page,passId=>read('get_pass',{pass_id:passId}),this.allowlist);
+          registrations.push(...page);
         }
         if (new Set(registrations.map(r => r.registrationId)).size !== event.count || new Set(registrations.map(r => r.passId)).size !== event.count || new Set(registrations.map(r => r.participant)).size !== event.count || new Set(registrations.map(r => r.commitmentId)).size !== event.count) throw new Error('candidate duplicate registration identity');
         if (event.phase === 'Settled' && registrations.reduce((sum, r) => sum + BigInt(r.claimAmount), 0n) !== BigInt(event.accepted) + BigInt(event.allocatedYield)) throw new Error('candidate settlement conservation failed');
-        const balance = await read('ft_balance_of', { account_id: this.allowlist.contractId }, this.allowlist.ftContractId);
+        const [balance,mockPosition]=await Promise.all([read('ft_balance_of',{account_id:this.allowlist.contractId},this.allowlist.ftContractId),!isLinkedCandidate(this.allowlist)&&!isMainnetCandidate(this.allowlist)?read('get_position',{account_id:this.allowlist.contractId},provider):Promise.resolve(null)]);
         if (isLinkedCandidate(this.allowlist)) {
           const needsPosition=['Supplied','RedeemPending'].includes(event.earnState);
           const [position,asset]=needsPosition?await Promise.all([read('get_account',{account_id:this.allowlist.contractId},provider),read('get_asset',{token_id:this.allowlist.ftContractId},provider)]):[null,null];
@@ -395,7 +395,7 @@ export class WorkerStore {
           // Only assert wallet coverage in states in which the contract says funds are local.
           if (event.earnState === 'NotStarted' || event.earnState === 'Redeemed') validateCandidateCoverage(event, registrations, balance, '0');
         } else {
-          const position = await read('get_position', { account_id: this.allowlist.contractId }, provider);
+          const position = mockPosition;
           validateCandidateCoverage(event, registrations, balance, position);
         }
         singleSnapshot = { event, registrations };
