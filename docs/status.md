@@ -1,6 +1,20 @@
 # ShowStake status
 
-## Current checkpoint - atomic factory TESTNET, 2026-11-14
+## Current checkpoint - one shared contract, 2026-11-14
+
+The selected architecture is D052: one ShowStake account with independent event records and vault ownership. The factory candidate below is preserved historical/alternative evidence, not the chosen release. Creating an event on the shared contract does not deploy another Wasm.
+
+**Mainnet is not full-cycle active yet.** `showstake-mainnet-escrow-endpx-2026.near` still runs C81 CREATE-only, hash `EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY`. Latest read-only preparation found zero events, zero USDC, no Rhea position and an additional 0.60 NEAR funding requirement for the reviewed V8 activation budget. The new approval question is pending; no new mainnet transaction, USDC supply or redemption was performed. The user will self-sign their own cycle without an operator account allowlist.
+
+V8 shared-yield source/build is **PASS_LOCAL** (20 unit tests, Wasm276035B / `2fdc615b6427858b8a351b03343385052353ef1b466caad47d16a19c49e24c53`), with two-event Sandbox proofs using MockEarn and public Rhea Wasm, empty-C81 migration/nonempty rejection, and labelled capacity-200 fixture gas. **PASS_TESTNET** at `ss-shared-s1114151743.testnet`: two simultaneous supplied positions, five2-Mock-USDC deposits per event, two attendee payouts5 each, cancellation refunds2 each, controlled provider/payout failures and retry; 42 final receipt graphs. These are not live Rhea liquidity evidence. See `docs/evidence/testnet-shared-s1114151743/result.json` and `docs/evidence/shared-yield-v8-20261114/`.
+
+The GitHub-built preview `https://showstake-testnet.vercel.app` uses V8 testnet. Frontend builds pass for mainnet and testnet; shared lifecycle actions, direct-chain pass/dashboard discovery, QR proposals, private content, provider/token storage approvals and funding session recovery are implemented. Actual browser evidence proves shared create-event, connect/sign-in reload and late-deposit full-refund recovery. The complete positive shared browser lifecycle remains unaccepted. Source commits `29b2159` and `d258884` are pushed on `codex/shared-event-lifecycle-20261114`; mainnet shared pin remains inactive until an approved upgrade is verified.
+
+Production backend hosting is **PASS_LIVE** with schema11, 29 PK/47 validated FK constraints, backups, healthy API/worker services, and the old deployment UUID/two cursors preserved exactly. Revision identity includes code hash so V8 can get a distinct deployment row without resetting history. Current blockchain profile remains C81. Historical raw-block HTTP429 remains external; `FINAL_CHAIN` direct reads do not claim cursor catch-up.
+
+NEAR Intents official catalog and ETH-on-Base/Ethereum -> native NEAR USDC **dry** quotes are verified (HTTP201); no funded swap or delivery is claimed. Rhea remains `SELECTED_FOR_HACKATHON`, not `TECHNICALLY_ACCEPTED`. Live supply/partial/full redemption, returned-USDC liquidity, full24h timeout, and mainnet user cycle remain open. See `docs/mainnet-shared-yield-upgrade-plan.md` for the exact artifact, cost, preflight and activation sequence. Older dated entries below are historical and may describe superseded scope.
+
+## Historical alternative - atomic factory TESTNET, 2026-11-14
 
 The testnet factory `ss-fac-c1113232934.testnet` runs the schema-3 candidate, with Mock USDC and zero-yield MockEarn. Factory C6 (`c6c5a8daa5dcb0ab020b910299e2df9c4d5a6f262a46203f37b4759624e4f391`) pins event leaf A90 (`a90cc890fbda1d8e7166697551693de684a264b1a3bc86ff098f59371033514a`). Testnet receipts prove two earlier children, five 2-Mock-USDC commitments per child, two 5-Mock-USDC attendee claims, cancellation refunds, and failure restoration/retry. See `docs/evidence/testnet-factory-c1113232934/result.json`. Public Rhea Wasm in Sandbox, capacity-200 and migration tests are **PASS_LOCAL**, not mainnet Rhea acceptance. See `docs/evidence/atomic-factory-20261114/`.
 
