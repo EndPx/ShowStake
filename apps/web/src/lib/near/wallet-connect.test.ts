@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {connectSelectedAccount,connectFailureMessage} from './wallet-connect.ts';
+let selections=0,reads=0;
+const connector={connect:async()=>{selections++;if(selections===1)throw Error('Connection declined');return {getAccounts:async()=>{reads++;return [{accountId:'alice.near',publicKey:'key'}];}};}};
+await assert.rejects(()=>connectSelectedAccount(connector),/Connection declined/);
+assert.deepEqual(await connectSelectedAccount(connector),{accountId:'alice.near',publicKey:'key'});
+assert.equal(selections,2);assert.equal(reads,1);
+assert.equal(await connectSelectedAccount({connect:async()=>({getAccounts:async()=>[]})}),null);
+assert.match(connectFailureMessage(Error('Connection declined')),/pending wallet request/);
+assert.match(connectFailureMessage(Error('User rejected')),/cancelled/);
+console.log('PASS_LOCAL selected wallet read, failed selection retry and actionable errors');

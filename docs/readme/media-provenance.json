@@ -1,0 +1,8 @@
+{
+  "asset": "docs/readme/create-event.png",
+  "source": "docs/evidence/commitpass-fidelity-20261115/create-desktop-live.png",
+  "sha256": "6b2e4964fd5ad6048da5f2fca756c09ed3f6c2fcd7c243a58a6f95167f81aad3",
+  "captureEnvironment": "NEAR mainnet public frontend, draft editor; no transaction or financial outcome depicted",
+  "modification": "Unmodified screenshot copy",
+  "rights": "Own ShowStake frontend; CommitPass reuse authorized and documented in docs/frontend-provenance.json"
+}

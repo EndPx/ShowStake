@@ -28,6 +28,7 @@ import { NETWORK, RPC_URL } from "../config";
 import { viewAccessKeyView } from "./rpc";
 import { APP_DOMAIN, canonicalProofMessage } from "./proof";
 import type { SignAndSendParams } from "./actions";
+import {connectSelectedAccount,connectFailureMessage} from "./wallet-connect";
 
 export interface WalletAccount {
   accountId: string;
@@ -58,7 +59,7 @@ export type WalletResult<T = WalletAccount> =
 // or static page generation (only inside a browser event handler/effect).
 type ConnectorShape = {
   on: (event: string, callback: () => void) => void;
-  connect: () => Promise<unknown>;
+  connect: () => Promise<{getAccounts:()=>Promise<Array<{accountId:string;publicKey?:string}>>}>;
   disconnect: () => Promise<void>;
   wallet: (id?: string | null) => Promise<{
     getAccounts: () => Promise<Array<{ accountId: string; publicKey?: string }>>;
@@ -109,16 +110,13 @@ export async function connectWallet(): Promise<WalletResult<WalletAccount>> {
   invalidateWalletBoundary();
   try {
     const c = await getConnector();
-    await c.connect();
-    const wallet = await c.wallet();
-    const accounts = await wallet.getAccounts();
-    const account = accounts?.[0];
+    const account = await connectSelectedAccount(c);
     if (!account?.accountId) {
-      return { ok: false, code: "NO_ACCOUNT", detail: "The wallet returned no account." };
+      return { ok: false, code: "NO_ACCOUNT", detail: connectFailureMessage("No account returned") };
     }
     return { ok: true, code: "SIGNED_IN", value: { accountId: account.accountId, publicKey: account.publicKey } };
   } catch (error) {
-    return { ok: false, code: "CONNECT_DENIED", detail: String((error as Error)?.message ?? error) };
+    return { ok: false, code: "CONNECT_DENIED", detail: connectFailureMessage(error) };
   }
 }
 

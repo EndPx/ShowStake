@@ -1,0 +1,17 @@
+{
+  "status": "PASS_LOCAL",
+  "scope": "Source review, production build, typecheck and existing funding/recovery tests. This does not verify the popup in a browser or execute a wallet transaction.",
+  "files": ["apps/web/src/components/event/multi-create.tsx", "apps/web/src/app/(platform)/event-experience.css"],
+  "checks": {
+    "pnpm --filter @showstake/web build": "PASS_LOCAL",
+    "pnpm --filter @showstake/web typecheck": "PASS_LOCAL after build completed",
+    "node --experimental-strip-types --test apps/web/src/lib/near/create-funding.test.ts apps/web/src/lib/near/create-recovery.test.ts": "PASS_LOCAL, 2 test files",
+    "git diff --check": "PASS_LOCAL"
+  },
+  "limits": [
+    "Real popup rendering, keyboard focus and 390px overflow: NOT_RUN pending deployment and a user-initiated wallet flow.",
+    "Wallet signatures, transfers and event creation: NOT_RUN.",
+    "Existing funding and recovery tests do not exercise the new React dialog."
+  ],
+  "note": "An earlier typecheck run concurrently with Next build failed because generated .next/types files were being replaced. The serial typecheck passed after the final build."
+}

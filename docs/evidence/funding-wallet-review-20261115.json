@@ -1,0 +1,51 @@
+{
+  "classification": "PASS_LOCAL",
+  "scope": "Codex review and local acceptance of Base USDC funding, NEAR wallet recovery messages and insufficient-native-NEAR dialog; not a funded cycle",
+  "observedAt": "2026-11-14T23:07:09.222572+00:00",
+  "checks": {
+    "web build + serial typecheck": "PASS_LOCAL",
+    "funding-source and funding-live tests": "PASS_LOCAL 7 tests",
+    "funding server and recipient tests": "PASS_LOCAL",
+    "API funding journal tests": "PASS_LOCAL 2 source routes; identity, chain, ownership and reserve-once checks",
+    "verify:api": "PASS_LOCAL 43/43",
+    "create funding and recovery": "PASS_LOCAL 2 files",
+    "wallet connect and login": "PASS_LOCAL 2 files; SDK returned-wallet account read and single-flight policy",
+    "verify:t08-frontend": "PASS_LOCAL",
+    "verify:frontend-slice": "PASS_LOCAL 100/100",
+    "README relative links and GitHub markdown render": "PASS_LOCAL"
+  },
+  "apiDeployment": {
+    "classification": "PASS_LIVE",
+    "scope": "Existing VPS API software overlay only, not chain execution",
+    "release": "/opt/showstake/releases/shared-mainnet-ready-20261114",
+    "checks": [
+      "source/dist/helper checksums verified",
+      "module imports as actual service user passed",
+      "health status ok and DB up",
+      "unauthenticated funding journal HTTP401",
+      "original worker process unchanged"
+    ],
+    "fileSha256": {
+      "apps/api/src/routes/funding.ts": "8b58198d2cae6cb126e43092c5b42f3a9af056d33c6af56739f3851188528daf",
+      "apps/api/dist/routes/funding.js": "efd301a8f8926fd10aec0c5bd44772258137a82a6d4a8aac46d6fd035b5d187a",
+      "packages/intents-adapter/src/funding-source.mjs": "aa70e69c7878cca9c9f55eb788aed521a95732c3bd34c930effb874c71e769ee",
+      "packages/intents-adapter/src/funding-source.d.mts": "6730388460c57215561a58189c7618c69b0ccfa3066f68942d701a440ad7ef33"
+    }
+  },
+  "walletDiagnosis": {
+    "observed": "User screenshot: evm-on-near.dev says Connection declined; previous request may still be active",
+    "verified": "Installed @hot-labs/near-connect 0.12.0 connect() without walletId opens the picker; no automatic persisted-wallet selection bug established",
+    "fixScope": "Read accounts from the wallet returned by the explicit picker; actionable recovery and separate NEAR versus EVM funding labels; no provider removed",
+    "externalCause": "UNKNOWN; no EIP-1193 error code supplied",
+    "realMetaMaskNearLogin": "NOT_RUN"
+  },
+  "browserAcceptance": "NOT_RUN for wallet approval / insufficient-balance dialog; hosted read-only postflight recorded separately",
+  "financialExecution": {
+    "sourceTransfer": "NOT_RUN",
+    "crossChainCompletion": "NOT_RUN",
+    "USDCdeposit": "NOT_RUN",
+    "RheaSupplyRedeem": "NOT_RUN",
+    "claim": "NOT_RUN"
+  },
+  "contractChange": "NONE; existing V8 artifact unchanged"
+}

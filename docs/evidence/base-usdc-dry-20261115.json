@@ -1,0 +1,67 @@
+{
+  "classification": "PASS_LIVE",
+  "scope": "Read-only provider catalog and dry:true quotes only; no deposit address or funded transfer",
+  "observedAt": "2026-11-14T23:00:15.117Z",
+  "catalogStatus": 200,
+  "tokens": [
+    {
+      "assetId": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "decimals": 6,
+      "blockchain": "near",
+      "symbol": "USDC",
+      "price": 0.999642,
+      "priceUpdatedAt": "2026-11-14T22:59:30.950Z",
+      "contractAddress": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "coingeckoId": "usd-coin"
+    },
+    {
+      "assetId": "nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near",
+      "decimals": 6,
+      "blockchain": "base",
+      "symbol": "USDC",
+      "price": 0.999642,
+      "priceUpdatedAt": "2026-11-14T22:59:30.950Z",
+      "contractAddress": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "coingeckoId": "usd-coin"
+    }
+  ],
+  "quotes": [
+    {
+      "requestedDestinationAtomic": "100000",
+      "httpStatus": 400,
+      "dry": true,
+      "originAsset": "nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near",
+      "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "correlationId": "0b52479d-310f-452e-8085-72f1fbf600de",
+      "error": "Amount is too low for bridge, try at least 146306",
+      "quote": null
+    },
+    {
+      "requestedDestinationAtomic": "1000000",
+      "httpStatus": 201,
+      "dry": true,
+      "originAsset": "nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near",
+      "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "correlationId": "b02788ef-54ba-4e85-b373-d637e2a646c5",
+      "error": null,
+      "quote": {
+        "amountIn": "1008826",
+        "amountInFormatted": "1.008826",
+        "amountInUsd": "1.008464840292",
+        "minAmountIn": "1003800",
+        "amountOut": "1000000",
+        "amountOutFormatted": "1.0",
+        "amountOutUsd": "0.999642000000",
+        "minAmountOut": "1000000",
+        "timeEstimate": 35,
+        "refundFee": "2400",
+        "withdrawFee": "3677"
+      }
+    }
+  ],
+  "source": "https://1click.chaindefuser.com/v0",
+  "canonicalContractSource": "https://developers.circle.com/stablecoins/usdc-contract-addresses",
+  "fundedTransfer": "NOT_RUN",
+  "registration": "NOT_RUN",
+  "note": "Quote values expire and must be requested again. Funding amount and exact event deposit are separate."
+}

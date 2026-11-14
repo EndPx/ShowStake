@@ -1,103 +1,251 @@
-# ShowStake
+<p align="center"><img src="apps/web/public/brand/showstake-mark.svg" alt="ShowStake" width="72" height="72" /></p>
+<h1 align="center">ShowStake</h1>
+<p align="center"><strong>Stake your spot. Show up.</strong></p>
+<p align="center">USDC attendance commitments, account-bound passes, and event settlement on NEAR.</p>
 
-## Current release checkpoint — one shared contract
+<p align="center">
+  <a href="https://showstake.vercel.app/discover">Try the app</a> ·
+  <a href="docs/JUDGES.md">Judge's guide</a> ·
+  <a href="#a-five-person-event-with-an-inspectable-result">Inspect the testnet proof</a> ·
+  <a href="#architecture-and-authority">Explore the architecture</a> ·
+  <a href="#run-locally">Run locally</a>
+</p>
 
-ShowStake is a NEAR event commitment application: participants deposit an exact amount of native USDC on NEAR, receive a non-transferable account-bound pass, and eligible attendees claim the settled pool after organizer-attested attendance and final Rhea redemption. Multiple events share one contract account with separate principal, strategy ownership and claim accounting. Event creation does not deploy another Wasm.
+<p align="center">
+  <img alt="Contract deployed on NEAR mainnet" src="https://img.shields.io/badge/NEAR-mainnet%20deployment-04142B?style=flat-square" />
+  <img alt="Testnet lifecycle evidence" src="https://img.shields.io/badge/lifecycle-testnet%20proof-087295?style=flat-square" />
+  <img alt="USDC uses six decimals" src="https://img.shields.io/badge/USDC-6%20decimals-087295?style=flat-square" />
+</p>
 
-- **Mainnet website:** https://showstake.vercel.app. The CommitPass-derived frontend, NEAR wallet/session integration and VPS backend are deployed.
-- **Current mainnet contract:** [`showstake-mainnet-escrow-endpx-2026.near`](https://nearblocks.io/address/showstake-mainnet-escrow-endpx-2026.near), upgraded to **shared-yield V8**, schema2, at block224507548. [Final upgrade receipt](https://nearblocks.io/txns/5nL4htVAQREWW3e7UniPoE5n8bCbD9cJ72REMWjcqiZb).
-- **Mainnet artifact:** Wasm276035B, SHA-256 `2fdc615b6427858b8a351b03343385052353ef1b466caad47d16a19c49e24c53`, code hash `4Dq4uEH2PE9FEB7n67d3r3fvHPUy5KAvjhgZ8q5sX4PU`. See the [deployment result](docs/evidence/shared-mainnet-upgrade-v8-20261114/result.json). The existing account and upgrade key were retained; actual upgrade fee0.002184618005035NEAR. No user event, USDC supply or redemption was performed by the agent.
-- **Shared testnet contract:** `ss-shared-s1114151743.testnet`, with `mockusdc.testnet` and the explicitly labelled zero-yield MockEarn provider. [Website guide](docs/shared-yield-testnet-guide.md), [42 final lifecycle receipt graphs](docs/evidence/testnet-shared-s1114151743/result.json), [current integration review](docs/evidence/shared-yield-v8-20261114/review.md).
-- **Backend:** PostgreSQL schema 11 with 29 primary keys and 47 validated foreign keys. [ERD](docs/backend-erd.md). Old deployment identities and cursors are retained across code revisions.
+![ShowStake's mainnet event editor, using the project's own branding and CommitPass-derived layout](docs/readme/create-event.png)
 
-### Release acceptance flow
+_Actual mainnet interface in draft view. The image shows the editor; it does not establish a completed registration, payout, or live Rhea return._
 
-The user signs the complete website flow: create event and verify its final receipt; participants deposit exact USDC and read their onchain pass; close registration and supply Rhea; propose QR check-in and separately sign attendance; finalize attendance after check-in closes; redeem Rhea, settle and claim; reconcile USDC and event liability; verify attendee-only materials. A submitted transaction, QR proposal, timer or database row does not prove a completed financial operation. Mainnet user cycle and real Rhea returned-USDC liquidity acceptance remain open.
+## A reservation should mean something
 
-The required five-participant scenario is five deposits of 2 USDC, two attendees and three no-shows. With zero realized yield, each attendee receives 5 USDC; realized yield is allocated according to the contract's exact rounding rules. The full scenario is proven on testnet with mock assets. Mainnet user acceptance remains open.
+A workshop seat, community dinner, or builder meetup takes preparation. A free RSVP takes seconds. When a guest reserves a limited spot and never arrives, the host is left with an empty seat and someone on the waitlist misses out.
 
-NEAR Intents funding is a separate preceding step: supported source asset to the participant's NEAR USDC balance, then an explicit escrow deposit. The currently integrated source routes are ETH on Base and Ethereum. Current catalog and dry quotes passed; funded delivery has not been claimed. Rhea remains `SELECTED_FOR_HACKATHON`, not `TECHNICALLY_ACCEPTED`, until its live technical and returned-USDC withdrawal gates pass.
+ShowStake connects that reservation to a fixed USDC commitment. The host publishes the rules, a guest commits the exact amount and receives a pass, and the organizer records attendance on NEAR. The contract then applies the event's allocation and claim rules to its reconciled funds. Eligible attendees share the settled pool; no-show allocations are zero in the normal attended outcome.
 
-### Build and review
+The initial audience is hosts of small, capacity-limited community events. A commercial pilot and measured reduction in no-shows are future validation work, not reported traction.
 
-Use Node 24.18.x and pnpm 10.21.x, then run `pnpm install --frozen-lockfile`, `pnpm typecheck:web`, `pnpm build:web`, `pnpm verify:api` and `pnpm verify:worker`. These local checks do not establish deployment or funded acceptance. Backend setup is documented in [apps/api](apps/api/README.md); the hosted website supplies the reviewed public deployment configuration.
+> **Release scope:** the website and shared V8 contract are deployed on NEAR mainnet. The recorded financial lifecycle uses Mock USDC and zero-yield MockEarn on testnet. A complete funded mainnet user cycle, funded cross-chain delivery, and real returned-USDC Rhea withdrawal acceptance remain open.
 
-Evidence is classified separately as local, testnet, live hosting/read-only, funded live, blocked or not run. The [current status](docs/status.md) and [decisions](docs/decisions.md) take precedence over dated checkpoints below. Historical raw-block HTTP429 is not relabelled as indexer catch-up; direct `FINAL_CHAIN` reads retain onchain authority.
+## Try, inspect, understand
 
-## Historical checkpoints
+| Resource | What you can inspect |
+| --- | --- |
+| [Mainnet app](https://showstake.vercel.app/discover) | Discover, personal Events, the event editor, NEAR wallet/session flow, and event management UI. |
+| [Create an event](https://showstake.vercel.app/events/new) | Organizer rules, native NEAR storage/gas planning, wallet approval, and durable creation recovery. |
+| [Shared mainnet contract](https://nearblocks.io/address/showstake-mainnet-escrow-endpx-2026.near) | The one contract used by multiple events. |
+| [Testnet app](https://showstake-testnet.vercel.app/discover) | The separate, explicitly labelled Mock USDC / MockEarn environment. |
+| [42-receipt testnet run](docs/evidence/testnet-shared-s1114151743/result.json) | Two events, accepted deposits, allocation, cancellation, balances, and controlled failure/retry cases. |
+| [Judge's guide](docs/JUDGES.md) | Short do-X → see-Y steps and evidence boundaries. |
+| [Backend ERD](docs/backend-erd.md) | Deployment-scoped records, primary keys, foreign keys, and data ownership. |
+| [API contract](packages/api-contract/openapi.yaml) | Public and authenticated HTTP interfaces. |
 
-The sections below preserve prior deployments and acceptance history. References to a frozen release, current instance or open scope in these dated sections do not replace the current checkpoint above.
+## The product flow
 
-Backend data model: [ERD with primary/foreign keys and multi-event boundaries](docs/backend-erd.md). Additive migration `0008` binds wallet ownership, event/deployment/token identity, pass ownership, payout beneficiaries and QR/check-in registrations. One contract deployment holds many events. Multi-event CREATE is live; pooled Earn and the full mainnet financial lifecycle remain unaccepted.
+1. **Create the event.** The organizer chooses a title, location, rules, registration/check-in windows, USDC commitment, and capacity. Event creation adds data to the shared contract; it does not deploy another Wasm.
+2. **Fund the wallet if needed.** The optional 1Click panel converts supported ETH on Base/Ethereum or canonical USDC on Base into native USDC on NEAR. Funding is a separate action from registration.
+3. **Reserve a spot.** The participant approves any required FT storage, then signs the exact USDC `ft_transfer_call`. The accepted receiver receipt establishes one registration and one account-bound pass.
+4. **Check in.** A QR scan or manual code creates a pending proposal. The organizer reviews it and separately signs attendance onchain.
+5. **Reconcile and settle.** The shared-yield policy supplies event funds to the configured strategy, fixes attendance, redeems the attributed position, and enables settlement only after the required reconciliation.
+6. **Claim the result.** The fixed beneficiary signs a claim. The final payout callback determines whether the allocation is paid or restored for retry.
 
-Public frontend: **https://showstake.vercel.app/events/new**. VPS API: **https://srv1330754.hstgr.cloud**. Any connected organizer can create an event directly on the shared mainnet contract after sign-in, an exact storage quote and wallet approval. There is no factory step. USDC registration and Rhea Earn are disabled in this frozen CREATE-only release.
+```mermaid
+flowchart TB
+  Funding["Optional ETH on Base / Ethereum or USDC on Base"] --> Intents["NEAR Intents / 1Click"]
+  Intents --> Wallet["Participant's NEAR USDC balance"]
+  Wallet --> Deposit["Exact USDC deposit to the event"]
+  Deposit --> Pass["Registration and account-bound pass"]
+  Pass --> Proposal["QR / manual check-in proposal"]
+  Proposal --> Attendance["Organizer signs attendance"]
+  Attendance --> Finalize["Attendance finalized"]
+  Deposit --> Supply["Event-scoped Earn supply"]
+  Supply --> Redeem["Redeem and reconcile returned USDC"]
+  Finalize --> Settle["Contract fixes allocations"]
+  Redeem --> Settle
+  Settle --> Claim["Beneficiary claim and payout callback"]
+  classDef execution fill:#dcf5fc,stroke:#087295,color:#04142b;
+  class Deposit,Pass,Attendance,Finalize,Settle,Claim execution;
+```
 
-Current handoff: [do-X/see-Y website steps](docs/mainnet-user-test.md), [final mainnet upgrade receipt and actual fee](docs/evidence/multievent-mainnet-upgrade-20261114/result.json), and [local migration/two-organizer proof](docs/evidence/multievent-create-20261114/acceptance.json). Frozen Wasm SHA-256 c81cf3d7...87999e7 was deployed under the approved 0.01-NEAR ceiling; actual fee 0.0018191977271696 NEAR, no top-up or new account.
+Rhea is the selected mainnet Earn provider. Its live technical and withdrawal-liquidity gates are still open. Provider failure, ambiguity, or a shortfall cannot be turned into a paid event claim by a timer, an API response, or another event's cash.
 
-ShowStake is an event attendance commitment platform built around NEAR escrow. Participants lock a fixed attendance deposit that cannot be voluntarily withdrawn after registration; an account-bound, non-transferable pass represents registration. Organizers finalize attendance onchain before settlement and claims. The product addresses registrations that do not translate into attendance.
+## A five-person event with an inspectable result
 
-Accepted increments include the database foundation, independent settlement oracle, wallet/signing diagnostic harness, and Rust escrow/pass, attendance, settlement and claim contract. The core contract financial lifecycle is exercised on NEAR testnet; full browser/backend integration remains incomplete. Hackathon tracks: `open` and `nfts`; the custom pass does not claim NEP-171 or NEP-393 compliance.
+The recorded shared-contract testnet run uses five accounts committing **2 Mock USDC each**. Two are marked attended and three are no-shows. With zero realized yield, each attendee receives **5 Mock USDC**.
 
-## Inspect the mainnet CREATE deployment
+| Observation | Recorded attended-event result |
+| --- | --- |
+| Accepted commitments | 5 × 2 = **10 Mock USDC** |
+| Final attendance | **2 attended**, **3 no-shows** |
+| Attendee allocation | **5 Mock USDC each** |
+| No-show allocation | **0 each** |
+| Paid total after claims | **10 Mock USDC** |
+| Remaining pending / liability | **0 / 0** |
 
-Contract: [showstake-mainnet-escrow-endpx-2026.near](https://nearblocks.io/address/showstake-mainnet-escrow-endpx-2026.near). [Upgrade transaction](https://nearblocks.io/txns/Cpb4sh2B2ASAfLEQouz3sPq9DqN3JYsfJoiXxogqr3BJ) is final. Code hash EUA9Rm9RvU6SwDbkAsqosP9JCSD4qBRhe75p5PnapdyY matches the 225667-byte frozen artifact.
+Inspect [settlement](https://testnet.nearblocks.io/txns/EY9DgtDgVwR6UiHZoduGQZdJLFKvSL4AX31VJYUhRQD2), [the first attendee claim](https://testnet.nearblocks.io/txns/4t8CbduZtMTbe6uCUfr9e8C5HurH8PSqDuWbQTf5XV2X), and [the second attendee claim](https://testnet.nearblocks.io/txns/2DQaWJTZDJErcAmSz4H1qsw3HL7b4T2XJunYe4dJokEC). The [full report](docs/evidence/testnet-shared-s1114151743/result.json) contains the registrations, receipt graphs, balance snapshots, and a separate cancelled-event refund scenario.
 
-Open the website, connect/sign in, preview event rules, request the storage quote, approve create_event in your wallet, then verify the final receipt and event readback. [Detailed steps and recovery](docs/mainnet-user-test.md). Mainnet wallet-signed CREATE is a user test; no agent-created mainnet event is claimed. Provider capability is false, so this contract returns mainnet registration deposits unused.
+This is testnet execution with mock assets. It is not customer activity, a mainnet USDC payout, or evidence of organic Rhea yield.
 
-[Historical stage1 evidence](docs/evidence/mainnet-deploy-20261112T221125Z/result.json) preserves the old paused single-event deployment and its fees. Its former get_event/get_rhea_control commands are not the latest shared ABI. FullAccess upgrade authority remains in the local OS keychain; this release is frozen by user instruction.
+## What is implemented
 
-## Inspect the five-person settlement on testnet
+| Capability | Behavior |
+| --- | --- |
+| Shared-contract events | Separate organizers, rules, registrations, principal, position ownership, and claims inside one deployment. |
+| Exact USDC registration | Wrong token, wrong amount, duplicates, full capacity, and invalid windows cannot create another accepted seat. |
+| Account-bound passes | One pass per accepted registration, with a fixed owner and beneficiary; no transfer/resale path. |
+| Organizer check-in | QR/manual proposals followed by a separately signed attendance action. |
+| Allocation and returns | Integer settlement, deterministic rounding, zero-attendee handling, cancellation, timeout rules, and beneficiary claims. |
+| Callback recovery | Attempt-bound private callbacks, failed payout restoration, and explicit retry/reconciliation. |
+| Private materials | Attended-pass and settled-event authorization with no public-file fallback. |
+| Familiar event UI | CommitPass-derived editor, themes/covers, calendar search/filter, role/period views, and responsive layouts. |
+| Cross-chain funding | Catalog-bound ETH-on-Base/Ethereum → NEAR USDC quotes, source approval, journal, and recovery. Funded delivery remains unproven. |
 
-Current settlement instance: `showstake-settle-endpx.testnet`, source `b744c00`, Wasm `f462ddcbb8b47ff03f4bea71c054cefe0d0a576b1346a0f9a55688c43307fd59`, policy `showstake-v2-d036-settle/1`.
+The pass is a custom account-bound contract record. The project does not claim NEP-171 or NEP-393 standard compatibility. A valid registration is final under the current policy: voluntary withdrawal/rejoin is not supported; cancellation and timeout refunds are separate outcomes.
 
-1. Inspect [finalization](https://testnet.nearblocks.io/txns/Cwe8nVcUc1uTphYTChPSgifCBuRgtCKNBhE228LCv9mf) and [settlement](https://testnet.nearblocks.io/txns/D9f1DRGL4qHqD4jW7d4PPKBgPZcvXTZtHYj4cBmsit91). See five registrations, two organizer-attested attendees, and an allocated total of10 SS_TEST.
-2. Inspect [attendee1 claim](https://testnet.nearblocks.io/txns/EkQ4teBg161EDxwnggk1PiTxrmFmLYocVdH68DN5r4F7) and [attendee2 claim](https://testnet.nearblocks.io/txns/8fg8fSnaCF7m5uAExN4xBAbH4njWFGuCamcMnjxRDWRe). Each participant deposited2 SS_TEST and received5; the three no-shows received0.
-3. Read `get_settlement` / `get_event_totals` for event `d036-settle-five`: see `Settled`, complete allocation, accepted/paid `10000000` atomic units, pending/liability `0`. Inspect [all31 receipts, five passes and balance snapshots](docs/evidence/testnet-settlement-five.json).
+## Architecture and authority
 
-This uses normal FT deposits and actual testnet time windows, with no state patch. Organizer-only attendance/finalization, premature claims, no-show claims and duplicate claims were tested as expected failures. SS_TEST is synthetic testnet FT (6decimals), not NEAR or USD. These CLI/keychain proofs do not imply browser/wallet integration, a public deposit pilot, mainnet readiness or completed indexing.
+```mermaid
+flowchart LR
+  UI["Next.js app"] --> Wallet["NEAR Connect / user wallet"]
+  Wallet --> Contract["Shared Rust contract"]
+  UI --> API["Authenticated Fastify API"]
+  API --> DB["PostgreSQL"]
+  Contract --> Receipts["Final canonical receipts"]
+  Receipts --> Worker["Projection worker"]
+  Worker --> DB
+  UI --> Views["Pinned final-state reads"]
+  Views --> Contract
+  Contract --> USDC["Canonical USDC FT"]
+  Contract --> Rhea["Selected Rhea provider"]
+```
 
-## Inspect D036 cancellation and claim on testnet
+| Component | Responsibility | Authority boundary |
+| --- | --- | --- |
+| [Rust contract](contracts/showstake/event-escrow-candidate/shared_yield.rs) | Event rules, custody, passes, attendance, position attribution, allocation, and payouts. | The financial authority. |
+| [Web app](apps/web) | Wallet-approved actions, durable attempts, final receipt/readback verification, and event UX. | Cannot create success from a timer or local flag. |
+| [API](apps/api) | NEP-413 challenges, wallet-bound sessions, private reads, check-in proposals, materials, and funding journal. | A session or database row cannot move event funds. |
+| [Worker](apps/worker) | Finality/canonical-link verification, deployment-scoped projections, deduplication, and cursor recovery. | Indexed copies are observations. |
+| [Database](docs/backend-erd.md) | Relational application records and verified projections with scoped PK/FK relationships. | API and worker roles have separate rights. |
+| [Relayer planner](apps/relayer) | Local dry-run action planning and retry rules. | No claim of production scheduling or unattended signing. |
 
-The newer clean instance is `showstake-d036-endpx.testnet`, deployed from source snapshot `a632d3c` with Wasm SHA-256 `d79ef24c72d2eea762d4c3e78a1990a21bf13458b0bf07c908a68fc6ca1d5bee` and policy `showstake-v2-d036/1`. A valid commit is final for participants: voluntary withdrawal/rejoin is denied. Organizer cancellation and deadline timeout preserve principal refunds.
+Multiple events may hold Earn positions concurrently; provider-changing operations are serialized for attribution. A provider shortfall cannot be funded from another event's deposits or settled claims. Public raw-block rate limits can delay indexed history; direct final-state reads do not fabricate cursor catch-up.
 
-1. Read `get_config` on this account through NEAR testnet RPC. See the D036 policy, immutable organizer and canonical synthetic FT.
-2. Inspect [the cancellation](https://testnet.nearblocks.io/txns/9dkwCjpHrhcW5tDFhcqfcAwEEwyVZ1UEcYZusqj7oWjY) and [the claim](https://testnet.nearblocks.io/txns/3KyMCsRvbkgLW6U5xjqp6EYmnWR5YXrXYDUxGupY2ZdG). See a real testnet FT payout after organizer cancellation.
-3. Read `get_claim` with registration ID `reg-0` and `get_event_totals` with event ID `d036-refund-test`. See `Paid`, accepted/paid `1000000`, pending/liability `0`. [Full receipts and balance snapshots](docs/evidence/testnet-d036-smoke.json) distinguish local, testnet and not-run cases.
+The organizer attests physical attendance. The deployed account remains upgradeable while its FullAccess key exists. External provider liquidity, administration, and upgrade risk remain material; no independent security audit is claimed.
 
-These are CLI/keychain proofs using synthetic SS_TEST; no browser/wallet/full lifecycle acceptance is implied. Testnet timeout24h, attendance, finalization, redistribution and factory remain open. The earlier minimum instance below remains unchanged; it was not upgraded over incompatible state.
+## Deployment identities
 
-## Inspect the minimum testnet contract
+| Network / role | Account |
+| --- | --- |
+| Mainnet shared contract | [showstake-mainnet-escrow-endpx-2026.near](https://nearblocks.io/address/showstake-mainnet-escrow-endpx-2026.near) |
+| Mainnet canonical USDC, 6 decimals | [17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1](https://nearblocks.io/address/17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1) |
+| Mainnet selected Rhea provider | [contract.main.burrow.near](https://nearblocks.io/address/contract.main.burrow.near) |
+| Testnet shared contract | [ss-shared-s1114151743.testnet](https://testnet.nearblocks.io/address/ss-shared-s1114151743.testnet) |
+| Testnet Mock USDC | [mockusdc.testnet](https://testnet.nearblocks.io/address/mockusdc.testnet) |
+| Testnet MockEarn | [ss-shared-earn-s1114151743.testnet](https://testnet.nearblocks.io/address/ss-shared-earn-s1114151743.testnet) |
 
-This deployment uses synthetic testnet assets only. Contract: `showstake-endpx.testnet`; organizer: `showstake-participant-endpx.testnet`; FT: `showstake-ft-endpx.testnet` (`SS_TEST`, 6 decimals). Source snapshot: `70d6319`; Wasm SHA-256: `fc49fb85cc6e718086ddf81e9a936362a8c36ef9384a8444eadafa6ec0cdcd8e`. One contract instance hosts one event and issues account-bound passes. Factory, withdrawal, cancellation, attendance, settlement and claim are not available in this artifact. Do not use real assets or treat this as a public deposit invitation.
+<details>
+<summary><strong>V8 mainnet code identity and upgrade receipt</strong></summary>
 
-1. Run `npx --yes near-cli-rs@0.31.1 contract call-function as-read-only showstake-endpx.testnet get_config json-args '{}' network-config testnet now`. See the immutable organizer, canonical FT, testnet network and policy version.
-2. Run the same read command with method `list_events` and JSON arguments `'{"from":0,"limit":10}'`. See the published test event and its contract-derived counts, or an empty list before publication.
-3. Inspect the [deployment receipt](https://testnet.nearblocks.io/txns/B5DJuxtFuHi7gs2ePg3YKxG5orJqpA1myXo4qdyEm4mv), [deployment evidence](docs/evidence/testnet-showstake-deployment-result.json), and [Codex local review](docs/evidence/contract-slice-codex-review.json). See actual environment labels and the limits of this minimum slice.
+- Policy: `showstake-native-usdc-shared-yield/2`, schema `2`.
+- Wasm: **276,035 bytes**.
+- SHA-256: `2fdc615b6427858b8a351b03343385052353ef1b466caad47d16a19c49e24c53`.
+- NEAR code hash: `4Dq4uEH2PE9FEB7n67d3r3fvHPUy5KAvjhgZ8q5sX4PU`.
+- [Atomic upgrade and migration](https://nearblocks.io/txns/5nL4htVAQREWW3e7UniPoE5n8bCbD9cJ72REMWjcqiZb), block `224507548`.
+- [Recorded deployment result](docs/evidence/shared-mainnet-upgrade-v8-20261114/result.json).
 
-## Try the local API
+These identify the deployed artifact. They do not claim an explorer source-verification badge, an external audit, or a completed funded user cycle.
 
-1. Run `pnpm verify:api`. See40 local checks for public event reads, nonce/signature/session behavior, delayed RPC/expiry, Origin checks and rate limits. These use generated local keys and an injected resolver, not a real-wallet proof.
-2. Run `pnpm verify:api-db` with WSL `Ubuntu`. See25 checks against a real disposable PostgreSQL server, including a loopback HTTP server, restricted service login, concurrent nonce use and expiry after a database lock. The server stops after the suite.
-3. Follow [API configuration](apps/api/README.md) to run a persistent local server against your configured database. Worker/indexing and full browser/testnet auth integration remain incomplete.
+</details>
 
-## Try the accepted foundation
+## Try the browser flow
 
-Prerequisites: Node 24.18.x, pnpm 10.21.0, Git. The PostgreSQL command below additionally requires Windows with WSL distribution `Ubuntu`, Bash, and access to download official PostgreSQL packages and the pinned Linux Node runtime. It creates an isolated temporary server and stops it after the run.
+Use the [hosted mainnet app](https://showstake.vercel.app/events/new) with your own NEAR wallet. Every financial action needs your explicit wallet approval.
 
-1. Run `pnpm install --frozen-lockfile --ignore-scripts`. See the pinned database dependencies install without wallet or frontend dependencies.
-2. Run `pnpm verify`. See toolchain checks and all 11 preserved planning-packet hashes pass. This checks foundation integrity; it does not exercise a wallet or migration.
-3. Run `pnpm verify:t01-static`. See exact-money boundaries, SQL provenance, fail-closed evidence aggregation, and the 19-route OpenAPI contract validate. The OpenAPI file describes an interface; no HTTP server is implemented in this increment.
-4. Run `pnpm verify:t01`. See migrations execute against a real disposable PostgreSQL server, followed by constraints, role denials, backup/restore, labeled chain-event replay, numeric boundaries and concurrency checks. Successful full runs record 52 database checks plus orchestration outcomes, proven server stop and cleanup.
-5. Inspect the unique directory under `migrations/artifacts/` and [Codex review evidence](docs/evidence/t01-codex-52-review.json). See local test provenance and the limits of the evidence. Replay data is labeled fixture data, not observed onchain state.
+| Do this | See this result |
+| --- | --- |
+| Connect a NEAR wallet and approve the offchain sign-in message. | The matching account is signed in; no token deposit has occurred. |
+| Enter event rules and review native NEAR funding. | Exact event storage, a separate gas planning budget, and any balance shortfall. |
+| Approve event creation. | A matching final receipt and event readback before the event opens. |
+| As a participant, approve required storage and commit the exact USDC. | An accepted registration and pass read from the contract. |
+| Scan/present the pass, then have the organizer sign attendance. | Confirmed attendance after final chain execution. |
+| Finalize attendance, finish required redemption/reconciliation, and settle. | Event-scoped allocations with claims enabled only in the allowed state. |
+| Sign a claim. | Final paid callback state and reconciled USDC/remaining liability. |
 
-NEAR remains the authority for registration, final attendance and payouts. A successful cross-chain swap is not registration; scanning a QR code is not final attendance. Login/signing, escrow deposit/pass/refund, settlement, gated content and funded cross-chain integration remain subsequent acceptance milestones.
+Native NEAR pays gas/storage; USDC pays the attendance commitment. The native storage reservation is not automatically returned when an event finishes. The optional cross-chain panel currently funds **USDC**, so it does not remove the need for native NEAR.
 
-Start with the [authoritative v2 planning packet](docs/planning/showstake-v2/00-START-HERE.md), [current status](docs/status.md), and [decisions](docs/decisions.md). Keep credentials in an ignored `.env`; `.env.example` contains placeholders only.
+For a read-only review without spending mainnet funds, use the [testnet evidence](docs/evidence/testnet-shared-s1114151743/result.json) and the [judge's guide](docs/JUDGES.md). The guides keep recorded execution separate from a new wallet run.
 
-## Settlement/refund test support
+## Verification status
 
-Run `node test-support/settlement-oracle/scripts/run-oracle.mjs --packet-root . --evidence-dir .local/oracle-runs`. See 105 local oracle tests covering packet allocation examples, withdrawals, refund modes, claim callbacks and event isolation, with a unique evidence directory for every run. This executes a synthetic Node model; it does not execute a NEAR contract, measure gas, or pass T03/T04. Read the [oracle limits and OPEN_GATEs](test-support/settlement-oracle/README.md) before using it as an independent test reference.
+| Area | Evidence and current limit |
+| --- | --- |
+| Contract build/accounting | `PASS_LOCAL`: Rust tests, Wasm build, two-event Sandbox and failure/isolation cases. [Source manifest](docs/evidence/shared-yield-v8-20261114/source-manifest.json). |
+| Shared testnet lifecycle | `PASS_TESTNET`: Mock USDC/MockEarn, two events, five-account attended/cancelled cases, and 42 receipt graphs. [Report](docs/evidence/testnet-shared-s1114151743/result.json). |
+| Mainnet deployment | `PASS_LIVE` for the code upgrade, hosting, and read-only identity checks. [Receipt and artifact](docs/evidence/shared-mainnet-upgrade-v8-20261114/result.json). |
+| Browser presentation | Read-only desktop/mobile checks and local build checks. [UI review](docs/evidence/commitpass-fidelity-20261115/final-browser-review.json); financial execution has separate evidence. |
+| Mainnet user lifecycle | Full create → deposit → attendance → redeem → settle → paid claim is not yet accepted as a completed funded run. |
+| Rhea | `SELECTED_FOR_HACKATHON`; not `TECHNICALLY_ACCEPTED`. Live supply/withdrawal, returned USDC and remaining provider gates are open. |
+| NEAR Intents | Catalog and dry quotes verified, including canonical Base USDC. Source-wallet transfer and funded delivery/recovery acceptance remain open. |
+| Historical indexing | Public-provider HTTP 429 limits remain documented. Current direct reads do not assert complete indexed history. |
 
-## Wallet/signing diagnostic harness
+The [current status](docs/status.md) and [decisions](docs/decisions.md) explain the detailed acceptance boundaries. Earlier testnet, factory and CREATE-only checkpoints are historical; they are not the selected mainnet release.
 
-Run `pnpm dev:t02-harness`, open the local URL Vite prints (default `http://127.0.0.1:5174/`), and see the NEAR Connect candidate plus a documented, uninvoked NEAR Auth candidate. `pnpm build:t02-harness` and the `verify:t02-*` scripts check the local implementation; they do not prove a real wallet session. Connect/sign/relogin requires a consenting human wallet, and production auth requires server-side challenge/session handling. No pass, deposit or payout success is simulated. See the [probe README](apps/web/onboarding-probe/README.md) and [Codex acceptance limits](docs/evidence/t02-codex-local-acceptance.json).
+## Run locally
+
+**Prerequisites:** Node.js **24.18.x**, pnpm **10.21.x**. Rust contract checks additionally need the crate's supported Rust toolchain and its native build dependencies; Linux/WSL avoids the Windows NASM dependency issue recorded in earlier runs.
+
+```bash
+git clone https://github.com/EndPx/ShowStake.git
+cd ShowStake
+pnpm install --frozen-lockfile
+pnpm typecheck:web
+pnpm build:web
+pnpm dev:web
+```
+
+Open `http://localhost:3000`. Local web configuration defaults to **testnet**; the hosted production build is explicitly **mainnet**. Public contract views can be inspected without a local signer. Sessions, private routes and funding recovery need the API configured separately; this command is not a one-command full-stack deployment.
+
+Use [apps/api/README.md](apps/api/README.md) for PostgreSQL, the restricted API role, fixed auth domain/network and server startup. Use [apps/worker/README.md](apps/worker/README.md) for the deployment-bound receipt consumer and recovery. Keep credentials outside Git and never use a database operator/superuser connection as the API runtime.
+
+### Relevant checks
+
+```bash
+pnpm verify:t08-frontend
+pnpm verify:frontend-slice
+pnpm verify:api
+pnpm verify:worker
+pnpm verify:openapi
+
+cargo test --locked \
+  --manifest-path contracts/showstake/event-escrow-candidate/Cargo.toml \
+  --features shared-yield --lib
+```
+
+Disposable PostgreSQL, canonical testnet scans and checkpoint suites have their own commands in the package guides. Local checks do not prove provider access or funded mainnet execution. Reproducing the optimized deployment byte-for-byte additionally requires the recorded Rust/Binaryen build pipeline, not just a successful generic Wasm compile.
+
+## Repository map
+
+| Path | Purpose |
+| --- | --- |
+| [`apps/web`](apps/web) | CommitPass-derived Next.js frontend and NEAR wallet/receipt integration. |
+| [`apps/api`](apps/api) | Fastify API, sessions, private access, QR proposals and funding journal. |
+| [`apps/worker`](apps/worker) | Canonical finalized receipt ingestion and projection/recovery. |
+| [`apps/relayer`](apps/relayer) | Dry-run lifecycle planner. |
+| [`contracts/showstake/event-escrow-candidate`](contracts/showstake/event-escrow-candidate) | Deployable shared-yield Rust crate and policy. |
+| [`contracts/test-ft`](contracts/test-ft) | Reviewed mock FT for testnet/failure tests. |
+| [`packages`](packages) | Exact domain rules, wallet verification, Intents adapter and API contract. |
+| [`migrations`](migrations) | Immutable schema migrations and relational/replay checks. |
+| [`test-support/contract-integration`](test-support/contract-integration) | Sandbox runners, artifacts and receipt evidence. |
+| [`docs`](docs) | Decisions, guides, architecture, deployment and classified evidence. |
+
+## Hackathon scope and attribution
+
+ShowStake reuses the team's existing CommitPass frontend foundation with explicit owner authorization. The editor, event layouts and selected cover artwork are adapted; the ShowStake logo and branding are its own. The source reference, file hashes, asset provenance and license boundaries are documented in [frontend provenance](docs/frontend-provenance.json). Dependency licenses remain separate.
+
+The NEAR-specific work includes the Rust escrow/pass and shared-yield accounting, native wallet/session boundary, canonical receipt projection, direct-chain frontend verification, exact USDC funding/deposit separation, and current integration/recovery work. CommitPass's Monad contracts, Privy, CRE execution, vault policy and financial results are not presented as ShowStake's NEAR proof.
+
+The active integration lives on [`codex/shared-event-lifecycle-20261114`](https://github.com/EndPx/ShowStake/tree/codex/shared-event-lifecycle-20261114). The [previous README and deployment checkpoints](https://github.com/EndPx/ShowStake/blob/3b5e8a350847d77e6eac692da8670f805f0aa8ef/README.md#historical-checkpoints) remain available as an immutable history rather than competing instructions on this front page.
