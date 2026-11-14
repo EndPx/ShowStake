@@ -43,8 +43,19 @@
   "checks": {
     "installedSDKCapabilityFilter": "PASS_LOCAL; coordinator independently ran installed SDK getter against supported/unsupported/undeclared and mainnet-only capabilities",
     "webBuildAndSerialTypecheck": "PASS_LOCAL; executor final build then typecheck",
-    "productionPicker": "PENDING",
+    "productionPicker": "PASS_LIVE hosting/browser scope only: HOT and Meteor visible, Ethereum Wallets absent under signMessage capability filter, Escape cancels picker and re-enables connect button",
     "walletConnectAndLogin": "PASS_LOCAL; coordinator reran both tests"
   },
-  "contractChange": "NONE"
+  "contractChange": "NONE",
+  "production": {
+    "deployment": "dpl_4895KxPVPBqa3bhnSvyfAPL3ocby",
+    "sourceCommit": "18d3db0a36c924aaea761dca79e3d97b309f58d2",
+    "state": "READY",
+    "url": "https://showstake.vercel.app/events/new",
+    "viewport": 390,
+    "horizontalOverflow": false,
+    "walletSelected": false,
+    "signatureRequested": false,
+    "financialTransaction": false
+  }
 }
